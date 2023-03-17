@@ -83,6 +83,7 @@ def getDbRawData(dbConfig, pickleName, sqlQuerry):
   # cur = conn.cursor(named_tuple=True) 
   # cur = conn.cursor(dictionary=True) 
   cur = conn.cursor() 
+  # TODO: timeout handling
   cur.execute(sqlQuerry)
   # get column names
   colNames = []
@@ -94,7 +95,7 @@ def getDbRawData(dbConfig, pickleName, sqlQuerry):
   # Store for later use
   if not os.path.exists('./data'):
     os.mkdir("./data")
-  pickle.dump(result, open(pklFileName, 'wb'))
+  #pickle.dump(result, open(pklFileName, 'wb'))
   
   return result
     
