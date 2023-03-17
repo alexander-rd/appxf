@@ -4,7 +4,8 @@ Exception UserAbortError is defined to terminate the application on
 Login.check().
 '''
 
-from .config import Config, ConfigSectionWidget
+from .config import Config
+from .config_gui import ConfigSectionWidget
 import tkinter
 from tkinter import ttk
 from .security import Security
