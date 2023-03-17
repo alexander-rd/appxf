@@ -16,10 +16,10 @@ import os.path
 import re
 import functools
 
-from ooTool.security import Security
+from yagni_cft.security import Security
 
 from .language import translate
-from ooTool import security
+from yagni_cft import security
 
 # TODO: Why do I use configparser at all?? 
 #  + It's nice to load INI files (and store back to them)

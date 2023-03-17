@@ -1,18 +1,31 @@
-# Basic Cross-Functionals (BCF)
+# YAGNI Cross-Functional Toolbox (yagni_cft)
 
-This toolbox covers cross functional concerns like configuration settings,
-persisting data, logging or security to limit the effort writing a simple
-application. It is created to provide customizations on top of
-[OpenOlitor](https://openolitor.org/), a web tool for community aided
-agriculture (CSA). Hence, the naming of the toolbox and a module to easily get
-data from this database.
+This toolbox covers cross functional concerns like configuration, persisting
+data, logging or security to limit the effort writing a simple application. It
+is created to provide customizations on top of
 
 Solutions to cross-functional concerns have strong impact on non-functional
-requirements or vice versa. To allow a quick decion on whether this code might
-help you and to guide it's development, a list of nun-functional requirements.
- * Usability (?): interfaces shall be simple.
-
-[security](doc/security.md)
+requirements or vice versa. The following list was compiled to allow a quick
+decion on whether this code might help you and to guide it's development. The
+provided numbers shall only provide a rough idea.
+ * The toolbox aims for easy application creation. This includes simple to use
+   interfaces and the need for documentation and examples.
+   * Not however that time is limited and support is appreciated. Contact me!
+ * Supported are desktop applications that are shared with a limited number of
+   people (like: 50).
+   * Not suited for online applications.
+   * Might not scale well to 1000 or more users.
+ * Data exchange with other instances is based on one or few (like 3) people
+   having writing rights while more (like 50) are just consuming the results.
+   * See security section: you essentially give away your email or database
+     passwords to the people with writing rights.
+ * Updates are expected like 20 times a week and rare (once a month) peak
+   reading are 150/h.
+   * Methods provided to exchange data are not suited for continuous data
+     exchange between instances.
+ * **You ain't gonne need it** (YAGNI) is part of the name for a reason. This
+   toolbox tries not to go fancy.
+   * Developers might still fall in the trap adding less usefull stuff. Sorry.
 
 Cross-Cutting Concerns
 ======================
@@ -21,7 +34,7 @@ Cross-Cutting Concerns
  * Logging
  * Persisting Data
  * Data Exchange via FTP
- * Security
+ * [Security](doc/security.md)
  * GUI
  * Extention modules
    * Email sending
@@ -48,3 +61,10 @@ mapping from the visible English strings into what you need.
 In cases of mapping to an existing database
 ([OpenOlitor](https://www.docarit.ch/PDFs/openlitor_schema.svg)) field names
 from that database are maintained.
+
+OpenOlitor Database Connection
+------------------------------
+
+[OpenOlitor](https://openolitor.org/) is a web tool for community aided
+agriculture (CSA). An application to support processes in an CSA was the
+originating trigger for this toolbox.

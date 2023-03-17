@@ -5,7 +5,7 @@ Your application likely stores sensible data like passwords to servers or detail
 Usage can be as simple as the following. Note that login and registration both requiere a toolbox configuration object (see TBD):
 
 ```python
-from ooTool import config,login, registration
+from yagni_cft import config,login, registration
 
 config = Config()
 # Optionally, there can be more code to specify user data you want to 
