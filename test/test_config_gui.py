@@ -1,6 +1,6 @@
 '''Manual testing the configuration GUI.'''
 
-# Run via: python -m ooTool.test.test_config_gui
+# Run via: python -m yagni_cft.test.test_config_gui
 
 from ..config import Config
 
