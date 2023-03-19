@@ -69,7 +69,7 @@ class Security():
         '''Unlock encryp/decrypt for user context by password.
         
         Loads the user's secret key. See init_user() on how it is stored. If the
-        key is not correct, the underlying algorihms throw an exception which
+        key is not correct, the underlying algorihms throws an exception which
         should be cought to handle wrong passwords.
         '''
         if not self.is_user_initialized():
