@@ -15,6 +15,14 @@ import traceback
 class UserAbortError(Exception):
     '''Used when user aborts the login process.'''
 
+# TODO: The login should be more general of also collecting USER info. It makes
+# sense that login initialization collects extra data. And it makes sense that
+# this data in configuration. But:
+#  * The config section should be an option
+#  * If no config section is provided (or no option is present), the curser
+#    should start with focus on password.
+# Best would be to become independent of configuration. But: YAGNI.
+
 class Login():
     '''Provides login process including initialization of user data.
     
@@ -36,7 +44,6 @@ class Login():
         self._app_name        = app_name
         self._pwd_min_length  = pwd_min_length
         
-    
     def check(self):
         if not self._security.is_user_initialized():
             self.__run_init_gui()
