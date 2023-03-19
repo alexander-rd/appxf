@@ -148,7 +148,7 @@ class Login():
         def okButtonFunction(event=None):        
             try:
                 self._security.unlock_user(pwdEntry.get())
-                self._config.load('USER')
+                #self._config.load('USER')
                 guiRoot.destroy()
             except Exception as e:
                 print(str(e))

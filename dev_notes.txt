@@ -1,0 +1,8 @@
+# Install package after checkout (execute from where setup.py is located)
+pip install -e .
+
+# run tests via tox:
+tox
+
+# Flake8 manual
+flake8 --count
