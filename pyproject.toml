@@ -22,9 +22,13 @@ legacy_tox_ini = """
     isolated_build = True
     envlist = py
 
+    [gh-actions]
+    python =
+        3.7: py
+
     [testenv]
     setenv = PYTHONPATH = {toxinidir}
-    deps = 
+    deps =
       -r{toxinidir}/requirements.txt
       -r{toxinidir}/requirements_test.txt
     commands = pytest --cov=kiss_cf
