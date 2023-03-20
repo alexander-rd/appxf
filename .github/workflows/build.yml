@@ -1,4 +1,4 @@
-name: Test
+name: Build
 
 on:
   workflow_call:
@@ -9,42 +9,30 @@ on:
       python-version:
         type: string
         required: true
-      caller-is-kiss-cf:
-        type: string
-        required: false
-        default: 'no'
     secrets:
       kiss-cf-token:
-        required: false
+        required: true
 
 jobs:
-  test:
+  build:
     runs-on: ${{ inputs.os }}
 
     steps:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Checkout kiss_cf (if called from using project)
+    - name: Checkout kiss_cf
       uses: actions/checkout@v3
       with:
         repository: alexander-rd/kiss_cf
         path: kiss_cf
         # TODO: remove token once repo becomes bublic
         token: ${{ secrets.kiss-cf-token }}
-      if: inputs.caller-is-kiss-cf == 'no'
 
-    - name: Setup (if called kiss_cf)
-      uses: ./.github/actions/setup
-      with:
-        python-version: ${{ inputs.python-version }}
-      if: inputs.caller-is-kiss-cf != 'no'
-
-    - name: Setup (if called from using project)
+    - name: Setup
       uses: ./kiss_cf/.github/actions/setup
       with:
         python-version: ${{ inputs.python-version }}
-      if: inputs.is-self == 'no'
 
     - name: Install kiss_cf (if called from using project)
       run: pip install -e./kiss_cf
@@ -54,7 +42,24 @@ jobs:
       run: ls -la
       if: runner.os == 'Linux'
 
-    - run: pip install tox tox-gh-actions
+    # BUILD (linux)
+    - name: Build (linux)
+      run: ./build_linux.sh
+      if: runner.os == 'Linux'
+    - name: Upload (linux)
+      uses: actions/upload-artifact@v3
+      with:
+        name: build_linux
+        path: dist/SolawiDollingerTool
+      if: runner.os == 'Linux'
 
-    - name: Test
-      run: tox
+    # BUILD (windows)
+    - name: Build (windows)
+      run: ./build_windows.bat
+      if: runner.os == 'Windows'
+    - name: Upload (windows)
+      uses: actions/upload-artifact@v3
+      with:
+        name: build_windows
+        path: dist/SolawiDollingerTool.exe
+      if: runner.os == 'Windows'

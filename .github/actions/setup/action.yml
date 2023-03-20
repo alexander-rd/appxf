@@ -1,0 +1,28 @@
+name: Setup
+description: Setup Environment
+inputs:
+  python-version:
+    type: string
+    required: true
+
+runs:
+  using: "composite"
+
+  steps:
+    - name: Install MariaDB
+      run: sudo apt install -y libmariadb-dev
+      shell: bash
+      if: runner.os == 'Linux'
+
+    - name: Install tkinter
+      run: sudo apt install python3-tk
+      shell: bash
+      if: runner.os == 'Linux'
+
+    - name: Set up Python ${{ inputs.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - run: python -m pip install --upgrade pip
+      shell: bash
