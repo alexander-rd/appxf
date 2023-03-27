@@ -19,7 +19,7 @@ config.add_option('USER', 'Ist Admin', value='True')
 # Integer:
 config.add_option('USER', 'Irgendein Integer', value='15')
 
-#config.keyConfig('USER', 'email')
+# config.keyConfig('USER', 'email')
 
 config.open_edit_gui('USER', title='Einstellungen für {0}')
 print('..repeat..')

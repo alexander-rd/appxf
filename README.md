@@ -68,4 +68,10 @@ OpenOlitor Database Connection
 
 [OpenOlitor](https://openolitor.org/) is a web tool for community aided
 agriculture (CSA). An application to support processes in an CSA was the
-originating trigger for this toolbox.
+originating trigger for this toolbox. kiss_cf makes it a bit easier to retrieve
+data from the mariaDB that is used there.
+
+See [this link to setup python](
+https://mariadb.com/de/resources/blog/how-to-connect-python-programs-to-mariadb/)
+and [this one for the API](
+https://mariadb-corporation.github.io/mariadb-connector-python/index.html).
