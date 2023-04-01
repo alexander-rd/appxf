@@ -63,9 +63,9 @@ class OptionConfig():
         self.configurable = kwargs.get('configurable', self.configurable)
 
     def __str__(self):
-        return 'type: {0}, {1}'.format(
-            self.type,
-            'configurable' if self.configurable else 'not configurable')
+        confstring = ('configurable' if self.configurable
+                      else 'not configurable')
+        return f'type: {self.type}, {confstring}'
 
     def validate(self, value):
         if self.type in ['str', 'string']:
@@ -81,14 +81,14 @@ class OptionConfig():
             # fallback to generic regexp handling
         elif self.type in ['bool', 'boolean']:
             config = configparser.ConfigParser()
-            config.read_string('[DEFAULT]\ntest = {0}'.format(value))
+            config.read_string(f'[DEFAULT]\ntest = {value}')
             try:
                 config.getboolean('DEFAULT', 'test')
             except Exception:
                 return False
             return True
         else:
-            raise Exception('Option type "{0}" is unknown'.format(self.type))
+            raise Exception(f'Option type "{self.type}" is unknown')
 
         regex = re.compile(regex)
         return (True if re.fullmatch(regex, value) else False)
@@ -110,10 +110,10 @@ class SectionConfig():
         self.configurable = kwargs.get('configurable', self.configurable)
 
     def __str__(self):
-        return 'source_type: {0}, source: {1}, {2}'.format(
-            self.source_type,
-            self.source,
-            'configurable' if self.configurable else 'not configurable')
+        confstring = ('configurable' if self.configurable
+                      else 'not configurable')
+        return (f'source_type: {self.source_type}, '
+                f'source: {self.source}, {confstring}')
 
 
 class Config():
@@ -243,7 +243,7 @@ class Config():
         if section in self.section_config.keys():
             return self.section_config[section]
         else:
-            raise Exception('Section {0} does not exist'.format(section))
+            raise Exception(f'Section {section} does not exist')
 
     def set_section_config(self, section, **kwargs):
         if section not in self.section_config.keys():
@@ -267,7 +267,7 @@ class Config():
         If no option is specified, it returns all options as distrionary
         '''
         if section not in self.config.sections():
-            raise Exception('Section "{0}" does not exist.'.format(section))
+            raise Exception(f'Section "{section}" does not exist.')
         elif (option) and (option not in self.config.options(section)):
             raise Exception(
                 f'Section "{section}" does not have an '
@@ -321,16 +321,15 @@ class Config():
         self.config = self.config_backup
 
     def apply_to_sections(section_func):
-
         @functools.wraps(section_func)
         def wrapper(self, section='', *args, **kwargs):
-            # print('wrapping {0}'.format(section_func.__name__))
+            # print(f'wrapping {section_func.__name__}')
             if not section:
                 section_list = self.config.sections()
-            elif type(section) == str:
+            elif isinstance(section, str):
                 section_list = [section]
-            elif type(section_list) == list:
-                section_list = section_list
+            elif isinstance(section, list):
+                section_list = section
             else:
                 raise Exception(
                     f'Called {section_func.__name__} with '
@@ -345,7 +344,7 @@ class Config():
 
     @apply_to_sections
     def store(self, section):
-        # print('store {0}'.format(section))
+        # print(f'store {section}')
         if section not in self.config.keys():
             raise Exception(
                 f'Trying to store section "{section}" which does not exist')
@@ -384,7 +383,7 @@ class Config():
     def __ensure_config_present(self, section=''):
         if not section:
             sectionList = self.config.sections()
-        elif type(section) == str:
+        elif isinstance(section, str):
             sectionList = [section]
         else:
             sectionList = section
