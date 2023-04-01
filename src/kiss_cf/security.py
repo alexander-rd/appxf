@@ -75,8 +75,7 @@ class Security():
         if not self.is_user_initialized():
             raise Exception(
                 'User is not initialized. Run init_user() '
-                'if file {0} was lost.'
-                .format(self._user_key_file))
+                f'if file {self._user_key_file} was lost.')
         derived_key = self.__derive_key(password)
         self._user_secret_key = self.__decrypt_from_file(
             derived_key, self._user_key_file)
@@ -84,14 +83,14 @@ class Security():
     def encrypt_to_file(self, data, file):
         if not self.is_user_unlocked():
             raise Exception(
-                'Trying to encrypt {0} before succeeding with unlock_user()'
-                .format(file))
+                f'Trying to encrypt {file} before '
+                'succeeding with unlock_user()')
         self.__encrypt_to_file(self._user_secret_key, data, file)
 
     def __encrypt_to_file(self, key, data, file):
         # get file where file is allowed to be a list of strings to avoid
         # caller needing to use os.path:
-        if not type(file) == list:
+        if not isinstance(file, list):
             file = [file]
         file = os.path.join(*file)
         # ensure path exists
@@ -105,12 +104,12 @@ class Security():
     def decrypt_from_file(self, file):
         if not self.is_user_unlocked():
             raise Exception(
-                'Trying to decrypt {0} before succeeding with unlock_user()'
-                .format(file))
+                'Trying to decrypt {file} before '
+                'succeeding with unlock_user()')
         return self.__decrypt_from_file(self._user_secret_key, file)
 
     def __decrypt_from_file(self, key, file):
-        if not type(file) == list:
+        if not isinstance(file, list):
             file = [file]
         # read encrypted data
         with open(os.path.join(*file), 'rb') as f:

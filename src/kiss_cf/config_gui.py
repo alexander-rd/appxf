@@ -76,7 +76,7 @@ class ConfigSectionWidget(tkinter.Frame):
                  section: str,
                  **kwargs):
 
-        print('ConfigSectionWidget: {0}'.format(section))
+        print(f'ConfigSectionWidget: {section}')
         super().__init__(parent, **kwargs)
 
         self._config = config
@@ -88,12 +88,10 @@ class ConfigSectionWidget(tkinter.Frame):
                        for option in self._config.config.options(section)
                        if self._config.option_config[option].configurable]
 
-        # for iOption in range(len(option_list)):
-        #    self.rowconfigure(iOption, weight=1)
         self.columnconfigure(0, weight=1)
 
         for iOption, option in zip(range(len(option_list)), option_list):
-            print('{0}: {1}'.format(iOption, option))
+            print(f'{iOption}: {option}')
             # option_frame = self.get_option_frame(frame, section, option)
             option_frame = ConfigOptionWidget(
                 self, self._config, section, option)
@@ -165,7 +163,7 @@ class ConfigOptionWidget(tkinter.Frame):
                  section: str,
                  option: str,
                  **kwargs):
-        print('ConfigOptionWidget: {0}, {1}'.format(section, option))
+        print(f'ConfigOptionWidget: {section}, {option}')
 
         super().__init__(parent, **kwargs)
         # import functoolsself.rowconfigure(0, weight=1)
