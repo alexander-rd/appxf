@@ -1,7 +1,13 @@
 from kiss_cf.buffer import Buffer, buffered
 
+# Used to test logging:
+# from kiss_cf import logging as kiss_logging
+# kiss_logging.activate_logging()
 
-def assert_buffer_contains(buffer: Buffer, what: str, inputlist: list, exact=True):
+
+def assert_buffer_contains(buffer: Buffer,
+                           what: str,
+                           inputlist: list, exact=True):
     '''Check if buffer contains "the one" what with exactly the inputs'''
     # check "what"
     whatlist = buffer.buffer.keys()
@@ -26,7 +32,6 @@ def test_init():
 # executed (agagin) >> check missing.
 
 def test_buffered_args():
-    print('> test_buffered_args')
     buffer = Buffer()
 
     @buffered(buffer)
@@ -41,7 +46,6 @@ def test_buffered_args():
 
 
 def test_buffered_kwargs():
-    print('> test_buffered_kwargs')
     buffer = Buffer()
 
     @buffered(buffer)
@@ -60,7 +64,6 @@ def test_buffered_kwargs():
 
 
 def test_buffered_mixedargs():
-    print('> test_buffered_mixedargs')
     buffer = Buffer()
 
     @buffered(buffer)
@@ -80,6 +83,7 @@ def test_buffered_mixedargs():
                                                  'this,3,that,4'])
 
 
+# Used to test logging:
 if __name__ == '__main__':
     test_init()
     test_buffered_args()

@@ -28,8 +28,10 @@ legacy_tox_ini = """
 
     [testenv]
     setenv = PYTHONPATH = {toxinidir}
+             VIRTUALENV_DOWNLOAD=0
     deps =
       -r{toxinidir}/requirements.txt
       -r{toxinidir}/requirements_test.txt
-    commands = pytest --cov=kiss_cf
+
+    commands = pytest --cov=kiss_cf --cov-report html --cov-report term
 """
