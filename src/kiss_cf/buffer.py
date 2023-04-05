@@ -1,5 +1,6 @@
 from copy import deepcopy
 import functools
+import logging
 
 
 class Buffer():
@@ -24,6 +25,7 @@ class Buffer():
 
     def __init__(self):
         self.buffer = dict()
+        self.log = logging.getLogger(f'{__name__}.Buffer')
 
     def isbuffered(self, what: str, input: str):
         '''Check if what/input is buffered'''
@@ -35,10 +37,8 @@ class Buffer():
     def get(self, what, input=''):
         '''Get data from buffer for what(input).'''
         if not self.isbuffered(what, input):
-            # TODO: should we change to:
-            # raise Exception(f'Buffer {self.name} does not contain {what}({input})')
             return None
-        print(f'Retrieved buffer {what}({input})')
+        self.log.debug(f'Retrieved buffer {what}({input})')
         return deepcopy(self.buffer[what][input])
 
     def set(self, data, what, input=''):
@@ -48,7 +48,7 @@ class Buffer():
         if what not in self.buffer.keys():
             self.buffer[what] = dict()
         self.buffer[what][input] = deepcopy(data)
-        print(f'Buffered {what}({input})')
+        self.log.debug(f'Buffered {what}({input})')
 
     def clear(self, what=''):
         if what in self.buffer:

@@ -3,6 +3,8 @@ pip install -e .
 
 # run tests via tox:
 tox
+# run tests via pytest
+pytest -rA
 
 # Flake8 manual
-flake8 --count
+flake8 --count src
