@@ -20,11 +20,11 @@ classifiers = [
 legacy_tox_ini = """
     [tox]
     isolated_build = True
-    envlist = py
+    env_list = py310
 
     [gh-actions]
     python =
-        3.7: py
+        3.10: py310
 
     [testenv]
     setenv = PYTHONPATH = {toxinidir}
