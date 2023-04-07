@@ -44,11 +44,11 @@ jobs:
       uses: ./kiss_cf/.github/actions/setup
       with:
         python-version: ${{ inputs.python-version }}
-      if: inputs.is-self == 'no'
+      if: inputs.caller-is-kiss-cf == 'no'
 
     - name: Install kiss_cf (if called from using project)
       run: pip install -e./kiss_cf
-      if: inputs.is-self == 'no'
+      if: inputs.caller-is-kiss-cf == 'no'
 
     - name: Orientation (ls)
       run: ls -la
