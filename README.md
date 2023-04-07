@@ -32,7 +32,7 @@ Cross-Cutting Concerns
 ======================
 
  * Configuration
- * Logging
+ * [Logging](doc/logging.md)
  * Persisting Data
  * Data Exchange via FTP
  * [Security](doc/security.md)
