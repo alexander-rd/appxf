@@ -48,7 +48,7 @@ class Buffer():
         if what not in self.buffer.keys():
             self.buffer[what] = dict()
         self.buffer[what][input] = deepcopy(data)
-        self.log.debug(f'Buffered {what}({input})')
+        self.log.info(f'Buffered {what}({input})')
 
     def clear(self, what=''):
         if what in self.buffer:
