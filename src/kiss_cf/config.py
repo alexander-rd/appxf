@@ -15,6 +15,7 @@ import os.path
 import re
 import functools
 
+from . import logging
 from .security import Security
 
 # TODO: Why do I use configparser at all??
@@ -132,6 +133,7 @@ class Config():
      * DEFAULT should not be used at all. See configparser documentation for
        details.
     '''
+    log = logging.getLogger(__name__ + '.Config')
 
     def __init__(self, security=None, storage_dir='./data/config'):
         if security is None:
@@ -167,7 +169,7 @@ class Config():
         '''Add section if not yet existing.'''
         self.config.add_section(section)
         self.section_config[section] = SectionConfig()
-        print(f'added section: {section}')
+        self.log.info(f'added section: {section}')
 
     def add_option(self, section, option, value=''):
         '''Add option if not yet existing.
@@ -181,12 +183,12 @@ class Config():
         if option not in self.config.options(section):
             self.config.set(section, option, value)
             self.option_config[option] = OptionConfig()
-            print(f'added option: {option} in '
-                  f'{section} with value {value}')
+            self.log.info(f'added option: {option} in '
+                          f'{section} with value {value}')
         else:
             self.config.set(section, option, value)
-            print(f'updated option: {option} '
-                  f'in {section} to {value}')
+            self.log.info(f'updated option: {option} '
+                          f'in {section} to {value}')
 
     # INI File Handling
     def add_ini_file(self, file):
@@ -199,8 +201,8 @@ class Config():
                 self.section_config[section] = SectionConfig(
                     source=file, source_type='ini')
             else:
-                print(f'WARN: section {section} already exists, '
-                      f'ignoring from {file}')
+                self.log.warning(f'section {section} already exists, '
+                                 f'ignoring from {file}')
             # ensure OptionConfig exists for each option
             for option in config.options(section):
                 if option not in self.option_config.keys():
@@ -212,10 +214,11 @@ class Config():
         # input option handling
         if (file):
             # Default input case, easy to handle
-            print('File: yes')
+            self.log.debug('File: yes')
         elif (file and section):
-            print(f'Warning: Provided file name "{file}" '
-                  f'will have precedence over section {section}')
+            self.log.warning(
+                f'Provided file name "{file}" '
+                f'will have precedence over section {section}')
         elif (section):
             if (section in self.config.sections()):
                 file = self.section_config[section].source
@@ -280,7 +283,7 @@ class Config():
                 try:
                     return self.config.getboolean(section, option)
                 except Exception as e:
-                    print(
+                    self.log.error(
                         f'Following error when handling section {section}, '
                         f'option {option} with type {thisOptionType}')
                     raise e
@@ -288,8 +291,9 @@ class Config():
                 try:
                     return self.config.getint(section, option)
                 except Exception as e:
-                    print(f'Following error when handling section {section}, '
-                          f'option {option} with type {thisOptionType}')
+                    self.log.error(
+                        f'Following error when handling section {section}, '
+                        f'option {option} with type {thisOptionType}')
                     raise e
             else:
                 raise Exception(

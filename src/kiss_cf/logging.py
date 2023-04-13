@@ -38,15 +38,20 @@ def activate_logging(app_scope: str | None = None,
         n_files -- number of log files to retain (default: {5})
     '''
 
-    formatter = logging.Formatter(
+    file_formatter = logging.Formatter(
             '%(asctime)s.%(msecs)03d '
             '%(levelname)s %(name)s.%(funcName)s(%(lineno)s): '
+            '%(message)s',
+            '%H:%M:%S')
+    console_formatter = logging.Formatter(
+            '%(asctime)s.%(msecs)03d '
+            '%(levelname)7s: '
             '%(message)s',
             '%H:%M:%S')
 
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.DEBUG)
-    console_handler.setFormatter(formatter)
+    console_handler.setFormatter(console_formatter)
 
     if not os.path.exists(directory):
         os.mkdir(directory)
@@ -57,7 +62,7 @@ def activate_logging(app_scope: str | None = None,
 
     file_handler = logging.FileHandler(filename=filename, mode='a')
     file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(formatter)
+    file_handler.setFormatter(file_formatter)
 
     logging.basicConfig(handlers=[console_handler, file_handler],
                         level=logging.WARN)

@@ -3,14 +3,14 @@
 Exception UserAbortError is defined to terminate the application on
 Login.check().
 '''
+import tkinter
+import tkinter.ttk
+import traceback
 
+from . import logging
 from .config import Config
 from .config_gui import ConfigSectionWidget
-import tkinter
-from tkinter import ttk
 from .security import Security
-
-import traceback
 
 
 class UserAbortError(Exception):
@@ -37,6 +37,8 @@ class Login():
     user data and the following added to it:
      * key: a secred key that is used to encrypt locally stored data
     '''
+    log = logging.getLogger(__name__ + '.Login')
+
     def __init__(self, security: Security,
                  config=Config(),
                  app_name='Login',
@@ -71,7 +73,7 @@ class Login():
         userConfig.grid(row=0, column=0, sticky='NSWE', columnspan=2)
         left_min_size_config = userConfig.get_left_col_min_width()
 
-        sep = ttk.Separator(guiRoot, orient='horizontal')
+        sep = tkinter.ttk.Separator(guiRoot, orient='horizontal')
         sep.grid(row=1, column=0, columnspan=2, sticky='WE')
 
         pwdLabel = tkinter.Label(guiRoot, justify='right')
@@ -107,23 +109,23 @@ class Login():
             pwdRepEntry.config(foreground='black')
 
             if (len(pwdEntry.get()) < self._pwd_min_length):
-                print('NOK, Passwort muss mindestens '
-                      f'{self._pwd_min_length} Zeichen haben')
+                self.log.debug('NOK, Passwort muss mindestens '
+                               f'{self._pwd_min_length} Zeichen haben')
                 pwdEntry   .config(foreground='red')
                 valid = False
             if (pwdEntry.get() != pwdRepEntry.get()):
-                print('NOK, Passwords do not match')
+                self.log.debug('NOK, Passwords do not match')
                 pwdRepEntry.config(foreground='red')
                 valid = False
             if not userConfig.is_valid:
-                print('config not valid')
+                self.log.debug('config not valid')
                 valid = False
             if valid:
                 # unlock user
                 self._security.init_user(pwdEntry.get())
                 # store USER configuration
                 self._config.store('USER')
-                print('OK, quit')
+                self.log.debug('OK, quit')
                 guiRoot.destroy()
         okButton = tkinter.Button(guiRoot, text='OK', command=okButtonFunction)
         okButton.grid(row=4, column=1, padx=5, pady=5, sticky='E')
@@ -156,9 +158,9 @@ class Login():
                 # self._config.load('USER')
                 guiRoot.destroy()
             except Exception as e:
-                print(str(e))
+                self.log.debug(str(e))
                 traceback.print_exc()
-                print('Password wrong, but we continue.')
+                self.log.warning('Password wrong, but we continue.')
 
         okButton = tkinter.Button(guiRoot, text="OK", command=okButtonFunction)
         okButton.grid(row=3, column=2, padx=5, pady=5, sticky='E')
