@@ -4,11 +4,14 @@ Provide GUI classes for yagni_cft Config objects.
 
 import tkinter
 
+from . import logging
 from .config import Config
 from .language import translate
 
 
 class EditConfigWindow(tkinter.Toplevel):
+    log = logging.getLogger(__name__ + '.EditConfigWindow')
+
     def __init__(self, config: Config, section: str, title='Settings for {0}'):
         '''
         Create GUI window to edit a config section.
@@ -36,7 +39,7 @@ class EditConfigWindow(tkinter.Toplevel):
         buttonFrame.grid(row=1, column=0, sticky='NSEW')
 
         def cancelButtonFunction(event=None):
-            print('Cancel')
+            self.log.debug('Cancel')
             config.restore()
             guiRoot.destroy()
         cancelButton = tkinter.Button(
@@ -49,11 +52,11 @@ class EditConfigWindow(tkinter.Toplevel):
 
         def okButtonFunction(event=None):
             if sectionFrame.is_valid:
-                print('OK, storing config')
+                self.log.debug('OK, storing config')
                 config.store(section)
                 guiRoot.destroy()
             else:
-                print('Cannot "OK", config not valid')
+                self.log.debug('Cannot "OK", config not valid')
         okButton = tkinter.Button(
             buttonFrame,
             text=translate(config.language, 'OK'),
@@ -71,12 +74,14 @@ class ConfigSectionWidget(tkinter.Frame):
     Consider using backup() on the config (not the frame) before starting this
     frame and providing a cancel button that uses restore() on the config.
     '''
+    log = logging.getLogger(__name__ + '.ConfigSectionWidget')
+
     def __init__(self, parent: tkinter.Widget,
                  config: Config,
                  section: str,
                  **kwargs):
 
-        print(f'ConfigSectionWidget: {section}')
+        self.log.debug(f'ConfigSectionWidget: {section}')
         super().__init__(parent, **kwargs)
 
         self._config = config
@@ -91,7 +96,7 @@ class ConfigSectionWidget(tkinter.Frame):
         self.columnconfigure(0, weight=1)
 
         for iOption, option in zip(range(len(option_list)), option_list):
-            print(f'{iOption}: {option}')
+            self.log.debug(f'{iOption}: {option}')
             # option_frame = self.get_option_frame(frame, section, option)
             option_frame = ConfigOptionWidget(
                 self, self._config, section, option)
@@ -158,12 +163,14 @@ class ConfigSectionWidget(tkinter.Frame):
 
 
 class ConfigOptionWidget(tkinter.Frame):
+    log = logging.getLogger(__name__ + '.ConfigOptionWidget')
+
     def __init__(self, parent,
                  config: Config,
                  section: str,
                  option: str,
                  **kwargs):
-        print(f'ConfigOptionWidget: {section}, {option}')
+        self.log.debug(f'ConfigOptionWidget: {section}, {option}')
 
         super().__init__(parent, **kwargs)
         # import functoolsself.rowconfigure(0, weight=1)
