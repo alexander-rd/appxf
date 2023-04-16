@@ -88,8 +88,8 @@ class OptionConfig():
             try:
                 config.getboolean('DEFAULT', 'test')
             except Exception:
-                self.log.warning('Getting boolean "{value}" not possible',
-                                 exc_info=True)
+                # this is validation only, failures are expected as normal
+                # behavior. This should also not log since it would spam.
                 return False
             return True
         else:
