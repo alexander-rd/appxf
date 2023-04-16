@@ -50,7 +50,8 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: build_linux
-        path: dist/SolawiDollingerTool
+        path: dist/*
+        retention-days: 2
       if: runner.os == 'Linux'
 
     # BUILD (windows)
@@ -61,5 +62,6 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: build_windows
-        path: dist/SolawiDollingerTool.exe
+        path: dist/*
+        retention-days: 2
       if: runner.os == 'Windows'

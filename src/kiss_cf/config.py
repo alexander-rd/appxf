@@ -324,6 +324,7 @@ class Config():
         '''
         self.config = self.config_backup
 
+    @staticmethod
     def apply_to_sections(section_func):
         @functools.wraps(section_func)
         def wrapper(self, section='', *args, **kwargs):

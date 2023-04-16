@@ -1,6 +1,9 @@
 import logging as builtin_logging
 import os
+import traceback
+import warnings
 from . import fileversions
+
 
 # Common usage will not like to include kiss_cf logging and python builtin
 # logging.
@@ -37,6 +40,8 @@ def activate_logging(app_scope: str | None = None,
         directory -- directory to store the log files (default: {'./data'})
         n_files -- number of log files to retain (default: {5})
     '''
+    # Ensure we also capture messages from warnings module:
+    _couple_to_warnings()
 
     file_formatter = logging.Formatter(
             '%(asctime)s.%(msecs)03d '
@@ -64,8 +69,10 @@ def activate_logging(app_scope: str | None = None,
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(file_formatter)
 
-    logging.basicConfig(handlers=[console_handler, file_handler],
+    logging.basicConfig(handlers=[console_handler],
                         level=logging.WARN)
+    # ensure file_handler is added to root even if logging is already set up:
+    logging.getLogger('root').addHandler(file_handler)
 
     kiss_logger = logging.getLogger('kiss_cf')
     kiss_logger.addHandler(console_handler)
@@ -102,3 +109,20 @@ def cleanup(directory: str, n_files: int = 5):
     files.sort(key=lambda x: os.path.getmtime(x))
     for file in files[:-5]:
         os.remove(file)
+
+
+def _couple_to_warnings():
+    ''' Couple logging to warnings
+
+    Thanks for: https://stackoverflow.com/questions/28208949/log-stack-trace-for-python-warning
+    '''
+    _formatwarning = warnings.formatwarning
+
+    def formatwarning_tb(*args, **kwargs):
+        s = _formatwarning(*args, **kwargs)
+        tb = traceback.format_stack()
+        s += ''.join(tb[:-1])
+        return s
+
+    warnings.formatwarning = formatwarning_tb
+    logging.captureWarnings(True)
