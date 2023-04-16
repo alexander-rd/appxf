@@ -158,8 +158,7 @@ class Login():
                 # self._config.load('USER')
                 guiRoot.destroy()
             except Exception as e:
-                self.log.debug(str(e))
-                traceback.print_exc()
+                self.log.debug('Password verification failed because of:', exc_info=True)
                 self.log.warning('Password wrong, but we continue.')
 
         okButton = tkinter.Button(guiRoot, text="OK", command=okButtonFunction)
