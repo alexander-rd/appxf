@@ -80,6 +80,21 @@ Note the logger __log__ in your main file is NOT in the scope of your
 application package and will only log WARNING level or above. It's scope will be  \_\_main\_\_.
 
 
+Logging GUI command errors (tkinter)
+------------------------------------
+
+If you are running a tkinter GUI, your command callbacks might throw exceptions which tkinter only prints to stderr by default. To change this behavior, you need to add this bit to your main application.
+
+```python
+# ... wherever you start your main GUI ...
+gui_root = tkinter.Tk()
+# This line replaces the default behavior with the function below
+gui_root.report_callback_exception = _handle_gui_exception
+
+def _handle_gui_exception(exception, value, traceback):
+    log.exception("GUI callback with exception:")
+```
+
 Logging to GUI (not yet implemented)
 ------------------------------------
 

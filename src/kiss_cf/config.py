@@ -55,6 +55,8 @@ class OptionConfig():
 
     Placeholder for more functionality like input validation.
     '''
+    log = logging.getLogger(__name__ + '.OptionConfig')
+
     def __init__(self, type='str'):
         self.type = type
         self.configurable = True
@@ -86,6 +88,8 @@ class OptionConfig():
             try:
                 config.getboolean('DEFAULT', 'test')
             except Exception:
+                self.log.warning('Getting boolean "{value}" not possible',
+                                 exc_info=True)
                 return False
             return True
         else:
