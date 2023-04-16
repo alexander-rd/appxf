@@ -5,7 +5,6 @@ Login.check().
 '''
 import tkinter
 import tkinter.ttk
-import traceback
 
 from . import logging
 from .config import Config
@@ -157,8 +156,9 @@ class Login():
                 self._security.unlock_user(pwdEntry.get())
                 # self._config.load('USER')
                 guiRoot.destroy()
-            except Exception as e:
-                self.log.debug('Password verification failed because of:', exc_info=True)
+            except Exception:
+                self.log.debug('Password verification failed because of:',
+                               exc_info=True)
                 self.log.warning('Password wrong, but we continue.')
 
         okButton = tkinter.Button(guiRoot, text="OK", command=okButtonFunction)

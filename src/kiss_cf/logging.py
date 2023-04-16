@@ -114,7 +114,8 @@ def cleanup(directory: str, n_files: int = 5):
 def _couple_to_warnings():
     ''' Couple logging to warnings
 
-    Thanks for: https://stackoverflow.com/questions/28208949/log-stack-trace-for-python-warning
+    Thanks for:
+    https://stackoverflow.com/questions/28208949/log-stack-trace-for-python-warning
     '''
     _formatwarning = warnings.formatwarning
 
