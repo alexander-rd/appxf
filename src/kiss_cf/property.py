@@ -18,6 +18,9 @@ import configparser
 # log = logging.getLogger(__name__)
 
 
+# TODO: backup() and restore() property values
+
+
 class KissProperty():
     ''' Base class for all properties
 
@@ -28,6 +31,7 @@ class KissProperty():
         self.mutable = True
         self.valid = False
         self._value = None
+        self._backup = None
         self._default = None
         self.set(**kwargs)
 
@@ -38,7 +42,8 @@ class KissProperty():
         mutablestr = ('mutable' if self.mutable
                       else 'not mutable')
         validstr = '(valid)' if self.valid else '(invalid)'
-        return f'{mutablestr} {self.__class__.__name__}: {self._value} {validstr}'
+        return (f'{mutablestr} {self.__class__.__name__}: '
+                f'{self._value} {validstr}')
 
     @property
     def value(self):
@@ -58,12 +63,17 @@ class KissProperty():
     def validate(value):
         return False
 
+    def backup(self):
+        self._backup = self._value
+
+    def restore(self):
+        self._value = self._backup
+
 
 class KissString(KissProperty):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._default = ''
-
 
     @staticmethod
     def validate(value):
@@ -77,7 +87,6 @@ class KissEmail(KissString):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._default = ''
-
 
     @staticmethod
     def validate(value):
@@ -98,7 +107,6 @@ class KissBool(KissProperty):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._default = False
-
 
     @staticmethod
     def validate(value):

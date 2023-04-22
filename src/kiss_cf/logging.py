@@ -25,6 +25,7 @@ console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.DEBUG)
 console_handler.setFormatter(console_formatter)
 
+
 def activate_logging(app_scope: str | None = None,
                      directory: str = './data',
                      n_files: int = 5):

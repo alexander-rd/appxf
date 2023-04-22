@@ -1,10 +1,7 @@
-import pytest
-
 from kiss_cf import property
 from kiss_cf import logging
 
 logging.console_handler.setFormatter(logging.file_formatter)
-
 
 string_values = [
     '', 'Üäö,.-#+^;:_*`?!', "'", '@~\\|<>',
@@ -19,7 +16,7 @@ bool_string_values = [
     'True', 'False', 'yes', 'No', '0', '1'
     ]
 
-integer_values = [0, 1, 5, 100, 2^32, -1, -42, -2^33]
+integer_values = [0, 1, 5, 100, 2 ^ 32, -1, -42, -2 ^ 33]
 integer_string_values = [
     '0', '1', '-1', '100',
     '12345678901234567890',
@@ -49,7 +46,7 @@ def test_property_after_init():
 
     prop = property.KissBool()
     assert str(prop) == 'mutable KissBool: None (invalid)'
-    assert prop.value == False
+    assert prop.value is False
 
 
 def verify_input_list(type, valid_list, default_value):
@@ -58,11 +55,19 @@ def verify_input_list(type, valid_list, default_value):
         prop.value = value
 
         if value in valid_list:
-            assert prop.valid == True, f'Expected valid for {value} ({value.__class__}), got: {prop}'
-            assert prop.value == value, f'Values don\'t match for {value} ({value.__class__}), got: {prop}'
+            assert prop.valid is True, (
+                f'Expected valid for {value} ({value.__class__})'
+                f', got: {prop}')
+            assert prop.value == value, (
+                f'Values don\'t match for {value} ({value.__class__})'
+                f', got: {prop}')
         else:
-            assert prop.valid == False, f'Expected invalid for {value} ({value.__class__}), got: {prop}'
-            assert prop.value == default_value, f'Expected default value for {value} ({value.__class__}), got: {prop}'
+            assert prop.valid is False, (
+                f'Expected invalid for {value} ({value.__class__})'
+                f', got: {prop}')
+            assert prop.value == default_value, (
+                f'Expected default value for {value} '
+                f'({value.__class__}), got: {prop}')
 
 
 def test_string_validate():
@@ -85,7 +90,6 @@ def test_bool_validate():
 
 # TODO: cannot overwrite with wrong value - also for KissProperty (to cover the
 # one validate line)
-
 
 if __name__ == '__main__':
     print('Hello!')
