@@ -8,6 +8,9 @@ from . import logging
 from .config import Config
 from .language import translate
 
+# TODO: better option on when to validate input:
+# https://www.plus2net.com/python/tkinter-validation.php
+
 
 class EditConfigWindow(tkinter.Toplevel):
     log = logging.getLogger(__name__ + '.EditConfigWindow')

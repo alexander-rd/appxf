@@ -10,6 +10,20 @@ from . import fileversions
 logging = builtin_logging
 getLogger = builtin_logging.getLogger
 
+file_formatter = logging.Formatter(
+        '%(asctime)s.%(msecs)03d '
+        '%(levelname)s %(name)s.%(funcName)s(%(lineno)s): '
+        '%(message)s',
+        '%H:%M:%S')
+console_formatter = logging.Formatter(
+        '%(asctime)s.%(msecs)03d '
+        '%(levelname)7s: '
+        '%(message)s',
+        '%H:%M:%S')
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.DEBUG)
+console_handler.setFormatter(console_formatter)
 
 def activate_logging(app_scope: str | None = None,
                      directory: str = './data',
@@ -42,21 +56,6 @@ def activate_logging(app_scope: str | None = None,
     '''
     # Ensure we also capture messages from warnings module:
     _couple_to_warnings()
-
-    file_formatter = logging.Formatter(
-            '%(asctime)s.%(msecs)03d '
-            '%(levelname)s %(name)s.%(funcName)s(%(lineno)s): '
-            '%(message)s',
-            '%H:%M:%S')
-    console_formatter = logging.Formatter(
-            '%(asctime)s.%(msecs)03d '
-            '%(levelname)7s: '
-            '%(message)s',
-            '%H:%M:%S')
-
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.DEBUG)
-    console_handler.setFormatter(console_formatter)
 
     if not os.path.exists(directory):
         os.mkdir(directory)
