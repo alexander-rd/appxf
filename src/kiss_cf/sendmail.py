@@ -69,32 +69,49 @@ class Email(MIMEMultipart):
 
 
 def send(email: list[Email] | Email,
-         config: dict):
+         config: dict,
+         debug_send_email: bool = True,
+         debug_substituttion_email: str = '',):
 
     if isinstance(email, MIMEMultipart):
         email = [email]
 
     with smtplib.SMTP(config['server'], config['port']) as server:
-        # identify ourselves to smtp gmail client
-        server.ehlo()
-        # secure our email with tls encryption
-        server.starttls()
-        # re-identify ourselves as an encrypted connection
-        server.ehlo()
-        server.login(config['user'], config['password'])
+
+        if debug_send_email:
+            # identify ourselves to smtp gmail client
+            server.ehlo()
+            # secure our email with tls encryption
+            server.starttls()
+            # re-identify ourselves as an encrypted connection
+            server.ehlo()
+            server.login(config['user'], config['password'])
 
         for this_msg in email:
             to = this_msg['To'].split(', ')
             cc = this_msg['CC'].split(', ')
             bcc = this_msg['BCC'].split(', ')
+
             log.debug(f'subject: {this_msg["Subject"]}, '
                       f'To: {" ".join(to)}, '
                       f'CC: {" ".join(cc)}, '
                       f'BCC: {" ".join(bcc)}')
-            target = set(to + cc + bcc)
-            server.sendmail(
-                this_msg['From'],
-                list(target),
-                this_msg.as_string())
 
-        server.quit()
+            if debug_substituttion_email:
+                target = [debug_substituttion_email]
+                log.debug(f'Using substitution Email: {target}')
+            else:
+                target = set(to + cc + bcc)
+                log.debug(f'Sending to: {target}')
+
+            if debug_send_email:
+                server.sendmail(
+                    this_msg['From'],
+                    list(target),
+                    this_msg.as_string())
+                log.debug('Emails sent')
+            else:
+                log.debug('NOT sending Emails (debug_send_email)')
+
+        if debug_send_email:
+            server.quit()
