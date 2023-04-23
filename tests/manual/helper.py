@@ -1,5 +1,15 @@
 import tkinter
 
+# TODO: find a way to accumulate coverage as part of the reporting
+
+# TODO: store test results somehow:
+# - invalidate when included library parts changed
+
+# TODO: provide a script to execute all manual tests that are open
+
+# TODO: find a way to star/stop the testing window together with a debug window
+# to show states.
+
 
 class ManualTestHelper(tkinter.Tk):
     def __init__(self, explanation: str):
@@ -19,6 +29,13 @@ class ManualTestHelper(tkinter.Tk):
             self, text="OK", command=self.button_ok)
         button_ok.pack()
 
+        # TODO: for toplevel, we might want to reopen it.
+
+        # TODO: also for frame tests, we might want to open on demand
+
+        # TODO: needed is a debug window to check some states before/after
+        # execution of the window
+
     def button_ok(self):
         self.destroy()
 
@@ -34,10 +51,6 @@ class ManualTestHelper(tkinter.Tk):
 
         # place test frame right to control window
         self.place_toplevel(test_window)
-
-        # DEBUG !!
-        self.update()
-        test_frame.adjust_left_columnwidth()
 
         self.mainloop()
 

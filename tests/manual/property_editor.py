@@ -1,6 +1,10 @@
-from manual_helper import ManualTestHelper
+from helper import ManualTestHelper
 from kiss_cf.property import KissBool, KissString, KissEmail
 from kiss_cf import property_gui
+from kiss_cf import logging
+
+logging.activate_logging()
+logging.console_handler.setFormatter(logging.file_formatter)
 
 tester = ManualTestHelper('''
 Resizing: should only affect the right entry part.
@@ -10,10 +14,17 @@ Columns: Placing options on top of this widget will test alignement of entry fie
 
 #  - Label length: the dict uses very short and very long names on purpose:
 prop_dict = {
-    'String': KissString(),
+    'String:': KissString(),
     'Email of the master of disaster:': KissEmail(),
-    'Boolean Value': KissBool(),
+    'Boolean Value:': KissBool(),
 }
 
-tester.run_frame(property_gui.PropertyDictWidget,
-                 prop_dict)
+for key in prop_dict.keys():
+    print(f'{key}: {prop_dict[key]}')
+
+tester.run_toplevel(property_gui.EditPropertyDictWindow,
+                    prop_dict,
+                    'Edit Window Title')
+
+for key in prop_dict.keys():
+    print(f'{key}: {prop_dict[key]}')

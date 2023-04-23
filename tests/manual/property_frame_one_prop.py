@@ -1,4 +1,4 @@
-from manual_helper import ManualTestHelper
+from tests.manual.helper import ManualTestHelper
 from kiss_cf.property import KissBool
 from kiss_cf import property_gui
 
