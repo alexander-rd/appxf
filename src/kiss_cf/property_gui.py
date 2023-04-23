@@ -3,14 +3,23 @@ Provide GUI classes for KissProperty objects.
 '''
 
 import tkinter
+import math
 
 from . import logging
 from .language import translate
-from .property import KissProperty
+from .property import KissProperty, KissBool
 
 
 # TODO: better option on when to validate input:
 # https://www.plus2net.com/python/tkinter-validation.php
+
+# TODO: Class naming is a mess
+
+# TODO: GUI options handling does not seem to be very straight
+
+# TODO: Documentation of options
+
+# TODO: the above suggests: larger review and rework
 
 
 class PropertyWidget(tkinter.Frame):
@@ -20,6 +29,7 @@ class PropertyWidget(tkinter.Frame):
     def __init__(self, parent,
                  property: KissProperty,
                  label: str,
+                 kiss_options: dict = dict(),
                  **kwargs):
         super().__init__(parent, **kwargs)
 
@@ -30,7 +40,7 @@ class PropertyWidget(tkinter.Frame):
 
         self.label = tkinter.Label(self, justify='right')
         self.label.config(text=label)
-        self.label.grid(row=0, column=0, padx=5, pady=5, sticky='E')
+        self.label.grid(row=0, column=0, padx=5, pady=5, sticky='NE')
 
         value = str(self.property.value)
         self.sv = tkinter.StringVar(self, value)
@@ -39,7 +49,7 @@ class PropertyWidget(tkinter.Frame):
 
         # TODO: have width from some input
         self.entry = tkinter.Entry(self, textvariable=self.sv, width=15)
-        self.entry.grid(row=0, column=1, padx=5, pady=5, sticky='EW')
+        self.entry.grid(row=0, column=1, padx=5, pady=5, sticky='NEW')
 
     @property
     def valid(self):
@@ -58,6 +68,48 @@ class PropertyWidget(tkinter.Frame):
             self.entry.config(foreground='red')
 
 
+class BoolCheckBoxWidget(tkinter.Frame):
+    '''CheckBox frame for a single boolean.'''
+    log = logging.getLogger(__name__ + '.BoolCheckBoxWidget')
+
+    def __init__(self, parent,
+                 property: KissProperty,
+                 label: str,
+                 kiss_options: dict = dict(),
+                 **kwargs):
+        super().__init__(parent, **kwargs)
+
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
+
+        self.property = property
+
+        self.label = tkinter.Label(self, justify='right')
+        self.label.config(text=label)
+        self.label.grid(row=0, column=0, padx=5, pady=5, sticky='NE')
+
+        self.iv = tkinter.IntVar(self, value=self.property.value)
+
+        # TODO: have width from some input
+        self.checkbox = tkinter.Checkbutton(self, text='', variable=self.iv)
+        self.checkbox.grid(row=0, column=1, padx=5, pady=5, sticky='NW')
+
+        self.iv.trace_add(
+            'write', lambda var, index, mode: self.value_update())
+
+    @property
+    def valid(self):
+        # Checkbox value will always be valid
+        return True
+
+    def focus_set(self):
+        # there is nothing we can focus on
+        pass
+
+    def value_update(self):
+        self.property.value = self.iv.get()
+
+
 class PropertyDictWidget(tkinter.Frame):
     '''Frame holding PropertyWidgets for a dictionary of KissProperty.
 
@@ -69,27 +121,41 @@ class PropertyDictWidget(tkinter.Frame):
 
     def __init__(self, parent: tkinter.BaseWidget,
                  property_dict: dict[str, KissProperty],
+                 kiss_options: dict = dict(),
                  **kwargs):
 
         super().__init__(parent, **kwargs)
 
-        self.property_dict = property_dict
-        self._property_frames = list()
+        # strip proerties from the dict that are not mutable:
+        self.property_dict = {key: property_dict[key]
+                              for key in property_dict.keys()
+                              if property_dict[key].mutable}
 
         self.columnconfigure(0, weight=1)
         # rowconfigure in the loop below
 
+        element_gui_options = kiss_options.get('properties', dict())
+        self.frame_list = list()
         for key in self.property_dict.keys():
-            if not property_dict[key].mutable:
-                continue
+            self._place_property_frame(
+                property_dict[key], key,
+                element_gui_options.get(key, dict()))
 
-            prop = property_dict[key]
-            self.rowconfigure(len(self._property_frames), weight=1)
+    def _place_property_frame(self, prop: KissProperty, label, gui_options):
+        self.rowconfigure(len(self.frame_list), weight=1)
 
-            property_frame = PropertyWidget(self, prop, key)
-            property_frame.grid(
-                row=len(self._property_frames), column=0, sticky='NWSE')
-            self._property_frames.append(property_frame)
+        if 'frame_type' in gui_options:
+            property_frame = gui_options['frame_type'](
+                self, prop, label, gui_options)
+        elif isinstance(prop, KissBool):
+            property_frame = BoolCheckBoxWidget(
+                self, prop, label, gui_options)
+        else:
+            property_frame = PropertyWidget(
+                self, prop, label, gui_options)
+        property_frame.grid(
+            row=len(self.frame_list), column=0, sticky='NWSE')
+        self.frame_list.append(property_frame)
 
     def get_left_col_min_width(self) -> int:
         '''Get minimum width of left column.
@@ -143,14 +209,68 @@ class PropertyDictWidget(tkinter.Frame):
         self.set_left_column_min_width(min_size)
 
     def focus_curser_on_first_entry(self):
-        if self._property_frames:
-            self._property_frames[0].focus_set()
+        if self.frame_list:
+            self.frame_list[0].focus_set()
 
     @property
     def valid(self):
         valid = True
-        for property_frame in self._property_frames:
+        for property_frame in self.frame_list:
             valid &= property_frame.valid
+        return valid
+
+
+class PropertyDictColumnFrame(tkinter.Frame):
+    def __init__(self, parent: tkinter.BaseWidget,
+                 property_dict: dict[str, KissProperty],
+                 columns: int,
+                 kiss_options: dict = dict(),
+                 **kwargs):
+        # kwargs is NOT passed down to THIS frame. It will be passed down to
+        # the column frames. This is hopefully more likely what a user might
+        # want.
+        super().__init__(parent)
+
+        key_list = property_dict.keys()
+        direction = kiss_options.get('column_direction', 'down')
+        if direction == 'down':
+            items_per_col = math.ceil(len(key_list)/columns)
+            key_to_sub_dict = [int(i/items_per_col)
+                               for i in range(len(key_list))]
+        elif direction == 'right':
+            key_to_sub_dict = [i % columns
+                               for i in range(len(key_list))]
+        else:
+            raise ValueError(
+                f'"column_direction" only supports "down" or '
+                f'"right", you provided "{direction}"')
+
+        # fill property dictionaries
+        prop_dict_list = [dict() for i in range(columns)]
+        for i, key in enumerate(key_list):
+            prop_dict_list[key_to_sub_dict[i]][key] = property_dict[key]
+
+        # build up frames
+        self.frame_list: list[PropertyDictWidget] = []
+        for prop_dict in prop_dict_list:
+            self.columnconfigure(len(self.frame_list), weight=1)
+            this_frame = PropertyDictWidget(
+                self, prop_dict, kiss_options, **kwargs)
+            this_frame.grid(
+                row=0, column=len(self.frame_list), sticky='NWSE')
+            self.frame_list.append(this_frame)
+
+    def adjust_left_columnwidth(self):
+        for frame in self.frame_list:
+            frame.adjust_left_columnwidth()
+
+    def focus_set(self):
+        self.frame_list[0].focus_set()
+
+    def valid(self):
+        valid = True
+        for frame in self.frame_list:
+            valid &= frame.valid()
         return valid
 
 
@@ -159,7 +279,8 @@ class EditPropertyDictWindow(tkinter.Toplevel):
 
     def __init__(self, parent,
                  property_dict: dict[str, KissProperty],
-                 title: str):
+                 title: str,
+                 kiss_options: dict = dict()):
         '''
         Create GUI window to edit a dictionary of properties.
         '''
@@ -171,7 +292,13 @@ class EditPropertyDictWindow(tkinter.Toplevel):
         self.rowconfigure(1, weight=1)
         self.columnconfigure(0, weight=1)
 
-        property_frame = PropertyDictWidget(self, property_dict)
+        columns = kiss_options.get('columns', 1)
+        if columns <= 1:
+            property_frame = PropertyDictWidget(
+                self, property_dict, kiss_options)
+        else:
+            property_frame = PropertyDictColumnFrame(
+                self, property_dict, columns, kiss_options)
         property_frame.grid(row=0, column=0, padx=0, pady=0, sticky='NSWE')
         self.update()
         property_frame.adjust_left_columnwidth()
