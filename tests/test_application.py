@@ -1,14 +1,15 @@
-from tests import fake_tkinter
-fake_tkinter.activate()
-
 import pytest
 import tkinter
+
+from tests import fake_tkinter
+fake_tkinter.activate()
 
 # Used to test logging:
 # from kiss_cf import logging as kiss_logging
 # kiss_logging.activate_logging()
 
-from kiss_cf.application import KissApplication
+from kiss_cf.application import KissApplication # noqa E402
+
 
 class DummyFrame(tkinter.Frame):
     def __init__(self, parent, argOne, argTwo, *args, **kwargs):
@@ -30,11 +31,13 @@ def test_register_frame_wrong_type():
         af.register_frame('name', str)
     print(e_info)
 
+
 def test_show_frame_not_existing():
     af = KissApplication()
     with pytest.raises(KeyError) as e_info:
         af.show_frame('dummy')
     print(e_info)
+
 
 def test_register_frame():
     af = KissApplication()
@@ -55,6 +58,3 @@ def test_register_frame():
     with pytest.raises(ValueError) as e_info:
         af.register_frame('dummy', DummyFrame)
     print(e_info)
-
-
-

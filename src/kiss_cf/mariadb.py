@@ -5,6 +5,7 @@ from . import logging
 
 log = logging.getLogger(__name__)
 
+
 # TODO: RecordClass (typed named tuple) should be better suited for DbConfig.
 class DbConfig(TypedDict):
     ''' target types for config fields

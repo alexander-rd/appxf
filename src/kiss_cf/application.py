@@ -29,8 +29,6 @@
 # take a contructed Frame, only the required class.
 
 import tkinter
-
-from typing import NamedTuple
 from recordclass import RecordClass
 
 
@@ -39,6 +37,7 @@ class FrameInfo(RecordClass):
     args: tuple
     kwargs: dict
     frame: None | tkinter.Frame
+
 
 class KissApplication(tkinter.Tk):
     ''' Main Application Window
@@ -80,6 +79,21 @@ class KissApplication(tkinter.Tk):
         # ensure the dummy frame is existent
         self.show_frame('')
 
+        # bring menu to life:
+        self.menu = tkinter.Menu(self)
+        self.frame_menu = tkinter.Menu(self.menu, tearoff=0)
+        self.menu.add_cascade(label='View', menu=self.frame_menu)
+        # TODO: We can have (1) no menu at all, (2) a cascaded menu which needs
+        # a name for the cascade or (3) the frame names directly within the top
+        # bar.
+        #
+        # For now, we use only (3).
+        #
+        # When switching to allow (1) and (2), it must be clear how to extend
+        # the menu. In case of (2): the user will likely extend the menu and
+        # not the cascade. In case of (3): the menu actually IS the frame_menu.
+        self.config(menu=self.menu)
+        self.config(menu=self.frame_menu)
 
     def register_frame(self,
                        name: str,
@@ -102,6 +116,9 @@ class KissApplication(tkinter.Tk):
                              f'{self._frames[name].cls}')
 
         self._frames[name] = FrameInfo(cls, args, kwargs, None)
+        # self._update_menu()
+        self.frame_menu.add_command(
+                label=name, command=lambda: self.show_frame(name))
 
     def show_frame(self, name):
         ''' Show registered frame by name
@@ -128,8 +145,8 @@ class KissApplication(tkinter.Tk):
         frame_info = self._get_frame_info(name)
         # construct:
         frame = frame_info.cls(self,
-                               *frame_info.args,
-                               **frame_info.kwargs)
+                               *(frame_info.args),
+                               **(frame_info.kwargs))
         frame.grid(row=0, column=0, sticky='NSWE')
         # store:
         frame_info.frame = frame

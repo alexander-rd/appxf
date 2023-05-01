@@ -33,5 +33,9 @@ legacy_tox_ini = """
       -r{toxinidir}/requirements.txt
       -r{toxinidir}/requirements_test.txt
 
-    commands = pytest --cov=kiss_cf --cov-report html --cov-report term
+    commands = coverage run --branch --source=kiss_cf -m pytest
+               coverage report
+               coverage html
 """
+# commands = pytest --cov=kiss_cf --cov-report html --cov-report term
+# commands = coverage run -m pytest
