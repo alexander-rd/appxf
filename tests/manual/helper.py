@@ -1,6 +1,10 @@
 import tkinter
 
 # TODO: find a way to accumulate coverage as part of the reporting
+# I will need:
+# coverage run --source=kiss_cf --data-file=.coerage.<test-module>
+# running:
+# coverage run --branch --append tests/manual/property_editor.py
 
 # TODO: store test results somehow:
 # - invalidate when included library parts changed
