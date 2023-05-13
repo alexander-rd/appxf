@@ -86,7 +86,7 @@ class Connection():
             config -- Dictionary of configuration values (host, port, database,
                     user, password, ssl)
             querry -- SQL querry
-            id     -- column to be used as pandas row index while column will
+            index  -- column to be used as pandas row index while column will
                     be removed. Empty string will do nothing. (default: '')
 
         Returns:
@@ -113,9 +113,9 @@ class Connection():
         data = DataFrame(result, columns=col_names)
 
         log.debug(f'got {len(data)} rows with columns {col_names}' +
-                  f', column "{id}" will be used as index' if id else '')
+                  f', column "{index}" will be used as index' if index else '')
 
-        if id:
+        if index:
             data.index = data[index]
             data.drop(columns=[index], inplace=True)
 
