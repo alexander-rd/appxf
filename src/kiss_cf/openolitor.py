@@ -219,3 +219,30 @@ class Database():
                 ;''', index='id')
             return data
         return _get_zusatzabo()
+
+    def get_arbeitseinsaetze(self) -> DataFrame:
+        ''' Get Mitarbeit data
+
+        ???
+
+        Returns:
+            pandas DataFrame with ???.
+        '''
+        @buffered(self.buffer)
+        def _get_arbeitseinsaetze():
+            data = self.connection.querry('''-- --sql
+            SELECT
+                ae.id as id,
+                ae.arbeitsangebot_id as arbeitsangebot_id,
+                ae.arbeitsangebot_titel as arbeitsangebot_titel,
+                ae.arbeitsangebot_status as arbeitsangebot_status,
+                ae.kunde_id as kunde_id,
+                ae.zeit_von as zeit_von,
+                ae.zeit_bis as zeit_bis,
+                IFNULL(ae.einsatz_zeit, 0) as einsatz_zeit,
+                IFNULL(ae.anzahl_personen, 0) as anzahl_personen
+            FROM
+                Arbeitseinsatz ae
+            ;''', index='id')
+            return data
+        return _get_arbeitseinsaetze()
