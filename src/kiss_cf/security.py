@@ -9,6 +9,8 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 # synchronous encryption:
 from cryptography.fernet import Fernet
 
+from .storage import Storage
+
 
 class Security():
     '''Maintaining consistent encryption.
@@ -80,6 +82,9 @@ class Security():
         self._user_secret_key = self.__decrypt_from_file(
             derived_key, self._user_key_file)
 
+    def get_storage(self) -> Storage:
+        return SecureStorage(security=self)
+
     def encrypt_to_file(self, data, file):
         if not self.is_user_unlocked():
             raise Exception(
@@ -147,3 +152,24 @@ class Security():
         https://cryptography.io/en/latest/fernet/.
         '''
         return Fernet.generate_key()
+
+
+class SecureStorage(Storage):
+    def __init__(self,
+                 security: Security):
+        self.security = security
+
+    def load(self) -> bytes:
+        if self.file is None:
+            Exception('set_file() for Storage base class was never called.')
+        if not os.path.isfile(self.file):
+            Exception(f'File {self.file} does not exist. Check usage of storage -> load() before store().')
+
+        # TODO: the above is pretty much generic. But I think load() should behave gracefully.
+        return self.security.decrypt_from_file(self.file)
+
+    def store(self, data: bytes):
+        if self.file is None:
+            Exception('set_file() for Storage base class was never called.')
+
+        self.security.encrypt_to_file(data, self.file)

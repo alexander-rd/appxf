@@ -1,9 +1,16 @@
 from copy import deepcopy
 import functools
-import logging
+import os.path
+import typing
+import pickle
+
+from . import logging
+from .storage import Storable, Storage, StorageDummy
+
+log = logging.getLogger(__name__)
 
 
-class Buffer():
+class Buffer(Storable):
     '''Helper to organize data buffering.
 
     What plus input: When you store or retrieve data, you pass "what (type of)
@@ -17,18 +24,38 @@ class Buffer():
     buffered data.
     '''
 
-    # TODO: clarify storage:
-    #
-    # Name: The buffer is intended to be used for a domain of data. The domain
-    # name assigned at initialization is used to persist the data buffer to
-    # re-use it's content on the next application execution.
+    log = logging.getLogger(f'{__name__}.Buffer')
 
-    def __init__(self):
+    def __init__(self,
+                 storage_handler: Storage | None = None,
+                 file: str = '',
+                 dir: str = 'data/buffer'
+                 ):
+        if file and storage_handler is not None:
+            # expected input: we have a file name and a storage handler
+            pass
+        elif not file and storage_handler is None:
+            # expected input: we have no file name and no storage handler
+            storage_handler = StorageDummy()
+        else:
+            # either we have a file but no storage handler or
+            # we have a storage handler but no file
+            ValueError(
+                'Buffer initialized with inconsistent file/storage_handler '
+                'combination. You need to provide either none of both or '
+                'both.')
+
+        super().__init__(storage_handler, file=os.path.join(dir, file))
         self.buffer = dict()
-        self.log = logging.getLogger(f'{__name__}.Buffer')
+        self.initially_loaded = False
+
+    def ensure_loaded(self):
+        if not self.initially_loaded:
+            self.load()
 
     def isbuffered(self, what: str, input: str):
         '''Check if what/input is buffered'''
+        self.ensure_loaded()
         if what in self.buffer.keys():
             if input in self.buffer[what].keys():
                 return True
@@ -36,28 +63,38 @@ class Buffer():
 
     def get(self, what, input=''):
         '''Get data from buffer for what(input).'''
+        self.ensure_loaded()
         if not self.isbuffered(what, input):
             return None
         self.log.debug(f'Retrieved buffer {what}({input})')
         return deepcopy(self.buffer[what][input])
 
     def set(self, data, what, input=''):
-        '''Set data to buffer for what(input). This will overwrite existing
-        data.
+        '''Set data to buffer for what(input).
+
+        This will overwrite existing data.
         '''
+        self.ensure_loaded()
         if what not in self.buffer.keys():
             self.buffer[what] = dict()
         self.buffer[what][input] = deepcopy(data)
+        self.store()
         self.log.info(f'Buffered {what}({input})')
 
     def clear(self, what=''):
+        self.ensure_loaded()
         if what in self.buffer:
             self.buffer[what] = dict()
         elif what:
             self.buffer = dict()
+        self.store()
 
-    def persist(self):
-        raise Exception("Not yet implemented!")
+    def _get_bytestream(self) -> bytes:
+        return pickle.dumps(self.buffer)
+
+    def _set_bytestream(self, data: bytes):
+        if data:
+            self.buffer = pickle.loads(data)
 
 
 def get_positional_arguments(func, *args, **kwargs):
@@ -93,7 +130,7 @@ def get_positional_arguments(func, *args, **kwargs):
     )
 
 
-def buffered(buffer: Buffer):
+def buffered(buffer: Buffer | typing.Callable[... , Buffer]):
     '''Get decorator for buffering into user defined buffer.
 
     This function, taking the buffer as variable, returns the decorator.
@@ -110,10 +147,23 @@ def buffered(buffer: Buffer):
             arglist = get_positional_arguments(func, *args, **kwargs)
             argstring = ','.join([str(arg) for arg in arglist])
 
-            val = buffer.get(func.__name__, argstring)
+            try:
+                if isinstance(buffer, Buffer):
+                    this_buffer = buffer
+                elif callable(buffer):
+                    this_buffer = buffer(*args, **kwargs)
+            except Exception as e:
+                log.exception(
+                    'Buffer decorator must have either a buffer or a '
+                    'function as input. The function must have the '
+                    'same parameters like the decorated function and '
+                    'it must return a buffer')
+                raise e
+
+            val = this_buffer.get(func.__name__, argstring)
             if val is None:
                 val = func(*args, **kwargs)
-                buffer.set(val, func.__name__, argstring)
+                this_buffer.set(val, func.__name__, argstring)
 
             return val
         return wrapper
