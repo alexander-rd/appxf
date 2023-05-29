@@ -52,6 +52,7 @@ class Buffer(Storable):
     def ensure_loaded(self):
         if not self.initially_loaded:
             self.load()
+            self.initially_loaded = True
 
     def isbuffered(self, what: str, input: str):
         '''Check if what/input is buffered'''
