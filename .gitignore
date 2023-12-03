@@ -5,6 +5,7 @@ __pycache__/
 pytest-env
 data
 .tox
+prof
 .coverage
 .testing
 .venv

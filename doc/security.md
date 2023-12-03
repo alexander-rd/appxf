@@ -12,24 +12,24 @@ Usage can be as simple as the following. Note that login and registration both
 requiere a kiss_cf configuration object (see TBD):
 
 ```python
-from kiss_cf import config,login, registration
+from kiss_cf import config, login, registration
 
-# You should always use your own salt for your tool but never change it, unless 
+# You should always use your own salt for your tool but never change it, unless
 # you want user passwords to become invalid.
 security = Security(salt = 'PickYourOwnSaltForYourApplication!')
 
 login = Login(security)
 login.check()
-# Note: If login procedure fails (password not correct), code will end here 
+# Note: If login procedure fails (password not correct), code will end here
 # with an exception.
 
 # Login is required before registration, but registration is optional.
 registration = Registration(security)
 registration.check()
-# Note: Like with login, code will end with an Exception if registration check 
+# Note: Like with login, code will end with an Exception if registration check
 # failed.
 
-# After this step, securily stored data can be loaded (like Config section 
+# After this step, securily stored data can be loaded (like Config section
 # (see link TBD))
 ```
 
@@ -40,30 +40,26 @@ Without a gui, this could be like
 ```python
 from kiss_cf.security import Security
 
-# You need to get the password input from somewhere, kiss_cf does not support a 
+# You need to get the password input from somewhere, kiss_cf does not support a
 # command line helper.
 pwd = ''
 
-# You need to create a security context. You should define __your salt string__ 
-# for __your application__. You __can__ change the storage for the security 
+# You need to create a security context. You should define __your salt string__
+# for __your application__. You __can__ change the storage for the security
 # module.
 security = Security(salt = 'PickYourOwnSaltForYourApplication!', storage = './data/security')
 
-# If not yet initialized, you take the initial password to setup the security 
+# If not yet initialized, you take the initial password to setup the security
 # context. There won't be any data stored, so no further check needed.
 if security.is_user_initialized():
     security.unlock_user(pwd)
     # The above will throw an exception if the password is not correct.
 else:
     security.init_user(pwd)
-    # There is no need to provide the password anymore. The user will be 
+    # There is no need to provide the password anymore. The user will be
     # unlocked.
 ```
 
 Dropping images:
 
 ![login](securityLogin.png)
-
-![init](securityInitLogin.png)
-
-![login advanced](securityLoginAdvanced.png)
