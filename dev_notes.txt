@@ -5,6 +5,9 @@ pip install -e .
 tox
 # run tests via pytest
 pytest -rA
+# profiling
+pip install pytest-profiling
+pytest -rA --profile
 
 # Flake8 manual
 flake8 --count src

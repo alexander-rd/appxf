@@ -97,7 +97,7 @@ class Database():
 
             if type == 'post':
                 table = 'PostlieferungAbo'
-                post_column = 'True as is_port'
+                post_column = 'True as is_post'
             elif type == 'heim':
                 table = 'HeimlieferungAbo'
                 heim_column = 'True as is_heim'
@@ -240,7 +240,8 @@ class Database():
                 ae.zeit_von as zeit_von,
                 ae.zeit_bis as zeit_bis,
                 IFNULL(ae.einsatz_zeit, 0) as einsatz_zeit,
-                IFNULL(ae.anzahl_personen, 0) as anzahl_personen
+                IFNULL(ae.anzahl_personen, 0) as anzahl_personen,
+                ae.bemerkungen as bemerkungen
             FROM
                 Arbeitseinsatz ae
             ;''', index='id')

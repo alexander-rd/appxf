@@ -52,6 +52,19 @@ modules place files:
  * config: ./data/config
 Where "./" is the location of the binary.
 
+GUI
+---
+
+The decision to be made: tkinter or QT. Since the KISS framework does not aim
+for professionals, a quick learning curve is essential such that tkinter was
+chosen as the basis (see also:
+[pythonguis.com](https://www.pythonguis.com/faq/pyqt-vs-tkinter/)). [Tkinter
+Designer](https://github.com/ParthJadhav/Tkinter-Designer) and
+[Figma](https://www.figma.com/de/) or [VisualTK](https://visualtk.com/) might
+help with GUI design. [PySimpleGUI](https://www.pysimplegui.org/en/latest/)
+crossed me late for unknown reasons. I will reconsider for this even simpler
+approach.
+
 Language
 --------
 

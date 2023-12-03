@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 import os.path
 
-class Storage(ABC):
+class StorageMethod(ABC):
     ''' Abstract class to model a storage.
 
     The Storage class is responsible for storing data to a file system and
@@ -12,7 +12,7 @@ class Storage(ABC):
 
     The Storable class will know a Storage upon construction and sets the
     Storage's file name. It will then rely on the load() and store()
-    implementation by digesting/providing a a byte stream.
+    implementation by consuming/providing a byte stream.
     '''
     def __init__(self):
         self.file = None
@@ -38,11 +38,11 @@ class Storable(ABC):
 
     This class provides a load()/store() functionality for the child object.
     Those functions rely on the child class provided _get_bytestream() and
-    _set_bytestream() functions that provide/digest the class state as
+    _set_bytestream() functions that provide/consume the class state as
     bytestream. A typical approach is to use pickle's dumps/loads.
     '''
 
-    def __init__(self, storage: Storage | None, file: str):
+    def __init__(self, storage: StorageMethod | None, file: str):
         if storage is None:
             storage = StorageDummy()
         self.storage = storage
@@ -66,7 +66,7 @@ class Storable(ABC):
         self.storage.store(self._get_bytestream())
 
 
-class StorageDummy(Storage):
+class StorageDummy(StorageMethod):
     ''' Storage dummy as default behavior.
 
     To allow Storage implementations to always assume having a Storage, this
