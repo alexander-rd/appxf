@@ -9,7 +9,7 @@ import tkinter.ttk
 from . import logging
 from .config import Config
 from .config_gui import ConfigSectionWidget
-from .security import Security
+from .security.local import Security
 
 
 class UserAbortError(Exception):

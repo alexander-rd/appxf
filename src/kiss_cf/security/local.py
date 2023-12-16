@@ -14,7 +14,7 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
-from .storage import StorageMethod
+from ..storage.storage import StorageMethod
 
 
 class Security():
@@ -32,8 +32,8 @@ class Security():
         '''
         self._salt = salt
         self._user_key_file = os.path.join(storage, 'user.key')
-        self._public_key_file =  os.path.join(storage, 'user.public.key')
-        self._private_key_file =  os.path.join(storage, 'user.private.key')
+        self._public_key_file = os.path.join(storage, 'user.public.key')
+        self._private_key_file = os.path.join(storage, 'user.private.key')
 
         self._user_secret_key = ''
 
@@ -91,7 +91,7 @@ class Security():
 
     def get_storage_method(self) -> StorageMethod:
         '''Get StorageMethod object to use with Storable'''
-        return SecureStorage(security=self)
+        return SecureLocalStorageMethod(security=self)
 
     def encrypt_to_file(self, data, file):
         if not self.is_user_unlocked():
@@ -147,9 +147,8 @@ class Security():
         return self.decrypt_from_file(self._public_key_file)
 
     def __rsa_keys_exist(self):
-        if (os.path.exists(self._public_key_file) and
-            os.path.exists(self._private_key_file)
-            ):
+        if os.path.exists(self._public_key_file) and \
+           os.path.exists(self._private_key_file):
             return True
         else:
             return False
@@ -232,18 +231,27 @@ class Security():
         return Fernet.generate_key()
 
 
-class SecureStorage(StorageMethod):
+class SecureLocalStorageMethod(StorageMethod):
+    '''Storage method for local file storage.
+
+    This storage method is based on a symmetric key, generated at user
+    initialization time. User unlocks this key with his password.
+    '''
+
     def __init__(self,
                  security: Security):
         self.security = security
 
     def load(self) -> bytes:
-        if self.file is None:
+        if not self.file:
             Exception('set_file() for Storage base class was never called.')
         if not os.path.isfile(self.file):
-            Exception(f'File {self.file} does not exist. Check usage of storage -> load() before store().')
+            Exception(
+                f'File {self.file} does not exist. '
+                f'Check usage of storage -> load() before store().')
 
-        # TODO: the above is pretty much generic. But I think load() should behave gracefully.
+        # TODO: the above is pretty much generic. But I think load() should
+        # behave gracefully.
         return self.security.decrypt_from_file(self.file)
 
     def store(self, data: bytes):

@@ -16,7 +16,7 @@ import re
 import functools
 
 from . import logging
-from .security import Security
+from .security.local import Security
 
 # TODO: Why do I use configparser at all??
 #  + It's nice to load INI files (and store back to them)
