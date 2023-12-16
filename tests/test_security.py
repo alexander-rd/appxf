@@ -2,13 +2,13 @@ import os
 import pytest
 import shutil
 
-from kiss_cf import security
+from kiss_cf.security import local
 
 class Environment():
     def __init__(self):
         self.dir = './testing'
         self.password = 'password'
-        self.sec = security.Security(
+        self.sec = local.Security(
             salt='test',
             storage=self.dir)
 
@@ -26,7 +26,7 @@ def empty_test_location():
 def initialized_test_location(empty_test_location):
     env = empty_test_location
     env.sec.init_user(env.password)
-    env.sec = security.Security(salt='test', storage=env.dir)
+    env.sec = local.Security(salt='test', storage=env.dir)
     yield env
     # no cleanup: cleanup from empty_test_location
 

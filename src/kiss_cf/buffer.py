@@ -5,7 +5,7 @@ import typing
 import pickle
 
 from . import logging
-from .storage import Storable, StorageMethod, StorageDummy
+from .storage.storage import Storable, StorageMethod, StorageMethodDummy
 
 log = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ class Buffer(Storable):
             pass
         elif not file and storage_handler is None:
             # expected input: we have no file name and no storage handler
-            storage_handler = StorageDummy()
+            storage_handler = StorageMethodDummy()
         else:
             # either we have a file but no storage handler or
             # we have a storage handler but no file
@@ -131,7 +131,7 @@ def get_positional_arguments(func, *args, **kwargs):
     )
 
 
-def buffered(buffer: Buffer | typing.Callable[... , Buffer]):
+def buffered(buffer: Buffer | typing.Callable[..., Buffer]):
     '''Get decorator for buffering into user defined buffer.
 
     This function, taking the buffer as variable, returns the decorator.

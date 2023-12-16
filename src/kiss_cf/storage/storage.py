@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 import os.path
 
+
 class StorageMethod(ABC):
     ''' Abstract class to model a storage.
 
@@ -15,7 +16,7 @@ class StorageMethod(ABC):
     implementation by consuming/providing a byte stream.
     '''
     def __init__(self):
-        self.file = None
+        self.file = ''
 
     @abstractmethod
     def load(self) -> bytes:
@@ -44,7 +45,7 @@ class Storable(ABC):
 
     def __init__(self, storage: StorageMethod | None, file: str):
         if storage is None:
-            storage = StorageDummy()
+            storage = StorageMethodDummy()
         self.storage = storage
         self.file = file
         self.storage.set_file(file)
@@ -66,7 +67,7 @@ class Storable(ABC):
         self.storage.store(self._get_bytestream())
 
 
-class StorageDummy(StorageMethod):
+class StorageMethodDummy(StorageMethod):
     ''' Storage dummy as default behavior.
 
     To allow Storage implementations to always assume having a Storage, this
