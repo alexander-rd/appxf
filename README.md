@@ -1,6 +1,6 @@
 # KISS Cross-Functionals (kiss_cf)
 
-![Test](https://github.com/alexander-rd/OpenOlitorToolbox/actions/workflows/test.yml/badge.svg)
+![Test](https://github.com/alexander-rd/kiss_cf/actions/workflows/test-self.yml/badge.svg)
 
 This toolbox covers cross functional concerns like configuration, persisting
 data, logging or security to limit the effort writing simple applications.
