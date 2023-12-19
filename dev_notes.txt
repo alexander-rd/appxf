@@ -1,5 +1,8 @@
 # Install package after checkout (execute from where setup.py is located)
 pip install -e .
+# install package in .venv (to ensure Phylance in visual code finds the sources):
+source .venv/bin/activate
+.. then pip install <whatever>
 
 # run tests via tox:
 tox

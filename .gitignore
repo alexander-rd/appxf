@@ -4,8 +4,10 @@ __pycache__/
 *$py.class
 pytest-env
 data
-.tox
 prof
 .coverage
+.env
 .testing
+.tox
 .venv
+.vscode
