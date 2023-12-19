@@ -1,3 +1,19 @@
+# This code ended up in being obsolete. Main reasons:
+#  * core focus was an FTP client since you get FTP storage almost everyhwere.
+#  * pycurl/libcurl is powerfull in enabling other protocols like SFTP but
+#    there are still differences in like files information is retrieved.
+#    Furhter example is how directories are scanned for file details. FTP has
+#    MLSD, SFTP does not.
+#  * getting it running for windows became an effort. While I might have
+#    succeeded at one point, it results in the main two core reasons:
+#    * at least MEDIUM risk to include problems due to incompatibilities of
+#      C libraries (like dependency to SSL)
+#    * kiss_cf users in windows would face similar problems for their
+#      application. This would not be acceptable.
+#    * at least MEDIUM effort to maintain the build pipeline
+#
+# However - the code as of now was working (in linux).
+
 # Enable to test for key indexable (object[]) behavior:
 import ntplib
 import pycurl
@@ -7,6 +23,7 @@ from io import BytesIO, StringIO
 
 from kiss_cf.storage.storage import StorageMethod
 from kiss_cf import logging
+from kiss_cf.ntptime import NtpTime
 
 CURL_RESPONSE_CODE_OK = 200
 CURL_RESPONSE_CODE_FILE_NOT_FOUND = 550
@@ -64,17 +81,7 @@ class RemoteLocation():
         # timestamps. Like 0.5s implies that NTP time is 0.5s ahead of local
         # time. Or 600s implies that server file stamps are 10min ahead of
         # local time.
-        self.update_local_offset()
         self.update_remote_offset()
-
-    def update_local_offset(self):
-        ntp_client = ntplib.NTPClient()
-        response = ntp_client.request('0.pool.ntp.org')
-        self.local_offset = timedelta(seconds=response.offset)
-        if response.offset > 60:
-            self.log.warning(
-                f'Offset to NTP server is {response.offset} seconds. '
-                'This is unexpected.')
 
     def update_remote_offset(self):
         file = 'self.test.' + str(uuid.uuid4())

@@ -1,0 +1,19 @@
+name: Test Windows
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [windows-latest]
+        python-version: ['3.10']
+
+    uses: alexander-rd/kiss_cf/.github/workflows/test.yml@main
+    secrets: inherit
+    with:
+      os: ${{ matrix.os }}
+      python-version: ${{ matrix.python-version }}
+      caller-is-kiss-cf: 'yes'

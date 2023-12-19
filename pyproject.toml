@@ -27,15 +27,16 @@ legacy_tox_ini = """
         3.10: py310
 
     [testenv]
+    passenv = KISS_*
     setenv = PYTHONPATH = {toxinidir}
              VIRTUALENV_DOWNLOAD=0
     deps =
       -r{toxinidir}/requirements.txt
       -r{toxinidir}/requirements_test.txt
 
-    commands = coverage run --branch --source=kiss_cf -m pytest
+    commands = coverage run --source=kiss_cf --branch -m pytest
                coverage report
                coverage html
 """
 # commands = pytest --cov=kiss_cf --cov-report html --cov-report term
-# commands = coverage run -m pytest
+# commands = coverage run --source src -m pytest

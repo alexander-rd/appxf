@@ -1,6 +1,7 @@
 # KISS Cross-Functionals (kiss_cf)
 
-![Test](https://github.com/alexander-rd/kiss_cf/actions/workflows/test-self.yml/badge.svg)
+![Test Linux](https://github.com/alexander-rd/kiss_cf/actions/workflows/test-self-linux.yml/badge.svg)
+![Test Windows](https://github.com/alexander-rd/kiss_cf/actions/workflows/test-self-windows.yml/badge.svg)
 
 This toolbox covers cross functional concerns like configuration, persisting
 data, logging or security to limit the effort writing simple applications.
@@ -35,6 +36,7 @@ Cross-Cutting Concerns
  * [Logging](doc/logging.md)
  * Persisting Data
  * Data Exchange via FTP
+   * Note to be added: installation of libcurl requires libssl-dev
  * [Security](doc/security.md)
  * GUI
  * Extention modules
