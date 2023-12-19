@@ -18,9 +18,9 @@ host = 'ftp://ftp.strato.de/'
 user = 'testing@alexander-reinhold.de'
 passwd = 'QtTfRq8B?(aH$.sg'
 
-host = os.environ.get('KISS_FTP_HOST')
-user = os.environ.get('KISS_FTP_USER')
-passwd = os.environ.get('KISS_FTP_PASSWORD')
+host = os.environ.get('KISS_FTP_HOST').strip('"')
+user = os.environ.get('KISS_FTP_USER').strip('"')
+passwd = os.environ.get('KISS_FTP_PASSWORD').strip('"')
 print(f'{host} ## {user} ## {passwd}')
 
 location = RemoteLocation(url=host, user=user, password=passwd)
