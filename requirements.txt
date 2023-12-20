@@ -3,5 +3,4 @@ cryptography
 mariadb
 ntplib
 pandas
-pycurl
 recordclass

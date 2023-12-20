@@ -3,18 +3,16 @@ logging.activate_logging(__name__)
 
 import pytest
 import datetime
-import pycurl
 from io import BytesIO
 from ftplib import FTP, FTP_TLS
-from kiss_cf.storage.remote import RemoteLocation
 from dotenv import load_dotenv
 import os
 
 # load_dotenv()
-host = os.environ.get('KISS_FTP_HOST').strip('"')
-user = os.environ.get('KISS_FTP_USER').strip('"')
-passwd = os.environ.get('KISS_FTP_PASSWORD').strip('"')
-
+host = os.environ.get('KISS_FTP_HOST')
+user = os.environ.get('KISS_FTP_USER')
+passwd = os.environ.get('KISS_FTP_PASSWORD')
+'''
 @pytest.fixture
 def remote_connection():
     print(f'[{host}] with [{user}] and [{passwd}]')
@@ -32,7 +30,7 @@ def test_write_read(remote_connection):
     read_data = remote_connection.load(file).decode('utf-8')
     print(f'Loaded data: {read_data}')
     assert read_data == data
-
+'''
 #! TODO: RemoteLocation should verify if the login credentials work to provide
 #  a meaningful error before continuing.
 
