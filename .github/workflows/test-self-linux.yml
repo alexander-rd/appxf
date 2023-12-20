@@ -1,4 +1,6 @@
 name: Test Linux
+# Splitted operating systems to not cancel one OS run if another fails. It also
+# gernetes independent badges.
 
 on:
   - push

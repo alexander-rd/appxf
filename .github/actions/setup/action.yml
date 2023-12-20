@@ -30,45 +30,4 @@ runs:
       shell: bash
       if: runner.os == 'Linux'
 
-    - name: Install curl dependencies (on linux)
-      run: sudo apt install libcurl4-openssl-dev libssl-dev
-      shell: bash
-      if: runner.os == 'Linux'
-
-  # WINDOWS specific steps
-    - name: Get libcurl (windows)
-      run: |
-        Invoke-WebRequest -Uri https://curl.se/windows/latest.cgi?p=win64-mingw.zip -OutFile curl.zip
-        Expand-Archive -Path curl.zip -DestinationPath C:\tools\curl
-        Remove-Item -Path curl.zip
-        dir
-        cd C:\tools\curl
-        dir
-      shell: pwsh
-      if: runner.os == 'Windows'
-
-    - name: Checkout pycurl (windows)
-      uses: actions/checkout@v3
-      with:
-        repository: pycurl/pycurl
-        path: pycurl
-      if: runner.os == 'Windows'
-
-    #- name: Get pycurl (windows)
-    #  run: |
-    #    Invoke-WebRequest -Uri https://pycurl.sourceforge.net/download/pycurl-7.21.5.tar.gz -OutFile pycurl.tar.gz
-    #    Expand-Archive -Path pycurl.tar.gz -DestinationPath C:\tools\pycurl
-    #    Remove-Item -Path pycurl.tar.gz
-    #  shell: pwsh
-    #  if: runner.os == 'Windows'
-
-    - name: Pre-install pycurl (windows)
-    # python -m pip install pycurl
-      run: |
-        dir
-        cd pycurl
-        dir
-        python setup.py --curl-dir=C:\tools\curl\bin --use-libcurl-dll
-
-      shell: pwsh
-      if: runner.os == 'Windows'
+  # WINDOWS specific steps: none, yet
