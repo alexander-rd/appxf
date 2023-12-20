@@ -3,20 +3,19 @@ logging.activate_logging(__name__)
 
 import pytest
 import datetime
-from io import BytesIO
-from ftplib import FTP, FTP_TLS
 from dotenv import load_dotenv
 import os
+from kiss_cf.storage.ftp import FtpLocation
 
-# load_dotenv()
+load_dotenv()
 host = os.environ.get('KISS_FTP_HOST')
 user = os.environ.get('KISS_FTP_USER')
 passwd = os.environ.get('KISS_FTP_PASSWORD')
-'''
+
 @pytest.fixture
 def remote_connection():
     print(f'[{host}] with [{user}] and [{passwd}]')
-    location = RemoteLocation(url=host, user=user, password=passwd)
+    location = FtpLocation(host=host, user=user, password=passwd)
     return location
 
 def test_write_read(remote_connection):
@@ -30,7 +29,11 @@ def test_write_read(remote_connection):
     read_data = remote_connection.load(file).decode('utf-8')
     print(f'Loaded data: {read_data}')
     assert read_data == data
-'''
+
+#! TODO: Test case that covers the automatic reconnect.
+
+#! TODO: Functional test case that makes file operations on two path locations
+
 #! TODO: RemoteLocation should verify if the login credentials work to provide
 #  a meaningful error before continuing.
 
