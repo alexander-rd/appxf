@@ -1,7 +1,7 @@
 # KISS Cross-Functionals (kiss_cf)
 
-![Test Linux](https://github.com/alexander-rd/kiss_cf/actions/workflows/test-self-linux.yml/badge.svg)
-![Test Windows](https://github.com/alexander-rd/kiss_cf/actions/workflows/test-self-windows.yml/badge.svg)
+![Test Linux](  https://github.com/alexander-rd/kiss_cf/actions/workflows/test-self-linux.yml/badge.svg)
+![Test Windows](https://github.com/alexander-rd/kiss_cf/actions/workflows/test-self-win.yml/badge.svg)
 
 This toolbox covers cross functional concerns like configuration, persisting
 data, logging or security to limit the effort writing simple applications.

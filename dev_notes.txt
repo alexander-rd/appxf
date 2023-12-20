@@ -6,8 +6,9 @@ source .venv/bin/activate
 
 # run tests via tox:
 tox
-# run tests via pytest
+# run tests via pytest (might require being in venv (see above))
 pytest -rA
+pytest -rA tests/test_<specific>.py
 # profiling
 pip install pytest-profiling
 pytest -rA --profile
