@@ -1,5 +1,7 @@
 # Security
 
+<!-- TODO UPGRADE: this documentation needs an update -->
+
 Your application likely stores sensible data like passwords to servers or
 details on other persons. A **login** procedure allows to encrypt the locally
 stored data. You thereby do not depend on the password protection of the
@@ -38,7 +40,7 @@ registration.check()
 Without a gui, this could be like
 
 ```python
-from kiss_cf.security import Security
+from kiss_cf.security.local import Security
 
 # You need to get the password input from somewhere, kiss_cf does not support a
 # command line helper.

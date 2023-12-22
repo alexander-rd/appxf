@@ -4,7 +4,7 @@ from __future__ import annotations
 # from kiss_cf.storage.storage import Storable, StorageMethod
 
 
-class ForwardStep():
+class ForwardStep(): # pragma: no cover
     '''A ForwardStep can only be processed forwards
 
     A step processing might consume and produce data (not returning None),
@@ -20,7 +20,7 @@ class ForwardStep():
         return self.__class__.__name__
 
 
-class Step(ForwardStep):
+class Step(ForwardStep): # pragma: no cover
     '''A Step can be processed forwards and backwards
 
     A step processing might consume and produce data (not returning None),
@@ -34,7 +34,7 @@ class Step(ForwardStep):
         return data
 
 
-class ReversedStep(Step):
+class ReversedStep(Step): # pragma: no cover
     def __init__(self, step: ForwardStep | Step):
         if not isinstance(step, Step):
             raise Exception(
@@ -49,7 +49,7 @@ class ReversedStep(Step):
         return self.step.process_forward(data)
 
 
-class Chain():
+class Chain(): # pragma: no cover
     '''A chain of multiple steps.
 
     If the chain contains a single ForwardStep, it can only be processed

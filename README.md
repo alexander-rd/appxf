@@ -26,8 +26,10 @@ Provided numbers only provide a rough idea.
    * Methods provided to exchange data are not suited for continuous data
      exchange between instances.
  * **Keep it simple, stupid** (KISS) is part of the name for a reason. This
-   toolbox tries not to go fancy.
-   * Developers might still fall in the trap adding less usefull stuff. Sorry.
+   toolbox tries not to go too fancy.
+   * The developer (me) might still fall in the trap adding less usefull stuff.
+     Sorry. It's a bit like some management picking slogans on things they are
+     not good at.
 
 Cross-Cutting Concerns
 ======================

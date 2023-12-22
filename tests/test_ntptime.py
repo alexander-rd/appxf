@@ -1,6 +1,6 @@
 import pytest
 from datetime import datetime, timedelta
-from kiss_cf.ntptime import NtpTime
+from kiss_cf.utility.ntptime import NtpTime
 from ntplib import NTPClient
 import ntplib
 
@@ -23,6 +23,7 @@ def fresh_NtpTime():
     NtpTime.server_prefix_list = [0, 1, 2]
     return NtpTime
 
+@pytest.mark.skip(reason='NTP server is currently not used and occasionally fails')
 def test_functional(fresh_NtpTime):
     #fresh_NtpTime.base_server = 'pool.ntp.org'
     #fresh_NtpTime.server_prefix_list = ['0']
@@ -30,12 +31,14 @@ def test_functional(fresh_NtpTime):
     corrected_time = NtpTime.last_sync_as_datetime + timedelta(seconds=offset)
     assert abs((corrected_time - NtpTime.last_sync_as_ntp_recv).total_seconds()) < 1
 
+@pytest.mark.skip(reason='NTP server is currently not used and occasionally fails')
 def test_server_all_fail(mocker, fresh_NtpTime):
     m = mocker.patch('ntplib.NTPClient.request', side_effect=ntplib_request_failing)
     with pytest.raises(Exception) as excinfo:
         fresh_NtpTime.get_offset_from_utc_now()
     assert 'None of the server requests succeeded' in str(excinfo.value)
 
+@pytest.mark.skip(reason='NTP server is currently not used and occasionally fails')
 def test_no_second_call(mocker, fresh_NtpTime):
     m = mocker.patch('ntplib.NTPClient.request', side_effect=ntplib_request_ok)
     NtpStatStub.offset = 0

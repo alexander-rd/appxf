@@ -5,7 +5,7 @@ import typing
 import pickle
 
 from . import logging
-from .storage.storage import Storable, StorageMethod, StorageMethodDummy
+from kiss_cf.storage import Storable, StorageMethod, StorageMethodDummy
 
 log = logging.getLogger(__name__)
 
@@ -27,25 +27,10 @@ class Buffer(Storable):
     log = logging.getLogger(f'{__name__}.Buffer')
 
     def __init__(self,
-                 storage_handler: StorageMethod | None = None,
-                 file: str = '',
-                 dir: str = 'data/buffer'
+                 storage_handler: StorageMethod = StorageMethodDummy()
                  ):
-        if file and storage_handler is not None:
-            # expected input: we have a file name and a storage handler
-            pass
-        elif not file and storage_handler is None:
-            # expected input: we have no file name and no storage handler
-            storage_handler = StorageMethodDummy()
-        else:
-            # either we have a file but no storage handler or
-            # we have a storage handler but no file
-            ValueError(
-                'Buffer initialized with inconsistent file/storage_handler '
-                'combination. You need to provide either none of both or '
-                'both.')
 
-        super().__init__(storage_handler, file=os.path.join(dir, file))
+        super().__init__(storage_handler)
         self.buffer = dict()
         self.initially_loaded = False
 

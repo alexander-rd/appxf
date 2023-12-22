@@ -21,9 +21,9 @@ import uuid
 from datetime import datetime, timedelta
 from io import BytesIO, StringIO
 
-from kiss_cf.storage.storage import StorageMethod
+from kiss_cf.storage.storage_method import StorageMethod
 from kiss_cf import logging
-from kiss_cf.ntptime import NtpTime
+from kiss_cf.utility.ntptime import NtpTime
 
 CURL_RESPONSE_CODE_OK = 200
 CURL_RESPONSE_CODE_FILE_NOT_FOUND = 550
