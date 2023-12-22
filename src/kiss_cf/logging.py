@@ -1,5 +1,6 @@
 import logging as builtin_logging
 import os
+import sys
 import traceback
 import warnings
 from . import fileversions
@@ -21,7 +22,7 @@ console_formatter = logging.Formatter(
         '%(message)s',
         '%H:%M:%S')
 
-console_handler = logging.StreamHandler()
+console_handler = logging.StreamHandler(stream=sys.stdout)
 console_handler.setLevel(logging.DEBUG)
 console_handler.setFormatter(console_formatter)
 

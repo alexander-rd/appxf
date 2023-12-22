@@ -3,7 +3,7 @@ import ntplib
 from datetime import datetime, timedelta
 from kiss_cf import logging
 
-class NtpTime():
+class NtpTime(): # pragma: no cover
     '''Provide offset between system time and NTP time servers.
 
     For timestamp based data synchronization, we do not rely on correctness of

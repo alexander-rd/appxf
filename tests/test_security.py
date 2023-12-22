@@ -2,15 +2,26 @@ import os
 import pytest
 import shutil
 
-from kiss_cf.security import local
+from kiss_cf.security.local import Security
+from kiss_cf.storage import LocalStorageLocation
+
+# TODO UPGRADE: store bytecode for version 1 files and add test cases that those files
+# can still be loaded.
+
+# TODO LATER: test case for failing loading (use a file encrypted from a different
+# user with different password)
 
 class Environment():
     def __init__(self):
         self.dir = './testing'
+        self.key_file = './testing/USER.keys'
+        self.data_file = 'some_data'
         self.password = 'password'
-        self.sec = local.Security(
+        self.sec = Security(
             salt='test',
-            storage=self.dir)
+            file=self.key_file)
+        self.location = LocalStorageLocation(self.dir)
+        self.storage_method = self.location.get_storage_method(self.data_file)
 
 @pytest.fixture
 def empty_test_location():
@@ -26,7 +37,9 @@ def empty_test_location():
 def initialized_test_location(empty_test_location):
     env = empty_test_location
     env.sec.init_user(env.password)
-    env.sec = local.Security(salt='test', storage=env.dir)
+    # Start with fresh security object. The one before was already used to
+    # initialize the user.
+    env.sec = Security(salt='test', file=env.key_file)
     yield env
     # no cleanup: cleanup from empty_test_location
 
@@ -42,7 +55,7 @@ def test_user_init(empty_test_location):
     env = empty_test_location
     env.sec.init_user('some_password')
     # file should now be present:
-    assert os.path.exists(os.path.join(env.dir, 'user.key')) == True
+    assert os.path.exists(env.key_file) == True
     # and user should be initialized:
     assert env.sec.is_user_initialized() == True
     # user is still not unlocked
@@ -66,9 +79,7 @@ def test_store_load(initialized_test_location):
     env.sec.unlock_user(env.password)
 
     data = b'123456ABC!'
-    file = os.path.join(env.dir, 'test.dat')
-    storage = env.sec.get_storage_method()
-    storage.set_file(file)
+    storage = env.sec.get_symmetric_storage_method(env.storage_method)
 
     # store
     storage.store(data)
@@ -78,10 +89,9 @@ def test_store_load(initialized_test_location):
 
     # try to read from new security
     env = Environment()
-    assert env.sec.is_user_unlocked() == False
+    assert env.sec.is_user_unlocked() is False
     env.sec.unlock_user(env.password)
-    storage = env.sec.get_storage_method()
-    storage.set_file(file)
+    storage = env.sec.get_symmetric_storage_method(env.storage_method)
     data_loaded = storage.load()
     assert data == data_loaded
 
