@@ -1,5 +1,5 @@
 from kiss_cf.storage import Storable, StorageMethod
-from kiss_cf.security.local import Security
+from kiss_cf.security.security import Security
 
 
 class UserEntry():

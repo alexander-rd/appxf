@@ -17,8 +17,6 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
-### KISS_CF imports
-from kiss_cf.storage import StorageMethod
 
 class KissSecurityException(Exception):
     ''' General security related errors. '''
@@ -135,13 +133,6 @@ class Security():
                 f'Trying to encrypt {self.file} before '
                 'succeeding with unlock_user()')
         return self.key_dict['symmetric_key']
-
-    def get_symmetric_storage_method(
-        self,
-        base_storage_method: StorageMethod
-        ) -> StorageMethod:
-        return SecuredStorageMethod(base_storage_method=base_storage_method,
-                                    security=self)
 
     def encrypt_to_file(self, data, file):
         self.__encrypt_to_file(self._get_symmetric_key(), data, file)
@@ -280,42 +271,3 @@ class Security():
         https://cryptography.io/en/latest/fernet/.
         '''
         return Fernet.generate_key()
-
-class PasswordStorageMethod(StorageMethod):
-    ''' Open file based on input password.
-
-    This class is exclusively for Security and should never be used directly.
-    '''
-
-    def __init__(self):
-        super().__init__()
-
-# TODO UPGRADE: this and get_storage_method() should be updated such that the
-# Secure() module is adding the security layer to any StorageMethod, cascading
-# through the save/load and potentially using the accesible location.
-#   * StorageMethod
-#   * LocationStorageMethod (knows the location (.location))
-#   * ExtendedStorageMethod (is based on another storage method and uses it's
-#     store/load behavior) Extended storage might require a
-#     LocationStorageMethod.
-class SecuredStorageMethod(StorageMethod):
-    '''Storage method for local file storage.
-
-    This storage method is based on a symmetric key, generated at user
-    initialization time. User unlocks this key with his password.
-    '''
-
-    def __init__(self,
-                 base_storage_method: StorageMethod,
-                 security: Security):
-        super().__init__()
-        self.base_storage_method = base_storage_method
-        self.security = security
-
-    def load(self) -> bytes:
-        data = self.base_storage_method.load()
-        return self.security.decrypt_from_bytes(data)
-
-    def store(self, data: bytes):
-        data = self.security.encrypt_to_bytes(data)
-        self.base_storage_method.store(data)

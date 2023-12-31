@@ -1,4 +1,5 @@
-# allow class name being used as type hint in same class:
+
+# allow class name being used before being fully defined (like in same class):
 from __future__ import annotations
 
 # from kiss_cf.storage.storage import Storable, StorageMethod
