@@ -2,7 +2,7 @@ import os
 import pytest
 import shutil
 
-from kiss_cf.security.local import Security
+from kiss_cf.security import Security, LocalSecuredStorageMethod
 from kiss_cf.storage import LocalStorageLocation
 
 # TODO UPGRADE: store bytecode for version 1 files and add test cases that those files
@@ -79,7 +79,7 @@ def test_store_load(initialized_test_location):
     env.sec.unlock_user(env.password)
 
     data = b'123456ABC!'
-    storage = env.sec.get_symmetric_storage_method(env.storage_method)
+    storage = LocalSecuredStorageMethod(env.storage_method, env.sec)
 
     # store
     storage.store(data)
@@ -91,7 +91,7 @@ def test_store_load(initialized_test_location):
     env = Environment()
     assert env.sec.is_user_unlocked() is False
     env.sec.unlock_user(env.password)
-    storage = env.sec.get_symmetric_storage_method(env.storage_method)
+    storage = LocalSecuredStorageMethod(env.storage_method, env.sec)
     data_loaded = storage.load()
     assert data == data_loaded
 

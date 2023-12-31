@@ -1,5 +1,8 @@
 ''' Basic Storage Locations '''
 
+# allow class name being used before being fully defined (like in same class):
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 import uuid
@@ -182,7 +185,7 @@ class StorageLocation(ABC):
         # remove tmp file again:
         self._remove(file)
 
-    def get_storage_method(self, file: str) -> StorageMethod:
+    def get_storage_method(self, file: str) -> LocationStorageMethod:
         ''' Get sotrage method for files in location '''
         return LocationStorageMethod(self, file)
 
@@ -195,15 +198,28 @@ class LocationStorageMethod(StorageMethod):
     '''
     def __init__(self, location: StorageLocation, file: str):
         super().__init__()
-        self.location = location
-        self.location.add_file(file)
-        self.file = file
+        # allow derived storage methods to skip the add_file() call that is
+        # intended not to be called twice.
+        if not hasattr(self, '_location'):
+            self._location = location
+            self._location.add_file(file)
+        self._file = file
+
+    # define properties to make the fields read only
+    @property
+    def location(self) -> StorageLocation:
+        ''' Location associated with this StorageMethod '''
+        return self._location
+    @property
+    def file(self) -> str:
+        ''' File associated with this StorageLocation based StorageMethod '''
+        return self._file
 
     def __del__(self):
-        self.location.remove_file(self.file)
+        self._location.remove_file(self.file)
 
     def store(self, data: bytes):
-        self.location.store(self.file, data)
+        self._location.store(self.file, data)
 
     def load(self):
-        return self.location.load(self.file)
+        return self._location.load(self.file)
