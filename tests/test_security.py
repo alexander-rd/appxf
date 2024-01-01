@@ -2,7 +2,7 @@ import os
 import pytest
 import shutil
 
-from kiss_cf.security import Security, LocalSecuredStorageMethod
+from kiss_cf.security import Security, SecurePrivateStorageMethod
 from kiss_cf.storage import LocalStorageLocation
 
 # TODO UPGRADE: store bytecode for version 1 files and add test cases that those files
@@ -11,6 +11,8 @@ from kiss_cf.storage import LocalStorageLocation
 # TODO LATER: test case for failing loading (use a file encrypted from a different
 # user with different password)
 
+# TODO UPGRADE: this environment should use test specific subfolders (see
+# fixtures subfolder)
 class Environment():
     def __init__(self):
         self.dir = './testing'
@@ -28,10 +30,7 @@ def empty_test_location():
     env = Environment()
     if os.path.exists(env.dir):
         shutil.rmtree(env.dir)
-    yield env
-    if os.path.exists(env.dir):
-        shutil.rmtree(env.dir)
-    del env
+    return env
 
 @pytest.fixture
 def initialized_test_location(empty_test_location):
@@ -79,7 +78,7 @@ def test_store_load(initialized_test_location):
     env.sec.unlock_user(env.password)
 
     data = b'123456ABC!'
-    storage = LocalSecuredStorageMethod(env.storage_method, env.sec)
+    storage = SecurePrivateStorageMethod(env.storage_method, env.sec)
 
     # store
     storage.store(data)
@@ -91,7 +90,7 @@ def test_store_load(initialized_test_location):
     env = Environment()
     assert env.sec.is_user_unlocked() is False
     env.sec.unlock_user(env.password)
-    storage = LocalSecuredStorageMethod(env.storage_method, env.sec)
+    storage = SecurePrivateStorageMethod(env.storage_method, env.sec)
     data_loaded = storage.load()
     assert data == data_loaded
 

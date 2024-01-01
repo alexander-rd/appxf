@@ -34,7 +34,7 @@ class StorageLocation(ABC):
     # Also the '.' checking should be part of the Storable implementation.
     #
     # A check to '/' must also be added!
-    def add_file(self, file: str):
+    def register_file(self, file: str):
         ''' Add storable for synchronization
         '''
         if '.' in file:
@@ -55,7 +55,7 @@ class StorageLocation(ABC):
     def __str__(self):
         return f'[{self.get_id()}]'
 
-    def remove_file(self, file: str):
+    def deregister_file(self, file: str):
         if file not in self.file_list:
             raise StorageLocationException(
                f'Cannot remove {file}. It was never added. '
@@ -202,7 +202,7 @@ class LocationStorageMethod(StorageMethod):
         # intended not to be called twice.
         if not hasattr(self, '_location'):
             self._location = location
-            self._location.add_file(file)
+            self._location.register_file(file)
         self._file = file
 
     # define properties to make the fields read only
@@ -216,10 +216,34 @@ class LocationStorageMethod(StorageMethod):
         return self._file
 
     def __del__(self):
-        self._location.remove_file(self.file)
+        self._location.deregister_file(self.file)
 
     def store(self, data: bytes):
         self._location.store(self.file, data)
 
     def load(self):
         return self._location.load(self.file)
+
+
+class DerivingStorageMethod(LocationStorageMethod):
+    ''' Helper class to not repeating the common __init__
+
+    StorageMethods can be cascaded to add functionality while remaining
+    modular. To achieve this, each deriving StorageMethod needs to be a
+    LocationStorageMethod. Since StorageLocation maintains a list of files for
+    which StorageMethods exist, this procedure requires a special __init__.
+    This class just avoids implementatio overhead on this peculiarity.
+    '''
+    def __init__(self,
+                 base_method: LocationStorageMethod):
+        # as deriving class, we have to already set the location to skip the
+        # add_file in derived class:
+        self._location = base_method.location
+        super().__init__(location=base_method.location, file=base_method.file)
+        self._base_method = base_method
+        self._file = base_method._file
+
+    # like above for add_file(), the destructor must be overwritten to not call
+    # remove_file:
+    def __del__(self):
+        pass

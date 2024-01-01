@@ -1,16 +1,23 @@
 Feature: Synchronization
 
-    Scenario: Testing Self Testing
-    Given Location A
+    Scenario Outline: Self Testing
+    Given Locations [A]
+    And Location A is using <method>
     Then there is no data in A
     When A writes "some data" into some_data
     Then A contains "some data" in some_data
 
+    Examples:
+    | method                     |
+    | Default                    |
+    | SecurePrivateStorageMethod |
+    | SecureSharedStorageMethod  |
+
+
     Scenario: Simple Initialization
     Given Locations [A, B]
     When A writes "some data" into some_data
-    Then there is no data in B
-    When Synchronizing A with B
+    And Synchronizing A with B
     Then Data in A matches data in B
 
     Scenario: Update Loop
@@ -20,7 +27,6 @@ Feature: Synchronization
     When A writes "some new data" into some_data
     And Synchronizing A with B
     Then B contains "some new data" in some_data
-
 
     Scenario: Synchronization round trip
     Given Locations [A, B, C]
@@ -44,3 +50,19 @@ Feature: Synchronization
     And Synchronizing A with B
     Then B contains "new data from C" in some_data
     And A contains "new data from C" in some_data
+
+
+    Scenario Outline: Synchronization Round Trip with Secures Storage
+    Given Locations [A, B, C]
+    And Location A is using <methodA>
+    And Location B is using <methodB>
+    And Location C is using <methodC>
+    And A writes "some data" into some_data
+    And Synchronizing A with B
+    And Synchronizing B with C
+    Then C contains "some data" in some_data
+
+    Examples:
+    | methodA                       | methodB                       | methodC                       |
+    | SecurePrivateStorageMethod    | SecurePrivateStorageMethod    | SecurePrivateStorageMethod    |
+    | SecurePrivateStorageMethod    | SecureSharedStorageMethod     | SecurePrivateStorageMethod    |

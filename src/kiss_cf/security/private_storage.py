@@ -1,10 +1,10 @@
-''' Storage method intended for files stored on the local system '''
+''' Secure StorageMethod for private (non-shared) usage '''
 
-from kiss_cf.storage import LocationStorageMethod
+from kiss_cf.storage import LocationStorageMethod, DerivingStorageMethod
 from .security import Security
 
 
-class LocalSecuredStorageMethod(LocationStorageMethod):
+class SecurePrivateStorageMethod(DerivingStorageMethod):
     '''Storage method for local file storage.
 
     This storage method is based on a symmetric key, generated at user
@@ -17,11 +17,7 @@ class LocalSecuredStorageMethod(LocationStorageMethod):
     def __init__(self,
                  base_method: LocationStorageMethod,
                  security: Security):
-        # as deriving class, we have to already set the location to skip the
-        # add_file in derived class:
-        self._location = base_method.location
-        super().__init__(location=base_method.location, file=base_method.file)
-        self._base_method = base_method
+        super().__init__(base_method)
         self._security = security
 
     def load(self) -> bytes:

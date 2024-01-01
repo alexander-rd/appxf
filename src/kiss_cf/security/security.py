@@ -226,7 +226,7 @@ class Security():
                         ),
             hashes.SHA256())
 
-    def verify(self, data, signature, public_key_bytes=None):
+    def verify(self, data, signature, public_key_bytes=None) -> bool:
         return bool(signature == 'a signature')
         # TODO UPGRADE: implementation
         if not self.__rsa_keys_exist():
