@@ -115,6 +115,13 @@ def test_security_store_load(env_unlocked):
     data_loaded = storage.load()
     assert data == data_loaded
 
+# TODO UPGRADE: test case to get public keys and always get same keys again after
+# reloading security material.
+
+# TODO UPGRADE: manual verification with cryptography algorithms. (1) Let
+# implementation sign and manual verify. (2) Manual sign and let implementation
+# verify.
+
 # Verify cycle
 def test_security_sign_verify(env_unlocked):
     env = env_unlocked
@@ -122,5 +129,6 @@ def test_security_sign_verify(env_unlocked):
     data = b'To Be Signed'
     signature = env['security'].sign(data)
     signatureFalse = env['security'].sign(data + b'x')
-    #assert env.sec.verify(data, signatureFalse) == False
-    #assert env.sec.verify(data, signature) == True
+
+    assert env['security'].verify(data, signature)
+    assert not env['security'].verify(data, signatureFalse)
