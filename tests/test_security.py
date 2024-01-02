@@ -5,80 +5,95 @@ import shutil
 from kiss_cf.security import Security, SecurePrivateStorageMethod
 from kiss_cf.storage import LocalStorageLocation
 
+from tests.fixtures.env_base import env_base
+from tests.fixtures.env_storage import env_test_directory
+
+# define default context/environment
+@pytest.fixture
+def env_uninitialized(env_test_directory):
+    env = env_test_directory
+    # we will always need a location
+    env['location'] = LocalStorageLocation(path=env['dir'])
+    # there will be a default salt and password
+    env['salt'] = 'test_salt'
+    env['password'] = 'test_password'
+    # and a pre-setup security object
+    env['obj key file'] = os.path.join(env['dir'], 'user.key')
+    env['security'] = Security(salt=env['salt'],
+                          file=env['obj key file'])
+    return env
+
+@pytest.fixture
+def env_initialized(env_uninitialized):
+    env = env_uninitialized
+    env['security'].init_user(env['password'])
+    # Start with fresh security object. The one before was already used to
+    # initialize the user.
+    env['security'] = Security(salt=env['salt'],
+                          file=env['obj key file'])
+    # sanity checks
+    assert os.path.exists(env['obj key file'])
+    assert env['security'].is_user_initialized()
+
+    return env
+
+@pytest.fixture
+def env_unlocked(env_initialized):
+    env = env_initialized
+    env['security'].unlock_user(env['password'])
+    # sanity checks
+    assert env['security'].is_user_unlocked()
+
+    return env
+
+# TODO UPGRADE: Is the "user" in interface name "is_user_unlocked" necessary?
+# Same for "user.keys" Class implementation should be checked for any usage of
+# "user"
+
 # TODO UPGRADE: store bytecode for version 1 files and add test cases that those files
 # can still be loaded.
 
 # TODO LATER: test case for failing loading (use a file encrypted from a different
 # user with different password)
 
-# TODO UPGRADE: this environment should use test specific subfolders (see
-# fixtures subfolder)
-class Environment():
-    def __init__(self):
-        self.dir = './testing'
-        self.key_file = './testing/USER.keys'
-        self.data_file = 'some_data'
-        self.password = 'password'
-        self.sec = Security(
-            salt='test',
-            file=self.key_file)
-        self.location = LocalStorageLocation(self.dir)
-        self.storage_method = self.location.get_storage_method(self.data_file)
-
-@pytest.fixture
-def empty_test_location():
-    env = Environment()
-    if os.path.exists(env.dir):
-        shutil.rmtree(env.dir)
-    return env
-
-@pytest.fixture
-def initialized_test_location(empty_test_location):
-    env = empty_test_location
-    env.sec.init_user(env.password)
-    # Start with fresh security object. The one before was already used to
-    # initialize the user.
-    env.sec = Security(salt='test', file=env.key_file)
-    yield env
-    # no cleanup: cleanup from empty_test_location
-
 # Uninitialized test location should indicate as not user initialized.
-def test_uninitialized_location(empty_test_location):
-    env = empty_test_location
-    assert env.sec.is_user_initialized() == False
+def test_security_uninitialized(env_uninitialized):
+    env = env_uninitialized
+    assert not env['security'].is_user_initialized()
     # also not unlocked
-    assert env.sec.is_user_unlocked() == False
+    assert not env['security'].is_user_unlocked()
 
 # Initialize a user (write file and authenticate)
-def test_user_init(empty_test_location):
-    env = empty_test_location
-    env.sec.init_user('some_password')
+def test_security_init(env_uninitialized):
+    env = env_uninitialized
+    env['security'].init_user('some_password')
     # file should now be present:
-    assert os.path.exists(env.key_file) == True
+    assert os.path.exists(env['obj key file'])
     # and user should be initialized:
-    assert env.sec.is_user_initialized() == True
+    assert env['security'].is_user_initialized()
     # user is still not unlocked
-    assert env.sec.is_user_unlocked() == True
+    assert env['security'].is_user_unlocked()
     # unlock (should not throw error) and check
-    env.sec.unlock_user('some_password')
-    assert env.sec.is_user_unlocked() == True
+    env['security'].unlock_user('some_password')
+    assert env['security'].is_user_unlocked()
 
 # Unlock a user
-def test_unlock_user(initialized_test_location):
-    env = initialized_test_location
-    assert env.sec.is_user_initialized() == True
-    assert env.sec.is_user_unlocked() == False
+def test_security_unlock(env_initialized):
+    env = env_initialized
+    assert env['security'].is_user_initialized()
+    assert not env['security'].is_user_unlocked()
     # unlock:
-    env.sec.unlock_user(env.password)
-    assert env.sec.is_user_unlocked() == True
+    env['security'].unlock_user(env['password'])
+    assert  env['security'].is_user_unlocked()
 
 # Store and load
-def test_store_load(initialized_test_location):
-    env = initialized_test_location
-    env.sec.unlock_user(env.password)
+def test_security_store_load(env_unlocked):
+    env = env_unlocked
 
     data = b'123456ABC!'
-    storage = SecurePrivateStorageMethod(env.storage_method, env.sec)
+    storage = SecurePrivateStorageMethod(
+        base_method=env['location'].get_storage_method('some_file'),
+        security=env['security'])
 
     # store
     storage.store(data)
@@ -87,20 +102,25 @@ def test_store_load(initialized_test_location):
     assert data == data_loaded
 
     # try to read from new security
-    env = Environment()
-    assert env.sec.is_user_unlocked() is False
-    env.sec.unlock_user(env.password)
-    storage = SecurePrivateStorageMethod(env.storage_method, env.sec)
+    sec = Security(salt = env['salt'],
+                   file = env['obj key file'])
+    assert not sec.is_user_unlocked()
+    sec.unlock_user(env['password'])
+    # Note: need to delete prior storage object. Storage locations do not allow
+    # two methods covering the same file.
+    del storage
+    storage = SecurePrivateStorageMethod(
+        base_method=env['location'].get_storage_method('some_file'),
+        security=env['security'])
     data_loaded = storage.load()
     assert data == data_loaded
 
 # Verify cycle
-def test_sign_verify(initialized_test_location):
-    env = initialized_test_location
-    env.sec.unlock_user(env.password)
+def test_security_sign_verify(env_unlocked):
+    env = env_unlocked
 
     data = b'To Be Signed'
-    signature = env.sec.sign(data)
-    signatureFalse = env.sec.sign(data + b'x')
+    signature = env['security'].sign(data)
+    signatureFalse = env['security'].sign(data + b'x')
     #assert env.sec.verify(data, signatureFalse) == False
     #assert env.sec.verify(data, signature) == True

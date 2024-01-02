@@ -38,7 +38,9 @@ class Security():
     secret_key's
     '''
 
-    def __init__(self, salt: str, file='./data/security/user.keys'):
+    def __init__(self,
+                 salt: str,
+                 file: str = './data/security/user.keys'):
         '''Get security context.
 
         The salt used to generate secret keys from password is set with
