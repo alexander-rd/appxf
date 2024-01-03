@@ -164,7 +164,7 @@ class SignedStorageMethod(DerivingStorageMethod):
         # accumulate to-be-signed data and sign:
         signature = self._security.sign(self._get_signature_data(data))
         # need to provide public key for signature:
-        public_key = self._security.get_validation_public_key()
+        public_key = self._security.get_signing_public_key()
         Signature.from_data(public_key, signature).store(self._location, self._file)
 
 

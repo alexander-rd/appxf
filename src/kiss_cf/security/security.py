@@ -25,8 +25,8 @@ def _get_default_key_dict():
     return {
         'version': 1,
         'symmetric_key': b'',
-        'validation_pub_key': b'',
-        'validation_priv_key': b'',
+        'signing_pub_key': b'',
+        'signing_priv_key': b'',
         'encryption_pub_key': b'',
         'encryption_priv_key': b'',
     }
@@ -174,20 +174,20 @@ class Security():
 
         return self._decrypt_from_bytes(key, data_encrypted)
 
-    def _decrypt_from_bytes(self, key, data: bytes) -> bytes:
+    def _decrypt_from_bytes(self, key: bytes, data: bytes) -> bytes:
         # Note that Fernet will also validate the data on decryption. If the
         # algorithm is changed, it needs to be ensured that the decryption is
         # validated before returning it back to the caller (like using a hash
         # on the data)
         return Fernet(key).decrypt(data)
 
-    def get_validation_public_key(self) -> bytes:
+    def get_signing_public_key(self) -> bytes:
         if not self.is_user_unlocked():
             raise Exception(
                 'Trying to access public key before '
                 'succeeding with unlock_user()')
-        self._ensure_validation_keys_exist()
-        return self._key_dict['validation_pub_key']
+        self._ensure_signing_keys_exist()
+        return self._key_dict['signing_pub_key']
 
     def get_encryption_public_key(self) -> bytes:
         if not self.is_user_unlocked():
@@ -197,14 +197,14 @@ class Security():
         self._ensure_encryption_keys_exist()
         return self._key_dict['encryption_pub_key']
 
-    def _ensure_validation_keys_exist(self):
+    def _ensure_signing_keys_exist(self):
         ''' Create keys, if required '''
-        if (not self._key_dict['validation_pub_key'] and
-            not self._key_dict['validation_priv_key']):
-            self._generate_validation_keys()
+        if (not self._key_dict['signing_pub_key'] and
+            not self._key_dict['signing_priv_key']):
+            self._generate_signing_keys()
             return
-        if (not self._key_dict['validation_pub_key'] or
-            not self._key_dict['validation_priv_key']):
+        if (not self._key_dict['signing_pub_key'] or
+            not self._key_dict['signing_priv_key']):
             raise KissSecurityException(
                 'Only public or private validation key are set. '
                 'This should not happen.'
@@ -223,21 +223,15 @@ class Security():
                 'This should not happen.'
                 )
 
-    def _generate_validation_keys(self):
+    def _generate_signing_keys(self):
         ''' Add validation keys '''
         key = rsa.generate_private_key(
             public_exponent=65537,
             key_size=2048)
-        private_key = key.private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.PKCS8,
-            encryption_algorithm=serialization.NoEncryption()
-            )
-        public_key = key.public_key().public_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PublicFormat.PKCS1)
-        self._key_dict['validation_pub_key'] = public_key
-        self._key_dict['validation_priv_key'] = private_key
+        private_key = Security._serialize_private_key(key)
+        public_key = Security._serialize_public_key(key.public_key())
+        self._key_dict['signing_pub_key'] = public_key
+        self._key_dict['signing_priv_key'] = private_key
         self._write_keys()
 
     def _generate_encryption_keys(self):
@@ -247,19 +241,29 @@ class Security():
             public_exponent=65537,
             key_size=2048)
         private_key = Security._serialize_private_key(key)
-        public_key = Security._serialize_private_key(key)
+        public_key = Security._serialize_public_key(key.public_key())
         self._key_dict['encryption_pub_key'] = public_key
         self._key_dict['encryption_priv_key'] = private_key
         self._write_keys()
 
+    # TODO COMMIT: serialized public keys are far too large
     @classmethod
     def _serialize_public_key(cls, key: rsa.RSAPublicKey) -> bytes:
         return key.public_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PublicFormat.PKCS1)
+            encoding=serialization.Encoding.DER,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo)
+        # Note: In a minor test, PEM encoding took 426 bytes. DER encoding took
+        # 264 bytes.
+
+        # TODO COMMIT: reconsider the key map using the public keys to index.
+        # With 100 users to encrypt for, the size is 25kB already for public
+        # keys. An alternative are ID's maintained in the user_db. But ID's
+        # would be one more indirection.
+
     @classmethod
     def _deserialize_public_key(cls, key_bytes: bytes) -> rsa.RSAPublicKey:
-        key = serialization.load_pem_public_key(key_bytes)
+        # key = serialization.load_pem_public_key(key_bytes)
+        key = serialization.load_der_public_key(key_bytes)
         if not isinstance(key, rsa.RSAPublicKey):
             raise KissSecurityException(
                 f'Unexpected key class {key.__class__.__name__}. '
@@ -282,9 +286,9 @@ class Security():
 
     def sign(self, data: bytes) -> bytes:
         '''Sign a data byte stream'''
-        self._ensure_validation_keys_exist()
+        self._ensure_signing_keys_exist()
         private_key = Security._deserialize_private_key(
-            self._key_dict['validation_priv_key'])
+            self._key_dict['signing_priv_key'])
 
         return private_key.sign(
             data,
@@ -297,8 +301,8 @@ class Security():
     # available as class function.
     def verify(self, data, signature, public_key_bytes=None) -> bool:
         if not public_key_bytes:
-            self._ensure_validation_keys_exist()
-            public_key_bytes = self._key_dict['validation_pub_key']
+            self._ensure_signing_keys_exist()
+            public_key_bytes = self._key_dict['signing_pub_key']
         public_key = Security._deserialize_public_key(public_key_bytes)
 
         try:
@@ -310,6 +314,56 @@ class Security():
             return True
         except InvalidSignature:
             return False
+
+    @classmethod
+    def _encrypt_with_public_key_to_bytes(cls, data: bytes, key_bytes: bytes):
+        public_key = cls._deserialize_public_key(key_bytes)
+        return public_key.encrypt(data,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None))
+
+    def _decrypt_with_private_key_from_byes(self, data: bytes):
+        private_key = self._deserialize_private_key(
+            self._key_dict['encryption_priv_key'])
+        return private_key.decrypt(data,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None))
+
+    def hybrid_encrypt(self,
+                       data: bytes,
+                       public_key_list: list[bytes] = []
+                       ) -> tuple[bytes, dict[bytes, bytes]]:
+
+        public_key_set = set(public_key_list)
+        public_key_set.add(self.get_encryption_public_key())
+
+        symmetric_key = self._generate_key()
+        data_encrypted = self._encrypt_to_bytes(symmetric_key, data)
+
+        encrypted_key_map = {}
+        for key in public_key_set:
+            key_encrypted = self._encrypt_with_public_key_to_bytes(symmetric_key, key)
+            encrypted_key_map[key] = key_encrypted
+
+        return data_encrypted, encrypted_key_map
+
+    # TODO UPGRADE: double-check interface consistency (order of keys and data)
+    def hybrid_decrypt(self, data: bytes, encrypted_key_map: dict[bytes, bytes]):
+        # get encrypted symmetric key:
+        if self.get_encryption_public_key() not in encrypted_key_map.keys():
+            # TODO: more refined exception
+            raise KissSecurityException(
+                'Key list did not contain the public key for this Security '
+                'object')
+
+        symmetric_key_encrypted = encrypted_key_map[self.get_encryption_public_key()]
+        symmetric_key = self._decrypt_with_private_key_from_byes(symmetric_key_encrypted)
+
+        return self._decrypt_from_bytes(symmetric_key, data)
 
     def _derive_key(self, pwd):
         '''Derive key from password.
