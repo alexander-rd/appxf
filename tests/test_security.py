@@ -122,6 +122,23 @@ def test_security_store_load(env_unlocked):
 # implementation sign and manual verify. (2) Manual sign and let implementation
 # verify.
 
+def test_security_store_assymetric_keys(env_unlocked):
+    env = env_unlocked
+
+    # get public keys. Note that they might be generated on first time
+    # accessing them.
+    signing_public_key = env['security'].get_signing_public_key()
+    encryp_public_key = env['security'].get_encryption_public_key()
+
+    # Take new security, unlock and check agains the ones above. Note that the
+    # data already needs to be stored before tear down of the security above.
+    # The use case is quite unusual and not supported: having two Security
+    # objects accessing the same data.
+    security = Security(env['salt'], env['obj key file'])
+    security.unlock_user(env['password'])
+    assert signing_public_key == security.get_signing_public_key()
+    assert encryp_public_key == security.get_encryption_public_key()
+
 # Verify cycle
 def test_security_sign_verify(env_unlocked):
     env = env_unlocked
@@ -132,3 +149,15 @@ def test_security_sign_verify(env_unlocked):
 
     assert env['security'].verify(data, signature)
     assert not env['security'].verify(data, signatureFalse)
+
+# Hybrid encrypt/decrypt cycle:
+def test_security_hybrid_encrypt_decrypt(env_unlocked):
+    env = env_unlocked
+
+    data = b'To be encrypted'
+    data_encrpted, key_map = env['security'].hybrid_encrypt(data)
+
+    data_decrypted = env['security'].hybrid_decrypt(data_encrpted, key_map)
+
+    assert data != data_encrpted
+    assert data == data_decrypted

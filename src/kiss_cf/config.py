@@ -16,7 +16,8 @@ import re
 import functools
 
 from . import logging
-from .security.security import Security
+from .security import Security
+from .storage import StorageLocation
 
 # TODO: Why do I use configparser at all??
 #  + It's nice to load INI files (and store back to them)
@@ -139,9 +140,12 @@ class Config():
     '''
     log = logging.getLogger(__name__ + '.Config')
 
+    # TODO UPGRADE: this interface and the config implementation needs to align
+    # with the new StorageLocation concept. There is a source_type 'ini' which
+    # reads from ini files. This can also be integrated but the StorageMethod
+    # needs to be written to store/load init files compatible to
+    # StorageLoations.
     def __init__(self, security=None, storage_dir='./data/config'):
-        if security is None:
-            security = Security()
         self._security = security
         self._storage_dir = storage_dir
 
@@ -352,7 +356,7 @@ class Config():
         return wrapper
 
     @apply_to_sections
-    def store(self, section):
+    def store(self, section=None):
         # print(f'store {section}')
         if section not in self.config.keys():
             raise Exception(
@@ -373,7 +377,7 @@ class Config():
             raise Exception(f'source_type "{source_type}" is unknown.')
 
     @apply_to_sections
-    def load(self, section):
+    def load(self, section=None):
         section_config = self.section_config[section]
         source = section_config.source
         if not source:
