@@ -18,6 +18,11 @@ class StorageLocationException(Exception):
 # locations including all files (map with key being location and value being
 # list of files)
 
+# TODO RELEASE: StorageLocation should support some sync_with_timestamps().
+# That returns True when the StorageLocation can ensure that new files will
+# always have a newer timestamp. For example: by delaying a write operation or
+# repeating it when the resulting time stamp did not change.
+
 class StorageLocation(ABC):
 
     log = logging.getLogger(__name__ + '.StorageLocation')
