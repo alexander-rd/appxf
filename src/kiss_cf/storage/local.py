@@ -20,11 +20,11 @@ class LocalStorageLocation(StorageLocation):
         return self.__class__.__name__ + ': ' + os.path.join(self.path, file)
 
     # TODO: "file" does not always make sense
-    def file_exists(self, file: str) -> bool:
+    def exists(self, file: str) -> bool:
         return os.path.exists(os.path.join(self.path, file))
 
     def _get_location_timestamp(self, file: str) -> datetime | None:
-        if self.file_exists(file):
+        if self.exists(file):
             return datetime.fromtimestamp(os.path.getmtime(
                 os.path.join(self.path, file)
                 ))

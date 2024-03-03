@@ -125,8 +125,8 @@ def sync(loc_a: StorageLocation,
 
     ### Decision Stage 1: File Existance
     for file in file_list:
-        local_exists = loc_a.file_exists(file)
-        remote_exists = loc_b.file_exists(file)
+        local_exists = loc_a.exists(file)
+        remote_exists = loc_b.exists(file)
         if not local_exists and not remote_exists:
             # can happen if file was not created, yet
             log.debug(f'File {file} not existing on both sides')
@@ -174,7 +174,7 @@ def sync(loc_a: StorageLocation,
             _sync_file(file, loc_b, loc_a)
             # logging in _sync_file
         else:
-            self.log.debug(f'File {file} did not change.')
+            log.debug(f'File {file} did not change.')
 
 def _sync_file(file,
                source: StorageLocation,
@@ -212,7 +212,7 @@ def _sync_file(file,
 
 def _load_sync_data(file, location: StorageLocation) -> SyncData:
     # catch never synced case:
-    if not location.file_exists(file + '.sync'):
+    if not location.exists(file + '.sync'):
         return SyncData()
     # load data:
     raw_data = location._load(file + '.sync')

@@ -81,7 +81,7 @@ class StorageLocation(ABC):
         '''
 
     @abstractmethod
-    def file_exists(self, file: str) -> bool:
+    def exists(self, file: str) -> bool:
         ''' Does the file or path already exist?
         '''
 
@@ -118,9 +118,9 @@ class StorageLocation(ABC):
 
     def get_uuid(self, file: str) -> bytes:
         ''' Get UUID of file '''
-        if not self.file_exists(file):
+        if not self.exists(file):
             return b''
-        if not self.file_exists(file + '.uuid'):
+        if not self.exists(file + '.uuid'):
             # this should not happen unless the file is stored outside of the
             # StorageLocation implementation
             self._set_new_uuid(file)
@@ -162,7 +162,7 @@ class StorageLocation(ABC):
             message = 'Was not able to self-test for two times now. Quitting'
             self.log.error(message, exc_info=True)
         # ensure file does not exist
-        if self.file_exists(file):
+        if self.exists(file):
             # file collision - try again:
             self.log.warning(
                 'Test file [%s] already exists on [%s]',
@@ -222,6 +222,9 @@ class LocationStorageMethod(StorageMethod):
 
     def __del__(self):
         self._location.deregister_file(self.file)
+
+    def exists(self):
+        return self._location.exists(self._file)
 
     def store(self, data: bytes):
         self._location.store(self.file, data)

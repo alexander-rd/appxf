@@ -15,9 +15,9 @@ import os.path
 import re
 import functools
 
-from . import logging
-from .security import Security
-from .storage import StorageLocation
+from kiss_cf import logging
+from kiss_cf.security import Security
+from kiss_cf.storage import StorageLocation
 
 # TODO: Why do I use configparser at all??
 #  + It's nice to load INI files (and store back to them)

@@ -19,3 +19,9 @@ flake8 --count src
 # GIT
 # Changes between working dir and last commit when current commit is in preparation
 git diff --name-only HEAD~1
+
+
+Next:
+SharedSync (test_bdd_sync, security/sync+shared_storage) - But to do this, we need registry process.
+(security/user_registry + security.drawio/registration)
+>> start generating the test cases for registry ++ implementing those steps
