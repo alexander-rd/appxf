@@ -92,3 +92,8 @@ See [this link to setup python](
 https://mariadb.com/de/resources/blog/how-to-connect-python-programs-to-mariadb/)
 and [this one for the API](
 https://mariadb-corporation.github.io/mariadb-connector-python/index.html).
+
+Developer Documentation
+=======================
+
+* [Test Strategy](doc/TestStrategy.md)
