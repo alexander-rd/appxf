@@ -126,7 +126,7 @@ def contains_data_in_file(env, location, data, file):
     print(f'{location} contains "{data}" in {file}')
     # just for debugging:
     # print(os.listdir(os.path.join(context['dir'], location)))
-    if env['location'][location].file_exists(file + '.sync'):
+    if env['location'][location].exists(file + '.sync'):
         print('Sync State JSON: \n' +
             env['location'][location].load(file + '.sync').decode('utf-8'))
 

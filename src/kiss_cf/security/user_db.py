@@ -1,14 +1,30 @@
-from kiss_cf.storage import Storable, StorageMethod
+import pickle
+
+from kiss_cf.storage import Storable, StorageMethod, serialize, deserialize
 from kiss_cf.security.security import Security
 from typing import Dict, Set
 
+class KissUserDatabaseException(Exception):
+    ''' Error in User Database handling '''
+
 class UserEntry(dict):
-    def __init__(self, user_id: int, validation_key: bytes, encryption_key: bytes, roles: list[str]):
+    def __init__(self,
+                 user_id: int,
+                 validation_key: bytes,
+                 encryption_key: bytes,
+                 roles: list[str]):
         self.version: int = 1
         self.id: int = user_id
         self.roles: list[str] = roles
         self.validation_key: bytes = validation_key
         self.encryption_key: bytes = encryption_key
+        # Alternative:
+        # self._data = dict()
+        # self['.version'] = 1
+        # self['id'] = user_id
+        # self['roles'] = roles
+        # self['validation_key'] = validation_key
+        # self['encryption_key'] = encryption_key
 
 #! TODO: Just a note: the storage method will contain validation/encryption details.
 
@@ -17,28 +33,54 @@ class UserDatabase(Storable):
     def __init__(self, storage_method: StorageMethod):
         super().__init__(storage_method)
 
-        self.version = 1
-        # ID handling:
-        self._unused_id_list = []
-        self._next_id = 0
-        # The user_map maps ID's to UserEntry objects (dictionaries).
-        self._user_db: Dict[int, UserEntry] = {}
-        # The role_map maps roles to lists of ID's to quickly collect lists of
-        # keys.
-        self._role_map: Dict[str, Set] = {}
+        if storage_method.exists():
+            # TODO: load user database
+            pass
+        else:
+            # Initialize fresh database
 
+            self.version = 1
+            # ID handling:
+            self._unused_id_list = []
+            self._next_id = 0
+            # The user_map maps ID's to UserEntry objects (dictionaries).
+            self._user_db: Dict[int, UserEntry] = {}
+            # The role_map maps roles to lists of ID's to quickly collect lists of
+            # keys.
+            self._role_map: Dict[str, Set] = {}
+
+            # store data
+            self.store()
     ### ID Hanlinng
 
     # TODO: implementation for storage shall serialize __init__.
+    def _to_dict(self):
+        return {'version': self.version,
+                'next_id': self._next_id,
+                'unused_id_list': self._unused_id_list,
+                'user_db': self._user_db,
+                'role_map': self._role_map,
+                }
+
+    def _from_dict(self, data):
+        # TODO: version check
+        self.version = data['version']
+        self._next_id = data['next_id']
+        self._unused_id_list = data['unused_id_list']
+        self._user_db = data['user_db']
+        self._role_map = data['role_map']
+        # TODO: recreate next_id and unused_id_list
+
     def _set_bytestream(self, data: bytes):
-        pass
-    def _get_bytestream(self, data: bytes):
-        return b''
+        self._from_dict(deserialize(data))
+
+    def _get_bytestream(self):
+        return serialize(self._to_dict())
 
     def add_new(self,
                 validation_key: bytes,
                 encryption_key: bytes,
-                roles: list[str]|str = 'user'):
+                roles: list[str]|str = 'user') -> int:
         if isinstance(roles, str):
             roles = [roles]
 
@@ -55,9 +97,11 @@ class UserDatabase(Storable):
 
         for role in roles:
             # ensure role is present
-            if roles not in self._role_map.keys():
+            if role not in self._role_map.keys():
                 self._role_map[role] = set()
             self._role_map[role].add(user_id)
+
+        return user_id
 
     def remove_user(self, user_id: int):
         ''' Remove user by deleting all role assignments
@@ -76,17 +120,24 @@ class UserDatabase(Storable):
         needs to be authenticated against this user's signing key.
         '''
 
-    def has_role(user_id: int, role: str):
-        # TODO: implementation
-        return False
+    def is_registered(self, user_id):
+        return user_id in self._user_db.keys()
+
+    def _get_user_entry(self, user_id) -> UserEntry:
+        if not self.is_registered(user_id):
+            raise KissUserDatabaseException(f'{user_id} is not registered.')
+        return self._user_db[user_id]
+
+    def has_role(self, user_id: int, role: str):
+        if role not in self._role_map.keys():
+            return False
+        return user_id in self._role_map[role]
 
     def get_validation_key(self, user_id: int) -> bytes:
-        # TODO: implementation
-        return b''
+        return self._get_user_entry(user_id).validation_key
 
     def get_encryption_key(self, user_id: int) -> bytes:
-        # TODO: implementation
-        return b''
+        return self._get_user_entry(user_id).encryption_key
 
     def get_encryption_keys(self, roles: list[str]|str) -> list[bytes]:
         # TODO: implementation

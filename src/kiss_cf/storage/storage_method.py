@@ -19,6 +19,10 @@ class StorageMethod(ABC):
         pass
 
     @abstractmethod
+    def exists(self) -> bool:
+        ''' Does storage (e.g. the file) exist?'''
+
+    @abstractmethod
     def load(self) -> bytes:
         ''' Load data from Storage'''
 
@@ -37,6 +41,9 @@ class StorageMethodDummy(StorageMethod):
     Note: The _set_bytestream() of the Storable must be robust to receive an
     empty bytestream as indication for "no Storage defined".
     '''
+    def exists(self) -> bool:
+        return False
+
     def load(self) -> bytes:
         return b''
 

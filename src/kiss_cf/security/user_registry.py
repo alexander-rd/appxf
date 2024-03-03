@@ -3,14 +3,102 @@
 from __future__ import annotations
 
 import os.path
-from kiss_cf.security.user_db import UserDatabase
 from kiss_cf.storage import StorageMethod, StorageLocation
-from kiss_cf.config import Config
+from kiss_cf.storage import serialize, deserialize
+from .security import Security
+from .user_db import UserDatabase
+
+# USER SIDE:
+#  * Access to config:
+#    * contains USER data
+#    * apply config data received via request response
+#  * The local Security object:
+#    * to get the public encryption/signing keys
+#    >> no need to store this information
+#
+# ADMIN SIDE:
+#  * Access to user_db to perform the registration
+#  * consistency to USER data serialization
+#
+
+class RegistrationRequest:
+    def __init__(self, data):
+        self._data = data
+
+    @property
+    def encryption_key(self):
+        return self._data['encryption_key']
+    @property
+    def signing_key(self):
+        return self._data['signing_key']
+
+    @classmethod
+    def new(cls,
+            user_data,
+            security: Security
+           ):
+        data = {
+            'version': 1,
+            'user_data': user_data,
+            'signing_key': security.get_signing_public_key(),
+            'encryption_key': security.get_encryption_public_key(),
+            'test_blob': 'hello',
+            'test_signature': security.sign(b'hello'),
+            'test_encrypted': b'hello',
+            }
+        # TODO: no option to test encryption key (on this path) since there is
+        # no encryption based on the private key.
+        print(f'RegistrationRequest.from_new(): {data}')
+        return cls(data)
+
+    @classmethod
+    def from_request(cls, registration_bytes: bytes):
+        # TODO: error on wrong version
+        data = deserialize(registration_bytes)
+        print(f'RegistrationRequest.from_registration_bytes(): {data}')
+        return cls(data)
+
+    def get_request_bytes(self) -> bytes:
+        # TODO: verify signing key
+        return serialize(self._data)
+
+
+class RegistrationResponse():
+    def __init__(self, data):
+        self._data = data
+
+    @property
+    def user_id(self):
+        return self._data['user_id']
+
+    @property
+    def config_sections(self):
+        return self._data['config_sections']
+
+    @classmethod
+    def new(cls, user_id, config_sections):
+        data = {
+            'version': 1,
+            'user_id': user_id,
+            'config_sections': config_sections
+            }
+        return cls(data)
+
+    @classmethod
+    def from_response_bytes(cls, registration_response: bytes):
+        data = deserialize(registration_response)
+        return cls(data)
+
+    def get_response_bytes(self) -> bytes:
+        return serialize(self._data)
 
 class UserRegistry:
+    ''' User registry maintains the application user's ID an all user
+        configurations the user is permitted to see. '''
 
     ### Methods for user side (concluded registration)
-    def __init__(self,
+    @classmethod
+    def existing_user(self,
                  location: StorageLocation,
                  config: Config,
                  id_file: str = 'user_id'):
@@ -33,19 +121,6 @@ class UserRegistry:
         pass
 
     ### Methods for user side (during registration)
-    @classmethod
-    def new_user(cls, config: Config, signing_key: bytes, encrypting_key: bytes):
-        obj = cls()
-        # TODO: this implementation needs improvement
-        obj.config = config
-        obj.signing_key = signing_key
-        obj.encrypting_key = encrypting_key
-
-    def get_request_bytes(self) -> bytes:
-        # TODO: put config and keys into a bytestream
-
-        # TODO: data should be signed to ensure the key is working
-        return b''
 
     def apply_registration_response(self, response: bytes):
         # TODO: check incoming information and log (1) the retrieved ID and (2)
@@ -54,7 +129,7 @@ class UserRegistry:
 
         # TODO: verify the response matching the keys.
 
-        # TODO: update user config (adming might have done adaptions)
+        # TODO: update user config (admin might have done adaptions)
 
         # TODO: update configuration with incoming information
         # TODO: sync (or restart?)
@@ -62,39 +137,10 @@ class UserRegistry:
         # TODO: clarfify how it is checked that everything worked
         pass
 
-    ### Methods for admin side
-    @classmethod
-    def from_request_bytes(cls, request: bytes) -> UserRegistry:
-        # TODO unpack the bytes (and store)
+# TODO: can we register the same user twice? How would we know? We
+# would need to double-check the keys (which we did not want to use as
+# ID's). We could maintain some "ongoing registrations" data. Note that
+# there is currently no tool supported feedback on a registration
+# success (when the user has applied the registration response).
 
-        # TODO Open question "config object nature": note that or
-        # "for_new_user", the config object can be equivalent to the one
-        # aplication config. The one we have here should be only some sections
-        # as dictionaries.
-
-        # TODO: How do we ensure the keys are correct? For encryption key:
-        # registration will fail on user side. For singing key: could be done
-        # here by verifying the content.
-        return cls()
-
-    def get_user_config() -> Config:
-        ''' Return user config for inspection. '''
-        # TODO: See above: Open question "config object nature".
-        return Config()
-
-    def register():
-        ''' Register current user in user DB '''
-        # TODO: add to user_db and retrieve ID
-
-        # TODO: can we register the same user twice? How would we know? We
-        # would need to double-check the keys (which we did not want to use as
-        # ID's). We could maintain some "ongoing registrations" data. Note that
-        # there is currently no tool supported feedback on a registration
-        # success (when the user has applied the registration response).
-        pass
-
-    def get_response_bytes(self) -> bytes:
-        ''' Provide registration response '''
-        # TODO: add the config data that shall be passed (missing in interface)
-
-        # TODO: retrieve user ID and add to package
+# TODO: add user information to some DB??

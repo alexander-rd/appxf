@@ -8,7 +8,7 @@ class DummyLocation(StorageLocation):
     def get_id(self, file: str = '') -> str:
         return 'dummy: ' + file
 
-    def file_exists(self, file: str = '') -> bool:
+    def exists(self, file: str = '') -> bool:
         # must be false because StorageLocation still tries to evaluate time
         # offset by a temporary file.
         return False

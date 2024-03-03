@@ -99,7 +99,7 @@ class FtpLocation(StorageLocation):
         # TODO LATER: ensure login to FTP server is possible and things are
         # operational. An initial stat of the location could be of interes.
 
-    def file_exists(self, file: str) -> bool:
+    def exists(self, file: str) -> bool:
         file = os.path.join(self.path, file)
         try:
             return self.connection.path.exists(file)
