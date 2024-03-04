@@ -5,9 +5,6 @@ import shutil
 from kiss_cf.config import Config
 from kiss_cf.storage.local import LocalStorageLocation
 from kiss_cf.security import Security, UserDatabase, RegistrationRequest, RegistrationResponse
-# TODO: this import (and others like this) should come directly from security module:
-#  from kiss_cf.security import UserRegistry
-# from kiss_cf.security.user_registry import UserRegistry
 
 from tests.fixtures.env_base import env_base
 from tests.fixtures.env_storage import env_test_directory

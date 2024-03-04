@@ -198,6 +198,19 @@ class Config():
             self.log.info(f'updated option: {option} '
                           f'in {section} to {value}')
 
+    def set(self, section: str, option: str, value):
+        ''' Set value. Section and Option must exist.
+
+        Validity of input is also verified.
+        '''
+        if section not in self.config.sections():
+            raise Exception(f'Section {section} does not exist.')
+        if option not in self.config.options(section):
+            raise Exception(f'Option {option} for section {section} does not exist.')
+        if not self.option_config[option].validate(str(value)):
+            raise Exception(f'Value {value} is not valid for {section}:{option}.')
+        self.config[section][option] = str(value)
+
     # INI File Handling
     def add_ini_file(self, file):
         config = ToolConfigParser()
