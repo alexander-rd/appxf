@@ -5,4 +5,6 @@ import pytest
 
 @pytest.fixture
 def env_base():
-    return {}
+    return {
+        'path_testing': './.testing'
+    }

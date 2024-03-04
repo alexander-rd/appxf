@@ -206,6 +206,8 @@ class ConfigOptionWidget(tkinter.Frame):
         value = self.sv.get()
         if self.option_config.validate(value):
             self.is_valid = True
+            # TODO: this code relies on internal structure of config. It should
+            # use some setter function.
             self.config.config[self.section][self.option] = value
             self.entry.config(foreground='black')
         else:

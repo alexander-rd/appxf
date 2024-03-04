@@ -34,7 +34,8 @@ legacy_tox_ini = """
       -r{toxinidir}/requirements.txt
       -r{toxinidir}/requirements_test.txt
 
-    commands = coverage run --source=kiss_cf --branch -m pytest
+    commands = pytest -rA tests/fixtures/application.py::test_cleanup
+               coverage run --source=kiss_cf --branch -m pytest -rA
                coverage report
                coverage html
 """

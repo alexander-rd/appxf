@@ -1,3 +1,9 @@
+''' Tests for class Security in security module
+
+Test cases use the security object from the application mock to re-use path
+setup within the application.
+'''
+
 import os
 import pytest
 import shutil
@@ -5,46 +11,11 @@ import shutil
 from kiss_cf.security import Security, SecurePrivateStorageMethod
 from kiss_cf.storage import LocalStorageLocation
 
+# Indirectly used environments still need to be importet
 from tests.fixtures.env_base import env_base
-from tests.fixtures.env_storage import env_test_directory
+from tests.fixtures.application import app_fresh_user, app_initialized_user, app_unlocked_user
+from tests.fixtures.application_mock import ApplicationMock
 
-# define default context/environment
-@pytest.fixture
-def env_uninitialized(env_test_directory):
-    env = env_test_directory
-    # we will always need a location
-    env['location'] = LocalStorageLocation(path=env['dir'])
-    # there will be a default salt and password
-    env['salt'] = 'test_salt'
-    env['password'] = 'test_password'
-    # and a pre-setup security object
-    env['obj key file'] = os.path.join(env['dir'], 'user.key')
-    env['security'] = Security(salt=env['salt'],
-                          file=env['obj key file'])
-    return env
-
-@pytest.fixture
-def env_initialized(env_uninitialized):
-    env = env_uninitialized
-    env['security'].init_user(env['password'])
-    # Start with fresh security object. The one before was already used to
-    # initialize the user.
-    env['security'] = Security(salt=env['salt'],
-                          file=env['obj key file'])
-    # sanity checks
-    assert os.path.exists(env['obj key file'])
-    assert env['security'].is_user_initialized()
-
-    return env
-
-@pytest.fixture
-def env_unlocked(env_initialized):
-    env = env_initialized
-    env['security'].unlock_user(env['password'])
-    # sanity checks
-    assert env['security'].is_user_unlocked()
-
-    return env
 
 # TODO UPGRADE: Is the "user" in interface name "is_user_unlocked" necessary?
 # Same for "user.keys" Class implementation should be checked for any usage of
@@ -57,61 +28,58 @@ def env_unlocked(env_initialized):
 # user with different password)
 
 # Uninitialized test location should indicate as not user initialized.
-def test_security_uninitialized(env_uninitialized):
-    env = env_uninitialized
-    assert not env['security'].is_user_initialized()
+def test_security_uninitialized(app_fresh_user):
+    app: ApplicationMock = app_fresh_user['app_user']
+    assert not app.security.is_user_initialized()
     # also not unlocked
-    assert not env['security'].is_user_unlocked()
+    assert not app.security.is_user_unlocked()
 
 # Initialize a user (write file and authenticate)
-def test_security_init(env_uninitialized):
-    env = env_uninitialized
-    env['security'].init_user('some_password')
+def test_security_init(app_fresh_user):
+    app: ApplicationMock = app_fresh_user['app_user']
+    app.security.init_user('some_password')
     # file should now be present:
-    assert os.path.exists(env['obj key file'])
+    assert os.path.exists(app._file_sec)
     # and user should be initialized:
-    assert env['security'].is_user_initialized()
+    assert app.security.is_user_initialized()
     # user is still not unlocked
-    assert env['security'].is_user_unlocked()
+    assert app.security.is_user_unlocked()
     # unlock (should not throw error) and check
-    env['security'].unlock_user('some_password')
-    assert env['security'].is_user_unlocked()
+    app.security.unlock_user('some_password')
+    assert app.security.is_user_unlocked()
 
 # Unlock a user
-def test_security_unlock(env_initialized):
-    env = env_initialized
-    assert env['security'].is_user_initialized()
-    assert not env['security'].is_user_unlocked()
+def test_security_unlock(app_initialized_user):
+    app: ApplicationMock = app_initialized_user['app_user']
+    assert app.security.is_user_initialized()
+    assert not app.security.is_user_unlocked()
     # unlock:
-    env['security'].unlock_user(env['password'])
-    assert  env['security'].is_user_unlocked()
+    app.security.unlock_user(app.password)
+    assert app.security.is_user_unlocked()
 
 # Store and load
-def test_security_store_load(env_unlocked):
-    env = env_unlocked
-
+def test_security_store_load(app_unlocked_user):
+    app: ApplicationMock = app_unlocked_user['app_user']
     data = b'123456ABC!'
     storage = SecurePrivateStorageMethod(
-        base_method=env['location'].get_storage_method('some_file'),
-        security=env['security'])
-
+        base_method=app.location_data.get_storage_method('some_file'),
+        security=app.security)
     # store
     storage.store(data)
     # load
     data_loaded = storage.load()
     assert data == data_loaded
-
     # try to read from new security
-    sec = Security(salt = env['salt'],
-                   file = env['obj key file'])
+    sec = Security(salt = app.salt,
+                   file = app._file_sec)
     assert not sec.is_user_unlocked()
-    sec.unlock_user(env['password'])
+    sec.unlock_user(app.password)
     # Note: need to delete prior storage object. Storage locations do not allow
     # two methods covering the same file.
     del storage
     storage = SecurePrivateStorageMethod(
-        base_method=env['location'].get_storage_method('some_file'),
-        security=env['security'])
+        base_method=app.location_data.get_storage_method('some_file'),
+        security=app.security)
     data_loaded = storage.load()
     assert data == data_loaded
 
@@ -122,42 +90,42 @@ def test_security_store_load(env_unlocked):
 # implementation sign and manual verify. (2) Manual sign and let implementation
 # verify.
 
-def test_security_store_assymetric_keys(env_unlocked):
-    env = env_unlocked
+def test_security_store_assymetric_keys(app_unlocked_user):
+    app: ApplicationMock = app_unlocked_user['app_user']
 
     # get public keys. Note that they might be generated on first time
     # accessing them.
-    signing_public_key = env['security'].get_signing_public_key()
-    encryp_public_key = env['security'].get_encryption_public_key()
+    signing_public_key = app.security.get_signing_public_key()
+    encryp_public_key = app.security.get_encryption_public_key()
 
     # Take new security, unlock and check agains the ones above. Note that the
     # data already needs to be stored before tear down of the security above.
     # The use case is quite unusual and not supported: having two Security
     # objects accessing the same data.
-    security = Security(env['salt'], env['obj key file'])
-    security.unlock_user(env['password'])
+    security = Security(app.salt, app._file_sec)
+    security.unlock_user(app.password)
     assert signing_public_key == security.get_signing_public_key()
     assert encryp_public_key == security.get_encryption_public_key()
 
 # Verify cycle
-def test_security_sign_verify(env_unlocked):
-    env = env_unlocked
+def test_security_sign_verify(app_unlocked_user):
+    app: ApplicationMock = app_unlocked_user['app_user']
 
     data = b'To Be Signed'
-    signature = env['security'].sign(data)
-    signatureFalse = env['security'].sign(data + b'x')
+    signature = app.security.sign(data)
+    signatureFalse = app.security.sign(data + b'x')
 
-    assert env['security'].verify(data, signature)
-    assert not env['security'].verify(data, signatureFalse)
+    assert app.security.verify(data, signature)
+    assert not app.security.verify(data, signatureFalse)
 
 # Hybrid encrypt/decrypt cycle:
-def test_security_hybrid_encrypt_decrypt(env_unlocked):
-    env = env_unlocked
+def test_security_hybrid_encrypt_decrypt(app_unlocked_user):
+    app: ApplicationMock = app_unlocked_user['app_user']
 
     data = b'To be encrypted'
-    data_encrpted, key_map = env['security'].hybrid_encrypt(data)
+    data_encrpted, key_map = app.security.hybrid_encrypt(data)
 
-    data_decrypted = env['security'].hybrid_decrypt(data_encrpted, key_map)
+    data_decrypted = app.security.hybrid_decrypt(data_encrpted, key_map)
 
     assert data != data_encrpted
     assert data == data_decrypted

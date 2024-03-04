@@ -10,22 +10,16 @@ KISS Cross Functionals need to consider the types of source code within the libr
 
  In addition to the basic test coverage, the testing must consider future interface changes, meaning: __the testing include backwards compatibility__.
 
-Basic functionality
+Basic Functionality
 -------------------
-Basic functionality is tested via unit testing in <code>tests/test_\<module\>.py</code> or <code>tests/\<module\>/test_\<sub-module\>.py</code>.
+Basic functionality is tested via unit testing in <code>tests/test_\<module\>.py</code> or <code>tests/\<module\>/test_\<sub-module\>.py</code>. Unit testing may be anything done by pytest and does not require cutting all interfaces free. It may use the ApplicationMock (see below) as well as behavior driven testing.
 
 Convinience Functionality
 -------------------------
 
-Convinience functions shall be tested by behavior driven tests in context of a __test application fixture__ which is prepared and used as follows:
-  1. The test application is prepared once for the kiss_cf library version at location: <code>.testing/app_\<context\>_\<kiss_cf version\></code>.
-  1. The prepared folder is copied for the specific test case and prepared environment consists of:
-      * Root storage location of the files
-      * Application configuration (which files are used)
-      * Access to all objects of the application
-  1. The implementation of the test cases shall consider:
-      * Reuse of actions and checks across features
-      * Allowing to build up complex actions from simpler actions
+Convinience functions shall be tested by behavior driven tests in context of the __ApplicationMock__ (see below). The implementation shall consider:
+    * Reuse of actions and checks across features
+    * Allowing to build up complex actions from simpler actions
 Additionally, especially during build-up of new features, the testing can happen in an isolated fashion where only basic use cases are covered.
 
 GUI
@@ -36,12 +30,17 @@ GUI implementations shall come along with test applications, showing the GUI to 
 
 \# TODO: Mention a specific example of such a GUI test.
 
+ApplicationMock
+---------------
+The __ApplicationMock__ in <code>tests/fixtures/application_mock.py</code> mimics an application sufficiently complex for advanced test cases. The fixtures in <code>tests/fixtures/application.py</code> may combine several ApplicationMock instances. They are prepared and used as follows:
+  1. The file structure is prepared once for the kiss_cf library version at location: <code>.testing/app_\<context\>_\<kiss_cf version\></code>.
+  1. The prepared folder is copied for the specific test case. The dictionary of the fixture contains entries like <code>app_user</code> which return an ApplicationMock object. This ApplicationMock includes all objects and required paths in context of the ApplicationMock.
+
 Backwards Compatibility
 -----------------------
 
-Testing of backwards compatibility shall be based on the __test application fixtures__ with the following procedure:
-  * At a release, the kiss_cf-version specific prepared application fixtures are checked-in while the release version of the main branch is increased.
-      * Test cases would now test, assuming only the new kiss_cf version.
+Testing of backwards compatibility shall be based on the __ApplicationMock__ fixtures with the following procedure:
+  * At a release, the kiss_cf-version specific prepared file structures <code>.testing/app_*</code> are checked-in while the release version of the main branch is increased.
   * The behavior driven sceanrio outlines are extended by incorporating the old version.
 
 \# TODO: Mention a specific example of such a test application fixture.
