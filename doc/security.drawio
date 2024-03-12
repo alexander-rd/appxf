@@ -1,6 +1,6 @@
-<mxfile host="Electron" modified="2023-12-21T00:31:25.556Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.1.11 Chrome/114.0.5735.289 Electron/25.9.8 Safari/537.36" etag="wB96iawHXHCy4BoBUyRm" version="22.1.11" type="device" pages="7">
+<mxfile host="Electron" modified="2024-03-11T20:46:41.684Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/23.1.5 Chrome/120.0.6099.109 Electron/28.1.0 Safari/537.36" etag="c-hQHLyv2SzjDRUTnZ3f" version="23.1.5" type="device" pages="7">
   <diagram name="keysAndFiles" id="b520641d-4fe3-3701-9064-5fc419738815">
-    <mxGraphModel dx="1364" dy="843" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="none" math="0" shadow="0">
+    <mxGraphModel dx="1364" dy="963" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="none" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -369,7 +369,7 @@
     </mxGraphModel>
   </diagram>
   <diagram name="Security_Login" id="9GLqgFxU_xmbWUZ4WefS">
-    <mxGraphModel dx="1364" dy="843" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1364" dy="963" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="X6GZVWQ1ksjxXso5Bdzm-0" />
         <mxCell id="X6GZVWQ1ksjxXso5Bdzm-1" parent="X6GZVWQ1ksjxXso5Bdzm-0" />
@@ -467,7 +467,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="bAzGcrB41SxxVaXss1Ik" name="login">
-    <mxGraphModel dx="941" dy="664" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1364" dy="963" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -548,7 +548,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="tuD3eJj9LSvBkMyMEO9G" name="initLogin">
-    <mxGraphModel dx="1364" dy="843" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1364" dy="963" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -583,7 +583,7 @@
     </mxGraphModel>
   </diagram>
   <diagram name="registration" id="zbI80wzck45VdG9WgETQ">
-    <mxGraphModel dx="1364" dy="843" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1137" dy="803" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="Qb3zigScpDeNIGzpR6OY-0" />
         <mxCell id="Qb3zigScpDeNIGzpR6OY-1" parent="Qb3zigScpDeNIGzpR6OY-0" />
@@ -805,7 +805,7 @@
     </mxGraphModel>
   </diagram>
   <diagram name="loginAdvanced" id="gWnIZJcdTkDZ-9xj0MkZ">
-    <mxGraphModel dx="1364" dy="843" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1364" dy="963" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="7yckt8KUjCxO1QvBVogK-0" />
         <mxCell id="7yckt8KUjCxO1QvBVogK-1" parent="7yckt8KUjCxO1QvBVogK-0" />
@@ -918,7 +918,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="m2daDjJiGA5daosNPSTx" name="SecurityPattern">
-    <mxGraphModel dx="1987" dy="703" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2214" dy="963" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -1171,140 +1171,143 @@
         <mxCell id="q80bOthsflT0ubA_r6vo-10" value="We only need this object during sync procedure? No - we wll also need the sign/encrypt capabilities during runtime." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
           <mxGeometry x="1140" y="522.5" width="200" height="65" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-1" value="Tool ensures user database is updated before usage." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-1" value="Tool ensures user database is updated before usage." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
           <mxGeometry x="38" y="250" width="662" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-5" value="" style="group" vertex="1" connectable="0" parent="1">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-5" value="" style="group" parent="1" vertex="1" connectable="0">
           <mxGeometry x="350" y="10" width="30" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-3" value="User Local Key" style="sketch=0;aspect=fixed;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=#6c8ebf;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#dae8fc;shape=mxgraph.mscae.enterprise.key_permissions;points=[[0.03,0.02,0,0,0],[0.04,0.54,0,0,0],[0.5,0,0,0,0],[0.5,1,0,0,0],[0.96,0.54,0,0,0],[0.97,0.02,0,0,0]];" vertex="1" parent="NvN8Aw2CbYDaRo8zXkmP-5">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-3" value="User Local Key" style="sketch=0;aspect=fixed;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=#6c8ebf;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#dae8fc;shape=mxgraph.mscae.enterprise.key_permissions;points=[[0.03,0.02,0,0,0],[0.04,0.54,0,0,0],[0.5,0,0,0,0],[0.5,1,0,0,0],[0.96,0.54,0,0,0],[0.97,0.02,0,0,0]];" parent="NvN8Aw2CbYDaRo8zXkmP-5" vertex="1">
           <mxGeometry x="2" width="26" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-4" value="sym" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="NvN8Aw2CbYDaRo8zXkmP-5">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-4" value="sym" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" parent="NvN8Aw2CbYDaRo8zXkmP-5" vertex="1">
           <mxGeometry width="30" height="25" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-10" value="" style="group" vertex="1" connectable="0" parent="1">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-10" value="" style="group" parent="1" vertex="1" connectable="0">
           <mxGeometry x="850" y="10" width="30" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-6" value="User Public Key" style="sketch=0;aspect=fixed;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=#6c8ebf;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#dae8fc;shape=mxgraph.mscae.enterprise.key_permissions;points=[[0.03,0.02,0,0,0],[0.04,0.54,0,0,0],[0.5,0,0,0,0],[0.5,1,0,0,0],[0.96,0.54,0,0,0],[0.97,0.02,0,0,0]];" vertex="1" parent="NvN8Aw2CbYDaRo8zXkmP-10">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-6" value="User Public Key" style="sketch=0;aspect=fixed;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=#6c8ebf;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#dae8fc;shape=mxgraph.mscae.enterprise.key_permissions;points=[[0.03,0.02,0,0,0],[0.04,0.54,0,0,0],[0.5,0,0,0,0],[0.5,1,0,0,0],[0.96,0.54,0,0,0],[0.97,0.02,0,0,0]];" parent="NvN8Aw2CbYDaRo8zXkmP-10" vertex="1">
           <mxGeometry x="2" width="26" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-8" value="pub" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="NvN8Aw2CbYDaRo8zXkmP-10">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-8" value="pub" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" parent="NvN8Aw2CbYDaRo8zXkmP-10" vertex="1">
           <mxGeometry y="2.5" width="30" height="21" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-11" value="" style="group" vertex="1" connectable="0" parent="1">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-11" value="" style="group" parent="1" vertex="1" connectable="0">
           <mxGeometry x="759" y="10" width="30" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-7" value="User Private Key" style="sketch=0;aspect=fixed;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=#6c8ebf;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#dae8fc;shape=mxgraph.mscae.enterprise.key_permissions;points=[[0.03,0.02,0,0,0],[0.04,0.54,0,0,0],[0.5,0,0,0,0],[0.5,1,0,0,0],[0.96,0.54,0,0,0],[0.97,0.02,0,0,0]];" vertex="1" parent="NvN8Aw2CbYDaRo8zXkmP-11">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-7" value="User Private Key" style="sketch=0;aspect=fixed;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=#6c8ebf;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#dae8fc;shape=mxgraph.mscae.enterprise.key_permissions;points=[[0.03,0.02,0,0,0],[0.04,0.54,0,0,0],[0.5,0,0,0,0],[0.5,1,0,0,0],[0.96,0.54,0,0,0],[0.97,0.02,0,0,0]];" parent="NvN8Aw2CbYDaRo8zXkmP-11" vertex="1">
           <mxGeometry x="2" width="26" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-9" value="priv" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="NvN8Aw2CbYDaRo8zXkmP-11">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-9" value="priv" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" parent="NvN8Aw2CbYDaRo8zXkmP-11" vertex="1">
           <mxGeometry y="4.5" width="30" height="17" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-12" value="" style="group" vertex="1" connectable="0" parent="1">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-12" value="" style="group" parent="1" vertex="1" connectable="0">
           <mxGeometry x="343" y="160" width="30" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-13" value="Signing Key Pair" style="sketch=0;aspect=fixed;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=#6c8ebf;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#dae8fc;shape=mxgraph.mscae.enterprise.key_permissions;points=[[0.03,0.02,0,0,0],[0.04,0.54,0,0,0],[0.5,0,0,0,0],[0.5,1,0,0,0],[0.96,0.54,0,0,0],[0.97,0.02,0,0,0]];" vertex="1" parent="NvN8Aw2CbYDaRo8zXkmP-12">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-13" value="Signing Key Pair" style="sketch=0;aspect=fixed;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=#6c8ebf;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#dae8fc;shape=mxgraph.mscae.enterprise.key_permissions;points=[[0.03,0.02,0,0,0],[0.04,0.54,0,0,0],[0.5,0,0,0,0],[0.5,1,0,0,0],[0.96,0.54,0,0,0],[0.97,0.02,0,0,0]];" parent="NvN8Aw2CbYDaRo8zXkmP-12" vertex="1">
           <mxGeometry x="2" width="26" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-14" value="priv" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="NvN8Aw2CbYDaRo8zXkmP-12">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-14" value="priv" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" parent="NvN8Aw2CbYDaRo8zXkmP-12" vertex="1">
           <mxGeometry y="4.5" width="30" height="17" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-16" value="" style="group" vertex="1" connectable="0" parent="NvN8Aw2CbYDaRo8zXkmP-12">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-16" value="" style="group" parent="NvN8Aw2CbYDaRo8zXkmP-12" vertex="1" connectable="0">
           <mxGeometry x="-18" y="-10" width="30" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-17" value="" style="sketch=0;aspect=fixed;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=#6c8ebf;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#dae8fc;shape=mxgraph.mscae.enterprise.key_permissions;points=[[0.03,0.02,0,0,0],[0.04,0.54,0,0,0],[0.5,0,0,0,0],[0.5,1,0,0,0],[0.96,0.54,0,0,0],[0.97,0.02,0,0,0]];" vertex="1" parent="NvN8Aw2CbYDaRo8zXkmP-16">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-17" value="" style="sketch=0;aspect=fixed;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=#6c8ebf;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#dae8fc;shape=mxgraph.mscae.enterprise.key_permissions;points=[[0.03,0.02,0,0,0],[0.04,0.54,0,0,0],[0.5,0,0,0,0],[0.5,1,0,0,0],[0.96,0.54,0,0,0],[0.97,0.02,0,0,0]];" parent="NvN8Aw2CbYDaRo8zXkmP-16" vertex="1">
           <mxGeometry x="2" width="26" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-18" value="pub" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="NvN8Aw2CbYDaRo8zXkmP-16">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-18" value="pub" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" parent="NvN8Aw2CbYDaRo8zXkmP-16" vertex="1">
           <mxGeometry y="2.5" width="30" height="21" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-19" value="" style="group" vertex="1" connectable="0" parent="1">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-19" value="" style="group" parent="1" vertex="1" connectable="0">
           <mxGeometry x="420" y="100" width="30" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-20" value="Encryption Key Pair" style="sketch=0;aspect=fixed;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=#6c8ebf;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#dae8fc;shape=mxgraph.mscae.enterprise.key_permissions;points=[[0.03,0.02,0,0,0],[0.04,0.54,0,0,0],[0.5,0,0,0,0],[0.5,1,0,0,0],[0.96,0.54,0,0,0],[0.97,0.02,0,0,0]];" vertex="1" parent="NvN8Aw2CbYDaRo8zXkmP-19">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-20" value="Encryption Key Pair" style="sketch=0;aspect=fixed;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=#6c8ebf;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#dae8fc;shape=mxgraph.mscae.enterprise.key_permissions;points=[[0.03,0.02,0,0,0],[0.04,0.54,0,0,0],[0.5,0,0,0,0],[0.5,1,0,0,0],[0.96,0.54,0,0,0],[0.97,0.02,0,0,0]];" parent="NvN8Aw2CbYDaRo8zXkmP-19" vertex="1">
           <mxGeometry x="2" width="26" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-21" value="priv" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="NvN8Aw2CbYDaRo8zXkmP-19">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-21" value="priv" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" parent="NvN8Aw2CbYDaRo8zXkmP-19" vertex="1">
           <mxGeometry y="4.5" width="30" height="17" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-22" value="" style="group" vertex="1" connectable="0" parent="NvN8Aw2CbYDaRo8zXkmP-19">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-22" value="" style="group" parent="NvN8Aw2CbYDaRo8zXkmP-19" vertex="1" connectable="0">
           <mxGeometry x="-18" y="-10" width="30" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-23" value="" style="sketch=0;aspect=fixed;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=#6c8ebf;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#dae8fc;shape=mxgraph.mscae.enterprise.key_permissions;points=[[0.03,0.02,0,0,0],[0.04,0.54,0,0,0],[0.5,0,0,0,0],[0.5,1,0,0,0],[0.96,0.54,0,0,0],[0.97,0.02,0,0,0]];" vertex="1" parent="NvN8Aw2CbYDaRo8zXkmP-22">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-23" value="" style="sketch=0;aspect=fixed;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=#6c8ebf;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;fillColor=#dae8fc;shape=mxgraph.mscae.enterprise.key_permissions;points=[[0.03,0.02,0,0,0],[0.04,0.54,0,0,0],[0.5,0,0,0,0],[0.5,1,0,0,0],[0.96,0.54,0,0,0],[0.97,0.02,0,0,0]];" parent="NvN8Aw2CbYDaRo8zXkmP-22" vertex="1">
           <mxGeometry x="2" width="26" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-24" value="pub" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="NvN8Aw2CbYDaRo8zXkmP-22">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-24" value="pub" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" parent="NvN8Aw2CbYDaRo8zXkmP-22" vertex="1">
           <mxGeometry y="2.5" width="30" height="21" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-25" value="" style="endArrow=classic;html=1;rounded=0;targetPerimeterSpacing=30;endSize=6;jumpStyle=none;strokeColor=default;strokeWidth=1;endFill=1;jumpSize=6;shadow=0;perimeterSpacing=0;startFill=1;targetPortConstraint=none;arcSize=20;snapToPoint=0;fixDash=0;flowAnimation=0;noJump=0;orthogonalLoop=0;enumerate=0;comic=0;exitX=0.9;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.04;entryY=0.54;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="fhy-YUX6kCh-9WjlA6XP-5" target="NvN8Aw2CbYDaRo8zXkmP-23">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-25" value="" style="endArrow=classic;html=1;rounded=0;targetPerimeterSpacing=30;endSize=6;jumpStyle=none;strokeColor=default;strokeWidth=1;endFill=1;jumpSize=6;shadow=0;perimeterSpacing=0;startFill=1;targetPortConstraint=none;arcSize=20;snapToPoint=0;fixDash=0;flowAnimation=0;noJump=0;orthogonalLoop=0;enumerate=0;comic=0;exitX=0.9;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.04;entryY=0.54;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="fhy-YUX6kCh-9WjlA6XP-5" target="NvN8Aw2CbYDaRo8zXkmP-23" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="245" y="111" as="sourcePoint" />
             <mxPoint x="330" y="180" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-27" value="" style="endArrow=classic;html=1;rounded=0;targetPerimeterSpacing=30;endSize=6;jumpStyle=none;strokeColor=default;strokeWidth=1;endFill=1;jumpSize=6;shadow=0;perimeterSpacing=0;startFill=1;targetPortConstraint=none;arcSize=20;snapToPoint=0;fixDash=0;flowAnimation=0;noJump=0;orthogonalLoop=0;enumerate=0;comic=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="fhy-YUX6kCh-9WjlA6XP-10" target="fhy-YUX6kCh-9WjlA6XP-5">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-27" value="" style="endArrow=classic;html=1;rounded=0;targetPerimeterSpacing=30;endSize=6;jumpStyle=none;strokeColor=default;strokeWidth=1;endFill=1;jumpSize=6;shadow=0;perimeterSpacing=0;startFill=1;targetPortConstraint=none;arcSize=20;snapToPoint=0;fixDash=0;flowAnimation=0;noJump=0;orthogonalLoop=0;enumerate=0;comic=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="fhy-YUX6kCh-9WjlA6XP-10" target="fhy-YUX6kCh-9WjlA6XP-5" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="245" y="111" as="sourcePoint" />
             <mxPoint x="399" y="137" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-28" value="Ensures authenticity including control by admin to mark users &quot;not authorized&quot;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-28" value="Ensures authenticity including control by admin to mark users &quot;not authorized&quot;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
           <mxGeometry x="131" y="320" width="170" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-29" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" edge="1" parent="1" source="eJRrrzeOhnSmcSflb9A5-6" target="NvN8Aw2CbYDaRo8zXkmP-28">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-29" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" parent="1" source="eJRrrzeOhnSmcSflb9A5-6" target="NvN8Aw2CbYDaRo8zXkmP-28" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="400" y="520" as="sourcePoint" />
             <mxPoint x="450" y="470" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-30" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" edge="1" parent="1" source="NvN8Aw2CbYDaRo8zXkmP-28" target="NvN8Aw2CbYDaRo8zXkmP-1">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-30" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" parent="1" source="NvN8Aw2CbYDaRo8zXkmP-28" target="NvN8Aw2CbYDaRo8zXkmP-1" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="228" y="421" as="sourcePoint" />
             <mxPoint x="227" y="380" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-31" value="From remote storage where only admins have writing rights." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-31" value="From remote storage where only admins have writing rights." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
           <mxGeometry x="-200" y="831" width="160" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-32" value="User Database Layout (as map)&lt;br&gt;&lt;br&gt;User&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Role&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Validation Key&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Encryption Key&lt;br&gt;&amp;lt;ID1&amp;gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;User&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;br&gt;&amp;lt;ID1&amp;gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Admin&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;br&gt;&amp;lt;ID1&amp;gt; &lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Listen&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;br&gt;&amp;lt;ID1&amp;gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Hof&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;br&gt;&amp;lt;ID2&amp;gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;User&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;br&gt;&amp;lt;ID2&amp;gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Listen&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;br&gt;&lt;br&gt;Additonal map: Role to list of Users" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-32" value="User Database Layout (as map)&lt;br&gt;&lt;br&gt;User&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Role&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Validation Key&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Encryption Key&lt;br&gt;&amp;lt;ID1&amp;gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;User&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;br&gt;&amp;lt;ID1&amp;gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Admin&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;br&gt;&amp;lt;ID1&amp;gt; &lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Listen&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;br&gt;&amp;lt;ID1&amp;gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Hof&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;br&gt;&amp;lt;ID2&amp;gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;User&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;br&gt;&amp;lt;ID2&amp;gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;Listen&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;...&lt;br&gt;&lt;br&gt;Additonal map: Role to list of Users" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
           <mxGeometry x="158" y="1040" width="400" height="170" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-33" value="The user ID is provided as part of administation process." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-33" value="The user ID is provided as part of administation process." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
           <mxGeometry x="-50" y="1100" width="110" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-34" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" edge="1" parent="1" source="NvN8Aw2CbYDaRo8zXkmP-33" target="NvN8Aw2CbYDaRo8zXkmP-32">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-34" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" parent="1" source="NvN8Aw2CbYDaRo8zXkmP-33" target="NvN8Aw2CbYDaRo8zXkmP-32" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="260" y="1120" as="sourcePoint" />
             <mxPoint x="310" y="1070" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-35" value="KISS_CF should enforce this by crashing if any non-admin can write on this location." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-35" value="KISS_CF should enforce this by crashing if any non-admin can write on this location." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
           <mxGeometry x="-230" y="996" width="160" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-36" value="Problem: time synchronization with FTP source to determine update is based on file writing." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-36" value="Problem: time synchronization with FTP source to determine update is based on file writing." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
           <mxGeometry x="-310" y="904" width="160" height="64" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-37" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" edge="1" parent="1" source="NvN8Aw2CbYDaRo8zXkmP-35" target="NvN8Aw2CbYDaRo8zXkmP-36">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-37" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" parent="1" source="NvN8Aw2CbYDaRo8zXkmP-35" target="NvN8Aw2CbYDaRo8zXkmP-36" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="260" y="1120" as="sourcePoint" />
             <mxPoint x="310" y="1070" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-38" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" edge="1" parent="1" source="NvN8Aw2CbYDaRo8zXkmP-31" target="NvN8Aw2CbYDaRo8zXkmP-35">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-38" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" parent="1" source="NvN8Aw2CbYDaRo8zXkmP-31" target="NvN8Aw2CbYDaRo8zXkmP-35" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="-136" y="901" as="sourcePoint" />
             <mxPoint x="-152" y="920" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-39" value="user database must be on normal shared FTP.&lt;br&gt;Special 1: user database must be signed and signature verification must be against admin database (only available remotely)" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-39" value="user database must be on normal shared FTP.&lt;br&gt;Special 1: user database must be signed and signature verification must be against admin database (only available remotely)" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
           <mxGeometry x="-450" y="992" width="210" height="98" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-40" value="Admin Database" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=bottom;" vertex="1" parent="1">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-40" value="Admin Database" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=bottom;" parent="1" vertex="1">
           <mxGeometry x="335" y="740" width="90" height="86" as="geometry" />
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-41" value="Note: we could avoid special signature process for user database if it is placed directly on the admin database storage. Reason: only admins would have writing rights. &lt;br&gt;Consequence would be that we would have to download it on every tool start and not only when it is new. The &quot;is new&quot; detection requires write access to remote location to synchronize local and remote clocks." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-41" value="Note: we could avoid special signature process for user database if it is placed directly on the admin database storage. Reason: only admins would have writing rights. &lt;br&gt;Consequence would be that we would have to download it on every tool start and not only when it is new. The &quot;is new&quot; detection requires write access to remote location to synchronize local and remote clocks." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" parent="1" vertex="1">
           <mxGeometry x="-430" y="696" width="200" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="LhK6DS5hXO8-BbIWEDqX-1" value="I may really need role specific keys to invalidate a role for a user while NOT invalidating it&#39;s user keys. &amp;gt;&amp;gt; Not true. Validity of key concerning a role is stored in the user database. If one needs to know if the key is valid, they can check the DB.&lt;br&gt;&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="603.5" y="1090" width="230" height="110" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

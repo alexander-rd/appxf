@@ -1,7 +1,7 @@
 # KISS_CF Test Strategy
 
 Goals
-----
+-----
 KISS Cross Functionals need to consider the types of source code within the library:
  * __Any implementation__ should have 100% function coverage. However, python coverage does only support line and branch coverage. Putting this goal in numbers results in: __*80% line coverage*__.
  * __basic functionality__ should be fully tested with __*100% branch coverage*__.
@@ -44,4 +44,6 @@ Testing of backwards compatibility shall be based on the __ApplicationMock__ fix
   * The behavior driven sceanrio outlines are extended by incorporating the old version.
 
 \# TODO: Mention a specific example of such a test application fixture.
+
+\# TODO: It may be necessary to also use this approach for non BDD tests.
 

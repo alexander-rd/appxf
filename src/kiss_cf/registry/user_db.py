@@ -1,7 +1,8 @@
 import pickle
 
 from kiss_cf.storage import Storable, StorageMethod, serialize, deserialize
-from kiss_cf.security.security import Security
+from kiss_cf.storage import StorageLocation
+from kiss_cf.security import Security, SecurePrivateStorageMethod
 from typing import Dict, Set
 
 class KissUserDatabaseException(Exception):
@@ -30,32 +31,24 @@ class UserEntry(dict):
 
 
 class UserDatabase(Storable):
-    def __init__(self, storage_method: StorageMethod):
-        super().__init__(storage_method)
+    def __init__(self, location: StorageLocation, security: Security):
+        super().__init__(SecurePrivateStorageMethod(
+            location.get_storage_method('USER_DB'),
+            security))
 
-        if storage_method.exists():
-            # TODO: load user database
-            pass
-        else:
-            # Initialize fresh database
-
-            self.version = 1
-            # ID handling:
-            self._unused_id_list = []
-            self._next_id = 0
-            # The user_map maps ID's to UserEntry objects (dictionaries).
-            self._user_db: Dict[int, UserEntry] = {}
-            # The role_map maps roles to lists of ID's to quickly collect lists of
-            # keys.
-            self._role_map: Dict[str, Set] = {}
-
-            # store data
-            self.store()
-    ### ID Hanlinng
+        self._version = 1
+        # ID handling:
+        self._unused_id_list = []
+        self._next_id = 0
+        # The user_map maps ID's to UserEntry objects (dictionaries).
+        self._user_db: Dict[int, UserEntry] = {}
+        # The role_map maps roles to lists of ID's to quickly collect lists of
+        # keys.
+        self._role_map: Dict[str, Set] = {}
 
     # TODO: implementation for storage shall serialize __init__.
     def _to_dict(self):
-        return {'version': self.version,
+        return {'version': self._version,
                 'next_id': self._next_id,
                 'unused_id_list': self._unused_id_list,
                 'user_db': self._user_db,
@@ -64,7 +57,7 @@ class UserDatabase(Storable):
 
     def _from_dict(self, data):
         # TODO: version check
-        self.version = data['version']
+        self._version = data['version']
         self._next_id = data['next_id']
         self._unused_id_list = data['unused_id_list']
         self._user_db = data['user_db']
@@ -76,6 +69,17 @@ class UserDatabase(Storable):
 
     def _get_bytestream(self):
         return serialize(self._to_dict())
+
+    def init_user_db(self,
+                     user_id: int,
+                     validation_key: bytes,
+                     encryption_key: bytes):
+        # forward to reuse function with add_new()
+        self.add(user_id=user_id,
+                 validation_key=validation_key,
+                 encryption_key=encryption_key,
+                 roles=['user', 'admin'])
+        self.store()
 
     def add_new(self,
                 validation_key: bytes,
@@ -89,6 +93,20 @@ class UserDatabase(Storable):
         user_id = self._next_id
         self._next_id += 1
 
+        # forward to reuse function with init_user_db()
+        self.add(user_id=user_id,
+                 validation_key=validation_key,
+                 encryption_key=encryption_key,
+                 roles=roles)
+
+        return user_id
+
+    def add(self,
+            user_id: int,
+            validation_key: bytes,
+            encryption_key: bytes,
+            roles: list[str]):
+
         entry = UserEntry(user_id=user_id,
                           validation_key=validation_key,
                           encryption_key=encryption_key,
@@ -100,8 +118,6 @@ class UserDatabase(Storable):
             if role not in self._role_map.keys():
                 self._role_map[role] = set()
             self._role_map[role].add(user_id)
-
-        return user_id
 
     def remove_user(self, user_id: int):
         ''' Remove user by deleting all role assignments

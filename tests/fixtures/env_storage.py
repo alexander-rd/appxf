@@ -6,6 +6,8 @@ import shutil
 
 from tests.fixtures.env_base import env_base
 
+# TODO: fixture to be reconsidered after application context's were introduced.
+
 @pytest.fixture
 def env_test_directory(env_base, request):
     test_name = request.node.name

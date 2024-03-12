@@ -6,6 +6,11 @@ from kiss_cf.security import Security
 from tests.fixtures.env_base import env_base
 from tests.fixtures.env_storage import env_test_directory
 
+#!!! Do not use !!!
+#
+# TODO: Fixture below shall be replaced by application.py. It is only used by
+# test_bdd_sync.py
+
 @pytest.fixture()
 def env_security_unlocked(env_test_directory):
     env = env_test_directory
