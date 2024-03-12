@@ -2,7 +2,8 @@ from pytest_bdd import scenarios, scenario, given, when, then, parsers
 from pytest import fixture
 import pytest
 from kiss_cf.storage import StorageLocation, LocalStorageLocation, sync
-from kiss_cf.security import SecurePrivateStorageMethod, SecureSharedStorageMethod
+from kiss_cf.security import SecurePrivateStorageMethod
+from kiss_cf.registry import SecureSharedStorageMethod
 import os.path
 import shutil
 
@@ -12,6 +13,8 @@ from tests.fixtures.env_base import env_base
 from tests.fixtures.env_storage import env_test_directory
 from tests.fixtures.env_security import env_security_unlocked
 scenarios('test_bdd_sync.feature')
+
+# TODO: should be rewritten to use the application.py fixture
 
 # define default context/environment
 @fixture(autouse=True)

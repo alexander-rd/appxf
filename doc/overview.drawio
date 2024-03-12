@@ -1,0 +1,94 @@
+<mxfile host="Electron" modified="2024-03-12T21:07:44.402Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/23.1.5 Chrome/120.0.6099.109 Electron/28.1.0 Safari/537.36" etag="pUmPDbF8QX1gZGZf57bw" version="23.1.5" type="device">
+  <diagram name="Page-1" id="b520641d-4fe3-3701-9064-5fc419738815">
+    <mxGraphModel dx="1364" dy="963" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="none" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="lqmB8BgXq8_Tp8ZVzu6Q-2" value="SECURITY" style="swimlane;html=1;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#e0e0e0;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;swimlaneFillColor=#ffffff;align=center;rounded=1;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" vertex="1">
+          <mxGeometry x="480" y="290" width="160" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-29" value="Provide basic encryption and singing." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="lqmB8BgXq8_Tp8ZVzu6Q-2" vertex="1">
+          <mxGeometry y="26" width="160" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-26" value="The sync algorithm should be placed in registry. Shared storage does not make sense without registry." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=11;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="50" y="360" width="130" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="xNg26A6SZNMzz_5sGm6C-1" value="CONFIG" style="swimlane;html=1;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#e0e0e0;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;swimlaneFillColor=#ffffff;align=center;rounded=1;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="720" y="400" width="160" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="xNg26A6SZNMzz_5sGm6C-2" value="Maintaig tool configuration in sections. Includes local encryption by default." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="xNg26A6SZNMzz_5sGm6C-1">
+          <mxGeometry y="26" width="160" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="xNg26A6SZNMzz_5sGm6C-3" value="LOGGING" style="swimlane;html=1;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#e0e0e0;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;swimlaneFillColor=#ffffff;align=center;rounded=1;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="670" y="80" width="160" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="xNg26A6SZNMzz_5sGm6C-4" value="Logging including file rotation once per tool restart." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="xNg26A6SZNMzz_5sGm6C-3">
+          <mxGeometry y="26" width="160" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="xNg26A6SZNMzz_5sGm6C-5" value="STORAGE" style="swimlane;html=1;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#e0e0e0;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;swimlaneFillColor=#ffffff;align=center;rounded=1;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="900" y="190" width="160" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="xNg26A6SZNMzz_5sGm6C-6" value="Storage base classes: Storable, StorageMethod" style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="xNg26A6SZNMzz_5sGm6C-5">
+          <mxGeometry y="26" width="160" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="xNg26A6SZNMzz_5sGm6C-8" value="Methods: local file storage, FTP storage" style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="xNg26A6SZNMzz_5sGm6C-5">
+          <mxGeometry y="70" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="xNg26A6SZNMzz_5sGm6C-9" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="xNg26A6SZNMzz_5sGm6C-1" target="xNg26A6SZNMzz_5sGm6C-5">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="870" y="580" as="sourcePoint" />
+            <mxPoint x="920" y="530" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xNg26A6SZNMzz_5sGm6C-10" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="xNg26A6SZNMzz_5sGm6C-5" target="xNg26A6SZNMzz_5sGm6C-3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="870" y="580" as="sourcePoint" />
+            <mxPoint x="920" y="530" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xNg26A6SZNMzz_5sGm6C-11" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="lqmB8BgXq8_Tp8ZVzu6Q-2" target="xNg26A6SZNMzz_5sGm6C-3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="870" y="580" as="sourcePoint" />
+            <mxPoint x="920" y="530" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xNg26A6SZNMzz_5sGm6C-12" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="xNg26A6SZNMzz_5sGm6C-1" target="lqmB8BgXq8_Tp8ZVzu6Q-2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="870" y="580" as="sourcePoint" />
+            <mxPoint x="920" y="530" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xNg26A6SZNMzz_5sGm6C-13" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="xNg26A6SZNMzz_5sGm6C-1" target="xNg26A6SZNMzz_5sGm6C-3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="870" y="580" as="sourcePoint" />
+            <mxPoint x="920" y="530" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xNg26A6SZNMzz_5sGm6C-14" value="REGISTRY" style="swimlane;html=1;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#e0e0e0;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;swimlaneFillColor=#ffffff;align=center;rounded=1;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12" vertex="1" parent="1">
+          <mxGeometry x="220" y="290" width="160" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="xNg26A6SZNMzz_5sGm6C-15" value="Maintain a suer database and allow remote file synchronization." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="xNg26A6SZNMzz_5sGm6C-14">
+          <mxGeometry y="26" width="160" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="xNg26A6SZNMzz_5sGm6C-16" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" edge="1" parent="1" source="xNg26A6SZNMzz_5sGm6C-14" target="WfFBRD25KZCrFt_MD5P0-26">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="870" y="580" as="sourcePoint" />
+            <mxPoint x="920" y="530" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xNg26A6SZNMzz_5sGm6C-17" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="xNg26A6SZNMzz_5sGm6C-14" target="lqmB8BgXq8_Tp8ZVzu6Q-2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="870" y="580" as="sourcePoint" />
+            <mxPoint x="920" y="530" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xNg26A6SZNMzz_5sGm6C-18" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="xNg26A6SZNMzz_5sGm6C-14" target="xNg26A6SZNMzz_5sGm6C-3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="870" y="580" as="sourcePoint" />
+            <mxPoint x="920" y="530" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -18,102 +18,147 @@ print(f'Current kiss_cf version: {version}')
 
 @pytest.fixture
 def app_fresh_user(env_base, request):
-    env = env_base
-    path_origin = _init_app_fresh_user(env['path_testing'])
-    test_name = request.node.name
-    # Provide basic test location:
-    path = os.path.join(env['path_testing'], test_name)
-    _init_test_path(path, path_origin)
-    data = _add_application({}, path, 'user')
-    return data
+    return _init_application_fixture(
+        env_base['path_testing'],
+        _init_app_context_fresh_user,
+        request)
 
 @pytest.fixture
 def app_initialized_user(env_base, request):
-    env = env_base
-    path_origin = _init_app_initialized_user(env['path_testing'])
-    test_name = request.node.name
-    # Provide basic test location:
-    path = os.path.join(env['path_testing'], test_name)
-    _init_test_path(path, path_origin)
-    data = _add_application({}, path, 'user')
-    return data
+    return _init_application_fixture(
+        env_base['path_testing'],
+        _init_app_context_initialized_user,
+        request)
 
 @pytest.fixture
-def app_unlocked_user(app_initialized_user, request):
+def app_unlocked_user(app_initialized_user):
     ''' This fixture uses same data as intialized_user '''
     app: ApplicationMock = app_initialized_user['app_user']
-    app.unlock_user()
+    app.perform_login_unlock()
     return app_initialized_user
 
 @pytest.fixture
-def app_fresh_admin(env_base, request):
-    pass
+def app_unlocked_user_admin_pair(env_base, request):
+    data = _init_application_fixture(
+        env_base['path_testing'],
+        _init_app_context_user_admin_pair,
+        request)
+    for user in data['users']:
+        app: ApplicationMock = data[f'app_{user}']
+        app.perform_login_unlock()
+    return data
 
-def _init_app_fresh_user(path_testing: str):
+### Application Context Initialization
+
+# This function applies general handling of the context initialization to be
+# applied to the test setup:
+def _init_application_fixture(path_testing, context_init_fun, request):
+    ''' Ensure context intialization and apply to test case
+
+    Arguments:
+    path_testing -- base directory for testing
+    context_init_fun -- defines the context initialization
+    request -- test case details via pytest fixture
+
+    Returns: Dictionary with:
+      'path' -- root of application context
+      'users' -- list of initialized applications
+      'app_<user>' -- The ApplicationMock objects for each user.
+    '''
+    original_dict = context_init_fun(path_testing)
+    path_origin = original_dict['path']
+    path = os.path.join(path_testing,
+                        request.node.name)
+    _init_path_from_origin(path, path_origin)
+    fixed_dict = {'path': path,
+                  'users': original_dict['users']}
+    app_dict = {f'app_{user}': ApplicationMock(path, user)
+                for user in original_dict['users']}
+    return {**fixed_dict, **app_dict}
+
+# The following structure applies to all init functions:
+#
+# Parameters:
+#   path_testing -- the root folder for all testing files
+#
+# Return: A structure with:
+#   'path' -- root of the initialized application context
+#   'users' -- list of initialized users It is intentional that the
+# ApplicationMock objects are not forwarded
+def _init_app_context_fresh_user(path_testing: str):
     path_origin = os.path.join(path_testing, f'app_fresh_user_{version}')
+    return_dict = {'path': path_origin, 'users': ['user']}
     # do not repeat if already present:
     if os.path.exists(path_origin):
-        return path_origin
+        return return_dict
     # otherwise, create:
-    _init_test_path(path_origin, keep = True)
+    _init_path_from_origin(path_origin, keep = True)
     # A fresh user has no data on the path but the user's application path is
-    # not generated on adding application:
-    _add_application({}, path_origin, 'user')
-    return path_origin
+    # generated on adding application:
+    app_user = ApplicationMock(path_origin, 'user')
+    return return_dict
 
-def _init_app_initialized_user(path_testing: str):
+def _init_app_context_initialized_user(path_testing: str):
     path_origin = os.path.join(path_testing, f'app_initialized_user_{version}')
     # we rely on fresh user:
-    path_derive = _init_app_fresh_user(path_testing)
+    data_derive = _init_app_context_fresh_user(path_testing)
+    return_dict = {'path': path_origin, 'users': data_derive['users']}
     # do not repeat if already present:
     if os.path.exists(path_origin):
-        return path_origin
+        return return_dict
     # otherwise, create:
-    _init_test_path(path_origin, origin_path=path_derive, keep = True)
+    _init_path_from_origin(path_origin, origin_path=data_derive['path'], keep = True)
     # We need to get the app to set the password
-    data = _add_application({}, path_origin, 'user')
-    app: ApplicationMock = data['app_user']
-    app.init_password()
-    return path_origin
+    app_user = ApplicationMock(path_origin, 'user')
+    app_user.perform_login_init()
+    return return_dict
 
-def _init_app_fresh_admin():
-    pass
+def _init_app_context_user_admin_pair(path_testing: str):
+    path_origin = os.path.join(path_testing, f'app_admin_user_pair_{version}')
+    return_dict = {'path': path_origin, 'users': ['admin', 'user']}
+    # do not repeat if already present:
+    if os.path.exists(path_origin):
+        return return_dict
+    # otherwise, create:
+    _init_path_from_origin(path_origin, keep = True)
+    # Admin and user will be, at least initialized with their own passwords.
+    # Admin will be initialized with registry.
+    app_user = ApplicationMock(path_origin, 'admin')
+    app_user.perform_login_init()
+    app_user.perform_registration_admin_init()
+    app_admin = ApplicationMock(path_origin, 'user')
+    app_admin.perform_login_init()
+    return return_dict
 
-def _init_test_path(path, origin_path: str = '', keep: bool = False):
+def _init_path_from_origin(target_path, origin_path: str = '', keep: bool = False):
+    ''' Copy a context to a new test environment
+
+    Arguments:
+        target_path -- new path to created
+    Keyword Arguments:
+        origin_path -- path to copy content from (no copy applied if string
+                       is empty)
+        keep -- set to true if target_path shall be retained if already existing
+    Return: nothing
+    '''
     # clear target path
-    if os.path.exists(path):
+    if os.path.exists(target_path):
         if keep:
             # folder is present and shall be retained
             return
-        shutil.rmtree(path)
-        print(f'Deleted path {path}')
+        shutil.rmtree(target_path)
+        print(f'Deleted path {target_path}')
     # re-create path
     if origin_path:
         # copy from origin
-        shutil.copytree(origin_path, path)
-        print(f'Initialized {path} from {origin_path}')
+        shutil.copytree(origin_path, target_path)
+        print(f'Initialized {target_path} from {origin_path}')
     else:
         # ensure path existing
-        os.makedirs(path, exist_ok=True)
-        print(f'Created path {path}')
+        os.makedirs(target_path, exist_ok=True)
+        print(f'Created path {target_path}')
 
-
-def _add_application(data, root_dir: str, user: str):
-    # ensure directory exists
-    path = os.path.join(root_dir, f'app_{user}')
-    os.makedirs(path, exist_ok = True)
-    # add application to data
-    data[f'app_{user}'] = ApplicationMock(path, user)
-    return data
-
-def _init_fresh_admin(root_dir: str):
-    return _add_application({}, root_dir, 'admin')
-
-def _init_fresh_user(root_dir: str):
-    data = _init_fresh_admin(root_dir)
-    # TODO: initialize admin
-    return _add_application(data, root_dir, 'user')
-
+### Cleanup support
 def test_cleanup(env_base):
     ''' cleanup current kiss_cf directories
 
@@ -121,7 +166,7 @@ def test_cleanup(env_base):
     case to re-use fixtures.
     '''
     env = env_base
-    for context in ['fresh_user', 'fresh_admin', 'multi_user']:
+    for context in ['fresh_user', 'initialized_user', 'app_admin_user_pair', ]:
         path = os.path.join(env['path_testing'], f'app_{context}_{version}')
         if os.path.exists(path):
             shutil.rmtree(path)

@@ -1,37 +1,92 @@
 from __future__ import annotations
-from os import path
-from kiss_cf.security import Security, UserDatabase
+
+import os
+
+from kiss_cf.security import Security, SecurePrivateStorageMethod
+from kiss_cf.registry import UserDatabase, UserRegistry
 from kiss_cf.config import Config
 from kiss_cf.storage import LocalStorageLocation
 
 class ApplicationMock:
     def __init__(self,
                  root_path: str,
-                 user: str = 'user'):
+                 user: str):
+        ''' Get a dummy application including folder structure
+
+        A folder "app_<user>" is added to root_path for application specific
+        data. Additional directories are created for simulating remote file
+        transer:
+          * "remote-pub" will share the public admin keys for
+            encryption
+          * "remote" is the shared database.
+        '''
         self._root_path = root_path
+        self._app_path = os.path.join(root_path, f'app_{user}')
+        os.makedirs(self._app_path, exist_ok = True)
 
         self.salt = 'test'
         self.user = user
         self.password = f'{self.user}-password'
 
-        self.reset()
+        # Create data storage objects (those steps will NOT include any data
+        # loading since data would be stored encrypted and no password is set
+        # yet OR password was not yet entered)
 
-    ########################
-    ### initialize and reset
-    #/
-    def _init_security(self):
-        self._file_sec = path.join(self._root_path, 'data/security')
-        self.security = Security(salt=self.salt, file=self._file_sec)
+        # SECURITY
+        self.file_sec = os.path.join(self._app_path, 'data/security')
+        self.security = Security(salt=self.salt, file=self.file_sec)
 
-    def _init_config(self):
-        self._path_config = path.join(self._root_path, 'data/config')
-        self.config = Config(self.security, storage_dir = self._path_config)
-        self._init_config_base()
-
-    def _init_config_user(self):
-        ''' configure add email and name as basic user data '''
+        # CONFIG
+        self.path_config = os.path.join(self._app_path, 'data/config')
+        self.config = Config(self.security, storage_dir = self.path_config)
+        # add some basic user data: email and name
         self.config.add_option('USER', 'email')
+        self.config.set_option_config('email', type='email')
         self.config.add_option('USER', 'name')
+        # add some arbitraty configuration
+        self.config.add_option('TEST', 'test', '42')
+
+        # REGISTRY
+        self.path_registry = os.path.join(self._app_path, 'data/registry')
+        self.location_registry = LocalStorageLocation(self.path_registry)
+        self.registry = UserRegistry(self.location_registry, self.security, self.config)
+
+        # some DATA LOCATION
+        self.path_data = os.path.join(self._app_path, 'data')
+        self.location_data = LocalStorageLocation(self.path_data)
+
+        # some REMOTE LOCATION
+        self.path_remote = os.path.join(self._app_path, 'data')
+
+        # TODO: initialization of UserDatabase, Security, Config is quite
+        # inconsistent.
+        #   * Security specified a single file
+        #   * Config specifies a path location
+        #   * UserDatabase specifies a storage method
+        #
+        # Security should be consistent to UserDatabase. Config is different
+        # since it handles multiple files (per section configuration). But
+        # UserDatabase may not remain like this when other user's information
+        # is added to the DB.
+
+
+    #######################################################
+    ### User initializazion (password) and unlocking
+    #/
+    def perform_login_init(self):
+        ''' Perform login procedure: initialize user
+
+        This includes (1) setting user data, (2) setting the password and (3)
+        storing the configuration.
+
+        This use case is covered by login_gui.py.
+        '''
+        # User would enter their details:
+        self._set_user_data()
+        # .. at setting the password:
+        self.security.init_user(self.password)
+        # And config must be stored accordinly:
+        self.config.store()
 
     def _set_user_data(self):
         ''' set email and name'''
@@ -40,52 +95,38 @@ class ApplicationMock:
         self.config.set('USER', 'name',
                         f'{self.user}')
 
-    def _init_config_base(self):
-        self.config.add_option('TEST', 'test', '42')
+    def perform_login_unlock(self):
+        ''' Perform login procedure: unlock with password
 
-    def _init_registry(self):
-        self._path_registry = path.join(self._root_path, 'data/registry')
-        self.location_registry = LocalStorageLocation(self._path_registry)
-        self._file_user_db = 'user_db'
-        self.user_db = UserDatabase(self.location_registry .get_storage_method(self._file_user_db))
+        This includes (1) unlock the Security object with password and (2)
+        loading configuration data.
 
-    def _init_data_location(self):
-        self._path_data = path.join(self._root_path, 'data')
-        self.location_data = LocalStorageLocation(self._path_data)
-
-    def reset(self):
-        ''' Reset application like for a new startup.
-
-        Creates new object instances. Result is as if the application was
-        freshly created while the persisted information (file system) remains.
+        This use case is covered by login_gui.py.
         '''
-        self._init_security()
-        self._init_config()
-        self._init_registry()
-        self._init_data_location()
-
-    # TODO: initialization of UserDatabase, Security, Config is quite
-    # inconsistent.
-    #   * Security specified a single file
-    #   * Config specifies a path location
-    #   * UserDatabase specifies a storage method
-    #
-    # Security should be consistent to UserDatabase. Config is different
-    # since it handles multiple files (per section configuration). But
-    # UserDatabase may not remain like this when other user's information
-    # is added to the DB.
-
-    def init_password(self):
-        ''' Initialize password (registration missing) '''
-        self.security.init_user(self.password)
-
-    def unlock_user(self):
-        ''' Unlock user with password '''
         self.security.unlock_user(self.password)
+        # After unlocking, configuration should be loaded:
+        self.config.load()
 
-    def init_registration(self, app_admin: ApplicationMock):
-        pass
+    ######################
+    ### User Registration
+    #/
+    def perform_registration_admin_init(self):
+        ''' Perform registration procedure: initialize DB as admin '''
+        self.registry.initialize_as_admin()
 
-    def init_full(self):
+    def perform_registration_get_request(self) -> bytes:
+        ''' Perform registration procedure: get registration bytes
+
+        This operation retrieves the registration bytes from the application to
+        be sent to the admin (perform_registration_set_request).
+
+        This use case is covered by registration_gui.py where the registration
+        bytes would be handled by a file intended to be sent via Email to the
+        admin
+        '''
+        # TODO: encryption is missing
+        return self.registry.get_request_bytes()
+
+    def Xinit_full(self):
         ''' '''
-        self.init_password()
+        self.perform_login_unlock()

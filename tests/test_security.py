@@ -39,7 +39,7 @@ def test_security_init(app_fresh_user):
     app: ApplicationMock = app_fresh_user['app_user']
     app.security.init_user('some_password')
     # file should now be present:
-    assert os.path.exists(app._file_sec)
+    assert os.path.exists(app.file_sec)
     # and user should be initialized:
     assert app.security.is_user_initialized()
     # user is still not unlocked
@@ -71,7 +71,7 @@ def test_security_store_load(app_unlocked_user):
     assert data == data_loaded
     # try to read from new security
     sec = Security(salt = app.salt,
-                   file = app._file_sec)
+                   file = app.file_sec)
     assert not sec.is_user_unlocked()
     sec.unlock_user(app.password)
     # Note: need to delete prior storage object. Storage locations do not allow
@@ -102,7 +102,7 @@ def test_security_store_assymetric_keys(app_unlocked_user):
     # data already needs to be stored before tear down of the security above.
     # The use case is quite unusual and not supported: having two Security
     # objects accessing the same data.
-    security = Security(app.salt, app._file_sec)
+    security = Security(app.salt, app.file_sec)
     security.unlock_user(app.password)
     assert signing_public_key == security.get_signing_public_key()
     assert encryp_public_key == security.get_encryption_public_key()

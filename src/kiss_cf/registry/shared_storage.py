@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from kiss_cf.storage import StorageLocation, LocationStorageMethod, DerivingStorageMethod
 from kiss_cf.storage import serialize, deserialize
-from .security import Security
+from kiss_cf.security import Security
 from .user_db import UserDatabase
 
 class PublicEncryptedStorageMethod(DerivingStorageMethod):
