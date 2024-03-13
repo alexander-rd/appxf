@@ -3,7 +3,13 @@ import pickle
 from kiss_cf.storage import Storable, StorageMethod, serialize, deserialize
 from kiss_cf.storage import StorageLocation
 from kiss_cf.security import Security, SecurePrivateStorageMethod
-from typing import Dict, Set
+from typing import Dict, Set, TypedDict
+
+class UserEntry2(TypedDict):
+    id: int
+    roles: list[str]
+    validation_key: bytes
+    encryption_key: bytes
 
 class KissUserDatabaseException(Exception):
     ''' Error in User Database handling '''
@@ -41,7 +47,7 @@ class UserDatabase(Storable):
         self._unused_id_list = []
         self._next_id = 0
         # The user_map maps ID's to UserEntry objects (dictionaries).
-        self._user_db: Dict[int, UserEntry] = {}
+        self._user_db: Dict[int, UserEntry2] = {}
         # The role_map maps roles to lists of ID's to quickly collect lists of
         # keys.
         self._role_map: Dict[str, Set] = {}
@@ -71,15 +77,15 @@ class UserDatabase(Storable):
         return serialize(self._to_dict())
 
     def init_user_db(self,
-                     user_id: int,
                      validation_key: bytes,
-                     encryption_key: bytes):
+                     encryption_key: bytes) -> int:
         # forward to reuse function with add_new()
-        self.add(user_id=user_id,
-                 validation_key=validation_key,
-                 encryption_key=encryption_key,
-                 roles=['user', 'admin'])
-        self.store()
+        print('init as admin')
+        user_id =  self.add_new(
+            validation_key=validation_key,
+            encryption_key=encryption_key,
+            roles=['user', 'admin'])
+        return user_id
 
     def add_new(self,
                 validation_key: bytes,
@@ -92,13 +98,14 @@ class UserDatabase(Storable):
         # sys.maxsize)
         user_id = self._next_id
         self._next_id += 1
+        print(f'Adding new user with {user_id}, next: {self._next_id}')
 
         # forward to reuse function with init_user_db()
         self.add(user_id=user_id,
                  validation_key=validation_key,
                  encryption_key=encryption_key,
                  roles=roles)
-
+        self.store()
         return user_id
 
     def add(self,
@@ -107,10 +114,11 @@ class UserDatabase(Storable):
             encryption_key: bytes,
             roles: list[str]):
 
-        entry = UserEntry(user_id=user_id,
+        entry = UserEntry2(user_id=user_id,roles=roles,
                           validation_key=validation_key,
-                          encryption_key=encryption_key,
-                          roles=roles)
+                          encryption_key=encryption_key
+                          )
+        #entry = UserEntry2(id=user_id, validation_key=validation_key)
         self._user_db[user_id] = entry
 
         for role in roles:
@@ -139,7 +147,7 @@ class UserDatabase(Storable):
     def is_registered(self, user_id):
         return user_id in self._user_db.keys()
 
-    def _get_user_entry(self, user_id) -> UserEntry:
+    def _get_user_entry(self, user_id) -> UserEntry2:
         if not self.is_registered(user_id):
             raise KissUserDatabaseException(f'{user_id} is not registered.')
         return self._user_db[user_id]
@@ -150,10 +158,10 @@ class UserDatabase(Storable):
         return user_id in self._role_map[role]
 
     def get_validation_key(self, user_id: int) -> bytes:
-        return self._get_user_entry(user_id).validation_key
+        return self._get_user_entry(user_id)['validation_key']
 
     def get_encryption_key(self, user_id: int) -> bytes:
-        return self._get_user_entry(user_id).encryption_key
+        return self._get_user_entry(user_id)['encryption_key']
 
     def get_encryption_keys(self, roles: list[str]|str) -> list[bytes]:
         # TODO: implementation
