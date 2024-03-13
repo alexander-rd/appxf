@@ -6,5 +6,4 @@ secure StorageMethods from the storage module.
 '''
 
 from .shared_storage import SecureSharedStorageMethod
-from .user_registry import UserRegistry
-from .user_db import UserDatabase
+from .registry import Registry

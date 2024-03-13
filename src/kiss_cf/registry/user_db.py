@@ -5,49 +5,26 @@ from kiss_cf.storage import StorageLocation
 from kiss_cf.security import Security, SecurePrivateStorageMethod
 from typing import Dict, Set, TypedDict
 
-class UserEntry2(TypedDict):
+class KissUserDatabaseException(Exception):
+    ''' Error in User Database handling '''
+
+class UserEntry(TypedDict):
     id: int
     roles: list[str]
     validation_key: bytes
     encryption_key: bytes
 
-class KissUserDatabaseException(Exception):
-    ''' Error in User Database handling '''
-
-class UserEntry(dict):
-    def __init__(self,
-                 user_id: int,
-                 validation_key: bytes,
-                 encryption_key: bytes,
-                 roles: list[str]):
-        self.version: int = 1
-        self.id: int = user_id
-        self.roles: list[str] = roles
-        self.validation_key: bytes = validation_key
-        self.encryption_key: bytes = encryption_key
-        # Alternative:
-        # self._data = dict()
-        # self['.version'] = 1
-        # self['id'] = user_id
-        # self['roles'] = roles
-        # self['validation_key'] = validation_key
-        # self['encryption_key'] = encryption_key
-
-#! TODO: Just a note: the storage method will contain validation/encryption details.
-
 
 class UserDatabase(Storable):
-    def __init__(self, location: StorageLocation, security: Security):
-        super().__init__(SecurePrivateStorageMethod(
-            location.get_storage_method('USER_DB'),
-            security))
+    def __init__(self, storage_method: StorageMethod):
+        super().__init__(storage_method)
 
         self._version = 1
         # ID handling:
         self._unused_id_list = []
         self._next_id = 0
         # The user_map maps ID's to UserEntry objects (dictionaries).
-        self._user_db: Dict[int, UserEntry2] = {}
+        self._user_db: Dict[int, UserEntry] = {}
         # The role_map maps roles to lists of ID's to quickly collect lists of
         # keys.
         self._role_map: Dict[str, Set] = {}
@@ -114,7 +91,7 @@ class UserDatabase(Storable):
             encryption_key: bytes,
             roles: list[str]):
 
-        entry = UserEntry2(user_id=user_id,roles=roles,
+        entry = UserEntry(user_id=user_id,roles=roles,
                           validation_key=validation_key,
                           encryption_key=encryption_key
                           )
@@ -147,7 +124,7 @@ class UserDatabase(Storable):
     def is_registered(self, user_id):
         return user_id in self._user_db.keys()
 
-    def _get_user_entry(self, user_id) -> UserEntry2:
+    def _get_user_entry(self, user_id) -> UserEntry:
         if not self.is_registered(user_id):
             raise KissUserDatabaseException(f'{user_id} is not registered.')
         return self._user_db[user_id]

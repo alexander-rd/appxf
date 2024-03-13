@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 
 from kiss_cf.security import Security, SecurePrivateStorageMethod
-from kiss_cf.registry import UserDatabase, UserRegistry
+from kiss_cf.registry import Registry
 from kiss_cf.config import Config
 from kiss_cf.storage import LocalStorageLocation
 
@@ -49,7 +49,7 @@ class ApplicationMock:
         # REGISTRY
         self.path_registry = os.path.join(self._app_path, 'data/registry')
         self.location_registry = LocalStorageLocation(self.path_registry)
-        self.registry = UserRegistry(self.location_registry, self.security, self.config)
+        self.registry = Registry(self.location_registry, self.security, self.config)
 
         # some DATA LOCATION
         self.path_data = os.path.join(self._app_path, 'data')
@@ -123,8 +123,9 @@ class ApplicationMock:
         #     is often required this makes less sense.
         # Config and registration may require a re-load(). Sequence would then be:
         #   1) Login (requires password)
-        #   2) Registration (automatic skip if user_id exists)
-        #   3) load config
+        #   2) load config
+        #   3) Registration (automatic skip if user_id exists, depends on (1)
+        #      and (2))
         #   4) sync
         #   5) reload registration and config
 
@@ -148,6 +149,3 @@ class ApplicationMock:
         # TODO: encryption is missing
         return self.registry.get_request_bytes()
 
-    def Xinit_full(self):
-        ''' '''
-        self.perform_login_unlock()
