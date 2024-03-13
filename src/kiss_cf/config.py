@@ -170,6 +170,11 @@ class Config():
             outStr += section + ': ' + str(dict(self.config[section]))
         return outStr
 
+    @property
+    def sections(self) -> list[str]:
+        ''' Return list of sections. '''
+        return self.config.sections()
+
     def set_security(self, security: Security):
         self._security = security
 

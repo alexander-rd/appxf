@@ -104,8 +104,29 @@ class ApplicationMock:
         This use case is covered by login_gui.py.
         '''
         self.security.unlock_user(self.password)
-        # After unlocking, configuration should be loaded:
+        # After unlocking, registration should be continues (if possible)
+        if not self.registry.try_load():
+            return
+        # configuration can now be loaded:
         self.config.load()
+        #! TODO: applocation init sequence is not clear:
+        #   1) login
+        #   2) registration
+        #   3) sync
+        #   4) config loading
+        # Conflicts are from above are:
+        #   * registration (user_db) needs re-loading after sync >> solution is
+        #     user_db not being buffered in RAM (on access, needs to be newly
+        #     loaded)
+        #   * config needs to be loaded for sync but sync may update config.
+        #     Also here, config may be loaded temporarily but with config that
+        #     is often required this makes less sense.
+        # Config and registration may require a re-load(). Sequence would then be:
+        #   1) Login (requires password)
+        #   2) Registration (automatic skip if user_id exists)
+        #   3) load config
+        #   4) sync
+        #   5) reload registration and config
 
     ######################
     ### User Registration
