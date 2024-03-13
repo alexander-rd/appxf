@@ -1,49 +1,10 @@
-import os
 import pytest
-import shutil
-
-from kiss_cf.config import Config
-from kiss_cf.storage.local import LocalStorageLocation
-from kiss_cf.security import Security
-from kiss_cf.registry import UserDatabase
 
 from tests.fixtures.application_mock import ApplicationMock
 from tests.fixtures.env_base import env_base
 from tests.fixtures.application import app_unlocked_user_admin_pair
-#from tests.fixtures.env_storage import env_test_directory
-#from tests.fixtures.application import app_unlocked_user
 
-# define default context/environment
-@pytest.fixture
-def Xenv_uninitialized(env_test_directory):
-    env = env_test_directory
-    # we will always need a location
-    env['location'] = LocalStorageLocation(path=env['dir'])
-
-    # we need a configuration
-    config = Config(security = None, storage_dir=env['dir'])
-    # we need to add some default user data
-    env['default_user_email'] = 'default@null.void'
-    config.add_option('USER', 'email', value=env['default_user_email'])
-    env['config'] = config
-    # we need to add a default section for testing
-    config.add_option('TEST', 'test', value='42')
-
-    # we need an initialized/unlocked security object
-    env['salt'] = 'test_salt'
-    env['password'] = 'test_password'
-    env['obj key file'] = os.path.join(env['dir'], 'user.key')
-    env['security'] = Security(salt=env['salt'],
-                          file=env['obj key file'])
-    env['security'].init_user(env['password'])
-    assert env['security'].is_user_unlocked()
-
-    # we need a use database
-    env['user database'] = UserDatabase(env['location'].get_storage_method('user_db'))
-
-    return env
-
-def test_user_registry_basic_cycle(app_unlocked_user_admin_pair):
+def test_registry_basic_cycle(app_unlocked_user_admin_pair):
     app_user: ApplicationMock = app_unlocked_user_admin_pair['app_user']
     app_admin: ApplicationMock = app_unlocked_user_admin_pair['app_admin']
 
