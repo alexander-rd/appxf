@@ -1,7 +1,10 @@
 ''' Secure StorageMethod for private (non-shared) usage '''
 
-from kiss_cf.storage import StorageLocation, StorageMethod, LocationStorageFactory
+from kiss_cf.storage import StorageLocation, StorageMethod, \
+    LocationStorageFactory
+
 from .security import Security
+
 
 class SecurePrivateStorageMethod(StorageMethod):
     ''' Storage method for local file storage.

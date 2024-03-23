@@ -3,7 +3,7 @@ from pytest import fixture
 import pytest
 from kiss_cf.storage import StorageLocation, LocalStorageLocation, sync, LocationStorageFactory
 from kiss_cf.security import SecurePrivateStorageFactory
-from kiss_cf.registry import SecureSharedStorageMethod, SecureSharedStorageFactory, Registry
+from kiss_cf.registry import SecureSharedStorageFactory, Registry
 from kiss_cf.config import Config
 import os.path
 import shutil
@@ -90,9 +90,9 @@ def set_storage_method_secure_private(env, locations):
             security=env['security'])
 
 
-@given(parsers.parse('Location {locations} is using SecureSharedStorageMethod'))
+@given(parsers.parse('Location {locations} is using SecureSharedStorage'))
 def define_storage_method_secure_shared(env, locations):
-    print(f'Location {locations} is using SecureSharedStorageMethod')
+    print(f'Location {locations} is using SecureSharedStorage')
     # Handle locations parameter
     locations = locations.split(',')
     if not isinstance(locations, list):
@@ -104,7 +104,7 @@ def define_storage_method_secure_shared(env, locations):
     # Ensure user database is in context:
 
     for loc in locations:
-        #env['storage method'][loc] = lambda file: SecureSharedStorageMethod(
+        #env['storage method'][loc] = lambda file: SecureSharedStorage(
         #    file,
         #    location = env['location'][loc],
         #    security = env['security'],

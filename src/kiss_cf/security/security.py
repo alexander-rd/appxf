@@ -1,10 +1,10 @@
 '''Define security algorithms.'''
 
-### General imports
+# ## General imports
 import os.path
 import pickle
 
-### Cryptography related imports
+# ## Cryptography related imports
 # cryptography error handling
 from cryptography.exceptions import InvalidSignature
 # generate crypt key from password
@@ -21,6 +21,7 @@ from cryptography.hazmat.primitives.asymmetric import padding, rsa
 class KissSecurityException(Exception):
     ''' General security related errors. '''
 
+
 def _get_default_key_dict():
     return {
         'version': 1,
@@ -30,6 +31,7 @@ def _get_default_key_dict():
         'encryption_pub_key': b'',
         'encryption_priv_key': b'',
     }
+
 
 class Security():
     '''Maintaining consistent encryption.
@@ -66,10 +68,12 @@ class Security():
         This code might catch later version adaptions.
         '''
         if 'version' not in self._key_dict.keys():
-            raise KissSecurityException('Not a KISS security file: no version information')
+            raise KissSecurityException(
+                'Not a KISS security file: no version information')
         if self._key_dict['version'] != 1:
             raise KissSecurityException(
-                f'Keys stored in version {self._key_dict["version"]}, expected is version 1')
+                f'Keys stored in version {self._key_dict["version"]}, '
+                f'expected is version 1')
 
     def _load_keys(self):
         '''Read key_dict from encrypted file
@@ -200,11 +204,11 @@ class Security():
     def _ensure_signing_keys_exist(self):
         ''' Create keys, if required '''
         if (not self._key_dict['signing_pub_key'] and
-            not self._key_dict['signing_priv_key']):
+                not self._key_dict['signing_priv_key']):
             self._generate_signing_keys()
             return
         if (not self._key_dict['signing_pub_key'] or
-            not self._key_dict['signing_priv_key']):
+                not self._key_dict['signing_priv_key']):
             raise KissSecurityException(
                 'Only public or private validation key are set. '
                 'This should not happen.'
@@ -213,11 +217,11 @@ class Security():
     def _ensure_encryption_keys_exist(self):
         ''' Create keys, if required '''
         if (not self._key_dict['encryption_pub_key'] and
-            not self._key_dict['encryption_priv_key']):
+                not self._key_dict['encryption_priv_key']):
             self._generate_encryption_keys()
             return
         if (not self._key_dict['encryption_pub_key'] or
-            not self._key_dict['encryption_priv_key']):
+                not self._key_dict['encryption_priv_key']):
             raise KissSecurityException(
                 'Only public or private encryption key are set. '
                 'This should not happen.'
@@ -269,12 +273,14 @@ class Security():
                 f'Unexpected key class {key.__class__.__name__}. '
                 f'Expected RSAPrivateKey.')
         return key
+
     @classmethod
     def _serialize_private_key(cls, key: rsa.RSAPrivateKey) -> bytes:
         return key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.PKCS8,
             encryption_algorithm=serialization.NoEncryption())
+
     @classmethod
     def _deserialize_private_key(cls, key_bytes: bytes) -> rsa.RSAPrivateKey:
         key = serialization.load_pem_private_key(key_bytes, password=None)
@@ -318,20 +324,24 @@ class Security():
     @classmethod
     def _encrypt_with_public_key_to_bytes(cls, data: bytes, key_bytes: bytes):
         public_key = cls._deserialize_public_key(key_bytes)
-        return public_key.encrypt(data,
+        return public_key.encrypt(
+            data,
             padding.OAEP(
                 mgf=padding.MGF1(algorithm=hashes.SHA256()),
                 algorithm=hashes.SHA256(),
-                label=None))
+                label=None)
+            )
 
     def _decrypt_with_private_key_from_byes(self, data: bytes):
         private_key = self._deserialize_private_key(
             self._key_dict['encryption_priv_key'])
-        return private_key.decrypt(data,
+        return private_key.decrypt(
+            data,
             padding.OAEP(
                 mgf=padding.MGF1(algorithm=hashes.SHA256()),
                 algorithm=hashes.SHA256(),
-                label=None))
+                label=None)
+            )
 
     def hybrid_encrypt(self,
                        data: bytes,
@@ -346,13 +356,15 @@ class Security():
 
         encrypted_key_map = {}
         for key in public_key_set:
-            key_encrypted = self._encrypt_with_public_key_to_bytes(symmetric_key, key)
+            key_encrypted = self._encrypt_with_public_key_to_bytes(
+                symmetric_key, key)
             encrypted_key_map[key] = key_encrypted
 
         return data_encrypted, encrypted_key_map
 
     # TODO UPGRADE: double-check interface consistency (order of keys and data)
-    def hybrid_decrypt(self, data: bytes, encrypted_key_map: dict[bytes, bytes]):
+    def hybrid_decrypt(self, data: bytes,
+                       encrypted_key_map: dict[bytes, bytes]):
         # get encrypted symmetric key:
         if self.get_encryption_public_key() not in encrypted_key_map.keys():
             # TODO: more refined exception
@@ -360,8 +372,10 @@ class Security():
                 'Key list did not contain the public key for this Security '
                 'object')
 
-        symmetric_key_encrypted = encrypted_key_map[self.get_encryption_public_key()]
-        symmetric_key = self._decrypt_with_private_key_from_byes(symmetric_key_encrypted)
+        symmetric_key_encrypted = encrypted_key_map[
+            self.get_encryption_public_key()]
+        symmetric_key = self._decrypt_with_private_key_from_byes(
+            symmetric_key_encrypted)
 
         return self._decrypt_from_bytes(symmetric_key, data)
 

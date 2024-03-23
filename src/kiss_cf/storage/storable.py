@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 from .storage_method import StorageMethod, StorageMethodDummy
 
+
 class Storable(ABC):
     ''' Abstract storable class
 

@@ -12,6 +12,7 @@ import pickle
 import builtins
 import io
 
+
 class RestrictedUnpickler(pickle.Unpickler):
     '''Class to disable unwanted symbols.'''
     def find_class(self, module, name):
@@ -22,6 +23,7 @@ class RestrictedUnpickler(pickle.Unpickler):
         raise pickle.UnpicklingError(
             f'global "{module}.{name}" is forbidden', module, name)
 
+
 def serialize(obj: object) -> bytes:
     ''' Serialize an object
 
@@ -29,6 +31,7 @@ def serialize(obj: object) -> bytes:
     serialization/deserialization algorithm changes.
     '''
     return pickle.dumps(obj)
+
 
 def deserialize(data: bytes) -> object:
     ''' Deserialize an object

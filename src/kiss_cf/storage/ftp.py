@@ -19,6 +19,7 @@ from kiss_cf import logging
 
 # TODO UPGRADE: review when starting to use this
 
+
 def retry_method_with_reconnect(method):
     ''' Recover errors with a fresh connection.
 
@@ -73,28 +74,31 @@ class FtpLocation(StorageLocation):
         # initialize connection
         self._connect()
         self.path = path
-        #! TODO: ensure that path exists (error, if not). Option to enforce
-        #  directory creation.
+        # TODO: ensure that path exists (error, if not). Option to enforce
+        # directory creation.
 
         # Important: super().__init__() already utilizes the specific
         # implementation. Attributes must be available.
         super().__init__()
 
     def get_id(self, file: str = ''):
-        return self.__class__.__name__ + ': ' + self.user + '@' + self.host + os.path.join(self.path, file)
+        return (self.__class__.__name__ + ': ' +
+                self.user + '@' + self.host +
+                os.path.join(self.path, file))
 
     def _connect(self):
         # ensure any old connection is closed
         try:
             self.connection.close()
-        except:
+        except Exception:
             # nothing to do if above fails
             pass
         # try connecting
         try:
             self.connection = FTPHost(self.host, self.user, self.password)
         except Exception as e:
-            raise Exception(f'Not able to initialize FTP object for [{self.host}].')
+            raise Exception(
+                f'Not able to initialize FTP object for [{self.host}]: {e}.')
 
         # TODO LATER: ensure login to FTP server is possible and things are
         # operational. An initial stat of the location could be of interes.
@@ -104,8 +108,9 @@ class FtpLocation(StorageLocation):
         try:
             return self.connection.path.exists(file)
         except Exception as e:
-            #! TODO UPGRADE: better error handling: message, retrieve info from ftplib
-            #  object. Consider collecting from obsolete pycurl implementation.
+            # TODO UPGRADE: better error handling: message, retrieve info from
+            # ftplib object. Consider collecting from obsolete pycurl
+            # implementation.
             raise e
 
     @retry_method_with_reconnect
@@ -115,8 +120,9 @@ class FtpLocation(StorageLocation):
             with self.connection.open(file, 'rb') as remote_file:
                 data = remote_file.read()
         except Exception as e:
-            #! TODO UPGRADE: better error handling: message, retrieve info from ftplib
-            #  object. Consider collecting from obsolete pycurl implementation.
+            # TODO UPGRADE: better error handling: message, retrieve info from
+            # ftplib object. Consider collecting from obsolete pycurl
+            # implementation.
             raise e
         return data
 
@@ -127,8 +133,9 @@ class FtpLocation(StorageLocation):
             with self.connection.open(file, 'wb') as remote_file:
                 remote_file.write(data)
         except Exception as e:
-            #! TODO UPGRADE: better error handling: message, retrieve info from ftplib
-            #  object. Consider collecting from obsolete pycurl implementation.
+            # TODO UPGRADE: better error handling: message, retrieve info from
+            # ftplib object. Consider collecting from obsolete pycurl
+            # implementation.
             raise e
 
     @retry_method_with_reconnect
@@ -137,8 +144,9 @@ class FtpLocation(StorageLocation):
         try:
             self.connection.remove(file)
         except Exception as e:
-            #! TODO UPGRADE: better error handling: message, retrieve info from ftplib
-            #  object. Consider collecting from obsolete pycurl implementation.
+            # TODO UPGRADE: better error handling: message, retrieve info from
+            # ftplib object. Consider collecting from obsolete pycurl
+            # implementation.
             raise e
 
     def _get_location_timestamp(self, file: str) -> datetime | None:
@@ -147,6 +155,7 @@ class FtpLocation(StorageLocation):
             timestamp = self.connection.path.getmtime(file)
             return datetime.fromtimestamp(timestamp)
         except Exception as e:
-            #! TODO UPGRADE: better error handling: message, retrieve info from ftplib
-            #  object. Consider collecting from obsolete pycurl implementation.
+            # TODO UPGRADE: better error handling: message, retrieve info from
+            # ftplib object. Consider collecting from obsolete pycurl
+            # implementation.
             raise e

@@ -1,6 +1,5 @@
 from copy import deepcopy
 import functools
-import os.path
 import typing
 import pickle
 

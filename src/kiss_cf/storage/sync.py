@@ -3,19 +3,21 @@
 # allow class name being used before being fully defined (like in same class):
 from __future__ import annotations
 
-from abc import abstractmethod
 from datetime import datetime
 import json
 
 from kiss_cf import logging
 from kiss_cf.storage import StorageLocation
 
+
 class KissStorageSyncException(Exception):
     ''' General exception from storage Sync '''
+
 
 class KissChangeOnBothSidesException(Exception):
     ''' Files were changed on both storage locations sides when executing
     synchronization. '''
+
 
 class SyncData(dict):
     ''' Synchronization data (as in: <some file>.sync)
@@ -50,11 +52,13 @@ class SyncData(dict):
             'timestamp': None
             }
 
-    def set_location_timestamp(self, location: StorageLocation, timestamp: datetime):
+    def set_location_timestamp(self,
+                               location: StorageLocation,
+                               timestamp: datetime):
         ''' Set last seen timestamp of this file in other location. '''
         str_timestamp = timestamp.isoformat()
         loc_id = location.get_id()
-        if not loc_id in self['location']:
+        if loc_id not in self['location']:
             self['location'][loc_id] = self._get_location_template()
         self['location'][loc_id]['timestamp'] = str_timestamp
 
@@ -69,7 +73,7 @@ class SyncData(dict):
         Returns None if location is not known within this sync file.
         '''
         loc_id = location.get_id()
-        if not loc_id in self['location']:
+        if loc_id not in self['location']:
             return None
         return datetime.fromisoformat(self['location'][loc_id]['timestamp'])
 
@@ -77,7 +81,7 @@ class SyncData(dict):
         ''' Set UUID of file in other location. '''
         str_uuid = uuid.decode('utf-8')
         loc_id = location.get_id()
-        if not loc_id in self['location']:
+        if loc_id not in self['location']:
             self['location'][loc_id] = self._get_location_template()
         self['location'][loc_id]['uuid'] = str_uuid
 
@@ -87,7 +91,7 @@ class SyncData(dict):
         Returns b'' if location is not known within this sync file.
         '''
         loc_id = location.get_id()
-        if not loc_id in self['location']:
+        if loc_id not in self['location']:
             return b''
         return self['location'][loc_id]['uuid'].encode('utf-8')
 
@@ -141,6 +145,7 @@ log = logging.getLogger(__name__)
 # * Add BaseLocation with MethodStorage
 # * DerivedLocation(BaseLocation, DerivedMethod) << one fits all
 
+
 def sync(loc_a: StorageLocation,
          loc_b: StorageLocation):
     ''' Synchronize StorageLocations with registered Files
@@ -150,10 +155,12 @@ def sync(loc_a: StorageLocation,
     Storable will be ignored.
     '''
     # TODO: add proper get_registered_files() interface to StorageLocation
-    file_list = set(list(loc_a._file_map.keys()) + list(loc_b._file_map.keys()))
+    file_list = set(
+        list(loc_a._file_map.keys()) +
+        list(loc_b._file_map.keys()))
     log.debug(f'Starting sync between {loc_a} and {loc_b}')
 
-    ### Decision Stage 1: File Existance
+    # ## Decision Stage 1: File Existance
     for file in file_list:
         local_exists = loc_a.exists(file)
         remote_exists = loc_b.exists(file)
@@ -171,7 +178,7 @@ def sync(loc_a: StorageLocation,
             continue
         # Both files exist. We continue normally.
 
-        ### Decision Stage 2: Decision based on UUID
+        # ## Decision Stage 2: Decision based on UUID
         # Get file uuid's
         local_uuid = loc_a.get_uuid(file)
         remote_uuid = loc_b.get_uuid(file)
@@ -186,7 +193,7 @@ def sync(loc_a: StorageLocation,
         # StorageLocations should generate a UUID even if the file
         # initially has none.
         if (not last_remote_uuid or
-            not last_local_uuid):
+                not last_local_uuid):
             raise KissStorageSyncException(
                 f'[{file}] exists on both locaions but StorageLocation did '
                 f'not return a UUID. This should not happen. Please '
@@ -194,7 +201,7 @@ def sync(loc_a: StorageLocation,
                 f'You could alternatively remove the file from one of the '
                 f'locations')
         if (local_uuid != last_local_uuid and
-            remote_uuid != last_remote_uuid):
+                remote_uuid != last_remote_uuid):
             raise KissChangeOnBothSidesException(
                 f'[{file}] changed on both sides. Not yet supported.')
         if local_uuid != last_local_uuid:
@@ -205,6 +212,7 @@ def sync(loc_a: StorageLocation,
             # logging in _sync_file
         else:
             log.debug(f'File {file} did not change.')
+
 
 def _sync_file(file,
                source: StorageLocation,
@@ -240,6 +248,7 @@ def _sync_file(file,
     # TODO UPGRADE: unmark files "not readable"
     # self.__mark_sync_done(file, data)
 
+
 def _load_sync_data(file, location: StorageLocation) -> SyncData:
     # catch never synced case:
     if not location.exists(file + '.sync'):
@@ -247,6 +256,7 @@ def _load_sync_data(file, location: StorageLocation) -> SyncData:
     # load data:
     raw_data = location._load(file + '.sync')
     return SyncData.from_bytes(raw_data)
+
 
 def _store_sync_data(file, location: StorageLocation, sync_data: SyncData):
     raw_data = sync_data.to_bytes()

@@ -17,7 +17,6 @@ import functools
 
 from kiss_cf import logging
 from kiss_cf.security import Security
-from kiss_cf.storage import StorageLocation
 
 # TODO: Why do I use configparser at all??
 #  + It's nice to load INI files (and store back to them)
@@ -209,11 +208,14 @@ class Config():
         Validity of input is also verified.
         '''
         if section not in self.config.sections():
-            raise Exception(f'Section {section} does not exist.')
+            raise Exception(
+                f'Section {section} does not exist.')
         if option not in self.config.options(section):
-            raise Exception(f'Option {option} for section {section} does not exist.')
+            raise Exception(
+                f'Option {option} for section {section} does not exist.')
         if not self.option_config[option].validate(str(value)):
-            raise Exception(f'Value {value} is not valid for {section}:{option}.')
+            raise Exception(
+                f'Value {value} is not valid for {section}:{option}.')
         self.config[section][option] = str(value)
 
     # INI File Handling

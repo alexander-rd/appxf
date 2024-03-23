@@ -7,8 +7,10 @@ support synchronization.
 from .storage_method import StorageMethod
 from .storage_location import StorageLocation, LocationStorageMethod
 
+
 class KissStorageFactoryError(Exception):
     ''' Error in StorageFactory handling. '''
+
 
 class LocationStorageFactory():
     ''' Access StorageLocation based StorageMethods
@@ -26,9 +28,9 @@ class LocationStorageFactory():
         # TODO: add again: self._method_class = method_class
 
     def get_storage_method(
-        self, file: str,
-        register=True,
-        create=True) -> StorageMethod:
+            self, file: str,
+            register=True,
+            create=True) -> StorageMethod:
         ''' Get a storage method from the factory
 
         Arguments:
@@ -46,12 +48,13 @@ class LocationStorageFactory():
         '''
         # TODO: resolve parameters and distribute functionality properly
         if self._location.is_registered(file):
-            storage = self._location.get_storage_method(file, register=register, create=create)
+            storage = self._location.get_storage_method(
+                file, register=register, create=create)
             # TODO: reactivate this check
-            #if type(storage) is not self._method_class:
-            #    raise KissStorageFactoryError(
-            #        f'Storage type should be {self._method_class} but retrieved '
-            #        f'was {type(storage)}')
+            # if type(storage) is not self._method_class:
+            #     raise KissStorageFactoryError(
+            #         f'Storage type should be {self._method_class} but '
+            #         f'retrieved was {type(storage)}')
         else:
             storage = self._get_storage_method(file)
             self._location.register_file(file, storage)

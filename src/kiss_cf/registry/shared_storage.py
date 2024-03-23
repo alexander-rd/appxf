@@ -1,21 +1,11 @@
-''' Security layer for files shared between users
-
-Classes:
-    PublicEncryptedStorageMethod: Public key encryption (to allow others access)
-    EnvelopeStorageMethod: Envelope to control writing permissions and
-        provide information for manual inspection
-    SignedStorageMethod: Signature for authenticity SecureSharedStorageMethod:
-        A class collecting all above feature into the common approach that
-        should be used.
-    SecureSharedStorageMethod: Recommended method for shared storage, including
-        all above mechanisms.
-'''
+''' Security layer for files shared between users '''
 # TODO: update description above
 
 # allow class name being used before being fully defined (like in same class):
 from __future__ import annotations
 
-from kiss_cf.storage import StorageLocation, StorageMethod, LocationStorageFactory
+from kiss_cf.storage import StorageLocation, StorageMethod, \
+    LocationStorageFactory
 from kiss_cf.security import Security
 from .registry import Registry
 from ._signature import Signature
@@ -36,19 +26,25 @@ class SecureSharedStorageMethod(StorageMethod):
                  location: StorageLocation,
                  security: Security,
                  registry: Registry,
-                 #as_role: str = 'USER',
-                 #to_roles: list[str] = []
                  ):
+        # TODO: "to roles" is missing input
+
+        # TODO: Reconsider how "allowed writing roles" are considered. I would
+        # expect the factory collecting "allowed writers" and "additional
+        # readers", assuming writers always must be readers.
+
         super().__init__()
         self._file = file
         self._base_storage = location.get_storage_method(file, register=False)
         self._security = security
         self._registry = registry
         self._signature = Signature(
-            storage_method=location.get_storage_method(file + '.signature', register=False),
+            storage_method=location.get_storage_method(
+                file + '.signature', register=False),
             security=security)
         self._public_encryption = PublicEncryption(
-            storage_method=location.get_storage_method(file + '.keys', register=False),
+            storage_method=location.get_storage_method(
+                file + '.keys', register=False),
             security=security,
             registry=registry)
 
@@ -91,6 +87,7 @@ class SecureSharedStorageMethod(StorageMethod):
         self._public_encryption.load()
         data = self._public_encryption.decrypt(data)
         return data
+
 
 # TODO: validate the concept that only particular roles are allowed to write
 # data. It shall be possible to get files that are configured individually.

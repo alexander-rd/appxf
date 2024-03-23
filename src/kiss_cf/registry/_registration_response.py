@@ -8,16 +8,18 @@ from __future__ import annotations
 
 from typing import TypedDict, Any
 
-from kiss_cf.security import Security
 from kiss_cf.storage import serialize, deserialize
+
 
 class KissExceptionRegistrationResponse(Exception):
     ''' Error with handling a registration response '''
+
 
 class RegistrationResponseData(TypedDict):
     version: int
     user_id: int
     config_sections: dict[str, dict[str, Any]]
+
 
 class RegistrationResponse():
     def __init__(self, data):

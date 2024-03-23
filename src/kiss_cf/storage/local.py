@@ -1,7 +1,7 @@
-from kiss_cf.storage import StorageLocation, StorageMethod
 from datetime import datetime
 import os.path
-import pytz
+
+from .storage_location import StorageLocation
 
 
 class LocalStorageLocation(StorageLocation):
@@ -15,7 +15,7 @@ class LocalStorageLocation(StorageLocation):
         # implementation. Attributes must be available.
         super().__init__()
 
-    ### Methods from StorageLocation
+    # ## Methods from StorageLocation
     def get_id(self, file: str = '') -> str:
         return self.__class__.__name__ + ': ' + os.path.join(self.path, file)
 
