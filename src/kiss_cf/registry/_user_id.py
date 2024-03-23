@@ -2,8 +2,10 @@
 
 from kiss_cf.storage import Storable, StorageMethod
 
+
 class KissExceptionUserId(Exception):
     ''' Load/Store error for user ID '''
+
 
 class UserId(Storable):
     ''' Storable user ID '''

@@ -8,10 +8,10 @@ Feature: Synchronization
     Then A contains "some data" in some_data
 
     Examples:
-    | method                     |
-    | Default                    |
+    | method               |
+    | Default              |
     | SecurePrivateStorage |
-    | SecureSharedStorageMethod  |
+    | SecureSharedStorage  |
 
 
     Scenario: Simple Initialization
@@ -67,6 +67,6 @@ Feature: Synchronization
     # and _load directly.
 
     Examples:
-    | methodA                       | methodB                       | methodC                       |
+    | methodA                 | methodB                 | methodC                 |
     | SecurePrivateStorage    | SecurePrivateStorage    | SecurePrivateStorage    |
-    | SecurePrivateStorage    | SecureSharedStorageMethod     | SecurePrivateStorage    |
+    | SecurePrivateStorage    | SecureSharedStorage     | SecurePrivateStorage    |

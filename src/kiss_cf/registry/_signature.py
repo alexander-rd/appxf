@@ -1,8 +1,11 @@
+''' signature behavior for authenticity '''
+
 from __future__ import annotations
 
 from kiss_cf.storage import Storable, StorageMethod
 from kiss_cf.storage import serialize, deserialize
 from kiss_cf.security import Security
+
 
 class SignatureData():
     ''' Hold signature data '''

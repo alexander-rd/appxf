@@ -1,18 +1,17 @@
-import pickle
-
 from kiss_cf.storage import Storable, StorageMethod, serialize, deserialize
-from kiss_cf.storage import StorageLocation
-from kiss_cf.security import Security, SecurePrivateStorageFactory
-from typing import Dict, Set, TypedDict
+from typing import Set, TypedDict
+
 
 class KissUserDatabaseException(Exception):
     ''' Error in User Database handling '''
+
 
 class UserEntry(TypedDict):
     id: int
     roles: list[str]
     validation_key: bytes
     encryption_key: bytes
+
 
 class UserDatabase(Storable):
     def __init__(self, storage_method: StorageMethod):
@@ -57,7 +56,7 @@ class UserDatabase(Storable):
                      encryption_key: bytes) -> int:
         # forward to reuse function with add_new()
         print('init as admin')
-        user_id =  self.add_new(
+        user_id = self.add_new(
             validation_key=validation_key,
             encryption_key=encryption_key,
             roles=['user', 'admin'])
@@ -66,7 +65,7 @@ class UserDatabase(Storable):
     def add_new(self,
                 validation_key: bytes,
                 encryption_key: bytes,
-                roles: list[str]|str = 'user') -> int:
+                roles: list[str] | str = 'user') -> int:
         if isinstance(roles, str):
             roles = [roles]
 
@@ -90,11 +89,11 @@ class UserDatabase(Storable):
             encryption_key: bytes,
             roles: list[str]):
 
-        entry = UserEntry(id=user_id,roles=roles,
+        entry = UserEntry(id=user_id, roles=roles,
                           validation_key=validation_key,
                           encryption_key=encryption_key
                           )
-        #entry = UserEntry2(id=user_id, validation_key=validation_key)
+        # entry = UserEntry2(id=user_id, validation_key=validation_key)
         self._user_db[user_id] = entry
 
         for role in roles:
@@ -139,7 +138,7 @@ class UserDatabase(Storable):
     def get_encryption_key(self, user_id: int) -> bytes:
         return self._get_user_entry(user_id)['encryption_key']
 
-    def get_encryption_keys(self, roles: list[str]|str) -> list[bytes]:
+    def get_encryption_keys(self, roles: list[str] | str) -> list[bytes]:
         keys: list[bytes] = []
         for this_role in roles:
             keys += [

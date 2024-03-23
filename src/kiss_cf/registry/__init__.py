@@ -5,5 +5,7 @@ mechanism and handling GUI and provides security algorithms. It can be used to
 secure StorageMethods from the storage module.
 '''
 
+# flake8: noqa F401
+
 from .shared_storage import SecureSharedStorageFactory
 from .registry import Registry

@@ -1,10 +1,8 @@
 
 # allow class name being used before being fully defined (like in same class):
 from __future__ import annotations
-import typing
 
 from kiss_cf.storage import StorageLocation
-from kiss_cf.storage import serialize, deserialize
 from kiss_cf.config import Config
 from kiss_cf.security import Security, SecurePrivateStorageFactory
 
@@ -13,8 +11,14 @@ from ._registration_response import RegistrationResponse
 from ._user_id import UserId
 from ._user_db import UserDatabase
 
-class KissExceptionRegistryUnitiialized(Exception):
+
+class KissRegistryUnitialized(Exception):
     ''' Trying to use an uninitialized registry '''
+
+
+class KissRegistryUnknownConfigSection(Exception):
+    ''' Trying to use an uninitialized registry '''
+
 
 class Registry:
     ''' User registry maintains the application user's ID an all user
@@ -29,10 +33,10 @@ class Registry:
         self._security = security
         self._config = config
 
-        self._user_db = UserDatabase(
-            SecurePrivateStorageFactory(location, security).get_storage_method('USER_DB'))
-        self._user_id = UserId(
-            SecurePrivateStorageFactory(location, security).get_storage_method('USER_ID'))
+        self._user_db = UserDatabase(SecurePrivateStorageFactory(
+            location, security).get_storage_method('USER_DB'))
+        self._user_id = UserId(SecurePrivateStorageFactory(
+            location, security).get_storage_method('USER_ID'))
 
     def is_initialized(self) -> bool:
         return (self._loaded or (
@@ -77,7 +81,7 @@ class Registry:
 
     def add_user_from_request(self,
                               request: RegistrationRequest,
-                              roles: list[str]=['user']) -> int:
+                              roles: list[str] = ['user']) -> int:
         ''' Store user in databse and get user ID
 
         The admin is expected to use this function. The request bytes are
@@ -85,24 +89,28 @@ class Registry:
         admin uses get_response_bytes() to send data back to user.
         '''
         if not self._loaded:
-            raise KissExceptionRegistryUnitiialized('registry is not yet loaded, cannot add user')
+            raise KissRegistryUnitialized(
+                'registry is not yet loaded, cannot add user')
         return self._user_db.add_new(
             validation_key=request.signing_key,
             encryption_key=request.encryption_key,
             roles=roles)
 
-    def get_response_bytes(self, user_id: int, sections: list[str] = []) -> bytes:
+    def get_response_bytes(self,
+                           user_id: int,
+                           sections: list[str] = []) -> bytes:
         ''' Get response bytes from admin to user
 
         Bytes are sent back to user outside of tis tool's scope. For example,
         as file via Email. See: get_request_bytes().
         '''
         if not self._loaded:
-            raise KissExceptionRegistryUnitiialized('registry is not yet loaded, cannot construct a response')
+            raise KissRegistryUnitialized(
+                'registry is not yet loaded, cannot construct a response')
         # check sections existing before applying
         for section in sections:
             if section not in self._config.sections:
-                raise KissExceptionRegistrationResponse(
+                raise KissRegistryUnknownConfigSection(
                     f'Section {section} does not exist.')
         response = RegistrationResponse.new(
             user_id,
@@ -144,7 +152,7 @@ class Registry:
         # TODO: clarfify how it is checked that everything worked
         pass
 
-    def get_encryption_keys(self, roles: list[str]|str) -> list[bytes]:
+    def get_encryption_keys(self, roles: list[str] | str) -> list[bytes]:
         return self._user_db.get_encryption_keys(roles)
 
 # TODO: can we register the same user twice? How would we know? We
@@ -164,10 +172,12 @@ class Registry:
 # Consequences:
 #   * One file per ROLE (not per USER)
 #   * User information may be contained in multiple ROLE files.
-# If user information size is SIZE_UI and size of encryption data is SIZE_KEY, the
-# total size is:
-#   * For one file, each user: USERS * (SIZE_UI + AVG_USER_IN_ROLE * SIZE_KEY)
-#   * For one file, each group: ROLES * (AVG_USER_IN_ROLE * SIZE_UI + AVG_USER_IN_ROLE * SIZE_KEY)
+# If user information size is SIZE_UI and size of encryption data is SIZE_KEY,
+# the total size is:
+#   * For one file, each user:
+#       USERS * (SIZE_UI + AVG_USER_IN_ROLE * SIZE_KEY)
+#   * For one file, each group:
+#       ROLES * (AVG_USER_IN_ROLE * SIZE_UI + AVG_USER_IN_ROLE * SIZE_KEY)
 #   * Assuming AVG_USER_IN_ROLE ~ USERS/ROLES
 #       * First: USERS * SIZE_UI + USERS^2/ROLES * SIZE_KEY
 #           USERS * SIZE_UI >> guaranteed

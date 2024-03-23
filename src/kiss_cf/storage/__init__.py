@@ -6,6 +6,8 @@
 # StorageMethod when used elsewhere. Rationale: keep the external interface
 # simple.
 
+# flake8: noqa F401
+
 # Abstract/General Classes
 from .storable import Storable
 from .storage_method import StorageMethod

@@ -5,15 +5,11 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-from typing import Any
 
 import uuid
 
 from kiss_cf import logging
 from .storage_method import StorageMethod
-
-class StorageLocationException(Exception):
-    ''' Basic StorageLocation Exception '''
 
 # TODO: Collect an inventory. __init__ of this base class shall collect all
 # __init__'s and be able to report (a) all locations (as a list) and (b) all
@@ -29,6 +25,11 @@ class StorageLocationException(Exception):
 # cannot be synced, neither registration nor UUID is required. Same applies to
 # time stamps. The option shall be added to avoid the overhead of UUID files -
 # other overhead should not be a major concern.
+
+
+class StorageLocationException(Exception):
+    ''' Basic StorageLocation Exception '''
+
 
 class StorageLocation(ABC):
 
@@ -52,23 +53,27 @@ class StorageLocation(ABC):
     def register_file(self, file: str, method: StorageMethod):
         ''' Add storable for synchronization
         '''
-        #stack = traceback.extract_stack()
-        #for frame in stack[-5:]:
-        #    print(f">>  File '{frame.filename}', line {frame.lineno}, in {frame.name}")
-        #self.log.debug(f'Adding file {file} with method {method.__class__.__name__} to [{self.get_id()}]')
-
         if '.' in file:
             raise StorageLocationException(
-                'File names must not contain \'.\'. Recommended is to use \'_\' instead. '
-                'Reason: kiss_cf uses files like [some_file.signature] in scope of security '
-                'implementation which could lead to conflincts.')
+                'File names must not contain \'.\'. '
+                'Recommended is to use \'_\' instead. '
+                'Reason: kiss_cf uses files like [some_file.signature] '
+                'in scope of security implementation which could lead '
+                'to conflincts.')
+        # TODO: consider removing this check. It may be intended usage to
+        # overwrite a registration. Maybe, this check should go into the scope
+        # of the factory? Also, if the factory checks again that retrieved data
+        # types match, the reason behind this check would be covered. The
+        # reason was: "Avoid the same resource accidently being registered with
+        # different storage methods .. such that sync() would lead to
+        # unexpected results."
         if file in self._file_map.keys():
             raise StorageLocationException(
                 f'You already have added {file} to this storage location as '
-                f'{type(self._file_map[file])}. You now try to register same file as '
-                f'{type(method)}.'
-                'You are likely trying to use two StorageMethods via get_storage_method() '
-                'for the same file'
+                f'{type(self._file_map[file])}. You now try to register same '
+                f'file as {type(method)}. '
+                'You are likely trying to use two StorageMethods via '
+                'get_storage_method() for the same file'
                 )
 
         self._file_map[file] = method
@@ -77,7 +82,8 @@ class StorageLocation(ABC):
         if file not in self._file_map.keys():
             raise StorageLocationException(
                f'Cannot remove {file}. It was never added. '
-               'Use get_storage_method() to safely interact with storage locations.')
+               'Use get_storage_method() to safely interact '
+               'with storage locations.')
         # TODO LATER: like for add_file, this should be logged in debug.
         # But at teardown there were problems in the logger. Add logging
         # here and run tests to try to reproduce the issue.
@@ -211,8 +217,9 @@ class StorageLocation(ABC):
         try:
             self.timedelta_location_minus_system = file_timestamp - timestamp
         except Exception as e:
-            message = (f'Got timestamp {file_timestamp} from get_utc_timestamp(). '
-                       'Something might have gone wrong, there.')
+            message = (
+                f'Got timestamp {file_timestamp} from get_utc_timestamp(). '
+                f'Something might have gone wrong, there.')
             self._log_error_on_file_operation(message)
             raise e
         # remove tmp file again:
@@ -228,7 +235,8 @@ class StorageLocation(ABC):
                     extensions)
 
         Keyword Arguments:
-            create -- create new basic location method if True (default: {True})
+            create -- create new basic location method if True
+                      (default: {True})
 
         Returns:
             Either a new StorageMethod or the one that is already

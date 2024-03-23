@@ -1,9 +1,12 @@
+''' Provide public key encryption (to allow others access) '''
+
 from __future__ import annotations
 
 from kiss_cf.storage import Storable, StorageMethod
 from kiss_cf.storage import serialize, deserialize
 from kiss_cf.security import Security
 from .registry import Registry
+
 
 class PublicEncryptionData():
     ''' Hold signature data '''

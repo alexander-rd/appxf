@@ -11,6 +11,7 @@ from typing import TypedDict, Any
 from kiss_cf.security import Security
 from kiss_cf.storage import serialize, deserialize
 
+
 class RegistrationRequestData(TypedDict):
     version: int
     user_data: dict[str, Any]
@@ -19,6 +20,7 @@ class RegistrationRequestData(TypedDict):
     test_blob: str
     test_signature: bytes
     test_encrypted: bytes
+
 
 class RegistrationRequest:
     def __init__(self, data):
@@ -31,9 +33,11 @@ class RegistrationRequest:
     @property
     def signing_key(self):
         return self._data['signing_key']
+
     @property
     def encryption_key(self):
         return self._data['encryption_key']
+
     @property
     def user_data(self):
         return self._data['user_data']
@@ -41,8 +45,7 @@ class RegistrationRequest:
     @classmethod
     def new(cls,
             user_data: dict[str, Any],
-            security: Security
-           ) -> RegistrationRequest:
+            security: Security) -> RegistrationRequest:
         ''' Generate a new RegistrationResponse from data
 
         Arguments:
@@ -63,7 +66,6 @@ class RegistrationRequest:
             }
         # TODO: no option to test encryption key (on this path) since there is
         # no encryption based on the private key.
-        #print(f'RegistrationRequest.from_new(): {data}')
         return cls(data)
 
     @classmethod
@@ -81,7 +83,6 @@ class RegistrationRequest:
             constructed RegistrationRequest class
         '''
         data = deserialize(request_bytes)
-        #print(f'RegistrationRequest.from_registration_bytes(): {data}')
         return cls(data)
 
     def get_request_bytes(self) -> bytes:
