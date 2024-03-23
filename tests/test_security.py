@@ -8,7 +8,7 @@ import os
 import pytest
 import shutil
 
-from kiss_cf.security import Security, SecurePrivateStorageMethod
+from kiss_cf.security import Security, SecurePrivateStorageFactory
 from kiss_cf.storage import LocalStorageLocation
 
 # Indirectly used environments still need to be importet
@@ -61,9 +61,8 @@ def test_security_unlock(app_initialized_user):
 def test_security_store_load(app_unlocked_user):
     app: ApplicationMock = app_unlocked_user['app_user']
     data = b'123456ABC!'
-    storage = SecurePrivateStorageMethod(
-        base_method=app.location_data.get_storage_method('some_file'),
-        security=app.security)
+    storage = SecurePrivateStorageFactory(
+        app.location_data, app.security).get_storage_method('some_file')
     # store
     storage.store(data)
     # load
@@ -77,9 +76,8 @@ def test_security_store_load(app_unlocked_user):
     # Note: need to delete prior storage object. Storage locations do not allow
     # two methods covering the same file.
     del storage
-    storage = SecurePrivateStorageMethod(
-        base_method=app.location_data.get_storage_method('some_file'),
-        security=app.security)
+    storage = SecurePrivateStorageFactory(
+        app.location_data, app.security).get_storage_method('some_file')
     data_loaded = storage.load()
     assert data == data_loaded
 

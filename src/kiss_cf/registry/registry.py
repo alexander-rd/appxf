@@ -6,12 +6,12 @@ import typing
 from kiss_cf.storage import StorageLocation
 from kiss_cf.storage import serialize, deserialize
 from kiss_cf.config import Config
-from kiss_cf.security import Security, SecurePrivateStorageMethod
+from kiss_cf.security import Security, SecurePrivateStorageFactory
 
-from .user_id import UserId
-from .user_db import UserDatabase
-from .registration_request import RegistrationRequest
-from .registration_response import RegistrationResponse
+from ._registration_request import RegistrationRequest
+from ._registration_response import RegistrationResponse
+from ._user_id import UserId
+from ._user_db import UserDatabase
 
 class KissExceptionRegistryUnitiialized(Exception):
     ''' Trying to use an uninitialized registry '''
@@ -29,12 +29,10 @@ class Registry:
         self._security = security
         self._config = config
 
-        self._user_db = UserDatabase(SecurePrivateStorageMethod(
-            location.get_storage_method('USER_DB'),
-            security))
-        self._user_id = UserId(SecurePrivateStorageMethod(
-            location.get_storage_method('USER_ID'),
-            security))
+        self._user_db = UserDatabase(
+            SecurePrivateStorageFactory(location, security).get_storage_method('USER_DB'))
+        self._user_id = UserId(
+            SecurePrivateStorageFactory(location, security).get_storage_method('USER_ID'))
 
     def is_initialized(self) -> bool:
         return (self._loaded or (
@@ -145,6 +143,9 @@ class Registry:
 
         # TODO: clarfify how it is checked that everything worked
         pass
+
+    def get_encryption_keys(self, roles: list[str]|str) -> list[bytes]:
+        return self._user_db.get_encryption_keys(roles)
 
 # TODO: can we register the same user twice? How would we know? We
 # would need to double-check the keys (which we did not want to use as

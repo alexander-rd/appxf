@@ -112,6 +112,35 @@ class SyncData(dict):
 
 log = logging.getLogger(__name__)
 
+# TODO: this will not work: the sync algorithm does not know the storage method
+# that should apply when storing the file on the location.
+#
+# Alternative A: Location maintains the storage method.
+#  * the deriving methods would need to set the storage method again
+#    * !! This implies that the intermediate method should not be used.. ..but
+#      the user still has access to it and does not know
+#
+# Alternative B: The location method is derived
+#  * !! Similar problem as above that the the non-derived location is still
+#    available. But this time, constructing a method for the same file again
+#    would fail.
+#    * User may (accidently, of course) set up the same location twice leading
+#      to similar problems
+#
+# Both solutions above are about Location must maintain the storage methods.
+#
+# (+) Alternative B allows sync(Private, Shared) with files generated in
+#     Private while appropriate StorageMethods can be retrieved from
+#     SharedLocation by the sync algorithm.
+#  * A location should return +the same+ storage method for a file
+#  * A shared location could purge it's memory on sync objects. But we don't
+#    care much about RAM size for now.
+#
+# Action plan
+#
+# * Add BaseLocation with MethodStorage
+# * DerivedLocation(BaseLocation, DerivedMethod) << one fits all
+
 def sync(loc_a: StorageLocation,
          loc_b: StorageLocation):
     ''' Synchronize StorageLocations with registered Files
@@ -120,7 +149,8 @@ def sync(loc_a: StorageLocation,
     SyncMechanism.sync(). Files on the remote location that do not match a
     Storable will be ignored.
     '''
-    file_list = set(loc_a.file_list + loc_b.file_list)
+    # TODO: add proper get_registered_files() interface to StorageLocation
+    file_list = set(list(loc_a._file_map.keys()) + list(loc_b._file_map.keys()))
     log.debug(f'Starting sync between {loc_a} and {loc_b}')
 
     ### Decision Stage 1: File Existance
@@ -186,14 +216,14 @@ def _sync_file(file,
     # self.__mark_file_in_sync
 
     # get data
-    data = source._load(file)
+    data = source.get_storage_method(file, create=False).load()
     source_timestamp = source._get_location_timestamp(file)
     source_uuid = source.get_uuid(file)
     source_sync_data = _load_sync_data(file, source)
 
     # write data
-    target._store(file, data)
-    target._store(file + '.uuid', source_uuid)
+    target.get_storage_method(file, create=False).store(data)
+    target.store(file + '.uuid', source_uuid, straight=True)
     target_timestamp = target._get_location_timestamp(file)
     target_sync_data = _load_sync_data(file, target)
 
