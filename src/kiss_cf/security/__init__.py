@@ -6,4 +6,4 @@ secure StorageMethods from the storage module.
 '''
 
 from .security import Security, KissSecurityException
-from .private_storage import SecurePrivateStorageMethod
+from .private_storage import SecurePrivateStorageFactory

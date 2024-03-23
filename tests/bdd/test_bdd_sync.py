@@ -1,9 +1,10 @@
 from pytest_bdd import scenarios, scenario, given, when, then, parsers
 from pytest import fixture
 import pytest
-from kiss_cf.storage import StorageLocation, LocalStorageLocation, sync
-from kiss_cf.security import SecurePrivateStorageMethod
-from kiss_cf.registry import SecureSharedStorageMethod
+from kiss_cf.storage import StorageLocation, LocalStorageLocation, sync, LocationStorageFactory
+from kiss_cf.security import SecurePrivateStorageFactory
+from kiss_cf.registry import SecureSharedStorageMethod, SecureSharedStorageFactory, Registry
+from kiss_cf.config import Config
 import os.path
 import shutil
 
@@ -23,7 +24,18 @@ def env(env_test_directory, env_security_unlocked):
     env.update(env_security_unlocked)
     # ensure commonly used fields being present
     env['location'] = {}
-    env['storage method'] = {}
+    env['location']['registry'] = LocalStorageLocation(
+        os.path.join(env['dir'], 'registry'))
+    env['config'] = Config(
+        security=env['security'],
+        storage_dir = os.path.join(env['dir'], 'config'))
+    env['storage factory'] = {}
+    registry = Registry(
+        location=env['location']['registry'],
+        security=env['security'],
+        config=env['config'])
+    registry.initialize_as_admin()
+    env['registry'] = registry
     return env
 
 # @given(parsers.parse('Location {locations}'))
@@ -40,7 +52,9 @@ def initialize_locations(env, request, locations):
         loc_storage = LocalStorageLocation(
             os.path.join(env['dir'], loc))
         env['location'][loc] = loc_storage
-        env['storage method'][loc] = loc_storage.get_storage_method
+        #env['storage method'][loc] = loc_storage.get_storage_method
+        env['storage factory'][loc] = LocationStorageFactory(
+            loc_storage)
 
 @given(parsers.parse('Location {locations} is using Default'))
 def set_storage_method_default(env, locations):
@@ -50,13 +64,16 @@ def set_storage_method_default(env, locations):
 
     # define and assign the storage method constructor:
     for loc in locations:
-        env['storage method'][loc] = lambda file: SecurePrivateStorageMethod(
-            base_method = env['location'][loc].get_storage_method(file),
-            security = env['security'])
+        #env['storage method'][loc] = lambda file: SecurePrivateStorage(
+        #    base_method = env['location'][loc].get_storage_method(file),
+        #    security = env['security'])
+        env['storage factory'][loc] = SecurePrivateStorageFactory(
+            location=env['location'][loc],
+            security=env['security'])
 
-@given(parsers.parse('Location {locations} is using SecurePrivateStorageMethod'))
+@given(parsers.parse('Location {locations} is using SecurePrivateStorage'))
 def set_storage_method_secure_private(env, locations):
-    print(f'Location {locations} is using SecurePrivateStorageMethod')
+    print(f'Location {locations} is using SecurePrivateStorage')
     # Handle locations parameter
     locations = locations.split(',')
     if not isinstance(locations, list):
@@ -65,9 +82,12 @@ def set_storage_method_secure_private(env, locations):
 
     # define and assign the storage method constructor:
     for loc in locations:
-        env['storage method'][loc] = lambda file: SecurePrivateStorageMethod(
-            base_method = env['location'][loc].get_storage_method(file),
-            security = env['security'])
+        #env['storage method'][loc] = lambda file: SecurePrivateStorage(
+        #    base_method = env['location'][loc].get_storage_method(file),
+        #    security = env['security'])
+        env['storage factory'][loc] = SecurePrivateStorageFactory(
+            location=env['location'][loc],
+            security=env['security'])
 
 
 @given(parsers.parse('Location {locations} is using SecureSharedStorageMethod'))
@@ -84,10 +104,15 @@ def define_storage_method_secure_shared(env, locations):
     # Ensure user database is in context:
 
     for loc in locations:
-        env['storage method'][loc] = lambda file: SecureSharedStorageMethod(
-            base_method = env['location'][loc].get_storage_method(file),
-            security = env['security'],
-            user_database=env['user database'])
+        #env['storage method'][loc] = lambda file: SecureSharedStorageMethod(
+        #    file,
+        #    location = env['location'][loc],
+        #    security = env['security'],
+        #    user_database=env['user database'])
+        env['storage factory'][loc] = SecureSharedStorageFactory(
+            location=env['location'][loc],
+            security=env['security'],
+            registry=env['registry'])
 
 
 @given(parsers.parse('{location} writes "{data}" into {file}'))
@@ -95,7 +120,8 @@ def define_storage_method_secure_shared(env, locations):
 def write_data(env, location, data, file):
     print(f'{location} writes "{data}" into {file}')
 
-    storage = env['storage method'][location](file)
+    #storage = env['storage method'][location](file)
+    storage = env['storage factory'][location].get_storage_method(file)
     print(f'Using: {storage.__class__.__name__}')
     storage.store(data.encode('utf-8'))
 
@@ -115,9 +141,9 @@ def synchronizing_data(env, loc_a, loc_b):
     file_list = list(set(file_list))
     file_list = [file for file in file_list if '.' not in file]
     # to have a sync, corresponding storage must exist
-    storage_list_a = [env['location'][loc_a].get_storage_method(file)
+    storage_list_a = [env['storage factory'][loc_a].get_storage_method(file)
                       for file in file_list]
-    storage_list_b = [env['location'][loc_b].get_storage_method(file)
+    storage_list_b = [env['storage factory'][loc_b].get_storage_method(file)
                       for file in file_list]
     sync(env['location'][loc_a], env['location'][loc_b])
     del storage_list_a
@@ -133,7 +159,10 @@ def contains_data_in_file(env, location, data, file):
         print('Sync State JSON: \n' +
             env['location'][location].load(file + '.sync').decode('utf-8'))
 
-    storage = env['storage method'][location](file)
+    #storage = env['storage method'][location](file)
+    print(env)
+    print(env['storage factory'])
+    storage = env['storage factory'][location].get_storage_method(file)
     print(f'Using: {storage.__class__.__name__}')
     read_data = storage.load().decode('utf-8')
     assert read_data == data

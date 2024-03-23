@@ -2,7 +2,7 @@ import pickle
 
 from kiss_cf.storage import Storable, StorageMethod, serialize, deserialize
 from kiss_cf.storage import StorageLocation
-from kiss_cf.security import Security, SecurePrivateStorageMethod
+from kiss_cf.security import Security, SecurePrivateStorageFactory
 from typing import Dict, Set, TypedDict
 
 class KissUserDatabaseException(Exception):
@@ -14,7 +14,6 @@ class UserEntry(TypedDict):
     validation_key: bytes
     encryption_key: bytes
 
-
 class UserDatabase(Storable):
     def __init__(self, storage_method: StorageMethod):
         super().__init__(storage_method)
@@ -24,10 +23,10 @@ class UserDatabase(Storable):
         self._unused_id_list = []
         self._next_id = 0
         # The user_map maps ID's to UserEntry objects (dictionaries).
-        self._user_db: Dict[int, UserEntry] = {}
+        self._user_db: dict[int, UserEntry] = {}
         # The role_map maps roles to lists of ID's to quickly collect lists of
         # keys.
-        self._role_map: Dict[str, Set] = {}
+        self._role_map: dict[str, Set] = {}
 
     # TODO: implementation for storage shall serialize __init__.
     def _to_dict(self):
@@ -91,7 +90,7 @@ class UserDatabase(Storable):
             encryption_key: bytes,
             roles: list[str]):
 
-        entry = UserEntry(user_id=user_id,roles=roles,
+        entry = UserEntry(id=user_id,roles=roles,
                           validation_key=validation_key,
                           encryption_key=encryption_key
                           )
@@ -141,8 +140,15 @@ class UserDatabase(Storable):
         return self._get_user_entry(user_id)['encryption_key']
 
     def get_encryption_keys(self, roles: list[str]|str) -> list[bytes]:
-        # TODO: implementation
-        return []
+        keys: list[bytes] = []
+        for this_role in roles:
+            keys += [
+                self._user_db[user]['encryption_key']
+                for user in self._user_db.keys()
+                if self.has_role(user, this_role)
+                ]
+        keys = list(set(keys))
+        return keys
 
     def get_roles(self, user_id: int) -> list[str]:
         return []

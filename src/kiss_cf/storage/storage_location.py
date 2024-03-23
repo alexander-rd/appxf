@@ -5,10 +5,12 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
+from typing import Any
+
 import uuid
 
 from kiss_cf import logging
-from kiss_cf.storage import StorageMethod
+from .storage_method import StorageMethod
 
 class StorageLocationException(Exception):
     ''' Basic StorageLocation Exception '''
@@ -23,6 +25,11 @@ class StorageLocationException(Exception):
 # always have a newer timestamp. For example: by delaying a write operation or
 # repeating it when the resulting time stamp did not change.
 
+# TODO: Add an option upon __init__ if this location can be synced. If it
+# cannot be synced, neither registration nor UUID is required. Same applies to
+# time stamps. The option shall be added to avoid the overhead of UUID files -
+# other overhead should not be a major concern.
+
 class StorageLocation(ABC):
 
     log = logging.getLogger(__name__ + '.StorageLocation')
@@ -30,8 +37,11 @@ class StorageLocation(ABC):
     def __init__(self):
         self.timedelta_location_minus_system: timedelta | None = None
         self.test_count = 0
-        self.file_list: list[str] = []
+        self._file_map: dict[str, StorageMethod] = {}
         self.update_time_offset()
+
+    def __str__(self):
+        return f'[{self.get_id()}]'
 
     # TODO: there is no need to "add" a file via this. The StorageMethod for
     # this location should automatically use this "add_file" instead.
@@ -39,37 +49,42 @@ class StorageLocation(ABC):
     # Also the '.' checking should be part of the Storable implementation.
     #
     # A check to '/' must also be added!
-    def register_file(self, file: str):
+    def register_file(self, file: str, method: StorageMethod):
         ''' Add storable for synchronization
         '''
+        #stack = traceback.extract_stack()
+        #for frame in stack[-5:]:
+        #    print(f">>  File '{frame.filename}', line {frame.lineno}, in {frame.name}")
+        #self.log.debug(f'Adding file {file} with method {method.__class__.__name__} to [{self.get_id()}]')
+
         if '.' in file:
             raise StorageLocationException(
                 'File names must not contain \'.\'. Recommended is to use \'_\' instead. '
                 'Reason: kiss_cf uses files like [some_file.signature] in scope of security '
                 'implementation which could lead to conflincts.')
-        if file in self.file_list:
+        if file in self._file_map.keys():
             raise StorageLocationException(
-                f'You already have added {file} to this storage location. '
+                f'You already have added {file} to this storage location as '
+                f'{type(self._file_map[file])}. You now try to register same file as '
+                f'{type(method)}.'
                 'You are likely trying to use two StorageMethods via get_storage_method() '
                 'for the same file'
                 )
-        else:
-            self.log.debug(f'Adding file {file} to [{self.get_id()}]')
-            self.file_list.append(file)
 
-    def __str__(self):
-        return f'[{self.get_id()}]'
+        self._file_map[file] = method
 
     def deregister_file(self, file: str):
-        if file not in self.file_list:
+        if file not in self._file_map.keys():
             raise StorageLocationException(
                f'Cannot remove {file}. It was never added. '
                'Use get_storage_method() to safely interact with storage locations.')
-        else:
-            # TODO LATER: like for add_file, this should be logged in debug.
-            # But at teardown there were problems in the logger. Add logging
-            # here and run tests to try to reproduce the issue.
-            self.file_list.remove(file)
+        # TODO LATER: like for add_file, this should be logged in debug.
+        # But at teardown there were problems in the logger. Add logging
+        # here and run tests to try to reproduce the issue.
+        self._file_map.pop(file)
+
+    def is_registered(self, file: str) -> bool:
+        return file in self._file_map
 
     @abstractmethod
     def get_id(self, file: str = '') -> str:
@@ -101,10 +116,23 @@ class StorageLocation(ABC):
         local operating system and the sync location.
         '''
 
-    def store(self, file: str, data: bytes):
-        ''' Store bytes into file '''
+    # TODO: reconsider if UUID should be part of the storage location. It's
+    # required for sync, not for general storage. If not done here, the sync
+    # algorithm would need to set/determine the UUID. >> this would also allow
+    # to remove the store/_store and load/_load combos.
+    def store(self, file: str, data: bytes, straight=False):
+        ''' Store bytes into file
+
+        Arguments:
+            file -- the file name to store
+            data -- data to write to the file
+
+        Keyword Arguments:
+            straight -- Only write the file, no additions (default: {False})
+        '''
         self._store(file, data)
-        self._set_new_uuid(file)
+        if not straight and self.is_registered(file):
+            self._set_new_uuid(file)
 
     def _set_new_uuid(self, file: str):
         # since uuid needs to be serialized as well, we directly generate a
@@ -190,68 +218,52 @@ class StorageLocation(ABC):
         # remove tmp file again:
         self._remove(file)
 
-    def get_storage_method(self, file: str) -> LocationStorageMethod:
-        ''' Get sotrage method for files in location '''
-        return LocationStorageMethod(self, file)
+    def get_storage_method(self, file: str,
+                           create: bool = True,
+                           register: bool = True) -> StorageMethod:
+        ''' Get sotrage method for files in location
+
+        Arguments:
+            file -- the file name of the storage method (shall be without
+                    extensions)
+
+        Keyword Arguments:
+            create -- create new basic location method if True (default: {True})
+
+        Returns:
+            Either a new StorageMethod or the one that is already
+            registered
+        '''
+        if file not in self._file_map:
+            if create:
+                method = LocationStorageMethod(self, file)
+                if register:
+                    self.register_file(file, method)
+                return method
+            raise StorageLocationException(
+                f'File {file} is not yet registered with a storage method. '
+                'Either do not use create=False for this call or user '
+                'register_file() before.'
+                )
+        return self._file_map[file]
 
 
 class LocationStorageMethod(StorageMethod):
     ''' Storage method based on a Storage Location
 
-    Note that this class only provides the most basic storage method. Consider
-    adding a security layer when storing data.
+    This class only provides the most basic storage method. Consider adding a
+    security layer when storing data.
     '''
     def __init__(self, location: StorageLocation, file: str):
         super().__init__()
-        # allow derived storage methods to skip the add_file() call that is
-        # intended not to be called twice.
-        if not hasattr(self, '_location'):
-            self._location = location
-            self._location.register_file(file)
+        self._location = location
         self._file = file
-
-    # define properties to make the fields read only
-    @property
-    def location(self) -> StorageLocation:
-        ''' Location associated with this StorageMethod '''
-        return self._location
-    @property
-    def file(self) -> str:
-        ''' File associated with this StorageLocation based StorageMethod '''
-        return self._file
-
-    def __del__(self):
-        self._location.deregister_file(self.file)
 
     def exists(self):
         return self._location.exists(self._file)
 
     def store(self, data: bytes):
-        self._location.store(self.file, data)
+        self._location.store(self._file, data)
 
     def load(self):
-        return self._location.load(self.file)
-
-
-class DerivingStorageMethod(LocationStorageMethod):
-    ''' Helper class to not repeating the common __init__
-
-    StorageMethods can be cascaded to add functionality while remaining
-    modular. To achieve this, each deriving StorageMethod needs to be a
-    LocationStorageMethod. Since StorageLocation maintains a list of files for
-    which StorageMethods exist, this procedure requires a special __init__.
-    This class just avoids implementatio overhead on this peculiarity.
-    '''
-    def __init__(self,
-                 base_method: LocationStorageMethod):
-        # as deriving class, we have to already set the location to skip the
-        # add_file in derived class:
-        self._location = base_method.location
-        super().__init__(location=base_method.location, file=base_method.file)
-        self._base_method = base_method
-        self._file = base_method._file
-
-    # like above for add_file(), the destructor must be overwritten to not call
-    # remove_file:
-    def __del__(self):
-        pass
+        return self._location.load(self._file)

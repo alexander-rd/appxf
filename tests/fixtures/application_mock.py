@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 
-from kiss_cf.security import Security, SecurePrivateStorageMethod
+from kiss_cf.security import Security
 from kiss_cf.registry import Registry
 from kiss_cf.config import Config
 from kiss_cf.storage import LocalStorageLocation

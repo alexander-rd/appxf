@@ -10,7 +10,7 @@ Feature: Synchronization
     Examples:
     | method                     |
     | Default                    |
-    | SecurePrivateStorageMethod |
+    | SecurePrivateStorage |
     | SecureSharedStorageMethod  |
 
 
@@ -62,7 +62,11 @@ Feature: Synchronization
     And Synchronizing B with C
     Then C contains "some data" in some_data
 
+    # TODO: Testing SecureSharedStorageMethod is a fake since the sync
+    # algorithm does not use the storage method. It uses the location's _store
+    # and _load directly.
+
     Examples:
     | methodA                       | methodB                       | methodC                       |
-    | SecurePrivateStorageMethod    | SecurePrivateStorageMethod    | SecurePrivateStorageMethod    |
-    | SecurePrivateStorageMethod    | SecureSharedStorageMethod     | SecurePrivateStorageMethod    |
+    | SecurePrivateStorage    | SecurePrivateStorage    | SecurePrivateStorage    |
+    | SecurePrivateStorage    | SecureSharedStorageMethod     | SecurePrivateStorage    |

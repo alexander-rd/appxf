@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 
-from kiss_cf.storage import StorageMethod, StorageMethodDummy
+from .storage_method import StorageMethod, StorageMethodDummy
 
 class Storable(ABC):
     ''' Abstract storable class
