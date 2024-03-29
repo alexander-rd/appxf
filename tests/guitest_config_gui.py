@@ -1,28 +1,34 @@
 '''Manual testing the configuration GUI.'''
 
-# Run via: python -m yagni_cft.test.test_config_gui
-
-from ..config import Config
+from kiss_cf.config import Config
+from kiss_cf.application_gui.config_gui import EditConfigWindow
+from kiss_cf.gui import KissOption
 
 config = Config()
-config.language['USER'] = 'Benutzer'
-config.language['Cancel'] = 'Abbrechen'
-config.language['OK'] = 'Schließen'
+#config.language['USER'] = 'Benutzer'
+#config.language['Cancel'] = 'Abbrechen'
+#config.language['OK'] = 'Schließen'
 
 config.add_section('EMPTY')
 # Simple string:
-config.add_option('USER', 'Email', value='empty@email.com')
-# Preselection:
-config.add_option('USER', 'Rolle', value='Depotbetreuer')
-# Boolean:
-config.add_option('USER', 'Ist Admin', value='True')
-# Integer:
-config.add_option('USER', 'Irgendein Integer', value='15')
+# TODO: OptionProperties is nasty >> dict.
+# TODO: allow to set values directly on section creation. Possibly: option property "default"
+config.add_section('USER',
+    {'Email': KissOption(type='email'),
+     'Rolle': KissOption(type='str'),
+     'Ist Admin': KissOption(type='bool'),
+     'Irgendein Integer': KissOption(type='int'),
+     })
+config.section('USER').set('Email', 'empty@email.com')
+config.section('USER').set('Rolle', 'Depotbetreuer')
+config.section('USER').set('Ist Admin', True)
+config.section('USER').set('Irgendein Integer', 15)
 
-# config.keyConfig('USER', 'email')
+gui = EditConfigWindow(config, 'USER')
+gui.mainloop()
 
-config.open_edit_gui('USER', title='Einstellungen für {0}')
-print('..repeat..')
-config.open_edit_gui('USER')
+#config.open_edit_gui('USER', title='Einstellungen für {0}')
+#print('..repeat..')
+#config.open_edit_gui('USER')
 
 print('DONE')

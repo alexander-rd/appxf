@@ -26,9 +26,10 @@ def env(env_test_directory, env_security_unlocked):
     env['location'] = {}
     env['location']['registry'] = LocalStorageLocation(
         os.path.join(env['dir'], 'registry'))
-    env['config'] = Config(
-        security=env['security'],
-        storage_dir = os.path.join(env['dir'], 'config'))
+    factory = SecurePrivateStorageFactory(
+        LocalStorageLocation(os.path.join(env['dir'], 'config')),
+        security=env['security'])
+    env['config'] = Config(default_factory=factory)
     env['storage factory'] = {}
     registry = Registry(
         location=env['location']['registry'],

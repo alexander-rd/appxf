@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import os
 
-from kiss_cf.security import Security
+from kiss_cf.security import Security, SecurePrivateStorageFactory
 from kiss_cf.registry import Registry
 from kiss_cf.config import Config
+from kiss_cf.gui import KissOption
 from kiss_cf.storage import LocalStorageLocation
+
+from .restricted_location import CredentialLocationMock
 
 class ApplicationMock:
     def __init__(self,
@@ -38,13 +41,29 @@ class ApplicationMock:
 
         # CONFIG
         self.path_config = os.path.join(self._app_path, 'data/config')
-        self.config = Config(self.security, storage_dir = self.path_config)
+        self.factory_config = SecurePrivateStorageFactory(
+            LocalStorageLocation(self.path_config), self.security)
+        self.config = Config(default_factory=self.factory_config)
         # add some basic user data: email and name
-        self.config.add_option('USER', 'email')
-        self.config.set_option_config('email', type='email')
-        self.config.add_option('USER', 'name')
+
+        # TODO: having to explicitly use OptionProperties with config sections
+        # is annoying. You always need to import the class and construct the
+        # class. Better approach would be to use a dict, forwarding as
+        # **kwargs.
+        self.config.add_section('USER', options={
+            'email': KissOption(type='email'),
+            'name': KissOption(type='str')})
+        # add credentials for shared storage
+        self.config.add_section('SHARED_STORAGE', options=CredentialLocationMock.config_options)
         # add some arbitraty configuration
-        self.config.add_option('TEST', 'test', '42')
+        self.config.add_section('TEST', options={
+            'test': KissOption(type='int')})
+        # TODO: Reconsider this interface. Always having to state
+        # OptionProperties is annoying. A shorter variant would be:
+        #
+        # 1) config.add_section('TEST', options=['test'])
+        # 2) config.add_section('TEST', options={'test': 'str'})
+        # 3) config.add_section('TEST', options={'test': {'type': 'str', 'configurable': False})
 
         # REGISTRY
         self.path_registry = os.path.join(self._app_path, 'data/registry')
@@ -62,11 +81,11 @@ class ApplicationMock:
         # inconsistent.
         #   * Security specified a single file
         #   * Config specifies a path location
-        #   * UserDatabase specifies a storage method
+        #   * Registry specifies a storage location
         #
-        # Security should be consistent to UserDatabase. Config is different
+        # Security should be consistent to Registry. Config is different
         # since it handles multiple files (per section configuration). But
-        # UserDatabase may not remain like this when other user's information
+        # Registry may not remain like this when other user's information
         # is added to the DB.
 
 
@@ -85,21 +104,24 @@ class ApplicationMock:
         self._set_user_data()
         # .. at setting the password:
         self.security.init_user(self.password)
-        # And config must be stored accordinly:
-        self.config.store()
+        # USER config must be stored accordinly:
+        self.config.section('USER').store()
 
     def _set_user_data(self):
         ''' set email and name'''
-        self.config.set('USER', 'email',
-                        f'{self.user}@url.com')
-        self.config.set('USER', 'name',
-                        f'{self.user}')
+        section = self.config.section('USER')
+        section.set('email', f'{self.user}@url.com', store=False)
+        section.set('name', f'{self.user}', store=False)
 
     def perform_login_unlock(self):
         ''' Perform login procedure: unlock with password
 
-        This includes (1) unlock the Security object with password and (2)
-        loading configuration data.
+        This activity includes
+          (1) unlock the Security object with password and
+          (2) loading configuration data which may be incomplete if
+              registration is incomplete
+          (3) forward to registration check and potential post-registration
+              procedures
 
         This use case is covered by login_gui.py.
         '''
@@ -107,34 +129,40 @@ class ApplicationMock:
         # After unlocking, registration should be continues (if possible)
         if not self.registry.try_load():
             return
-        # configuration can now be loaded:
-        self.config.load()
-        #! TODO: applocation init sequence is not clear:
-        #   1) login
-        #   2) registration
-        #   3) sync
-        #   4) config loading
-        # Conflicts are from above are:
-        #   * registration (user_db) needs re-loading after sync >> solution is
-        #     user_db not being buffered in RAM (on access, needs to be newly
-        #     loaded)
-        #   * config needs to be loaded for sync but sync may update config.
-        #     Also here, config may be loaded temporarily but with config that
-        #     is often required this makes less sense.
-        # Config and registration may require a re-load(). Sequence would then be:
-        #   1) Login (requires password)
-        #   2) load config
-        #   3) Registration (automatic skip if user_id exists, depends on (1)
-        #      and (2))
-        #   4) sync
-        #   5) reload registration and config
+        # USER configuration can now be loaded:
+        self.config.section('USER').load()
+        #self._perform_try_load_registration()
 
     ######################
     ### User Registration
     #/
+    def _perform_try_load_registration(self):
+        ''' Check if registered and perform post-registration actions
+
+         Will happen always after login and execute:
+           (1) will try to sync
+           (2) will reload registration and config (may have changed after
+               sync)
+        '''
+        if not self.registry.is_initialized():
+            return
+
     def perform_registration_admin_init(self):
         ''' Perform registration procedure: initialize DB as admin '''
         self.registry.initialize_as_admin()
+        # The below will likely fail but will commonly be executed after
+        # passing registration.
+        self._perform_try_load_registration()
+
+        # add some configuration detail for testing:
+        #   1) a password to be shared on registration to access the shared storage
+        self.config.section('SHARED_STORAGE').set('credential', 'yes, sir!')
+        #   2) and some config that is shared after a sync
+        self.config.section('TEST').set('test', 42)
+
+        self.config.store()
+
+
 
     def perform_registration_get_request(self) -> bytes:
         ''' Perform registration procedure: get registration bytes

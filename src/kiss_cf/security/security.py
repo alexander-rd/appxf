@@ -136,7 +136,7 @@ class Security():
     def _get_symmetric_key(self):
         if not self.is_user_unlocked():
             raise Exception(
-                f'Trying to encrypt {self.file} before '
+                f'Trying to encrypt {self._file} before '
                 'succeeding with unlock_user()')
         return self._key_dict['symmetric_key']
 
