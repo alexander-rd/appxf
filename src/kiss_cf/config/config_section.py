@@ -1,5 +1,5 @@
 from copy import deepcopy
-
+from typing import Any
 from kiss_cf.storage import LocationStorageFactory, StorageMethod, StorageMethodDummy
 from kiss_cf.storage import serialize, deserialize
 
@@ -24,7 +24,7 @@ class ConfigSection():
 
     def __init__(self,
                  storage: StorageMethod = StorageMethodDummy(),
-                 options: list[str] | dict[str, KissOption] | None = None,
+                 options: list[str] | dict[str, KissOption] | dict[str, dict[str, Any]] | None = None,
                  values: dict[str, KissOption.base_types] | None = None):
         if options is None:
             options = {}
@@ -36,8 +36,17 @@ class ConfigSection():
         self._configurable = True
         self._format = 'pickle'
         if isinstance(options, dict):
-            # strip eventual subclassing
-            self._options = dict(options)
+            for option, setting in options.items():
+                if isinstance(setting, KissOption):
+                    self._options[option] = deepcopy(setting)
+                elif isinstance(setting, dict):
+                    self._options[option] = KissOption(**setting)
+                else:
+                    raise KissConfigSectionError(
+                        f'Cannot interpret settings for option "{option}" '
+                        f'that is "{setting}". Expected a KissOption instance '
+                        f'or a dictionary of options to construct a '
+                        f'KissOption instance')
         elif isinstance(options, list):
             self._options = {
                 option: KissOption()

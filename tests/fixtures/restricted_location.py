@@ -5,7 +5,6 @@ procedure.
 '''
 
 from kiss_cf.storage import LocalStorageLocation
-from kiss_cf.gui import KissOption
 
 global_credential = 'yes, sir!'
 
@@ -13,7 +12,7 @@ global_credential = 'yes, sir!'
 class CredentialLocationMock(LocalStorageLocation):
 
     config_options = {
-        'credential': KissOption(type='str')}
+        'credential': {'type': 'str'}}
 
     def __init__(self, path: str, credential):
         if not credential == global_credential:
