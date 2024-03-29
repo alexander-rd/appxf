@@ -73,7 +73,7 @@ class Registry:
 
         # TODO: add warning message the _loaded is True
         return RegistrationRequest.new(
-            self._config.get('USER'),
+            self._config.section('USER').get_all(),
             self._security).get_request_bytes()
 
     def get_request_data(self, request: bytes) -> RegistrationRequest:
@@ -114,7 +114,7 @@ class Registry:
                     f'Section {section} does not exist.')
         response = RegistrationResponse.new(
             user_id,
-            {section: self._config.get(section) for section in sections})
+            {section: self._config.section(section).get_all() for section in sections})
         return response.get_response_bytes()
 
     def set_response_bytes(self, response_bytes: bytes):
@@ -126,12 +126,13 @@ class Registry:
 
         for section in response.config_sections.keys():
             print(f'{section}: {response.config_sections[section]}')
-            # TODO: store configuration
-            for option in response.config_sections[section].keys():
-                self._config.set(
-                    section, option,
-                    response.config_sections[section][option])
-        self._config.store()
+
+            #for option in response.config_sections[section].keys():
+            #    self._config.set(
+            #        section, option,
+            #        response.config_sections[section][option])
+            self._config.section(section).set_all(response.config_sections[section])
+            self._config.section(section).store()
 
         # only store user_id only after retrieving all configuration to keep
         # application "uninitialized"

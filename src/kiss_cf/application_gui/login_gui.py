@@ -6,10 +6,10 @@ Login.check().
 import tkinter
 import tkinter.ttk
 
-from . import logging
-from .config import Config
-from .config_gui import ConfigSectionWidget
-from .security.security import Security
+from kiss_cf import logging
+from kiss_cf.config import Config
+from kiss_cf.gui import OptionDictWidget
+from kiss_cf.security import Security
 
 
 class UserAbortError(Exception):
@@ -68,7 +68,7 @@ class Login():
         guiRoot.rowconfigure(0, weight=1)
         guiRoot.columnconfigure(1, weight=1)
 
-        userConfig = ConfigSectionWidget(guiRoot, self._config, 'USER')
+        userConfig = OptionDictWidget(guiRoot, self._config, 'USER')
         userConfig.grid(row=0, column=0, sticky='NSWE', columnspan=2)
         left_min_size_config = userConfig.get_left_col_min_width()
 

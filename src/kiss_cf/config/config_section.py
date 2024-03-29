@@ -1,0 +1,125 @@
+from copy import deepcopy
+
+from kiss_cf.storage import LocationStorageFactory, StorageMethod, StorageMethodDummy
+from kiss_cf.storage import serialize, deserialize
+
+from kiss_cf.gui import KissOption
+
+
+class KissConfigSectionError(Exception):
+    ''' General config error '''
+
+
+class ConfigSection():
+    ''' Maintain a section of config options
+
+    Relations to other classes:
+        Config -- Aggregates sections to an application configuration.
+        Option -- Type and display options
+    '''
+
+    setting_list = ['configurable', 'format']
+
+    format_list = ['pickle', 'ini']
+
+    def __init__(self,
+                 storage: StorageMethod = StorageMethodDummy(),
+                 options: list[str] | dict[str, KissOption] | None = None,
+                 values: dict[str, KissOption.base_types] | None = None):
+        if options is None:
+            options = {}
+        if values is None:
+            values = {}
+        self._storage = storage
+        self._options: dict[str, KissOption] = {}
+        self._values: dict[str, KissOption.base_types] = {}
+        self._configurable = True
+        self._format = 'pickle'
+        if isinstance(options, dict):
+            # strip eventual subclassing
+            self._options = dict(options)
+        elif isinstance(options, list):
+            self._options = {
+                option: KissOption()
+                for option in options
+                }
+        for option in values:
+            # ensure option properties exist:
+            if option not in self._options:
+                self._options[option] = KissOption()
+            # ensure value is stored with expected type
+            self._values[option] = self._options[option].to_value(
+                values[option])
+
+    def __str__(self):
+        confstring = ('configurable' if self._configurable
+                      else 'not configurable')
+        return (f'Configuration in {str(self._storage)} stored as '
+                f'{self._format} (format), {confstring}')
+
+    @property
+    def options(self) -> dict[str, KissOption]:
+        ''' Return the dictionary of option properties (deepcopy) '''
+        return deepcopy(self._options)
+
+    @property
+    def configurable(self):
+        return self._configurable
+    @configurable.setter
+    def configurable(self, new_value):
+        if not isinstance(new_value, bool):
+            raise KissConfigSectionError(
+                f'You try to set configurable option of a section with {new_value} '
+                f'which is not boolean.')
+        self._configurable = new_value
+
+    def _ensure_option_exists(self, option: str):
+        if option not in self._options:
+            raise KissConfigSectionError(
+                f'Option {option} does not exist. We have: {list(self._options.keys())}')
+
+    def set(self,
+            option: str,
+            new_value: KissOption.base_types,
+            store: bool = True):
+        ''' Set an option value '''
+        self._ensure_option_exists(option)
+        self._values[option] = self._options[option].to_value(new_value)
+        if store:
+            self.store()
+
+    # TODO: should this be a property??
+    def get_all(self, copy:bool = False) -> dict[str, KissOption.base_types]:
+        ''' Get access to value dictionary
+
+        Note that python returns a reference to the dictionary. Changes of
+        configuration values at a later point will apply to the obtained
+        reference. You may change values directly. This behavior allows to
+        provide the configuration options to a class during application
+        initialization while the configuration itself may not yet be loaded.
+        '''
+        if copy:
+            return deepcopy(self._values)
+        else:
+            return self._values
+
+    def set_all(self, data: dict[str, KissOption.base_types], store=True):
+        for option, value in data.items():
+            self.set(option, value, store=False)
+        if store:
+            self.store()
+
+    def get(self, option: str = '') ->  KissOption.base_types:
+        ''' Get one value or whole dictionary '''
+        self._ensure_option_exists(option)
+        return self._values[option]
+
+    def store(self):
+        data = serialize(self._values)
+        self._storage.store(data)
+
+    def load(self):
+        data = self._storage.load()
+        value_dict: dict[str, KissOption.base_types] = deserialize(data)
+        for option, value in value_dict.items():
+            self.set(option, value)

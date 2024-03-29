@@ -1,6 +1,10 @@
 from kiss_cf import property
 from kiss_cf import logging
 
+# TODO: review this code and get rid of it by OptionProperty. Consider
+# renaming. Consider the connected test caes and usage of those classes and
+# connected classes.
+
 logging.console_handler.setFormatter(logging.file_formatter)
 
 string_values = [
