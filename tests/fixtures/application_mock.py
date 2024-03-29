@@ -5,7 +5,6 @@ import os
 from kiss_cf.security import Security, SecurePrivateStorageFactory
 from kiss_cf.registry import Registry
 from kiss_cf.config import Config
-from kiss_cf.gui import KissOption
 from kiss_cf.storage import LocalStorageLocation
 
 from .restricted_location import CredentialLocationMock
@@ -46,24 +45,16 @@ class ApplicationMock:
         self.config = Config(default_factory=self.factory_config)
         # add some basic user data: email and name
 
-        # TODO: having to explicitly use OptionProperties with config sections
-        # is annoying. You always need to import the class and construct the
-        # class. Better approach would be to use a dict, forwarding as
-        # **kwargs.
         self.config.add_section('USER', options={
-            'email': KissOption(type='email'),
-            'name': KissOption(type='str')})
+            'email': {'type': 'email'},
+            'name': {'type': 'str'}
+            })
         # add credentials for shared storage
         self.config.add_section('SHARED_STORAGE', options=CredentialLocationMock.config_options)
         # add some arbitraty configuration
         self.config.add_section('TEST', options={
-            'test': KissOption(type='int')})
-        # TODO: Reconsider this interface. Always having to state
-        # OptionProperties is annoying. A shorter variant would be:
-        #
-        # 1) config.add_section('TEST', options=['test'])
-        # 2) config.add_section('TEST', options={'test': 'str'})
-        # 3) config.add_section('TEST', options={'test': {'type': 'str', 'configurable': False})
+            'test': {'type': 'int'}
+            })
 
         # REGISTRY
         self.path_registry = os.path.join(self._app_path, 'data/registry')

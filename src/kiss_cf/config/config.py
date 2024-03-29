@@ -9,6 +9,7 @@ usage for a generic GUI and flexible (encrypted) storage by aggregating:
        OptionConfig)
 '''
 
+from typing import Any
 import configparser
 import pickle
 import os.path
@@ -103,7 +104,7 @@ class Config():
 
     def add_section(self,
                     section: str,
-                    options: dict[str, KissOption] | None = None):
+                    options: dict[str, KissOption] | dict[str, dict[str, Any]] | None = None):
         '''Add section if not yet existing.  '''
         if options is None:
             options = {}
