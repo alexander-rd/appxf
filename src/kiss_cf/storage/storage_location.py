@@ -10,6 +10,7 @@ import uuid
 
 from kiss_cf import logging
 from .storage_method import StorageMethod
+from .storage_factory import StorageFactory
 
 # TODO: Collect an inventory. __init__ of this base class shall collect all
 # __init__'s and be able to report (a) all locations (as a list) and (b) all
@@ -31,11 +32,12 @@ class StorageLocationException(Exception):
     ''' Basic StorageLocation Exception '''
 
 
-class StorageLocation(ABC):
+class StorageLocation(StorageFactory, ABC):
 
     log = logging.getLogger(__name__ + '.StorageLocation')
 
     def __init__(self):
+        StorageFactory.__init__(self)
         self.timedelta_location_minus_system: timedelta | None = None
         self.test_count = 0
         self._file_map: dict[str, StorageMethod] = {}
@@ -43,54 +45,6 @@ class StorageLocation(ABC):
 
     def __str__(self):
         return f'[{self.get_id()}]'
-
-    # TODO: there is no need to "add" a file via this. The StorageMethod for
-    # this location should automatically use this "add_file" instead.
-    #
-    # Also the '.' checking should be part of the Storable implementation.
-    #
-    # A check to '/' must also be added!
-    def register_file(self, file: str, method: StorageMethod):
-        ''' Add storable for synchronization
-        '''
-        if '.' in file:
-            raise StorageLocationException(
-                'File names must not contain \'.\'. '
-                'Recommended is to use \'_\' instead. '
-                'Reason: kiss_cf uses files like [some_file.signature] '
-                'in scope of security implementation which could lead '
-                'to conflincts.')
-        # TODO: consider removing this check. It may be intended usage to
-        # overwrite a registration. Maybe, this check should go into the scope
-        # of the factory? Also, if the factory checks again that retrieved data
-        # types match, the reason behind this check would be covered. The
-        # reason was: "Avoid the same resource accidently being registered with
-        # different storage methods .. such that sync() would lead to
-        # unexpected results."
-        if file in self._file_map.keys():
-            raise StorageLocationException(
-                f'You already have added {file} to this storage location as '
-                f'{type(self._file_map[file])}. You now try to register same '
-                f'file as {type(method)}. '
-                'You are likely trying to use two StorageMethods via '
-                'get_storage_method() for the same file'
-                )
-
-        self._file_map[file] = method
-
-    def deregister_file(self, file: str):
-        if file not in self._file_map.keys():
-            raise StorageLocationException(
-               f'Cannot remove {file}. It was never added. '
-               'Use get_storage_method() to safely interact '
-               'with storage locations.')
-        # TODO LATER: like for add_file, this should be logged in debug.
-        # But at teardown there were problems in the logger. Add logging
-        # here and run tests to try to reproduce the issue.
-        self._file_map.pop(file)
-
-    def is_registered(self, file: str) -> bool:
-        return file in self._file_map
 
     @abstractmethod
     def get_id(self, file: str = '') -> str:
@@ -226,8 +180,8 @@ class StorageLocation(ABC):
         self._remove(file)
 
     def get_storage_method(self, file: str,
-                           create: bool = True,
-                           register: bool = True) -> StorageMethod:
+                           register: bool = True,
+                           create: bool = True) -> StorageMethod:
         ''' Get sotrage method for files in location
 
         Arguments:

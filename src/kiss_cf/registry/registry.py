@@ -2,7 +2,7 @@
 # allow class name being used before being fully defined (like in same class):
 from __future__ import annotations
 
-from kiss_cf.storage import StorageLocation
+from kiss_cf.storage import StorageFactory
 from kiss_cf.config import Config
 from kiss_cf.security import Security, SecurePrivateStorageFactory
 
@@ -21,22 +21,19 @@ class KissRegistryUnknownConfigSection(Exception):
 
 
 class Registry:
-    ''' User registry maintains the application user's ID an all user
+    ''' User registry maintains the application user's ID and all user
         configurations the user is permitted to see. '''
 
     def __init__(self,
-                 location: StorageLocation,
+                 storage: StorageFactory,
                  security: Security,
                  config: Config):
         self._loaded = False
-        self._location = location
         self._security = security
         self._config = config
 
-        self._user_db = UserDatabase(SecurePrivateStorageFactory(
-            location, security).get_storage_method('USER_DB'))
-        self._user_id = UserId(SecurePrivateStorageFactory(
-            location, security).get_storage_method('USER_ID'))
+        self._user_db = UserDatabase(storage.get_storage_method('USER_DB'))
+        self._user_id = UserId(storage.get_storage_method('USER_ID'))
 
     def is_initialized(self) -> bool:
         return (self._loaded or (

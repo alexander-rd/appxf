@@ -1,6 +1,6 @@
 from copy import deepcopy
 from typing import Any
-from kiss_cf.storage import LocationStorageFactory, StorageMethod, StorageMethodDummy
+from kiss_cf.storage import StorageMethod, StorageMethodDummy
 from kiss_cf.storage import serialize, deserialize
 
 from kiss_cf.gui import KissOption

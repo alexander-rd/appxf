@@ -10,14 +10,10 @@ usage for a generic GUI and flexible (encrypted) storage by aggregating:
 '''
 
 from typing import Any
-import configparser
-import pickle
-import os.path
-import functools
 
 from kiss_cf import logging
 from kiss_cf.gui import KissOption
-from kiss_cf.storage import LocationStorageFactory, StorageMethodDummy
+from kiss_cf.storage import StorageMethodDummy, StorageFactory
 
 from .config_section import ConfigSection
 
@@ -67,8 +63,8 @@ class Config():
     '''
     log = logging.getLogger(__name__ + '.Config')
 
-    def __init__(self, default_factory: LocationStorageFactory | None = None):
-        self._factory = default_factory
+    def __init__(self, default_factory: StorageFactory | None = None):
+        self._default_factory = default_factory
         self._sections: dict[str, ConfigSection] = {}
 
         # TODO: clarify how USER section is created. I do not see why this has
@@ -104,17 +100,23 @@ class Config():
 
     def add_section(self,
                     section: str,
-                    options: dict[str, KissOption] | dict[str, dict[str, Any]] | None = None):
+                    options: dict[str, KissOption] | dict[str, dict[str, Any]] | None = None,
+                    factory: StorageFactory | None = None):
         '''Add section if not yet existing.  '''
-        if options is None:
-            options = {}
+        # ensure section does not yet exist:
         if section in self._sections:
             raise KissConfigError(
                 f'Cannot add section {section}, it does already exist.')
-        if self._factory is not None:
-            storage = self._factory.get_storage_method(section)
+        # define storage
+        if factory is not None:
+            storage = factory.get_storage_method(section)
+        elif self._default_factory is not None:
+            storage = self._default_factory.get_storage_method(section)
         else:
             storage = StorageMethodDummy()
+        # construct section
+        if options is None:
+            options = {}
         self._sections[section] = ConfigSection(
             storage=storage,
             options=options)

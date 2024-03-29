@@ -1,7 +1,6 @@
 ''' Secure StorageMethod for private (non-shared) usage '''
 
-from kiss_cf.storage import StorageLocation, StorageMethod, \
-    LocationStorageFactory
+from kiss_cf.storage import StorageMethod, StorageFactory, DerivingStorageFactory
 
 from .security import Security
 
@@ -14,11 +13,11 @@ class SecurePrivateStorageMethod(StorageMethod):
 
     def __init__(self,
                  file: str,
-                 location: StorageLocation,
+                 storage: StorageFactory,
                  security: Security):
         super().__init__()
         self._file = file
-        self._base_storage = location.get_storage_method(file, register=False)
+        self._base_storage = storage.get_storage_method(file, register=False)
         self._security = security
 
     def exists(self) -> bool:
@@ -33,7 +32,7 @@ class SecurePrivateStorageMethod(StorageMethod):
         self._base_storage.store(data)
 
 
-class SecurePrivateStorageFactory(LocationStorageFactory):
+class SecurePrivateStorageFactory(DerivingStorageFactory):
     ''' Add security layer to any location storage
 
     The produced storage methods add encrption/decryption to the provided
@@ -44,13 +43,13 @@ class SecurePrivateStorageFactory(LocationStorageFactory):
     accessed by others.
     '''
     def __init__(self,
-                 location: StorageLocation,
+                 storage: StorageFactory,
                  security: Security):
-        super().__init__(location)
+        super().__init__(storage)
         self._security = security
 
     def _get_storage_method(self, file: str) -> StorageMethod:
         return SecurePrivateStorageMethod(
             file,
-            location=self._location,
+            storage=self._storage,
             security=self._security)
