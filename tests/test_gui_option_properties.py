@@ -46,38 +46,41 @@ def test_gui_option_properties_wrong_set_attribute():
     assert 'type' in str(exc_info.value)
     assert 'configurable' in str(exc_info.value)
 
-def test_gui_option_properties_string_conversion():
-    option = KissOption(type='str')
-    value = option.to_value('hello')
-    assert value == 'hello'
-    assert option.to_string('vault') == 'vault'
-    assert option.to_value('anything') == 'anything'
 
-def test_gui_option_properties_bool_conversion():
-    option = KissOption(type='bool')
-    value = option.to_value('yes')
-    assert value
-    assert option.to_string(False) == '0'
-    assert option.to_string(True) == '1'
-    assert option.to_value('true')
-    assert option.to_value('1')
-    assert not option.to_value('no')
-    assert not option.to_value('False')
-    assert not option.to_value('0')
+conversion_param = [
+    # Type      Input           Valid   Value           String
+    ('str',    'hello',         True,   'hello',        'hello'),
+    ('str',    '!"§$%&/()=?\n', True,   '!"§$%&/()=?\n','!"§$%&/()=?\n'),
+    ('bool',    'yes',          True,   True,           'yes'),
+    ('bool',    True,           True,   True,           '1'),
+    ('bool',    False,          True,   False,          '0'),
+    ('bool',    'true',         True,   True,           'true'),
+    ('bool',    'False',        True,   False,          'False'),
+    ('bool',    '1',            True,   True,           '1'),
+    ('bool',    'no',           True,   False,          'no'),
+    ('int',     42,             True,   42,             '42'),
+    ('int',     0,              True,   0,              '0'),
+    ('int',     -1234567890,    True,   -1234567890,    '-1234567890'),
+    ('int',     '123',          True,   123,            '123'),
+    ('int',     '0',            True,   0,              '0'),
+    ('int',     '-1234567890',  True,   -1234567890,    '-1234567890'),
+]
+@pytest.mark.parametrize(
+    'option_type, input, valid, value, string', conversion_param)
+def test_gui_option_conversion(option_type, input, valid, value, string):
+    option = KissOption(type=option_type)
+    # if value is None:
+    #     with pytest.raises(KissOptionPropertyError) as exec_info:
+    assert option.validate(input) == valid
+    if not valid:
+        # TODO: add expectations on raised errors for conversion of invalid
+        # values.
+        return
+    assert option.to_value(input) == value
+    assert option.to_string(input) == string
 
-def test_gui_option_properties_int_conversion():
-    option = KissOption(type='int')
-    assert option.validate('42')
-    value = option.to_value('42')
-    assert value
-    assert option.to_string(42) == '42'
-    assert option.to_string(0) == '0'
-    assert option.to_string(-1234567890) == '-1234567890'
-    assert option.to_value('123') == 123
-    assert option.to_value('0') == 0
-    assert option.to_value('-1234567890') == -1234567890
 
-def test_gui_option_properties_wron_conversions():
+def test_gui_option_properties_wrong_conversions():
     option = KissOption(type='Email')
     with pytest.raises(KissOptionPropertyError) as exc_info:
         option.to_value('no_email')
