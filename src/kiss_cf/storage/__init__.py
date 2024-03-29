@@ -12,7 +12,7 @@
 from .storable import Storable
 from .storage_method import StorageMethod
 from .storage_location import StorageLocation
-from .storage_factory import LocationStorageFactory
+from .storage_factory import StorageFactory, DerivingStorageFactory, KissStorageFactoryError
 
 # Specific Storage Locations
 from .local import LocalStorageLocation

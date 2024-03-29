@@ -4,8 +4,7 @@
 # allow class name being used before being fully defined (like in same class):
 from __future__ import annotations
 
-from kiss_cf.storage import StorageLocation, StorageMethod, \
-    LocationStorageFactory
+from kiss_cf.storage import StorageLocation, StorageMethod, DerivingStorageFactory, StorageFactory
 from kiss_cf.security import Security
 from .registry import Registry
 from ._signature import Signature
@@ -23,7 +22,7 @@ class SecureSharedStorageMethod(StorageMethod):
     '''
     def __init__(self,
                  file: str,
-                 location: StorageLocation,
+                 storage: StorageFactory,
                  security: Security,
                  registry: Registry,
                  ):
@@ -35,15 +34,15 @@ class SecureSharedStorageMethod(StorageMethod):
 
         super().__init__()
         self._file = file
-        self._base_storage = location.get_storage_method(file, register=False)
+        self._base_storage = storage.get_storage_method(file, register=False)
         self._security = security
         self._registry = registry
         self._signature = Signature(
-            storage_method=location.get_storage_method(
+            storage_method=storage.get_storage_method(
                 file + '.signature', register=False),
             security=security)
         self._public_encryption = PublicEncryption(
-            storage_method=location.get_storage_method(
+            storage_method=storage.get_storage_method(
                 file + '.keys', register=False),
             security=security,
             registry=registry)
@@ -91,10 +90,10 @@ class SecureSharedStorageMethod(StorageMethod):
 
 # TODO: validate the concept that only particular roles are allowed to write
 # data. It shall be possible to get files that are configured individually.
-class SecureSharedStorageFactory(LocationStorageFactory):
+class SecureSharedStorageFactory(DerivingStorageFactory):
     ''' Get secured and shared storage methods '''
     def __init__(self,
-                 location: StorageLocation,
+                 storage: StorageFactory,
                  security: Security,
                  registry: Registry):
         ''' Get secured and shared storage methods
@@ -106,14 +105,14 @@ class SecureSharedStorageFactory(LocationStorageFactory):
             registry -- the user registry to access other users public keys and
                         role assignments
         '''
-        super().__init__(location=location)
+        super().__init__(storage=storage)
         self._security = security
         self._registry = registry
 
     def _get_storage_method(self, file: str) -> StorageMethod:
         return SecureSharedStorageMethod(
             file,
-            location=self._location,
+            storage=self._storage,
             security=self._security,
             registry=self._registry
         )

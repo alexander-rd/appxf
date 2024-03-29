@@ -1,7 +1,7 @@
 from pytest_bdd import scenarios, scenario, given, when, then, parsers
 from pytest import fixture
 import pytest
-from kiss_cf.storage import StorageLocation, LocalStorageLocation, sync, LocationStorageFactory
+from kiss_cf.storage import LocalStorageLocation, sync
 from kiss_cf.security import SecurePrivateStorageFactory
 from kiss_cf.registry import SecureSharedStorageFactory, Registry
 from kiss_cf.config import Config
@@ -32,7 +32,7 @@ def env(env_test_directory, env_security_unlocked):
     env['config'] = Config(default_factory=factory)
     env['storage factory'] = {}
     registry = Registry(
-        location=env['location']['registry'],
+        storage=env['location']['registry'],
         security=env['security'],
         config=env['config'])
     registry.initialize_as_admin()
@@ -54,8 +54,7 @@ def initialize_locations(env, request, locations):
             os.path.join(env['dir'], loc))
         env['location'][loc] = loc_storage
         #env['storage method'][loc] = loc_storage.get_storage_method
-        env['storage factory'][loc] = LocationStorageFactory(
-            loc_storage)
+        env['storage factory'][loc] = loc_storage
 
 @given(parsers.parse('Location {locations} is using Default'))
 def set_storage_method_default(env, locations):
@@ -69,7 +68,7 @@ def set_storage_method_default(env, locations):
         #    base_method = env['location'][loc].get_storage_method(file),
         #    security = env['security'])
         env['storage factory'][loc] = SecurePrivateStorageFactory(
-            location=env['location'][loc],
+            storage=env['location'][loc],
             security=env['security'])
 
 @given(parsers.parse('Location {locations} is using SecurePrivateStorage'))
@@ -87,7 +86,7 @@ def set_storage_method_secure_private(env, locations):
         #    base_method = env['location'][loc].get_storage_method(file),
         #    security = env['security'])
         env['storage factory'][loc] = SecurePrivateStorageFactory(
-            location=env['location'][loc],
+            storage=env['location'][loc],
             security=env['security'])
 
 
@@ -111,7 +110,7 @@ def define_storage_method_secure_shared(env, locations):
         #    security = env['security'],
         #    user_database=env['user database'])
         env['storage factory'][loc] = SecureSharedStorageFactory(
-            location=env['location'][loc],
+            storage=env['location'][loc],
             security=env['security'],
             registry=env['registry'])
 
