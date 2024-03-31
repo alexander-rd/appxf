@@ -3,8 +3,9 @@ from ftputil import FTPHost
 from datetime import datetime
 import os.path
 
-from kiss_cf.storage import StorageLocation
 from kiss_cf import logging
+
+from ._file_storage_master import FileStorageMaster
 
 # Notes on ftputil. While ftputil offers an upload_if_newer and
 # download_if_newer together with synchronize_times(), it is based on files on
@@ -42,7 +43,7 @@ def retry_method_with_reconnect(method):
     return method_wrapper
 
 
-class FtpLocation(StorageLocation):
+class FtpLocation(FileStorageMaster):
 
     # TODO UPGRADE: The verbose logging should be collected and printet to info
     # when errors occur

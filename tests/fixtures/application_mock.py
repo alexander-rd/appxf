@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import os
 
-from kiss_cf.security import Security, SecurePrivateStorageFactory
+from kiss_cf.security import Security, SecurePrivateStorageMaster
 from kiss_cf.registry import Registry
 from kiss_cf.config import Config
-from kiss_cf.storage import LocalStorageLocation
+from kiss_cf.storage import LocalStorageMaster
 
 from .restricted_location import CredentialLocationMock
 
@@ -40,20 +40,20 @@ class ApplicationMock:
 
         # CONFIG::LOCAL USER
         self.path_user_config = os.path.join(self._app_path, 'data/user/config')
-        self.factory_user_config = SecurePrivateStorageFactory(
-            LocalStorageLocation(self.path_user_config), self.security)
+        self.storage_user_config = SecurePrivateStorageMaster(
+            LocalStorageMaster(self.path_user_config), self.security)
         # CONGIG::SHARED TOOL
         self.path_shared_config = os.path.join(self._app_path, 'data/shared/config')
-        self.factory_shared_config = SecurePrivateStorageFactory(
-            LocalStorageLocation(self.path_shared_config), self.security)
+        self.storage_shared_config = SecurePrivateStorageMaster(
+            LocalStorageMaster(self.path_shared_config), self.security)
         # We still apply one config for all that stores to shared tool storage
         # by default since only few will be user specific.
-        self.user_config = Config(default_factory=self.factory_shared_config)
+        self.user_config = Config(default_storage=self.storage_shared_config)
         # add USER config with some basic user data: email and name
         self.user_config.add_section('USER', options={
             'email': {'type': 'email'},
             'name': {'type': 'str'}},
-            factory = self.factory_user_config)
+            storage_master = self.storage_user_config)
         # add credentials options for shared storage (no values!)
         self.user_config.add_section('SHARED_STORAGE', options=CredentialLocationMock.config_options)
         # add some arbitraty configuration
@@ -63,12 +63,12 @@ class ApplicationMock:
 
         # REGISTRY
         self.path_registry = os.path.join(self._app_path, 'data/registry')
-        self.location_registry = LocalStorageLocation(self.path_registry)
+        self.location_registry = LocalStorageMaster(self.path_registry)
         self.registry = Registry(self.location_registry, self.security, self.user_config)
 
         # some DATA LOCATION
         self.path_data = os.path.join(self._app_path, 'data')
-        self.location_data = LocalStorageLocation(self.path_data)
+        self.location_data = LocalStorageMaster(self.path_data)
 
         # some REMOTE LOCATION
         self.path_remote = os.path.join(self._app_path, 'data')

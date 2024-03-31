@@ -40,9 +40,10 @@ class EditConfigWindow(tkinter.Toplevel):
         gui_root.columnconfigure(0, weight=1)
 
         config_section = config.section(section)
-        sectionFrame = OptionDictWidget(gui_root,
-                                 values=config_section.get_all(copy=True),
-                                 options=config_section.options)
+        sectionFrame = OptionDictWidget(
+            gui_root,
+            values=config_section.get_all(copy=True),
+            options=config_section.options)
         sectionFrame.grid(row=0, column=0, padx=0, pady=0, sticky='NSWE')
         sectionFrame.adjust_left_columnwidth()
 

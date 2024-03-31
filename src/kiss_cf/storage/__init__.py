@@ -10,15 +10,14 @@
 
 # Abstract/General Classes
 from .storable import Storable
-from .storage_method import StorageMethod
-from .storage_location import StorageLocation
-from .storage_factory import StorageFactory, DerivingStorageFactory, KissStorageFactoryError
+from .storage import Storage
+from .storage_master import StorageMaster, DerivingStorageMaster, KissStorageMasterError
 
 # Specific Storage Locations
-from .local import LocalStorageLocation
+from .local import LocalStorageMaster
 from .ftp import FtpLocation
 from .sync import sync
 
 # Helpers
-from .storage_method import StorageMethodDummy
+from .storage import StorageMethodDummy
 from .serialize import serialize, deserialize

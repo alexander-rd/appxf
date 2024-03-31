@@ -3,11 +3,12 @@
 # allow class name being used before being fully defined (like in same class):
 from __future__ import annotations
 
-from datetime import datetime
 import json
+import base64
 
 from kiss_cf import logging
-from kiss_cf.storage import StorageLocation
+from .storage_master import StorageMaster, DerivingStorageMaster
+from ._meta_data import MetaDataStorable
 
 
 class KissStorageSyncException(Exception):
@@ -44,7 +45,7 @@ class SyncData(dict):
         # version in __init__ and handle for compatibility.
         return {
             # UUID is the main decision criterium for the sync algorithm.
-            'uuid': b'',
+            'uuid': '',
             # Timestamp was origingally intended to be used but is not reliable
             # in cases where updates/sync happen within seconds (as visible in
             # automated test cases). It is still kept and maintained since it
@@ -52,48 +53,49 @@ class SyncData(dict):
             'timestamp': None
             }
 
-    def set_location_timestamp(self,
-                               location: StorageLocation,
-                               timestamp: datetime):
-        ''' Set last seen timestamp of this file in other location. '''
-        str_timestamp = timestamp.isoformat()
-        loc_id = location.get_id()
-        if loc_id not in self['location']:
-            self['location'][loc_id] = self._get_location_template()
-        self['location'][loc_id]['timestamp'] = str_timestamp
+    # def set_location_timestamp(self,
+    #                           location: StorageLocation,
+    #                           timestamp: datetime):
+    #    ''' Set last seen timestamp of this file in other location. '''
+    #    str_timestamp = timestamp.isoformat()
+    #    loc_id = location.get_id()
+    #    if loc_id not in self['location']:
+    #        self['location'][loc_id] = self._get_location_template()
+    #    self['location'][loc_id]['timestamp'] = str_timestamp
 
     # Method excluded from coverage since it is currently unused in KISS_CF and
     # not intended for usage outside of KISS_CF. See the comment in
     # _get_location_template() on timestamp.
-    def get_location_timestamp(self,
-                               location: StorageLocation
-                               ) -> datetime | None:
-        ''' Get last seen timestamp of this file in other location.
+    # def get_location_timestamp(self,
+    #                           location: StorageLocation
+    #                           ) -> datetime | None:
+    #    ''' Get last seen timestamp of this file in other location.
+#
+    #    Returns None if location is not known within this sync file.
+    #    '''
+    #    loc_id = location.get_id()
+    #    if loc_id not in self['location']:
+    #        return None
+    #    return datetime.fromisoformat(self['location'][loc_id]['timestamp'])
 
-        Returns None if location is not known within this sync file.
-        '''
-        loc_id = location.get_id()
-        if loc_id not in self['location']:
-            return None
-        return datetime.fromisoformat(self['location'][loc_id]['timestamp'])
-
-    def set_location_uuid(self, location: StorageLocation, uuid: bytes):
+    def set_location_uuid(self, storage: StorageMaster, uuid: bytes):
         ''' Set UUID of file in other location. '''
-        str_uuid = uuid.decode('utf-8')
-        loc_id = location.get_id()
+        str_uuid = base64.b64encode(uuid).decode('utf-8')
+        loc_id = storage.get_id()
         if loc_id not in self['location']:
             self['location'][loc_id] = self._get_location_template()
         self['location'][loc_id]['uuid'] = str_uuid
 
-    def get_location_uuid(self, location: StorageLocation) -> bytes:
+    def get_location_uuid(self, storage: StorageMaster) -> bytes:
         ''' Get UUID of file in other location.
 
         Returns b'' if location is not known within this sync file.
         '''
-        loc_id = location.get_id()
+        loc_id = storage.get_id()
         if loc_id not in self['location']:
             return b''
-        return self['location'][loc_id]['uuid'].encode('utf-8')
+        uuid_str = self['location'][loc_id]['uuid']
+        return base64.b64decode(uuid_str)
 
     @classmethod
     def from_bytes(cls, data: bytes) -> SyncData:
@@ -116,38 +118,51 @@ class SyncData(dict):
 
 log = logging.getLogger(__name__)
 
-# TODO: this will not work: the sync algorithm does not know the storage method
-# that should apply when storing the file on the location.
+
+# TODO: sync is broken when it cannot rely on StorageLocation anymore. It
+# needs:
+#   1) Retrieve registered fiels and the StorageMethod. [OK] via StorageMaster
+#   2) Retrieve the UUID which is written in StorageLocation upon store()
+#   3) Retrieve the timestamp which is a specialty of a StorageLocation
+#      implementation.
 #
-# Alternative A: Location maintains the storage method.
-#  * the deriving methods would need to set the storage method again
-#    * !! This implies that the intermediate method should not be used.. ..but
-#      the user still has access to it and does not know
+# Alternative A: Traverse the aggregation history to see if there is a
+# LocationStorage anywhere.
 #
-# Alternative B: The location method is derived
-#  * !! Similar problem as above that the the non-derived location is still
-#    available. But this time, constructing a method for the same file again
-#    would fail.
-#    * User may (accidently, of course) set up the same location twice leading
-#      to similar problems
+#  * (-) That would need access of private members. When made public, the
+#    abstraction may get lost.
 #
-# Both solutions above are about Location must maintain the storage methods.
+# Alternative B: At least UUID may be written elsewhere.
 #
-# (+) Alternative B allows sync(Private, Shared) with files generated in
-#     Private while appropriate StorageMethods can be retrieved from
-#     SharedLocation by the sync algorithm.
-#  * A location should return +the same+ storage method for a file
-#  * A shared location could purge it's memory on sync objects. But we don't
-#    care much about RAM size for now.
+#  * (/) Writing a UUID in scope of sync() would require hashing of the file
+#    content during sync which is acceptable. Alternatively, a complete copy
+#    could be stored.
+#  * (/) Writing UUID could be an extension via StorageMethod and
+#    StorageMaster. This is already the case! The files may exist. It's just
+#    that there is no public interface to retrieve the UUID. One would need to
+#    know the file extension. >> acceptable
+#  * (/) Timestamp is currently not used but has to be a functionality of the
+#    location. Like UUID, the timestamp could be written into a separate file
+#    (possibly together with UUID) and then accessed from the file system. This
+#    timestamping would ensure to use a common time source for the running
+#    application such that sync() could even place missing timestamps.
 #
-# Action plan
-#
-# * Add BaseLocation with MethodStorage
-# * DerivedLocation(BaseLocation, DerivedMethod) << one fits all
+# Alternative B1: The Factory already "registers" to support sync. It will
+# automatically add a StorageMethod inbetween that listens to the factories
+# "part of a sync" property to enable writing meta data (timestamp, UUID, hash)
+# upon store/load.
+
+# Pyhon dirsync:
+# https://github.com/tkhyn/dirsync/blob/develop/dirsync/syncer.py
+#  * Uses timestamps (stat)
+#  * Uses filecmp (stat: type, size, modification time; plus eventually
+#    content)
+
+# TODO: How does the sync consider removing files again??
 
 
-def sync(loc_a: StorageLocation,
-         loc_b: StorageLocation):
+def sync(loc_a: StorageMaster | DerivingStorageMaster,
+         loc_b: StorageMaster | DerivingStorageMaster):
     ''' Synchronize StorageLocations with registered Files
 
     Check timestamps of files on both locations and forward to the refined
@@ -156,32 +171,35 @@ def sync(loc_a: StorageLocation,
     '''
     # TODO: add proper get_registered_files() interface to StorageLocation
     file_list = set(
-        list(loc_a._file_map.keys()) +
-        list(loc_b._file_map.keys()))
+        list(loc_a.get_file_list()) +
+        list(loc_b.get_file_list()))
     log.debug(f'Starting sync between {loc_a} and {loc_b}')
 
     # ## Decision Stage 1: File Existance
     for file in file_list:
-        local_exists = loc_a.exists(file)
-        remote_exists = loc_b.exists(file)
+        storage_a = loc_a.get_storage(file)
+        storage_b = loc_b.get_storage(file)
+        local_meta = loc_a.get_meta_data(file)
+        remote_meta = loc_b.get_meta_data(file)
+        local_exists = storage_a.exists()
+        remote_exists = storage_b.exists()
         if not local_exists and not remote_exists:
             # can happen if file was not created, yet
             log.debug(f'File {file} not existing on both sides')
             continue
         if not remote_exists:
             log.debug(f'File {file} not existing on {loc_b}')
-            _sync_file(file, loc_a, loc_b)
+            _sync_file(file, loc_a, loc_b, local_meta, remote_meta)
             continue
         if not local_exists:
             log.debug(f'File {file} not existing on {loc_a}')
-            _sync_file(file, loc_b, loc_a)
+            _sync_file(file, loc_b, loc_a, remote_meta, local_meta)
             continue
         # Both files exist. We continue normally.
 
         # ## Decision Stage 2: Decision based on UUID
         # Get file uuid's
-        local_uuid = loc_a.get_uuid(file)
-        remote_uuid = loc_b.get_uuid(file)
+
         # read sync data
         local_sync_data = _load_sync_data(file, loc_a)
         remote_sync_data = _load_sync_data(file, loc_b)
@@ -200,23 +218,26 @@ def sync(loc_a: StorageLocation,
                 f'reconsider the StorageLocation implementation. '
                 f'You could alternatively remove the file from one of the '
                 f'locations')
-        if (local_uuid != last_local_uuid and
-                remote_uuid != last_remote_uuid):
+        if (local_meta.uuid != last_local_uuid and
+                remote_meta.uuid != last_remote_uuid):
             raise KissChangeOnBothSidesException(
                 f'[{file}] changed on both sides. Not yet supported.')
-        if local_uuid != last_local_uuid:
-            _sync_file(file, loc_a, loc_b)
+        if local_meta.uuid != last_local_uuid:
+            _sync_file(file, loc_a, loc_b, local_meta, remote_meta)
             # logging in _sync_file
-        elif remote_uuid != last_remote_uuid:
-            _sync_file(file, loc_b, loc_a)
+        elif remote_meta.uuid != last_remote_uuid:
+            _sync_file(file, loc_b, loc_a, remote_meta, local_meta)
+            # TODO: this A/B and local/remote has to be straightened up.
             # logging in _sync_file
         else:
             log.debug(f'File {file} did not change.')
 
 
 def _sync_file(file,
-               source: StorageLocation,
-               target: StorageLocation):
+               source: StorageMaster | DerivingStorageMaster,
+               target: StorageMaster | DerivingStorageMaster,
+               source_meta: MetaDataStorable,
+               target_meta: MetaDataStorable):
 
     log.info(f'Updating {file} from {source} to {target}')
 
@@ -224,40 +245,61 @@ def _sync_file(file,
     # self.__mark_file_in_sync
 
     # get data
-    data = source.get_storage_method(file, create=False).load()
-    source_timestamp = source._get_location_timestamp(file)
-    source_uuid = source.get_uuid(file)
+    data = source.get_storage(file, create=False).load()
+    # source_timestamp = source._get_location_timestamp(file)
+    # source_uuid = source.get_uuid(file)
     source_sync_data = _load_sync_data(file, source)
 
     # write data
-    target.get_storage_method(file, create=False).store(data)
-    target.store(file + '.uuid', source_uuid, straight=True)
-    target_timestamp = target._get_location_timestamp(file)
+    target.get_storage(file, create=False).store(data)
+    # update meta data:
+    target_meta.uuid = source_meta.uuid
+    target_meta.store()
+    # target_timestamp = target._get_location_timestamp(file)
     target_sync_data = _load_sync_data(file, target)
 
     # update source sync data:
-    source_sync_data.set_location_timestamp(target, target_timestamp)
-    source_sync_data.set_location_uuid(target, source_uuid)
+    # source_sync_data.set_location_timestamp(target, target_timestamp)
+    source_sync_data.set_location_uuid(target, source_meta.uuid)
     _store_sync_data(file, source, source_sync_data)
     # update target sync data: source location must now contain timestamp
     # of newly written data
-    target_sync_data.set_location_timestamp(source, source_timestamp)
-    target_sync_data.set_location_uuid(source, source_uuid)
+    # target_sync_data.set_location_timestamp(source, source_timestamp)
+    target_sync_data.set_location_uuid(source, source_meta.uuid)
     _store_sync_data(file, target, target_sync_data)
 
     # TODO UPGRADE: unmark files "not readable"
     # self.__mark_sync_done(file, data)
 
 
-def _load_sync_data(file, location: StorageLocation) -> SyncData:
+def _load_sync_data(file,
+                    storage: StorageMaster | DerivingStorageMaster
+                    ) -> SyncData:
+    # get sync storage
+    if isinstance(storage, DerivingStorageMaster):
+        file_storage = storage.get_root_master().get_storage(
+            file + '.sync', register=False)
+    else:
+        file_storage = storage.get_storage(
+            file + '.sync', register=False)
     # catch never synced case:
-    if not location.exists(file + '.sync'):
+    if not file_storage.exists():
         return SyncData()
     # load data:
-    raw_data = location._load(file + '.sync')
+    raw_data = file_storage.load()
+    # TODO: this behavior is quite poor. Something should be a Storable, here.
     return SyncData.from_bytes(raw_data)
 
 
-def _store_sync_data(file, location: StorageLocation, sync_data: SyncData):
+def _store_sync_data(file,
+                     storage: StorageMaster | DerivingStorageMaster,
+                     sync_data: SyncData):
+    # get sync storage
+    if isinstance(storage, DerivingStorageMaster):
+        file_storage = storage.get_root_master().get_storage(
+            file + '.sync', register=False)
+    else:
+        file_storage = storage.get_storage(
+            file + '.sync', register=False)
     raw_data = sync_data.to_bytes()
-    location._store(file + '.sync', raw_data)
+    file_storage.store(raw_data)

@@ -21,7 +21,10 @@ flake8 --count src
 git diff --name-only HEAD~1
 
 
-Next:
-SharedSync (test_bdd_sync, security/sync+shared_storage) - But to do this, we need registry process.
-(security/user_registry + security.drawio/registration)
->> start generating the test cases for registry ++ implementing those steps
+Registration is working up to USER_DB and conveying configuration options.
+ >> just fixed synchronization algo to work with new StorageFactory and way of
+    writing meta data
+
+Next: Demonstrate synchronization after registration by setting up
+synchronization pairs with writing_roles and reading_roles and embedding some
+.sync() call.

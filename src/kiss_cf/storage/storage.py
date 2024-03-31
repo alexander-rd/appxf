@@ -3,15 +3,22 @@
 from abc import ABC, abstractmethod
 
 
-class StorageMethod(ABC):
+class Storage(ABC):
     ''' Abstract class to model a storage method.
 
-    The StorageMethod class is responsible for storing data to a file system
-    and loading it from there. It abstracts details like used encrpytion
-    mechanisms.
+    The Storage class represents _how_ data is stored (to a file system). It
+    abstracts any details on:
+      * the actual storage device (local disc, FTP, ..)
+      * encryption/decryption
+      * supporting functionality like data synchronization
+    In addition to store()/load(), a Storage object has a function exists() to
+    determine if data may be loaded.
 
-    The Storable class will get a StorageMethod upon construction, take a
-    deepcopy and set the file name to represent a specific storage. It will
+    A Storage class may work together with a Storable which represents _what_
+    is to be stored. They collaborate by:
+      1) The Storable get's a Storage object upon construction
+      2) The Storable sets the file name of a Storage
+    construction and set the file name to represent a specific storage. It will
     then rely on the load() and store() implementation by consuming/providing a
     byte stream.
     '''
@@ -31,7 +38,7 @@ class StorageMethod(ABC):
         ''' Store data to Storage '''
 
 
-class StorageMethodDummy(StorageMethod):
+class StorageMethodDummy(Storage):
     ''' Storage dummy as default behavior.
 
     To allow Storable implementations to always assume having a StorageMethod,

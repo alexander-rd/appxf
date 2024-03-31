@@ -11,4 +11,3 @@ class ToolConfigParser(configparser.ConfigParser):
         super(ToolConfigParser, self).__init__(
             comment_prefixes='/', allow_no_value=True)
         self.optionxform = str
-

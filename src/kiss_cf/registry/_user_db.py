@@ -1,4 +1,4 @@
-from kiss_cf.storage import Storable, StorageMethod, serialize, deserialize
+from kiss_cf.storage import Storable, Storage, serialize, deserialize
 from typing import Set, TypedDict
 
 
@@ -14,7 +14,7 @@ class UserEntry(TypedDict):
 
 
 class UserDatabase(Storable):
-    def __init__(self, storage_method: StorageMethod):
+    def __init__(self, storage_method: Storage):
         super().__init__(storage_method)
 
         self._version = 1
@@ -160,5 +160,5 @@ class UserDatabase(Storable):
         pass
 
 # TODO: Support is needed to verify conditions to purge a user. This can only
-# be done together with StorageLocation implementation that needs to track all
-# StorageLocations and registered storages.
+# be done together with StorageMaster implementation that needs to track all
+# StorageMaster and registered storages.

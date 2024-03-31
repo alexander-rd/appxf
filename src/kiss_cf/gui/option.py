@@ -9,10 +9,12 @@ from kiss_cf.logging import logging
 class KissOptionPropertyError(Exception):
     ''' OptionProperties related error '''
 
+
 _OptionBaseType = Union[str, bool, int]
 
 
-# TODO: extend to passwords to control "stars" during entry. Or add property "masked".
+# TODO: extend to passwords to control "stars" during entry. Or add property
+# "masked".
 
 # TODO (low prio): extend to floats.
 
@@ -31,8 +33,7 @@ class KissOption():
 
     base_types = _OptionBaseType
 
-
-    def __init__(self, type = 'str'):
+    def __init__(self, type='str'):
         self._verify_type(type)
         self._type = type
         self._configurable = True
@@ -88,7 +89,10 @@ class KissOption():
     def validate(self, string: str) -> bool:
         return self._validate_string(string)[0]
 
-    def _validate_string(self, string: str) -> tuple[bool, _OptionBaseType | None]:
+    def _validate_string(
+            self,
+            string: str
+            ) -> tuple[bool, _OptionBaseType | None]:
         ''' Validate string against type '''
         if self._type in ['str', 'string']:
             # string input is always "as is"
@@ -143,8 +147,8 @@ class KissOption():
         if isinstance(value, int) and self._type in ['int']:
             return str(value)
         raise KissOptionPropertyError(
-            f'Provided value of type {type(value)} does not match configured type: {self._type}'
-        )
+            f'Provided value of type {type(value)} does not match configured '
+            f'type: {self._type}')
 
     def to_value(self, string) -> _OptionBaseType:
         ''' convert string to value according to type
@@ -154,10 +158,9 @@ class KissOption():
         '''
         # Handle already fitting types:
         if ((
-            isinstance(string, bool) and self._type in ['bool', 'boolean']
-            ) or (
-            isinstance(string, int) and self._type in ['int']
-            )):
+                isinstance(string, bool) and self._type in ['bool', 'boolean']
+                ) or (
+                isinstance(string, int) and self._type in ['int'])):
             return string
         # Catch non-matching input type
         if not isinstance(string, str):

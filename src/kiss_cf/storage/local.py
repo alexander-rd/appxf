@@ -1,10 +1,11 @@
+
 from datetime import datetime
 import os.path
 
-from .storage_location import StorageLocation
+from ._file_storage_master import FileStorageMaster
 
 
-class LocalStorageLocation(StorageLocation):
+class LocalStorageMaster(FileStorageMaster):
     ''' Maintain files in a local path. '''
     def __init__(self, path: str):
         # Ensure the path will exist
@@ -19,7 +20,6 @@ class LocalStorageLocation(StorageLocation):
     def get_id(self, file: str = '') -> str:
         return self.__class__.__name__ + ': ' + os.path.join(self.path, file)
 
-    # TODO: "file" does not always make sense
     def exists(self, file: str) -> bool:
         return os.path.exists(os.path.join(self.path, file))
 

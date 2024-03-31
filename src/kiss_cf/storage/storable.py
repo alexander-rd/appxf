@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 
-from .storage_method import StorageMethod, StorageMethodDummy
+from .storage import Storage, StorageMethodDummy
 
 
 class Storable(ABC):
@@ -18,7 +18,7 @@ class Storable(ABC):
     bytestream. A typical approach is to use pickle's dumps/loads.
     '''
 
-    def __init__(self, storage_method: StorageMethod = StorageMethodDummy()):
+    def __init__(self, storage_method: Storage = StorageMethodDummy()):
         self.storage = storage_method
 
     @abstractmethod

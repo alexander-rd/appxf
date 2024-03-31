@@ -39,13 +39,14 @@ class OptionDictWidget(tkinter.Frame):
         # Ensure all options have a value and convert values to string
         for option in options:
             if option in values:
-                self._kiss_values[option] = self._kiss_options[option].to_string(
+                self._kiss_values[option] = \
+                    self._kiss_options[option].to_string(
                     values[option])
             else:
                 self._kiss_values[option] = ''
 
-        self.log.debug(f'DictEditWidget for options: {self._kiss_options.keys()}')
-
+        self.log.debug(
+            f'DictEditWidget for options: {self._kiss_options.keys()}')
 
         self._option_frames: list[OptionWidget] = []
         # option list should only contain configurable options
@@ -59,7 +60,9 @@ class OptionDictWidget(tkinter.Frame):
             self.log.debug(f'{iOption}: {option}')
             # option_frame = self.get_option_frame(frame, section, option)
             option_frame = OptionWidget(
-                self, option, self._kiss_options[option], self._kiss_values[option])
+                self, option,
+                self._kiss_options[option],
+                self._kiss_values[option])
             option_frame.grid(row=iOption, column=0, sticky='NWSE')
             self._option_frames.append(option_frame)
 
