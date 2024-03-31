@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from kiss_cf.storage import Storable, StorageMethod
+from kiss_cf.storage import Storable, Storage
 from kiss_cf.storage import serialize, deserialize
 from kiss_cf.security import Security
 
@@ -44,7 +44,7 @@ class Signature(Storable):
     to verify() data.
     '''
     def __init__(self,
-                 storage_method: StorageMethod,
+                 storage_method: Storage,
                  security: Security):
         super().__init__(storage_method)
         self._security = security

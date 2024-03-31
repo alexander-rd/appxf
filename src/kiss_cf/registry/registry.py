@@ -2,9 +2,9 @@
 # allow class name being used before being fully defined (like in same class):
 from __future__ import annotations
 
-from kiss_cf.storage import StorageFactory
+from kiss_cf.storage import StorageMaster
 from kiss_cf.config import Config
-from kiss_cf.security import Security, SecurePrivateStorageFactory
+from kiss_cf.security import Security
 
 from ._registration_request import RegistrationRequest
 from ._registration_response import RegistrationResponse
@@ -25,15 +25,15 @@ class Registry:
         configurations the user is permitted to see. '''
 
     def __init__(self,
-                 storage: StorageFactory,
+                 storage: StorageMaster,
                  security: Security,
                  config: Config):
         self._loaded = False
         self._security = security
         self._config = config
 
-        self._user_db = UserDatabase(storage.get_storage_method('USER_DB'))
-        self._user_id = UserId(storage.get_storage_method('USER_ID'))
+        self._user_db = UserDatabase(storage.get_storage('USER_DB'))
+        self._user_id = UserId(storage.get_storage('USER_ID'))
 
     def is_initialized(self) -> bool:
         return (self._loaded or (
@@ -111,7 +111,8 @@ class Registry:
                     f'Section {section} does not exist.')
         response = RegistrationResponse.new(
             user_id,
-            {section: self._config.section(section).get_all() for section in sections})
+            {section: self._config.section(section).get_all()
+             for section in sections})
         return response.get_response_bytes()
 
     def set_response_bytes(self, response_bytes: bytes):
@@ -121,18 +122,14 @@ class Registry:
 
         response = RegistrationResponse.from_response_bytes(response_bytes)
 
-        for section in response.config_sections.keys():
+        for section in response.config_sections:
             print(f'{section}: {response.config_sections[section]}')
-
-            #for option in response.config_sections[section].keys():
-            #    self._config.set(
-            #        section, option,
-            #        response.config_sections[section][option])
-            self._config.section(section).set_all(response.config_sections[section])
+            self._config.section(section).set_all(
+                response.config_sections[section])
             self._config.section(section).store()
 
-        # only store user_id only after retrieving all configuration to keep
-        # application "uninitialized"
+        # only store user_id after retrieving all configuration to keep
+        # application "uninitialized" until then
         self._user_id.id = response.user_id
         self._user_id.store()
 
@@ -148,7 +145,6 @@ class Registry:
         # TODO: sync (or restart?)
 
         # TODO: clarfify how it is checked that everything worked
-        pass
 
     def get_encryption_keys(self, roles: list[str] | str) -> list[bytes]:
         return self._user_db.get_encryption_keys(roles)

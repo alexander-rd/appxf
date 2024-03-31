@@ -7,5 +7,5 @@ secure StorageMethods from the storage module.
 
 # flake8: noqa F401
 
-from .shared_storage import SecureSharedStorageFactory
+from .shared_storage import SecureSharedStorageMaster
 from .registry import Registry

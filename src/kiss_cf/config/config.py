@@ -13,7 +13,7 @@ from typing import Any
 
 from kiss_cf import logging
 from kiss_cf.gui import KissOption
-from kiss_cf.storage import StorageMethodDummy, StorageFactory
+from kiss_cf.storage import StorageMethodDummy, StorageMaster
 
 from .config_section import ConfigSection
 
@@ -41,6 +41,7 @@ from .config_section import ConfigSection
 # Note: Section-wise INI handling would imply each section providing it's part.
 # But the file is not section-specific.
 
+
 class KissConfigError(Exception):
     ''' General config error '''
 
@@ -63,8 +64,8 @@ class Config():
     '''
     log = logging.getLogger(__name__ + '.Config')
 
-    def __init__(self, default_factory: StorageFactory | None = None):
-        self._default_factory = default_factory
+    def __init__(self, default_storage: StorageMaster | None = None):
+        self._default_storage = default_storage
         self._sections: dict[str, ConfigSection] = {}
 
         # TODO: clarify how USER section is created. I do not see why this has
@@ -100,18 +101,19 @@ class Config():
 
     def add_section(self,
                     section: str,
-                    options: dict[str, KissOption] | dict[str, dict[str, Any]] | None = None,
-                    factory: StorageFactory | None = None):
+                    options: dict[str, KissOption] |
+                    dict[str, dict[str, Any]] | None = None,
+                    storage_master: StorageMaster | None = None):
         '''Add section if not yet existing.  '''
         # ensure section does not yet exist:
         if section in self._sections:
             raise KissConfigError(
                 f'Cannot add section {section}, it does already exist.')
         # define storage
-        if factory is not None:
-            storage = factory.get_storage_method(section)
-        elif self._default_factory is not None:
-            storage = self._default_factory.get_storage_method(section)
+        if storage_master is not None:
+            storage = storage_master.get_storage(section)
+        elif self._default_storage is not None:
+            storage = self._default_storage.get_storage(section)
         else:
             storage = StorageMethodDummy()
         # construct section

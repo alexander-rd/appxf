@@ -61,7 +61,6 @@ class Security():
         '''
         data = pickle.dumps(self._key_dict)
         self._encrypt_to_file(self._derived_key, data, self._file)
-        print(f'>> writing keys to {self._file}')
 
     def _verify_version(self):
         ''' Verify correct version
@@ -81,7 +80,6 @@ class Security():
 
         Encryption is based on user's password (derived key)
         '''
-        print(f'>> loading keys from {self._file}')
         data = self._decrypt_from_file(self._derived_key, self._file)
         self._key_dict = pickle.loads(data)
         self._verify_version()
@@ -92,7 +90,6 @@ class Security():
         If this returns false, you need to get a password to provide to
         init_user(). The class login.Login also provides a GUI for this.
         '''
-        print(f'>> checking existance of {self._file}: {os.path.exists(self._file)}')
         return os.path.exists(self._file)
 
     def is_user_unlocked(self):

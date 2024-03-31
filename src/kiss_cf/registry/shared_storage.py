@@ -1,17 +1,16 @@
 ''' Security layer for files shared between users '''
-# TODO: update description above
-
 # allow class name being used before being fully defined (like in same class):
 from __future__ import annotations
 
-from kiss_cf.storage import StorageLocation, StorageMethod, DerivingStorageFactory, StorageFactory
+from kiss_cf.storage import Storage, DerivingStorageMaster, StorageMaster
 from kiss_cf.security import Security
+
 from .registry import Registry
 from ._signature import Signature
 from ._public_encryption import PublicEncryption
 
 
-class SecureSharedStorageMethod(StorageMethod):
+class SecureSharedStorageMethod(Storage):
     ''' Typical setup for shared storage
 
     The typical setup consists of the layers:
@@ -22,7 +21,7 @@ class SecureSharedStorageMethod(StorageMethod):
     '''
     def __init__(self,
                  file: str,
-                 storage: StorageFactory,
+                 storage: StorageMaster,
                  security: Security,
                  registry: Registry,
                  ):
@@ -34,15 +33,15 @@ class SecureSharedStorageMethod(StorageMethod):
 
         super().__init__()
         self._file = file
-        self._base_storage = storage.get_storage_method(file, register=False)
+        self._base_storage = storage.get_storage(file, register=False)
         self._security = security
         self._registry = registry
         self._signature = Signature(
-            storage_method=storage.get_storage_method(
+            storage_method=storage.get_storage(
                 file + '.signature', register=False),
             security=security)
         self._public_encryption = PublicEncryption(
-            storage_method=storage.get_storage_method(
+            storage_method=storage.get_storage(
                 file + '.keys', register=False),
             security=security,
             registry=registry)
@@ -90,10 +89,10 @@ class SecureSharedStorageMethod(StorageMethod):
 
 # TODO: validate the concept that only particular roles are allowed to write
 # data. It shall be possible to get files that are configured individually.
-class SecureSharedStorageFactory(DerivingStorageFactory):
+class SecureSharedStorageMaster(DerivingStorageMaster):
     ''' Get secured and shared storage methods '''
     def __init__(self,
-                 storage: StorageFactory,
+                 storage: StorageMaster,
                  security: Security,
                  registry: Registry):
         ''' Get secured and shared storage methods
@@ -109,7 +108,7 @@ class SecureSharedStorageFactory(DerivingStorageFactory):
         self._security = security
         self._registry = registry
 
-    def _get_storage_method(self, file: str) -> StorageMethod:
+    def _get_storage(self, file: str) -> Storage:
         return SecureSharedStorageMethod(
             file,
             storage=self._storage,

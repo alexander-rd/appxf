@@ -1,8 +1,9 @@
 from datetime import datetime
 
-from kiss_cf.storage import StorageLocation
+from kiss_cf.storage import StorageMaster
 
-class StorageLocationMock(StorageLocation):
+
+class StorageLocationMock(StorageMaster):
     ''' Functional Mock to replace StorageLocations
 
     store/load will act on a buffer. Obtained behavior:

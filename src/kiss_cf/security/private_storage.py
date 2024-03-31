@@ -1,23 +1,23 @@
 ''' Secure StorageMethod for private (non-shared) usage '''
 
-from kiss_cf.storage import StorageMethod, StorageFactory, DerivingStorageFactory
+from kiss_cf.storage import Storage, StorageMaster, DerivingStorageMaster
 
 from .security import Security
 
 
-class SecurePrivateStorageMethod(StorageMethod):
+class SecurePrivateStorageMethod(Storage):
     ''' Storage method for local file storage.
 
-    Intended usage via the storage factory
+    Intended usage via the StorageMaster
     '''
 
     def __init__(self,
                  file: str,
-                 storage: StorageFactory,
+                 storage: StorageMaster,
                  security: Security):
         super().__init__()
         self._file = file
-        self._base_storage = storage.get_storage_method(file, register=False)
+        self._base_storage = storage.get_storage(file, register=False)
         self._security = security
 
     def exists(self) -> bool:
@@ -32,23 +32,23 @@ class SecurePrivateStorageMethod(StorageMethod):
         self._base_storage.store(data)
 
 
-class SecurePrivateStorageFactory(DerivingStorageFactory):
+class SecurePrivateStorageMaster(DerivingStorageMaster):
     ''' Add security layer to any location storage
 
     The produced storage methods add encrption/decryption to the provided
     location storage. The encryption is based on a symmetric key, generated at
     user initialization time. The user unlocks this key with his password.
 
-    Consider SecureSharedStorageFactory if the secured data needs to be
+    Consider SecureSharedStorageMaster if the secured data needs to be
     accessed by others.
     '''
     def __init__(self,
-                 storage: StorageFactory,
+                 storage: StorageMaster,
                  security: Security):
         super().__init__(storage)
         self._security = security
 
-    def _get_storage_method(self, file: str) -> StorageMethod:
+    def _get_storage(self, file: str) -> Storage:
         return SecurePrivateStorageMethod(
             file,
             storage=self._storage,

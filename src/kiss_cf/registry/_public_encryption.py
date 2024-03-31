@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from kiss_cf.storage import Storable, StorageMethod
+from kiss_cf.storage import Storable, Storage
 from kiss_cf.storage import serialize, deserialize
 from kiss_cf.security import Security
 from .registry import Registry
@@ -34,7 +34,7 @@ class PublicEncryptionData():
 
 class PublicEncryption(Storable):
     def __init__(self,
-                 storage_method: StorageMethod,
+                 storage_method: Storage,
                  security: Security,
                  registry: Registry,
                  # TODO: align default role nomenclature "user" versus "USER"
@@ -52,7 +52,6 @@ class PublicEncryption(Storable):
 
     def _set_bytestream(self, data: bytes):
         keys = deserialize(data)
-        print(f'>> Loaded keys: {keys}')
         self._keys = keys
 
     def encrypt(self, data: bytes) -> bytes:

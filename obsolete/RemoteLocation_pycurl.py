@@ -21,7 +21,7 @@ import uuid
 from datetime import datetime, timedelta
 from io import BytesIO, StringIO
 
-from kiss_cf.storage.storage_method import StorageMethod
+from kiss_cf.storage.storage import Storage
 from kiss_cf import logging
 from kiss_cf.utility.ntptime import NtpTime
 
@@ -272,7 +272,7 @@ class RemoteLocation():
 # 1) The base class will do everything directly
 # 2) An advanced class will prepare all uploads and require a call of sync()
 
-class RemoteStorageMethod(StorageMethod):
+class RemoteStorageMethod(Storage):
     def __init__(self, remote_location: RemoteLocation):
         self.remote_location = remote_location
 

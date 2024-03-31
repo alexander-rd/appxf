@@ -1,6 +1,6 @@
 from copy import deepcopy
 from typing import Any
-from kiss_cf.storage import StorageMethod, StorageMethodDummy
+from kiss_cf.storage import Storage, StorageMethodDummy
 from kiss_cf.storage import serialize, deserialize
 
 from kiss_cf.gui import KissOption
@@ -23,8 +23,9 @@ class ConfigSection():
     format_list = ['pickle', 'ini']
 
     def __init__(self,
-                 storage: StorageMethod = StorageMethodDummy(),
-                 options: list[str] | dict[str, KissOption] | dict[str, dict[str, Any]] | None = None,
+                 storage: Storage = StorageMethodDummy(),
+                 options: list[str] | dict[str, KissOption] |
+                 dict[str, dict[str, Any]] | None = None,
                  values: dict[str, KissOption.base_types] | None = None):
         if options is None:
             options = {}
@@ -74,18 +75,20 @@ class ConfigSection():
     @property
     def configurable(self):
         return self._configurable
+
     @configurable.setter
     def configurable(self, new_value):
         if not isinstance(new_value, bool):
             raise KissConfigSectionError(
-                f'You try to set configurable option of a section with {new_value} '
-                f'which is not boolean.')
+                f'You try to set configurable option of a section '
+                f'with {new_value} which is not boolean.')
         self._configurable = new_value
 
     def _ensure_option_exists(self, option: str):
         if option not in self._options:
             raise KissConfigSectionError(
-                f'Option {option} does not exist. We have: {list(self._options.keys())}')
+                f'Option {option} does not exist. '
+                f'We have: {list(self._options.keys())}')
 
     def set(self,
             option: str,
@@ -98,7 +101,7 @@ class ConfigSection():
             self.store()
 
     # TODO: should this be a property??
-    def get_all(self, copy:bool = False) -> dict[str, KissOption.base_types]:
+    def get_all(self, copy: bool = False) -> dict[str, KissOption.base_types]:
         ''' Get access to value dictionary
 
         Note that python returns a reference to the dictionary. Changes of
@@ -118,7 +121,7 @@ class ConfigSection():
         if store:
             self.store()
 
-    def get(self, option: str = '') ->  KissOption.base_types:
+    def get(self, option: str = '') -> KissOption.base_types:
         ''' Get one value or whole dictionary '''
         self._ensure_option_exists(option)
         return self._values[option]

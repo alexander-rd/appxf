@@ -8,4 +8,4 @@ secure StorageMethods from the storage module.
 # flake8: noqa F401
 
 from .security import Security, KissSecurityException
-from .private_storage import SecurePrivateStorageFactory
+from .private_storage import SecurePrivateStorageMaster

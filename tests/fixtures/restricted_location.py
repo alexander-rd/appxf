@@ -4,12 +4,12 @@ Implemented as mock for remote locations like FTP during the initialization
 procedure.
 '''
 
-from kiss_cf.storage import LocalStorageLocation
+from kiss_cf.storage import LocalStorageMaster
 
 global_credential = 'yes, sir!'
 
 
-class CredentialLocationMock(LocalStorageLocation):
+class CredentialLocationMock(LocalStorageMaster):
 
     config_options = {
         'credential': {'type': 'str'}}

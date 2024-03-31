@@ -1,6 +1,6 @@
 ''' Storable user ID '''
 
-from kiss_cf.storage import Storable, StorageMethod
+from kiss_cf.storage import Storable, Storage
 
 
 class KissExceptionUserId(Exception):
@@ -10,7 +10,7 @@ class KissExceptionUserId(Exception):
 class UserId(Storable):
     ''' Storable user ID '''
     def __init__(self,
-                 storage_method: StorageMethod):
+                 storage_method: Storage):
         super().__init__(storage_method)
         self._id: int = -1
 
