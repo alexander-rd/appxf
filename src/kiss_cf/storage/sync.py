@@ -119,38 +119,6 @@ class SyncData(dict):
 log = logging.getLogger(__name__)
 
 
-# TODO: sync is broken when it cannot rely on StorageLocation anymore. It
-# needs:
-#   1) Retrieve registered fiels and the StorageMethod. [OK] via StorageMaster
-#   2) Retrieve the UUID which is written in StorageLocation upon store()
-#   3) Retrieve the timestamp which is a specialty of a StorageLocation
-#      implementation.
-#
-# Alternative A: Traverse the aggregation history to see if there is a
-# LocationStorage anywhere.
-#
-#  * (-) That would need access of private members. When made public, the
-#    abstraction may get lost.
-#
-# Alternative B: At least UUID may be written elsewhere.
-#
-#  * (/) Writing a UUID in scope of sync() would require hashing of the file
-#    content during sync which is acceptable. Alternatively, a complete copy
-#    could be stored.
-#  * (/) Writing UUID could be an extension via StorageMethod and
-#    StorageMaster. This is already the case! The files may exist. It's just
-#    that there is no public interface to retrieve the UUID. One would need to
-#    know the file extension. >> acceptable
-#  * (/) Timestamp is currently not used but has to be a functionality of the
-#    location. Like UUID, the timestamp could be written into a separate file
-#    (possibly together with UUID) and then accessed from the file system. This
-#    timestamping would ensure to use a common time source for the running
-#    application such that sync() could even place missing timestamps.
-#
-# Alternative B1: The Factory already "registers" to support sync. It will
-# automatically add a StorageMethod inbetween that listens to the factories
-# "part of a sync" property to enable writing meta data (timestamp, UUID, hash)
-# upon store/load.
 
 # Pyhon dirsync:
 # https://github.com/tkhyn/dirsync/blob/develop/dirsync/syncer.py
@@ -160,10 +128,13 @@ log = logging.getLogger(__name__)
 
 # TODO: How does the sync consider removing files again??
 
+# TODO: storage has to resolve concurrent access problems (reading while
+# writing, writing while reading, two writing)
 
-def sync(loc_a: StorageMaster | DerivingStorageMaster,
-         loc_b: StorageMaster | DerivingStorageMaster):
-    ''' Synchronize StorageLocations with registered Files
+
+def sync(master_a: StorageMaster | DerivingStorageMaster,
+         master_b: StorageMaster | DerivingStorageMaster):
+    ''' Synchronize items from two StorageMasters
 
     Check timestamps of files on both locations and forward to the refined
     SyncMechanism.sync(). Files on the remote location that do not match a
@@ -171,29 +142,29 @@ def sync(loc_a: StorageMaster | DerivingStorageMaster,
     '''
     # TODO: add proper get_registered_files() interface to StorageLocation
     file_list = set(
-        list(loc_a.get_file_list()) +
-        list(loc_b.get_file_list()))
-    log.debug(f'Starting sync between {loc_a} and {loc_b}')
+        list(master_a.get_file_list()) +
+        list(master_b.get_file_list()))
+    log.debug(f'Starting sync between {master_a} and {master_b}')
 
     # ## Decision Stage 1: File Existance
     for file in file_list:
-        storage_a = loc_a.get_storage(file)
-        storage_b = loc_b.get_storage(file)
-        local_meta = loc_a.get_meta_data(file)
-        remote_meta = loc_b.get_meta_data(file)
-        local_exists = storage_a.exists()
-        remote_exists = storage_b.exists()
-        if not local_exists and not remote_exists:
+        storage_a = master_a.get_storage(file)
+        storage_b = master_b.get_storage(file)
+        meta_a = master_a.get_meta_data(file)
+        meta_b = master_b.get_meta_data(file)
+        exists_a = storage_a.exists()
+        exists_b = storage_b.exists()
+        if not exists_a and not exists_b:
             # can happen if file was not created, yet
             log.debug(f'File {file} not existing on both sides')
             continue
-        if not remote_exists:
-            log.debug(f'File {file} not existing on {loc_b}')
-            _sync_file(file, loc_a, loc_b, local_meta, remote_meta)
+        if not exists_b:
+            log.debug(f'File {file} not existing on {master_b}')
+            _sync_file(file, master_a, master_b, meta_a, meta_b)
             continue
-        if not local_exists:
-            log.debug(f'File {file} not existing on {loc_a}')
-            _sync_file(file, loc_b, loc_a, remote_meta, local_meta)
+        if not exists_a:
+            log.debug(f'File {file} not existing on {master_a}')
+            _sync_file(file, master_b, master_a, meta_b, meta_a)
             continue
         # Both files exist. We continue normally.
 
@@ -201,32 +172,32 @@ def sync(loc_a: StorageMaster | DerivingStorageMaster,
         # Get file uuid's
 
         # read sync data
-        local_sync_data = _load_sync_data(file, loc_a)
-        remote_sync_data = _load_sync_data(file, loc_b)
+        sync_data_a = _load_sync_data(file, master_a)
+        sync_data_b = _load_sync_data(file, master_b)
         # timestamps and uuid in sync data
-        last_local_uuid = local_sync_data.get_location_uuid(loc_b)
-        last_remote_uuid = remote_sync_data.get_location_uuid(loc_a)
+        last_uuid_a = sync_data_a.get_location_uuid(master_b)
+        last_uuid_b = sync_data_b.get_location_uuid(master_a)
 
         # Defensive implementation: this case cannot happen.
         # StorageLocations should generate a UUID even if the file
         # initially has none.
-        if (not last_remote_uuid or
-                not last_local_uuid):
+        if (not last_uuid_b or
+                not last_uuid_a):
             raise KissStorageSyncException(
                 f'[{file}] exists on both locaions but StorageLocation did '
                 f'not return a UUID. This should not happen. Please '
                 f'reconsider the StorageLocation implementation. '
                 f'You could alternatively remove the file from one of the '
                 f'locations')
-        if (local_meta.uuid != last_local_uuid and
-                remote_meta.uuid != last_remote_uuid):
+        if (meta_a.uuid != last_uuid_a and
+                meta_b.uuid != last_uuid_b):
             raise KissChangeOnBothSidesException(
                 f'[{file}] changed on both sides. Not yet supported.')
-        if local_meta.uuid != last_local_uuid:
-            _sync_file(file, loc_a, loc_b, local_meta, remote_meta)
+        if meta_a.uuid != last_uuid_a:
+            _sync_file(file, master_a, master_b, meta_a, meta_b)
             # logging in _sync_file
-        elif remote_meta.uuid != last_remote_uuid:
-            _sync_file(file, loc_b, loc_a, remote_meta, local_meta)
+        elif meta_b.uuid != last_uuid_b:
+            _sync_file(file, master_b, master_a, meta_b, meta_a)
             # TODO: this A/B and local/remote has to be straightened up.
             # logging in _sync_file
         else:

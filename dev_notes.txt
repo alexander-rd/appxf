@@ -28,3 +28,36 @@ Registration is working up to USER_DB and conveying configuration options.
 Next: Demonstrate synchronization after registration by setting up
 synchronization pairs with writing_roles and reading_roles and embedding some
 .sync() call.
+
+Bigger things to do:
+  * Double check if "sync" with sync-meta-file can work uni-directional
+  * Add URL based sync (the admin DB)
+  * write dict to human readable (like sync data to *.sync). This needs to be
+    generalized (to .meta) and put in paralallel to the pickle variant.
+    Additionally, there should be a simple storable class that can store/load
+    an objects __dict__. We use this method for the following reasons:
+      * using a dict directly (which may be supported) is a bit awkward
+      * pickle a whole class is a bit awkward since it
+  * extend test caes (unit tests) and, thereby, review the code
+  * split unit testing from use case testing also in execution and coverage
+    reporting
+  * Reconsider the naming kiss_cf
+  * get rid of duplicate KissProperty code
+
+Do I really need URL based sync and the second registry for ADMINS right now?
+Alternative would be that allowed admins are hard-coded (into a temorary
+registry object) that can then be used. Main reason for this is: provide a root
+of trust for the registry!
+
+Registry Security A: Registry is sychronized like all other files. An attacker
+could compromise one client, upload a new registry and all would accept that
+since they have to verify the registry signature against the public keys in the
+registry (no other source exists)
+
+Registry Security B: Registry signature verification is based on hard-coded
+public keys. If an attacker now writes a new registry, he's not able to sign
+it. He still compromised confidentiality for all information that he
+compromized. He also is able to compromise authenticity of any information that
+the compromised user had writing rights.
+  * Downside (acceptable): The tool needs an update to add new admins.
+  * Downside: New registration when adapting this pattern.

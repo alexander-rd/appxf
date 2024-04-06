@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.drawio.bkp
+cov_*
 pytest-env
 data
 prof
