@@ -150,7 +150,8 @@ class UserDatabase(Storable):
         return keys
 
     def get_roles(self, user_id: int) -> list[str]:
-        return []
+        entry = self._get_user_entry(user_id)
+        return entry['roles']
 
     def get_user_config(self, user_id: int):
         # TODO: implementation and define return value. Might be a dictionary

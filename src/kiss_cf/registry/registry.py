@@ -35,11 +35,23 @@ class Registry:
         self._user_db = UserDatabase(storage.get_storage('USER_DB'))
         self._user_id = UserId(storage.get_storage('USER_ID'))
 
+    def get_roles(self, id: int | None = None) -> list[str]:
+        if id is None:
+            self._ensure_loaded()
+            id = self._user_id.id
+        return self._user_db.get_roles(id)
+
     def is_initialized(self) -> bool:
         return (self._loaded or (
                 self._user_id.storage.exists() and
                 self._user_db.storage.exists()
                 ))
+
+    def _ensure_loaded(self):
+        if self._loaded:
+            return None
+        if not self.try_load():
+            KissRegistryUnitialized('Registry is not initialized.')
 
     def try_load(self) -> bool:
         if not self.is_initialized():
