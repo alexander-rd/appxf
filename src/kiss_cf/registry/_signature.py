@@ -6,6 +6,7 @@ from typing import Any
 from kiss_cf.storage import Storage, DictStorable
 from kiss_cf.security import Security
 
+
 class Signature(DictStorable):
     ''' Maintain public key and signature
 

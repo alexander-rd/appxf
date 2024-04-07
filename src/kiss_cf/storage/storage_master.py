@@ -194,7 +194,7 @@ class DerivingStorageMaster(StorageMaster, ABC):
         return self._base_storage.get_id(file)
 
     # ## Implementation specific methods of StorageMaster
-    def get_meta_data(self, file: str) -> MetaDataStorable:
+    def get_meta_data(self, file: str) -> MetaData:
         # MetaData from base storage applies
         return self._base_storage.get_meta_data(file)
 

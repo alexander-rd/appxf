@@ -1,7 +1,6 @@
 from copy import deepcopy
 from typing import Any
-from kiss_cf.storage import Storage, StorageMethodDummy
-from kiss_cf.storage import serialize, deserialize
+from kiss_cf.storage import DictStorable, Storage, StorageMethodDummy
 
 from kiss_cf.gui import KissOption
 
@@ -10,7 +9,7 @@ class KissConfigSectionError(Exception):
     ''' General config error '''
 
 
-class ConfigSection():
+class ConfigSection(DictStorable):
     ''' Maintain a section of config options
 
     Relations to other classes:
@@ -27,11 +26,11 @@ class ConfigSection():
                  options: list[str] | dict[str, KissOption] |
                  dict[str, dict[str, Any]] | None = None,
                  values: dict[str, KissOption.base_types] | None = None):
+        super().__init__(storage=storage)
         if options is None:
             options = {}
         if values is None:
             values = {}
-        self._storage = storage
         self._options: dict[str, KissOption] = {}
         self._values: dict[str, KissOption.base_types] = {}
         self._configurable = True
@@ -66,6 +65,12 @@ class ConfigSection():
                       else 'not configurable')
         return (f'Configuration in {str(self._storage)} stored as '
                 f'{self._format} (format), {confstring}')
+
+    def _get_dict(self):
+        return self._values
+
+    def _set_dict(self, data):
+        self._values = data
 
     @property
     def options(self) -> dict[str, KissOption]:
@@ -125,13 +130,3 @@ class ConfigSection():
         ''' Get one value or whole dictionary '''
         self._ensure_option_exists(option)
         return self._values[option]
-
-    def store(self):
-        data = serialize(self._values)
-        self._storage.store(data)
-
-    def load(self):
-        data = self._storage.load()
-        value_dict: dict[str, KissOption.base_types] = deserialize(data)
-        for option, value in value_dict.items():
-            self.set(option, value)

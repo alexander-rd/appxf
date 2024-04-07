@@ -5,46 +5,6 @@ from .storage import Storage, StorageMethodDummy
 from .storable import Storable
 from .serialize import serialize, deserialize
 
-# MetaData (aka "Two Class serializers"):
-#
-# Data Class: has fields for the data and can provide it's data as
-# bytestream.
-#   * from_bytes() / to_bytes()
-#
-# Storable Class: embeds the data class, may forward data from it.
-#
-# WHY DO WE NEED TWO CLASSES?!
-#
-# Others: PublicEncryptionData, SignatureData
-#
-# Only byte until now: RegistrationRequest, RegistrationResponse (and based on
-# typed dict)
-#
-# Weird embedding with SyncData. It's file handling is manually done in the
-# sync routines (and based on dict derivation)
-
-# UserDataBase (aka "Manual dict handling"): uses a from_dict constructor and
-# would apply version checks here as well as manually taking over the data.
-
-# ConfigSection (aka "Late format decision"): it does not act as a Storable. It
-# would store only it's values (not it's configuratoin). It relies on
-# serialize/deserialize but not more.
-
-# Summary:
-#   * It is a good idea to abstract a class to bundle data.
-#   * Using dict/typed dict leads to code, I do not like and where code
-#     completion does not work well.
-#   * when coupling to the generic storable, it may be helpful to support
-#     _update_dict_state() and _get_dict_state() which default to apply self
-#     while encourage to handle version correctness and manual transition.
-
-# Next steps:
-#   * (/) Write the byte handler (default option)
-#   * (/) Rewrite meta to use the new class
-#   * (/) Extend to JSON writing and test with meta data
-#   ? Format identification > TODO
-#   * Roll out to other classes above or place TODO remarks
-#
 
 class DictStorable(Storable):
     ''' Store class state as dictionaty.
@@ -58,10 +18,9 @@ class DictStorable(Storable):
     overload _set_dict().
     '''
     def __init__(self,
-                 storage: Storage = StorageMethodDummy(),
-                 format: str = ''):
+                 storage: Storage = StorageMethodDummy()
+                 ):
         super().__init__(storage)
-        self._format = format
 
     def _get_dict(self) -> dict[str, Any]:
         data = self.__dict__.copy()

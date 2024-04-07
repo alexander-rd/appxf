@@ -7,6 +7,7 @@ from kiss_cf.storage import Storage, DictStorable
 from kiss_cf.security import Security
 from .registry import Registry
 
+
 class PublicEncryption(DictStorable):
     def __init__(self,
                  storage_method: Storage,

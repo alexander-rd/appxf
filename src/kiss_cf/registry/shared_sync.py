@@ -5,6 +5,7 @@ from kiss_cf.storage import StorageMaster, sync
 from .registry import Registry
 from .shared_storage import SecureSharedStorageMaster
 
+
 class KissSharedSyncError(Exception):
     ''' General Error in Shared Sync '''
 
@@ -65,5 +66,6 @@ class SharedSync():
             if not writing:
                 raise KissSharedSyncError(
                     f'Uni-directional sync is not supported, use has roles '
-                    f'{user_roles_set} but would need one of {sync_pair.writing}')
+                    f'{user_roles_set} but would need one of '
+                    f'{sync_pair.writing}')
             sync(sync_pair.local, sync_pair.remote)
