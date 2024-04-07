@@ -69,7 +69,7 @@ class DictStorable(Storable):
         del data['_storage']
         return data
 
-    def _set_dict(self, data: dict[str, Any]):
+    def _set_dict(self, data: dict[Any, Any]):
         self.__dict__.update(data)
 
     def _get_bytestream(self) -> bytes:

@@ -11,6 +11,8 @@ from typing import TypedDict, Any
 from kiss_cf.security import Security
 from kiss_cf.storage import serialize, deserialize
 
+# TODO: apply DictStorable here bute keep the get_bytes interface.
+
 
 class RegistrationRequestData(TypedDict):
     version: int
