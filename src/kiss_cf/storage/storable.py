@@ -29,6 +29,10 @@ class Storable(ABC):
     def _set_bytestream(self, data: bytes):
         ''' Restore Storable state from bytes '''
 
+    def exists(self):
+        ''' Storage file exists (call before load()) '''
+        return self._storage.exists()
+
     def load(self):
         ''' Restore Storable with bytes from StorageMethod '''
         self._set_bytestream(self._storage.load())

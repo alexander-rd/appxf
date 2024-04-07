@@ -1,4 +1,4 @@
-from kiss_cf.storage import Storable, Storage, serialize, deserialize
+from kiss_cf.storage import DictStorable, Storage
 from typing import Set, TypedDict
 
 
@@ -13,7 +13,7 @@ class UserEntry(TypedDict):
     encryption_key: bytes
 
 
-class UserDatabase(Storable):
+class UserDatabase(DictStorable):
     def __init__(self, storage_method: Storage):
         super().__init__(storage_method)
 
@@ -27,8 +27,7 @@ class UserDatabase(Storable):
         # keys.
         self._role_map: dict[str, Set] = {}
 
-    # TODO: implementation for storage shall serialize __init__.
-    def _to_dict(self):
+    def _get_dict(self):
         return {'version': self._version,
                 'next_id': self._next_id,
                 'unused_id_list': self._unused_id_list,
@@ -36,7 +35,7 @@ class UserDatabase(Storable):
                 'role_map': self._role_map,
                 }
 
-    def _from_dict(self, data):
+    def _set_dict(self, data):
         # TODO: version check
         self._version = data['version']
         self._next_id = data['next_id']
@@ -44,12 +43,6 @@ class UserDatabase(Storable):
         self._user_db = data['user_db']
         self._role_map = data['role_map']
         # TODO: recreate next_id and unused_id_list
-
-    def _set_bytestream(self, data: bytes):
-        self._from_dict(deserialize(data))
-
-    def _get_bytestream(self):
-        return serialize(self._to_dict())
 
     def init_user_db(self,
                      validation_key: bytes,
