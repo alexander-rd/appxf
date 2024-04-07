@@ -22,7 +22,7 @@ class UserId(Storable):
         KissExceptionUserId if file does not exist.
         '''
         # error if still unloaded
-        if self._id < 0 and not self.storage.exists():
+        if self._id < 0 and not self._storage.exists():
             raise KissExceptionUserId('Cannot access USER ID: not yet written')
         # ensure loaded
         if self._id < 0:

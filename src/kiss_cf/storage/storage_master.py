@@ -7,7 +7,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 
 from .storage import Storage
-from ._meta_data import MetaDataStorable
+from ._meta_data import MetaData
 
 
 class KissStorageMasterError(Exception):
@@ -130,7 +130,7 @@ class StorageMaster(ABC):
         '''
 
     @abstractmethod
-    def get_meta_data(self, file: str) -> MetaDataStorable:
+    def get_meta_data(self, file: str) -> MetaData:
         ''' '''
 
 

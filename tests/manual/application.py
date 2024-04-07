@@ -1,6 +1,6 @@
 import tkinter
 from helper import ManualTestHelper
-from kiss_cf.application import KissApplication
+from kiss_cf.gui.application import KissApplication
 
 tester = ManualTestHelper('''
 Resizing: First main frame has a border and is the only thing that must resize.

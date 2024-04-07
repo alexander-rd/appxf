@@ -43,8 +43,8 @@ class Registry:
 
     def is_initialized(self) -> bool:
         return (self._loaded or (
-                self._user_id.storage.exists() and
-                self._user_db.storage.exists()
+                self._user_id._storage.exists() and
+                self._user_db._storage.exists()
                 ))
 
     def _ensure_loaded(self):

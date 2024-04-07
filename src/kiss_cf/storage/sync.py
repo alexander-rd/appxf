@@ -8,7 +8,7 @@ import base64
 
 from kiss_cf import logging
 from .storage_master import StorageMaster, DerivingStorageMaster
-from ._meta_data import MetaDataStorable
+from ._meta_data import MetaData
 
 
 class KissStorageSyncException(Exception):
@@ -207,8 +207,8 @@ def sync(master_a: StorageMaster | DerivingStorageMaster,
 def _sync_file(file,
                source: StorageMaster | DerivingStorageMaster,
                target: StorageMaster | DerivingStorageMaster,
-               source_meta: MetaDataStorable,
-               target_meta: MetaDataStorable):
+               source_meta: MetaData,
+               target_meta: MetaData):
 
     log.info(f'Updating {file} from {source} to {target}')
 
