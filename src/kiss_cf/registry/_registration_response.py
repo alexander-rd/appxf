@@ -10,6 +10,8 @@ from typing import TypedDict, Any
 
 from kiss_cf.storage import serialize, deserialize
 
+# TODO: apply DictStorable here bute keep the get_bytes interface.
+
 
 class KissExceptionRegistrationResponse(Exception):
     ''' Error with handling a registration response '''
