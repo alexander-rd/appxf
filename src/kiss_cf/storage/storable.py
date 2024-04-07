@@ -18,8 +18,8 @@ class Storable(ABC):
     bytestream. A typical approach is to use pickle's dumps/loads.
     '''
 
-    def __init__(self, storage_method: Storage = StorageMethodDummy()):
-        self.storage = storage_method
+    def __init__(self, storage: Storage = StorageMethodDummy()):
+        self._storage = storage
 
     @abstractmethod
     def _get_bytestream(self) -> bytes:
@@ -31,8 +31,8 @@ class Storable(ABC):
 
     def load(self):
         ''' Restore Storable with bytes from StorageMethod '''
-        self._set_bytestream(self.storage.load())
+        self._set_bytestream(self._storage.load())
 
     def store(self):
         ''' Store bytes representing the Storable state '''
-        self.storage.store(self._get_bytestream())
+        self._storage.store(self._get_bytestream())

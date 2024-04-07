@@ -8,7 +8,7 @@ fake_tkinter.activate()
 # from kiss_cf import logging as kiss_logging
 # kiss_logging.activate_logging()
 
-from kiss_cf.application import KissApplication # noqa E402
+from kiss_cf.gui.application import KissApplication # noqa E402
 
 
 class DummyFrame(tkinter.Frame):

@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from kiss_cf import logging
 from .storage import Storage
 from .storage_master import StorageMaster
-from ._meta_data import MetaDataStorable
+from ._meta_data import MetaData
 
 # TODO RELEASE: StorageLocation should support some sync_with_timestamps().
 # That returns True when the StorageLocation can ensure that new files will
@@ -39,15 +39,15 @@ class FileStorageMaster(StorageMaster, ABC):
             # able to generate subdirectories. In this case: .sync
             meta_storage = self._get_storage(file + '.meta')
             # construction automatically sets a UUID
-            meta = MetaDataStorable(storage_method=meta_storage)
+            meta = MetaData(storage=meta_storage)
             meta.store()
             # TODO: the hash or file content should be analyzed before
             # generating a new UUID
         self._store(file, data)
 
-    def get_meta_data(self, file: str) -> MetaDataStorable:
+    def get_meta_data(self, file: str) -> MetaData:
         meta_storage = self._get_storage(file + '.meta')
-        meta = MetaDataStorable(storage_method=meta_storage)
+        meta = MetaData(storage=meta_storage)
         if meta_storage.exists():
             meta.load()
         return meta
