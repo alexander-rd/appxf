@@ -9,6 +9,7 @@ class Storage(ABC):
     The Storage class represents _how_ data is stored (to a file system). It
     abstracts any details on:
       * the actual storage device (local disc, FTP, ..)
+      * serialization (convert python objects to bytes)
       * encryption/decryption
       * supporting functionality like data synchronization
     In addition to store()/load(), a Storage object has a function exists() to
@@ -27,14 +28,14 @@ class Storage(ABC):
 
     @abstractmethod
     def exists(self) -> bool:
-        ''' Does storage (e.g. the file) exist?'''
+        ''' Check existance of storage before loading '''
 
     @abstractmethod
-    def load(self) -> bytes:
+    def load(self) -> object:
         ''' Load data from Storage'''
 
     @abstractmethod
-    def store(self, data: bytes):
+    def store(self, data: object):
         ''' Store data to Storage '''
 
 
@@ -51,8 +52,8 @@ class StorageMethodDummy(Storage):
     def exists(self) -> bool:
         return False
 
-    def load(self) -> bytes:
+    def load(self) -> object:
         return b''
 
-    def store(self, data: bytes):
+    def store(self, data: object):
         pass

@@ -28,65 +28,65 @@ class KissStorageMasterError(Exception):
 class StorageMaster(ABC):
     ''' Get StorageMethod objects '''
     def __init__(self):
-        self._file_map: dict[str, Storage] = {}
+        self._storage_map: dict[str, Storage] = {}
 
-    def register_file(self, file: str, method: Storage):
-        ''' Register a file to the StorageMaster
+    def register(self, name: str, method: Storage):
+        ''' Register a storage to the StorageMaster
 
         This class is intended to be derived from, altering the storage
         mechanism. The registration is done with respect to all derived
-        StorageFactories. A derived StorageMasterA cannot register a file
+        StorageFactories. A derived StorageMasterA cannot register a file name
         AWESOME_CONTENT when it is already registered via StorageMasterB that
-        was deriving from the same base StorageMaster.
+        uses the same base StorageMaster.
         '''
-        if ('/' in file) or ('\\' in file):
+        if ('/' in name) or ('\\' in name):
             raise KissStorageMasterError(
-                'File names must not indicate paths by including \'\\\' '
+                'Names must not indicate paths by including \'\\\' '
                 'or \'/\'. If files shall be placed in subdirectories, '
-                'consider creating a new StorageMaster for this path.')
-        if file in self._file_map:
+                'creata a new StorageMaster for this path.')
+        if name in self._storage_map:
             raise KissStorageMasterError(
-                f'You already have added {file} to this storage location as '
-                f'{type(self._file_map[file])}. You now try to register same '
+                f'You already have added {name} to this storage location as '
+                f'{type(self._storage_map[name])}. You now try to register same '
                 f'file as {type(method)}. '
-                'You are likely trying to use two StorageMethods via '
-                'get_storage() for the same file'
+                'You may use get_storage with create=False or '
+                'get_regsistered_storage().'
                 )
 
-        self._file_map[file] = method
+        self._storage_map[name] = method
 
-    def deregister_file(self, file: str):
+    def deregister(self, name: str):
         ''' Deregister a file from this StorageMaster '''
-        if file not in self._file_map.keys():
+        if name not in self._storage_map.keys():
             raise KissStorageMasterError(
-               f'Cannot remove {file}. It was never added. '
+               f'Cannot remove {name}. It was never added. '
                'Use get_storage() to safely interact '
                'with storage locations.')
 
-        self._file_map.pop(file)
+        self._storage_map.pop(name)
 
-    # TODO: This cannot work with derived storages
-    def is_registered(self, file: str) -> bool:
+    def is_registered(self, name: str) -> bool:
         ''' Check if a file is registered to this StorageMaster '''
-        return file in self._file_map
+        return name in self._storage_map
 
-    def get_file_list(self) -> list[str]:
+    def get_registered_list(self) -> list[str]:
         ''' Return list of registered files '''
-        return list(self._file_map.keys())
+        return list(self._storage_map.keys())
 
-    def _get_registered_storage(self, file: str) -> Storage | None:
+    def _get_registered_storage(self, name: str) -> Storage | None:
         ''' Get a registered storage (or None)
 
         Method was required to allow re-routing in DerivedStorageMaster. Not
         good to have this dependency but unblocking progress.'''
-        if file not in self._file_map:
+        if name not in self._storage_map:
             return None
-        return self._file_map[file]
+        return self._storage_map[name]
 
     def get_storage(
-            self, file: str,
+            self, name: str,
             register=True,
-            create=True) -> Storage:
+            create=True,
+            **kwargs) -> Storage:
         ''' Get a Storage object from this StorageMaster
 
         Arguments:
@@ -104,24 +104,24 @@ class StorageMaster(ABC):
             Either a new StorageMethod or the one that was already registered
         '''
         # try to retrieve from registry:
-        storage = self._get_registered_storage(file)
+        storage = self._get_registered_storage(name)
         if storage is None:
             if create:
-                storage = self._get_storage(file)
+                storage = self._get_storage(name, **kwargs)
             else:
                 raise KissStorageMasterError(
-                    f'Cannot return a storage. No Storage for file {file} is '
+                    f'Cannot return a storage. No Storage for file {name} is '
                     f'registered and "create" option is False.')
-        if register and not self.is_registered(file):
-            self.register_file(file, storage)
+        if register and not self.is_registered(name):
+            self.register(name, storage)
         return storage
 
     @abstractmethod
-    def _get_storage(self, file: str) -> Storage:
+    def _get_storage(self, name: str, **kwargs) -> Storage:
         ''' Construct the storage method '''
 
     @abstractmethod
-    def get_id(self, file: str = '') -> str:
+    def get_id(self, name: str = '') -> str:
         ''' String representing the specific location or file
 
         Used in logging to indicate which location is failing. Example for FTP
@@ -130,7 +130,7 @@ class StorageMaster(ABC):
         '''
 
     @abstractmethod
-    def get_meta_data(self, file: str) -> MetaData:
+    def get_meta_data(self, name: str) -> MetaData:
         ''' '''
 
 
@@ -175,27 +175,27 @@ class DerivingStorageMaster(StorageMaster, ABC):
         return self._base_storage
 
     # ## Most methods of StorageMaster must be re-routed to the _base_storage
-    def register_file(self, file: str, method: Storage):
-        return self._base_storage.register_file(file, method)
+    def register(self, name: str, method: Storage):
+        return self._base_storage.register(name, method)
 
-    def deregister_file(self, file: str):
-        return self._base_storage.deregister_file(file)
+    def deregister(self, name: str):
+        return self._base_storage.deregister(name)
 
-    def is_registered(self, file: str) -> bool:
-        return self._base_storage.is_registered(file)
+    def is_registered(self, name: str) -> bool:
+        return self._base_storage.is_registered(name)
 
-    def get_file_list(self) -> list[str]:
-        return self._base_storage.get_file_list()
+    def get_registered_list(self) -> list[str]:
+        return self._base_storage.get_registered_list()
 
-    def _get_registered_storage(self, file: str) -> Storage | None:
-        return self._base_storage._get_registered_storage(file)
+    def _get_registered_storage(self, name: str) -> Storage | None:
+        return self._base_storage._get_registered_storage(name)
 
-    def get_id(self, file: str = ''):
-        return self._base_storage.get_id(file)
+    def get_id(self, name: str = ''):
+        return self._base_storage.get_id(name)
 
     # ## Implementation specific methods of StorageMaster
-    def get_meta_data(self, file: str) -> MetaData:
+    def get_meta_data(self, name: str) -> MetaData:
         # MetaData from base storage applies
-        return self._base_storage.get_meta_data(file)
+        return self._base_storage.get_meta_data(name)
 
-    # get_storage(file, ...) remains abstract
+    # _get_storage(file, ...) remains abstract

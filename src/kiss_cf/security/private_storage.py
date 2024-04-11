@@ -1,8 +1,13 @@
 ''' Secure StorageMethod for private (non-shared) usage '''
 
 from kiss_cf.storage import Storage, StorageMaster, DerivingStorageMaster
+from kiss_cf.storage import Serializer, RawSerializer, CompactSerializer
+from kiss_cf.storage import KissStorageMasterError
 
 from .security import Security
+
+# TODO: check Kiss errors and reduce to one per module or, at least, to one per
+# base class if not required otherwise.
 
 
 class SecurePrivateStorageMethod(Storage):
@@ -14,22 +19,26 @@ class SecurePrivateStorageMethod(Storage):
     def __init__(self,
                  file: str,
                  storage: StorageMaster,
-                 security: Security):
+                 security: Security,
+                 serializer: type[Serializer]):
         super().__init__()
         self._file = file
-        self._base_storage = storage.get_storage(file, register=False)
+        self._base_storage = storage.get_storage(file, register=False, serializer=RawSerializer)
         self._security = security
+        self._serializer = serializer
 
     def exists(self) -> bool:
         return self._base_storage.exists()
 
-    def load(self) -> bytes:
-        data = self._base_storage.load()
-        return self._security.decrypt_from_bytes(data)
+    def load(self) -> object:
+        byte_data: bytes = self._base_storage.load()
+        byte_data = self._security.decrypt_from_bytes(byte_data)
+        return self._serializer.deserialize(byte_data)
 
-    def store(self, data: bytes):
-        data = self._security.encrypt_to_bytes(data)
-        self._base_storage.store(data)
+    def store(self, data: object):
+        byte_data = self._serializer.serialize(data)
+        byte_data = self._security.encrypt_to_bytes(byte_data)
+        self._base_storage.store(byte_data)
 
 
 class SecurePrivateStorageMaster(DerivingStorageMaster):
@@ -44,12 +53,20 @@ class SecurePrivateStorageMaster(DerivingStorageMaster):
     '''
     def __init__(self,
                  storage: StorageMaster,
-                 security: Security):
+                 security: Security,
+                 default_serializer: type[Serializer] = CompactSerializer):
         super().__init__(storage)
         self._security = security
+        self._default_serializer = default_serializer
 
-    def _get_storage(self, file: str) -> Storage:
+    def _get_storage(self,
+                     file: str,
+                     serializer: type[Serializer] | None = None,
+                     ) -> Storage:
+        if serializer is None:
+            serializer = self._default_serializer
         return SecurePrivateStorageMethod(
             file,
             storage=self._storage,
-            security=self._security)
+            security=self._security,
+            serializer=serializer)

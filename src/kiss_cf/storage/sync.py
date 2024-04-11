@@ -5,8 +5,9 @@ from __future__ import annotations
 
 from kiss_cf import logging
 from .storage import Storage
+from .storable import Storable
 from .storage_master import StorageMaster, DerivingStorageMaster
-from .json_dict_storable import JsonDictStorable
+from .serializer_json import JsonSerializer
 from ._meta_data import MetaData
 
 
@@ -19,7 +20,7 @@ class KissChangeOnBothSidesException(Exception):
     synchronization. '''
 
 
-class SyncData(JsonDictStorable):
+class SyncData(Storable):
     ''' Synchronization data (as in: <some file>.sync)
 
     Synchronization data is stored in human readable JSON files to allow manual
@@ -95,8 +96,8 @@ def sync(master_a: StorageMaster | DerivingStorageMaster,
     '''
     # TODO: add proper get_registered_files() interface to StorageLocation
     file_list = set(
-        list(master_a.get_file_list()) +
-        list(master_b.get_file_list()))
+        list(master_a.get_registered_list()) +
+        list(master_b.get_registered_list()))
     log.debug(f'Starting sync between {master_a} and {master_b}')
 
     # ## Decision Stage 1: File Existance
@@ -151,7 +152,6 @@ def sync(master_a: StorageMaster | DerivingStorageMaster,
             # logging in _sync_file
         elif meta_b.uuid != last_uuid_b:
             _sync_file(file, master_b, master_a, meta_b, meta_a)
-            # TODO: this A/B and local/remote has to be straightened up.
             # logging in _sync_file
         else:
             log.debug(f'File {file} did not change.')
@@ -202,10 +202,13 @@ def _get_sync_data(file,
     ''' Get SyncData from StorageMaster '''
     if isinstance(storage, DerivingStorageMaster):
         file_storage = storage.get_root_master().get_storage(
-            file + '.sync', register=False)
+            file + '.sync', register=False,
+            serializer=JsonSerializer)
     else:
         file_storage = storage.get_storage(
-            file + '.sync', register=False)
+            file + '.sync', register=False,
+            serializer=JsonSerializer)
+
     sync_data = SyncData(file_storage)
     if sync_data.exists():
         sync_data.load()

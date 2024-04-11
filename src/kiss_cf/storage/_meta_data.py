@@ -5,10 +5,10 @@ from datetime import datetime
 import uuid
 
 from .storage import Storage
-from .json_dict_storable import JsonDictStorable
+from .storable import Storable
 
 
-class MetaData(JsonDictStorable):
+class MetaData(Storable):
     ''' Hold meta data '''
 
     def __init__(self, storage: Storage):
@@ -18,5 +18,5 @@ class MetaData(JsonDictStorable):
         self.hash: bytes = b''
         self.timestamp: datetime | None = None
 
-    # Consider version handling via _get_dict() and _set_dict() when extending
+    # Consider version handling via _get_state() and _set_state() when extending
     # this class.

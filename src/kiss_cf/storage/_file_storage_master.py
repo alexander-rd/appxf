@@ -8,6 +8,9 @@ from abc import ABC, abstractmethod
 from kiss_cf import logging
 from .storage import Storage
 from .storage_master import StorageMaster
+from .serializer import Serializer
+from .serializer_compact import CompactSerializer
+from .serializer_json import JsonSerializer
 from ._meta_data import MetaData
 
 # TODO RELEASE: StorageLocation should support some sync_with_timestamps().
@@ -16,17 +19,15 @@ from ._meta_data import MetaData
 # repeating it when the resulting time stamp did not change.
 
 
-class StorageLocationException(Exception):
-    ''' Basic StorageLocation Exception '''
-
-
 class FileStorageMaster(StorageMaster, ABC):
     ''' Abstraction of File and Path based storage '''
 
     log = logging.getLogger(__name__ + '.StorageLocation')
 
-    def __init__(self):
+    def __init__(self,
+                 default_serializer: type[Serializer] = CompactSerializer):
         StorageMaster.__init__(self)
+        self._default_serializer = default_serializer
 
     def __str__(self):
         return f'[{self.get_id()}]'
@@ -37,7 +38,7 @@ class FileStorageMaster(StorageMaster, ABC):
         if self.is_registered(file):
             # TODO: need to extend StorageMaster and storage classes to be
             # able to generate subdirectories. In this case: .sync
-            meta_storage = self._get_storage(file + '.meta')
+            meta_storage = self._get_storage(file + '.meta', serializer=JsonSerializer)
             # construction automatically sets a UUID
             meta = MetaData(storage=meta_storage)
             meta.store()
@@ -46,7 +47,7 @@ class FileStorageMaster(StorageMaster, ABC):
         self._store(file, data)
 
     def get_meta_data(self, file: str) -> MetaData:
-        meta_storage = self._get_storage(file + '.meta')
+        meta_storage = self._get_storage(file + '.meta', serializer=JsonSerializer)
         meta = MetaData(storage=meta_storage)
         if meta_storage.exists():
             meta.load()
@@ -59,8 +60,13 @@ class FileStorageMaster(StorageMaster, ABC):
         return self._load(file)
 
     # ## StorageMaster related functions
-    def _get_storage(self, file: str) -> Storage:
-        return LocationStorageMethod(self, file)
+    def _get_storage(self,
+                     file: str,
+                     serializer: type[Serializer] | None = None,
+                     ) -> Storage:
+        if serializer is None:
+            serializer = self._default_serializer
+        return LocationStorageMethod(self, file, serializer=serializer)
 
     # ## Implemenation dependent abstractions
     @abstractmethod
@@ -104,16 +110,22 @@ class LocationStorageMethod(Storage):
     This class only provides the most basic storage method. Consider adding a
     security layer when storing data.
     '''
-    def __init__(self, location: FileStorageMaster, file: str):
+    def __init__(self,
+                 location: FileStorageMaster,
+                 file: str,
+                 serializer: type[Serializer]):
         super().__init__()
         self._location = location
         self._file = file
+        self._serializer = serializer
 
     def exists(self):
         return self._location.exists(self._file)
 
-    def store(self, data: bytes):
-        self._location.store(self._file, data)
+    def store(self, data: object):
+        byte_data = self._serializer.serialize(data)
+        self._location.store(self._file, byte_data)
 
     def load(self):
-        return self._location.load(self._file)
+        byte_data = self._location.load(self._file)
+        return self._serializer.deserialize(byte_data)

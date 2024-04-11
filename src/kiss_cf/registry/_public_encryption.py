@@ -3,12 +3,12 @@
 from __future__ import annotations
 from typing import Any
 
-from kiss_cf.storage import Storage, DictStorable
+from kiss_cf.storage import Storage, Storable
 from kiss_cf.security import Security
 from .registry import Registry
 
 
-class PublicEncryption(DictStorable):
+class PublicEncryption(Storable):
     def __init__(self,
                  storage_method: Storage,
                  security: Security,
@@ -22,10 +22,10 @@ class PublicEncryption(DictStorable):
         self._to_roles = to_roles
         self._keys: dict[bytes, bytes] = {}
 
-    def _get_dict(self) -> dict[Any, Any]:
+    def _get_state(self) -> dict[Any, Any]:
         return self._keys
 
-    def _set_dict(self, data: dict[bytes, bytes]):
+    def _set_state(self, data: dict[bytes, bytes]):
         self._keys = data
 
     # TODO: adapt encrypt() to rewrite public keys as integer user ID's from

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from kiss_cf.storage import Storage, DerivingStorageMaster, StorageMaster
+from kiss_cf.storage import Serializer, RawSerializer, CompactSerializer
+from kiss_cf.storage import KissStorageMasterError
 from kiss_cf.security import Security
 
 from .registry import Registry
@@ -24,6 +26,7 @@ class SecureSharedStorageMethod(Storage):
                  storage: StorageMaster,
                  security: Security,
                  registry: Registry,
+                 serializer: type[Serializer]
                  ):
         # TODO: "to roles" is missing input
 
@@ -33,11 +36,12 @@ class SecureSharedStorageMethod(Storage):
 
         super().__init__()
         self._file = file
-        self._base_storage = storage.get_storage(file, register=False)
+        self._base_storage = storage.get_storage(file, register=False, serializer=RawSerializer)
         self._security = security
         self._registry = registry
+        self._serializer = serializer
         self._signature = Signature(
-            storage_method=storage.get_storage(
+            storage=storage.get_storage(
                 file + '.signature', register=False),
             security=security)
         self._public_encryption = PublicEncryption(
@@ -61,30 +65,28 @@ class SecureSharedStorageMethod(Storage):
     def exists(self) -> bool:
         return self._base_storage.exists()
 
-    def store(self, data: bytes):
-        print(f'Storing from {self.__class__.__name__} for {self._file}')
+    def store(self, data: object):
         # encryption
-        data = self._public_encryption.encrypt(data)
+        data_bytes = self._serializer.serialize(data)
+        data_bytes = self._public_encryption.encrypt(data_bytes)
         self._public_encryption.store()
         # signing (encrypted data)
-        self._signature.sign(data)
+        self._signature.sign(data_bytes)
         self._signature.store()
-        self._base_storage.store(data)
+        self._base_storage.store(data_bytes)
 
-    # Overloading
-    def load(self) -> bytes:
-        print(f'Loading from {self.__class__.__name__} for {self._file}')
-        data = self._base_storage.load()
+    def load(self) -> object:
+        data_bytes: bytes = self._base_storage.load()
         self._signature.load()
-        if not self._signature.verify(data):
+        if not self._signature.verify(data_bytes):
             # TODO: test case for failing signature
             # TODO: KissException
             # TODO: extend error message with infos like file
             raise Exception('Verification signature failed')
         # decryption
         self._public_encryption.load()
-        data = self._public_encryption.decrypt(data)
-        return data
+        data_bytes = self._public_encryption.decrypt(data_bytes)
+        return self._serializer.deserialize(data_bytes)
 
 
 # TODO: validate the concept that only particular roles are allowed to write
@@ -94,7 +96,8 @@ class SecureSharedStorageMaster(DerivingStorageMaster):
     def __init__(self,
                  storage: StorageMaster,
                  security: Security,
-                 registry: Registry):
+                 registry: Registry,
+                 default_serializer: type[Serializer] = CompactSerializer):
         ''' Get secured and shared storage methods
 
         Arguments:
@@ -107,11 +110,17 @@ class SecureSharedStorageMaster(DerivingStorageMaster):
         super().__init__(storage=storage)
         self._security = security
         self._registry = registry
+        self._default_serializer = default_serializer
 
-    def _get_storage(self, file: str) -> Storage:
+    def _get_storage(self,
+                     name: str,
+                     serializer: type[Serializer] | None = None,
+                     ) -> Storage:
+        if serializer is None:
+            serializer = self._default_serializer
         return SecureSharedStorageMethod(
-            file,
+            name,
             storage=self._storage,
             security=self._security,
-            registry=self._registry
-        )
+            registry=self._registry,
+            serializer=serializer)
