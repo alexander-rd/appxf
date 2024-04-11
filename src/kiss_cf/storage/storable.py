@@ -5,29 +5,46 @@ from abc import ABC, abstractmethod
 from .storage import Storage, StorageMethodDummy
 
 
+#TODO: merge comments
+
 class Storable(ABC):
     ''' Abstract storable class
 
-    A class with storable behavior will derive from this class. It will
-    generate a file name and Storage (typically by constructor parameters) to
-    initialize this parent Storable object.
+    A class with storable behavior defines _what_ is stored on store() via
+    _set_state() and provides _get_state() to restore it's state upon load().
+    The Storage class handles _how_ data is stored, like: serializing it to
+    bytes and writing to a file.
 
-    This class provides a load()/store() functionality for the child object.
-    Those functions rely on the child class provided _get_bytestream() and
-    _set_bytestream() functions that provide/consume the class state as
-    bytestream. A typical approach is to use pickle's dumps/loads.
+    When deriving from this class, the default behavior would store the classes
+    __dict__ which contains all class fields. Overload _set_state() and
+    _get_state() to change the behavior. Typically, a dictionary is used.
+
+    It is recommended that the deriving class applies a _version field. When
+    the storable implementation changes and you need compatibility, you can
+    then adapt _set_dict().
     '''
 
     def __init__(self, storage: Storage = StorageMethodDummy()):
         self._storage = storage
 
-    @abstractmethod
-    def _get_bytestream(self) -> bytes:
-        ''' Provide bytes representing the Storable state '''
+    def _get_state(self) -> object:
+        ''' Get object state
 
-    @abstractmethod
-    def _set_bytestream(self, data: bytes):
-        ''' Restore Storable state from bytes '''
+        The default implementation uses the classes __dict__ which contains all
+        class fields. You may update this method to adapt the behavior.
+        '''
+        data = self.__dict__.copy()
+        # strip storage and settings
+        del data['_storage']
+        return data
+
+    def _set_state(self, data: object):
+        ''' Set object state
+
+        The default implementation restores the classes __dict__ which contains
+        all class fields. You may update this method to adapt the behavior.
+        '''
+        self.__dict__.update(data)
 
     def exists(self):
         ''' Storage file exists (call before load()) '''
@@ -35,8 +52,8 @@ class Storable(ABC):
 
     def load(self):
         ''' Restore Storable with bytes from StorageMethod '''
-        self._set_bytestream(self._storage.load())
+        self._set_state(self._storage.load())
 
     def store(self):
         ''' Store bytes representing the Storable state '''
-        self._storage.store(self._get_bytestream())
+        self._storage.store(self._get_state())

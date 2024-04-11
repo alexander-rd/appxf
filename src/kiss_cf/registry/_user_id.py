@@ -34,9 +34,8 @@ class UserId(Storable):
         self._id = user_id
         self.store()
 
-    def _set_bytestream(self, data: bytes):
+    def _set_state(self, data: bytes):
         self._id = int.from_bytes(data, 'big', signed=False)
-        return super()._set_bytestream(data)
 
-    def _get_bytestream(self) -> bytes:
+    def _get_state(self) -> bytes:
         return self._id.to_bytes(2, 'big', signed=False)

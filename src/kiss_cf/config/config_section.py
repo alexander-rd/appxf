@@ -1,6 +1,6 @@
 from copy import deepcopy
 from typing import Any
-from kiss_cf.storage import DictStorable, Storage, StorageMethodDummy
+from kiss_cf.storage import Storable, Storage, StorageMethodDummy
 
 from kiss_cf.gui import KissOption
 
@@ -9,7 +9,7 @@ class KissConfigSectionError(Exception):
     ''' General config error '''
 
 
-class ConfigSection(DictStorable):
+class ConfigSection(Storable):
     ''' Maintain a section of config options
 
     Relations to other classes:
@@ -66,10 +66,10 @@ class ConfigSection(DictStorable):
         return (f'Configuration in {str(self._storage)} stored as '
                 f'{self._format} (format), {confstring}')
 
-    def _get_dict(self):
+    def _get_state(self) -> object:
         return self._values
 
-    def _set_dict(self, data):
+    def _set_state(self, data):
         self._values = data
 
     @property

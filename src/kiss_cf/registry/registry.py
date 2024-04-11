@@ -135,7 +135,6 @@ class Registry:
         response = RegistrationResponse.from_response_bytes(response_bytes)
 
         for section in response.config_sections:
-            print(f'{section}: {response.config_sections[section]}')
             self._config.section(section).set_all(
                 response.config_sections[section])
             self._config.section(section).store()

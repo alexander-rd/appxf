@@ -1,4 +1,4 @@
-from kiss_cf.storage import DictStorable, Storage
+from kiss_cf.storage import Storable, Storage
 from typing import Set, TypedDict
 
 
@@ -13,7 +13,7 @@ class UserEntry(TypedDict):
     encryption_key: bytes
 
 
-class UserDatabase(DictStorable):
+class UserDatabase(Storable):
     def __init__(self, storage_method: Storage):
         super().__init__(storage_method)
 
@@ -27,7 +27,7 @@ class UserDatabase(DictStorable):
         # keys.
         self._role_map: dict[str, Set] = {}
 
-    def _get_dict(self):
+    def _get_state(self):
         return {'version': self._version,
                 'next_id': self._next_id,
                 'unused_id_list': self._unused_id_list,
@@ -35,7 +35,7 @@ class UserDatabase(DictStorable):
                 'role_map': self._role_map,
                 }
 
-    def _set_dict(self, data):
+    def _set_state(self, data):
         # TODO: version check
         self._version = data['version']
         self._next_id = data['next_id']
@@ -48,7 +48,6 @@ class UserDatabase(DictStorable):
                      validation_key: bytes,
                      encryption_key: bytes) -> int:
         # forward to reuse function with add_new()
-        print('init as admin')
         user_id = self.add_new(
             validation_key=validation_key,
             encryption_key=encryption_key,
@@ -66,6 +65,7 @@ class UserDatabase(DictStorable):
         # sys.maxsize)
         user_id = self._next_id
         self._next_id += 1
+        # TODO: proper logging
         print(f'Adding new user with {user_id}, next: {self._next_id}')
 
         # forward to reuse function with init_user_db()

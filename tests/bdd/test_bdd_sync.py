@@ -159,7 +159,6 @@ def contains_data_in_file(env, location, data, file):
         print('Sync State JSON: \n' +
             env['location'][location].load(file + '.sync').decode('utf-8'))
 
-    #storage = env['storage method'][location](file)
     print(env)
     print(env['storage factory'])
     storage = env['storage factory'][location].get_storage(file)
@@ -171,13 +170,22 @@ def contains_data_in_file(env, location, data, file):
 @then(parsers.parse('Data in {loc_a} matches data in {loc_b}'))
 def data_matches(env, loc_a, loc_b):
     print(f'Data in {loc_a} matches data in {loc_b}')
+    master_a: LocalStorageMaster = env['storage factory'][loc_a]
+    master_b: LocalStorageMaster = env['storage factory'][loc_b]
+    # we use an alternate way to determine the file list and not rely on lists
+    # from master:
     file_list = []
     file_list += os.listdir(os.path.join(env['dir'], loc_a))
     file_list += os.listdir(os.path.join(env['dir'], loc_b))
     file_list = [file for file in file_list if '.' not in file]
+    # check each file
     for file in set(file_list):
         file_a = os.path.join(env['dir'], loc_a, file)
         file_b = os.path.join(env['dir'], loc_b, file)
         assert os.path.exists(file_a)
         assert os.path.exists(file_b)
-        assert open(file_a).read() == open(file_b).read()
+        storage_a = master_a.get_storage(file, create=False)
+        data_a = storage_a.load()
+        storage_b = master_b.get_storage(file, create=False)
+        data_b = storage_b.load()
+        assert data_a == data_b

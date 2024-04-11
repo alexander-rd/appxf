@@ -3,11 +3,11 @@
 from __future__ import annotations
 from typing import Any
 
-from kiss_cf.storage import Storage, DictStorable
+from kiss_cf.storage import Storage, CompactSerializer, Storable
 from kiss_cf.security import Security
 
 
-class Signature(DictStorable):
+class Signature(Storable):
     ''' Maintain public key and signature
 
     Generated is a class that knows a Security object for signing/verification
@@ -20,9 +20,9 @@ class Signature(DictStorable):
     to verify() data.
     '''
     def __init__(self,
-                 storage_method: Storage,
+                 storage: Storage,
                  security: Security):
-        super().__init__(storage_method)
+        super().__init__(storage=storage)
         self._security = security
         self._version = 1
         self.pub_key: bytes = b''
@@ -32,9 +32,9 @@ class Signature(DictStorable):
     def public_key(self):
         return self.pub_key
 
-    # Overload _get_dict() to remove security object from storage
-    def _get_dict(self) -> dict[str, Any]:
-        data = super()._get_dict()
+    # Overload _get_state() to remove security object from storage
+    def _get_state(self) -> object:
+        data = super()._get_state()
         del data['_security']
         return data
 

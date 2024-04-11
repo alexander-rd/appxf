@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import TypedDict, Any
 
 from kiss_cf.security import Security
-from kiss_cf.storage import serialize, deserialize
+from kiss_cf.storage import CompactSerializer
 
 # TODO: apply DictStorable here bute keep the get_bytes interface.
 
@@ -84,10 +84,10 @@ class RegistrationRequest:
         Returns:
             constructed RegistrationRequest class
         '''
-        data = deserialize(request_bytes)
+        data = CompactSerializer.deserialize(request_bytes)
         return cls(data)
 
     def get_request_bytes(self) -> bytes:
         ''' Get serialized bytes for sending to admin '''
         # TODO: verify signing key
-        return serialize(self._data)
+        return CompactSerializer.serialize(self._data)

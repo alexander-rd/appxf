@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import TypedDict, Any
 
-from kiss_cf.storage import serialize, deserialize
+from kiss_cf.storage import CompactSerializer
 
 # TODO: apply DictStorable here bute keep the get_bytes interface.
 
@@ -51,9 +51,9 @@ class RegistrationResponse():
     def from_response_bytes(cls,
                             registration_response: bytes
                             ) -> RegistrationResponse:
-        data = deserialize(registration_response)
+        data = CompactSerializer.deserialize(registration_response)
         return cls(data)
 
     def get_response_bytes(self) -> bytes:
         ''' Get serialized bytes for sending to user '''
-        return serialize(self._data)
+        return CompactSerializer.serialize(self._data)
