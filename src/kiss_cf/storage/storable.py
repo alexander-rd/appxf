@@ -1,11 +1,11 @@
 ''' Class definitions for storage handling. '''
 
-from abc import ABC, abstractmethod
+from abc import ABC
 
 from .storage import Storage, StorageMethodDummy
 
 
-#TODO: merge comments
+# TODO: merge comments
 
 class Storable(ABC):
     ''' Abstract storable class

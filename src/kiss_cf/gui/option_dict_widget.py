@@ -2,7 +2,7 @@ import tkinter
 
 from kiss_cf import logging
 
-from .option import KissOption
+from kiss_cf.property import KissProperty
 from .option_widget import OptionWidget
 
 
@@ -17,7 +17,7 @@ class OptionDictWidget(tkinter.Frame):
 
     def __init__(self, parent: tkinter.Widget,
                  values: dict[str, str | bool | int] | None = None,
-                 options: dict[str, KissOption] | None = None,
+                 options: dict[str, KissProperty] | None = None,
                  **kwargs):
 
         super().__init__(parent, **kwargs)
@@ -29,13 +29,13 @@ class OptionDictWidget(tkinter.Frame):
 
         # TODO: this gave some conflicts. Better to aggregate something, here??
         self._kiss_values: dict[str, str] = {}
-        self._kiss_options: dict[str, KissOption] = {}
+        self._kiss_options: dict[str, KissProperty] = {}
         # Ensure all values have an option:
         for option in values:
             if option in options:
                 self._kiss_options[option] = options[option]
             else:
-                self._kiss_options[option] = KissOption()
+                self._kiss_options[option] = KissProperty.new(str)
         # Ensure all options have a value and convert values to string
         for option in options:
             if option in values:
@@ -52,7 +52,7 @@ class OptionDictWidget(tkinter.Frame):
         # option list should only contain configurable options
         option_list = [option
                        for option in self._kiss_options.keys()
-                       if self._kiss_options[option].configurable]
+                       if self._kiss_options[option].default_visibility]
 
         self.columnconfigure(0, weight=1)
 

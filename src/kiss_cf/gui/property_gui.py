@@ -5,9 +5,9 @@ Provide GUI classes for KissProperty objects.
 import tkinter
 import math
 
-from . import logging
-from .language import translate
-from .property import KissProperty, KissBool
+from .. import logging
+from ..language import translate
+from ..property import KissProperty, KissBool
 
 
 # TODO: better option on when to validate input:

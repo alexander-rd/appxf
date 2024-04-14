@@ -18,5 +18,5 @@ class MetaData(Storable):
         self.hash: bytes = b''
         self.timestamp: datetime | None = None
 
-    # Consider version handling via _get_state() and _set_state() when extending
-    # this class.
+    # Consider version handling via _get_state() and _set_state() when
+    # extending this class.

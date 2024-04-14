@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from kiss_cf.storage import Storage, DerivingStorageMaster, StorageMaster
 from kiss_cf.storage import Serializer, RawSerializer, CompactSerializer
-from kiss_cf.storage import KissStorageMasterError
 from kiss_cf.security import Security
 
 from .registry import Registry
@@ -36,7 +35,9 @@ class SecureSharedStorageMethod(Storage):
 
         super().__init__()
         self._file = file
-        self._base_storage = storage.get_storage(file, register=False, serializer=RawSerializer)
+        self._base_storage = storage.get_storage(file,
+                                                 register=False,
+                                                 serializer=RawSerializer)
         self._security = security
         self._registry = registry
         self._serializer = serializer

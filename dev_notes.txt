@@ -61,3 +61,11 @@ compromized. He also is able to compromise authenticity of any information that
 the compromised user had writing rights.
   * Downside (acceptable): The tool needs an update to add new admins.
   * Downside: New registration when adapting this pattern.
+
+Next:
+ 1) Review changes and check in
+ 2) Adapt config section (split out as "dict of properties")
+    > It uses "format" instead of inheriting storage format from the provided
+      storage. >> config section should be a storable defaulting in "no
+      storage".
+ 3) Resolve long TODO remark on how sections should be added
