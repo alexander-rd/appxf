@@ -12,7 +12,7 @@ usage for a generic GUI and flexible (encrypted) storage by aggregating:
 from typing import Any
 
 from kiss_cf import logging
-from kiss_cf.gui import KissOption
+from kiss_cf.property import KissProperty
 from kiss_cf.storage import StorageMethodDummy, StorageMaster
 
 from .config_section import ConfigSection
@@ -101,7 +101,7 @@ class Config():
 
     def add_section(self,
                     section: str,
-                    options: dict[str, KissOption] |
+                    options: dict[str, KissProperty] |
                     dict[str, dict[str, Any]] | None = None,
                     storage_master: StorageMaster | None = None):
         '''Add section if not yet existing.  '''
@@ -121,7 +121,7 @@ class Config():
             options = {}
         self._sections[section] = ConfigSection(
             storage=storage,
-            options=options)
+            properties=options)
         self.log.info(f'added section: {section}')
 
     def store(self):

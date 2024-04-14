@@ -1,9 +1,8 @@
 ''' signature behavior for authenticity '''
 
 from __future__ import annotations
-from typing import Any
 
-from kiss_cf.storage import Storage, CompactSerializer, Storable
+from kiss_cf.storage import Storage, Storable
 from kiss_cf.security import Security
 
 

@@ -14,11 +14,11 @@ import io
 
 from .serializer import Serializer, KissSerializerError
 
-
 supported_types = {
     int, float, str, bytes,
     list, tuple, dict, set,
     bool, type(None)}
+
 
 class _RestrictedUnpickler(pickle.Unpickler):
     '''Class to disable unwanted symbols.'''
@@ -30,6 +30,7 @@ class _RestrictedUnpickler(pickle.Unpickler):
         raise KissSerializerError(
             f'Cannot deserialize "{module}.{name}". To protect from code '
             f'injection, serialization/deserialization was limited in kiss_cf')
+
 
 class _RestrictedPickler(pickle.Pickler):
     def persistent_id(self, obj):

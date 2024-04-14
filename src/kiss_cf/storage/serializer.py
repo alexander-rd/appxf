@@ -10,7 +10,6 @@ class KissSerializerError(Exception):
 class Serializer(ABC):
     ''' Provide serialize and deserialize functionality '''
 
-
     @classmethod
     @abstractmethod
     def serialize(cls, data: object) -> bytes:

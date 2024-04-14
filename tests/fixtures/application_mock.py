@@ -6,6 +6,7 @@ from kiss_cf.security import Security, SecurePrivateStorageMaster
 from kiss_cf.registry import Registry
 from kiss_cf.config import Config
 from kiss_cf.storage import LocalStorageMaster
+from kiss_cf.property import KissProperty
 
 from .restricted_location import CredentialLocationMock
 
@@ -51,15 +52,72 @@ class ApplicationMock:
         self.user_config = Config(default_storage=self.storage_shared_config)
         # add USER config with some basic user data: email and name
         self.user_config.add_section('USER', options={
-            'email': {'type': 'email'},
-            'name': {'type': 'str'}},
+            'email': KissProperty.new('email'),
+            'name': KissProperty.new('str')},
             storage_master = self.storage_user_config)
+        # TODO: the above would be simpler by using:
+        #   self.user_config.add_section('USER').add_properties(
+        #           'email:email',
+        #           'name:str)
+        #
+        #  * (+) The property adding gets in the context where it belongs (the
+        #    config section implementation)
+        #  * (+) The most common setting is the type which is now much simpler.
+        #    BUT...
+        #  * (-) The above would make ':' a non allowed character for property
+        #    names.
+        #  * (/) While being shorter, the syntax will be unknown or uncommon.
+        #
+        # The main problem by using KissProperty was needing to import it. This
+        # is not required when adapting this pattern:
+        #
+        #  self.user_config.add_section('USER').add_properties(
+        #           'email', config.property('str', further options),
+        #           'name', 'more', 'even more',
+        #           'last one with spec', condig.property('email')
+        #           )
+        #
+        #  * (+) All benefits from above
+        #  * (+) Any characters for property names
+        #  * (+) Easy syntax: no additional brakets - the property config just
+        #    comes after each name
+        #
+        # Conclusion: use this above approach
+        #
+        # Open question: should it be called "add_property" or
+        # "add_properties"? In the usage above, it's clearly for adding
+        # multiple  properties but adding a single one should not use a
+        # different syntax and should be like:
+        #
+        #   config.section('USER').add_property('name', config.property('str'))#
+        #
+        # The function definition would be:
+        #
+        #  def add_property(name: str, settings: KissProperty = , *args)
+        #
+        # The following would NOT work when 'email' should determine the type
+        # simply because we cannot distinguish the property name from the type
+        # name.:
+        #
+        #  config.section('USER').add_property('name', 'email')
+        #
+        # Remaining drawback of this solution: we have to use
+        # config.property('type'). Essentially:
+        #
+        #   config.section('USER').add_property('name', config.property('email'))
+        #   versus
+        #   config.section('USER').add_property('name', {'type': 'email'})
+        #
+        # ^^ The second version is not really shorter while the first one
+        # enables more convinience.
+
         # add credentials options for shared storage (no values!)
-        self.user_config.add_section('SHARED_STORAGE', options=CredentialLocationMock.config_options)
+        self.user_config.add_section('SHARED_STORAGE', options=CredentialLocationMock.config_properties)
         # add some arbitraty configuration
         self.user_config.add_section('TEST', options={
-            'test': {'type': 'int'}
+            'test': KissProperty.new(int)
             })
+        # TODO: reconsider the add_section interface and convert to add_section('TEST').add_properties(..)
 
         # REGISTRY
         self.path_registry = os.path.join(self._app_path, 'data/registry')

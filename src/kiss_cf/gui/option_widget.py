@@ -2,7 +2,7 @@ import tkinter
 
 from kiss_cf import logging
 
-from .option import KissOption
+from kiss_cf.property import KissProperty
 
 
 class OptionWidget(tkinter.Frame):
@@ -10,7 +10,7 @@ class OptionWidget(tkinter.Frame):
 
     def __init__(self, parent,
                  name: str,
-                 option: KissOption,
+                 option: KissProperty,
                  value: str = '',
                  **kwargs):
         self.log.debug(f'ConfigOptionWidget for {name}: {str(option)}')

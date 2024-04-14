@@ -47,8 +47,8 @@ class StorageMaster(ABC):
         if name in self._storage_map:
             raise KissStorageMasterError(
                 f'You already have added {name} to this storage location as '
-                f'{type(self._storage_map[name])}. You now try to register same '
-                f'file as {type(method)}. '
+                f'{type(self._storage_map[name])}. You now try to register '
+                f'same file as {type(method)}. '
                 'You may use get_storage with create=False or '
                 'get_regsistered_storage().'
                 )

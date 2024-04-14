@@ -38,7 +38,8 @@ class FileStorageMaster(StorageMaster, ABC):
         if self.is_registered(file):
             # TODO: need to extend StorageMaster and storage classes to be
             # able to generate subdirectories. In this case: .sync
-            meta_storage = self._get_storage(file + '.meta', serializer=JsonSerializer)
+            meta_storage = self._get_storage(file + '.meta',
+                                             serializer=JsonSerializer)
             # construction automatically sets a UUID
             meta = MetaData(storage=meta_storage)
             meta.store()
@@ -47,7 +48,8 @@ class FileStorageMaster(StorageMaster, ABC):
         self._store(file, data)
 
     def get_meta_data(self, file: str) -> MetaData:
-        meta_storage = self._get_storage(file + '.meta', serializer=JsonSerializer)
+        meta_storage = self._get_storage(file + '.meta',
+                                         serializer=JsonSerializer)
         meta = MetaData(storage=meta_storage)
         if meta_storage.exists():
             meta.load()

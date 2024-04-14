@@ -2,7 +2,6 @@
 
 from kiss_cf.storage import Storage, StorageMaster, DerivingStorageMaster
 from kiss_cf.storage import Serializer, RawSerializer, CompactSerializer
-from kiss_cf.storage import KissStorageMasterError
 
 from .security import Security
 
@@ -23,7 +22,9 @@ class SecurePrivateStorageMethod(Storage):
                  serializer: type[Serializer]):
         super().__init__()
         self._file = file
-        self._base_storage = storage.get_storage(file, register=False, serializer=RawSerializer)
+        self._base_storage = storage.get_storage(file,
+                                                 register=False,
+                                                 serializer=RawSerializer)
         self._security = security
         self._serializer = serializer
 

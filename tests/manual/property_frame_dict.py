@@ -1,6 +1,6 @@
 from helper import ManualTestHelper
 from kiss_cf.property import KissBool, KissString, KissEmail
-from kiss_cf import property_gui
+from kiss_cf.gui import property_gui
 
 tester = ManualTestHelper('''
 Resizing: should only affect the right entry part.

@@ -23,7 +23,8 @@ class _RestrictedJsonEncoder(json.JSONEncoder):
     def _type_check(self, o: Any):
         if type(o) not in supported_types:
             raise KissSerializerError(
-                f'Cannot serialize {type(o)}, supported are: {supported_types}')
+                f'Cannot serialize {type(o)}, '
+                f'supported are: {supported_types}')
         # Ensure that all keys of a dict are strings. Decoding would not work
         # properly, otherwise
         if isinstance(o, dict):
@@ -68,7 +69,6 @@ class JsonSerializer(Serializer):
         try:
             json_out = json.dumps(data,
                                   cls=_RestrictedJsonEncoder,
-                                  #default=cls._encode_custom,
                                   indent=4, separators=(',', ': '))
         except TypeError as error:
             message = str(error) + (
