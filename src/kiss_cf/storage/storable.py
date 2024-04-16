@@ -1,13 +1,11 @@
 ''' Class definitions for storage handling. '''
 
-from abc import ABC
-
 from .storage import Storage, StorageMethodDummy
-
 
 # TODO: merge comments
 
-class Storable(ABC):
+
+class Storable(object):
     ''' Abstract storable class
 
     A class with storable behavior defines _what_ is stored on store() via
@@ -24,8 +22,11 @@ class Storable(ABC):
     then adapt _set_dict().
     '''
 
-    def __init__(self, storage: Storage = StorageMethodDummy()):
+    def __init__(self, storage: Storage = StorageMethodDummy(), **kwargs):
         self._storage = storage
+        print('>>>>>>>>>>>>>>>>> Storage init <<<<<<<<<<<<<<<<<<<<<<<')
+        super().__init__(**kwargs)
+
 
     def _get_state(self) -> object:
         ''' Get object state

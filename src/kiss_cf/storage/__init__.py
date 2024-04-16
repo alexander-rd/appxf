@@ -25,6 +25,7 @@ from .ftp import FtpLocation
 
 # Helpers
 from .storage import StorageMethodDummy
+from .storage_master_mock import StorageMasterMock
 
 # Synchronization
 from .sync import sync
