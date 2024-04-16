@@ -63,9 +63,11 @@ the compromised user had writing rights.
   * Downside: New registration when adapting this pattern.
 
 Next:
- 1) Review changes and check in
- 2) Adapt config section (split out as "dict of properties")
+ 1) Add super().__init__ to all classes  to support multiclassing.
+ 2) Add storage behavior to KissPropertyDict and testing
+ 3) Consider renaming of KissProperty* to something without Kiss in it's name
+ 4) Adapt config section (split out as "dict of properties")
     > It uses "format" instead of inheriting storage format from the provided
       storage. >> config section should be a storable defaulting in "no
       storage".
- 3) Resolve long TODO remark on how sections should be added
+ 5) Resolve long TODO remark on how sections should be added

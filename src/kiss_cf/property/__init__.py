@@ -5,4 +5,6 @@ from .property import KissProperty, KissPropertyError, KissPropertyConversionErr
 from .property import KissString, KissEmail, KissPassword
 from .property import KissBool, KissInt, KissFloat
 
+from .property_dict import KissPropertyDict
+
 from .property import validated_conversion_configparser

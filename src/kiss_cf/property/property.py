@@ -365,7 +365,11 @@ class KissPassword(KissString):
 
     def _validate_base_type(self, value: str) -> bool:
         if self.min_length > 0 and len(value) < self.min_length:
+            print(f'>> length check failed {len(value)} < {self.min_length}')
             return False
+            # TODO: Error message handling should be better the specific
+            # validate should tell what exactly failed.
+        print(f'>> length check OK {len(value)} >= {self.min_length}')
         return True
 
 
