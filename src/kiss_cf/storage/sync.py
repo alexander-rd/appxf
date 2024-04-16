@@ -31,8 +31,8 @@ class SyncData(Storable):
     implies: the latest sync between A and B was done based on the file state
     with this UUID.
     '''
-    def __init__(self, storage: Storage):
-        super().__init__(storage=storage)
+    def __init__(self, storage: Storage, **kwargs):
+        super().__init__(storage=storage, **kwargs)
         self._version = 1
         self.location: dict[str, dict] = {}
 

@@ -7,14 +7,14 @@ from ._file_storage_master import FileStorageMaster
 
 class LocalStorageMaster(FileStorageMaster):
     ''' Maintain files in a local path. '''
-    def __init__(self, path: str):
+    def __init__(self, path: str, **kwargs):
         # Ensure the path will exist
         if not os.path.exists(path):
             os.makedirs(path, exist_ok=True)
         self.path = path
         # Important: super().__init__() already utilizes the specific
         # implementation. Attributes must be available.
-        super().__init__()
+        super().__init__(**kwargs)
 
     # ## Methods from StorageLocation
     def get_id(self, file: str = '') -> str:

@@ -11,8 +11,8 @@ from .storable import Storable
 class MetaData(Storable):
     ''' Hold meta data '''
 
-    def __init__(self, storage: Storage):
-        super().__init__(storage=storage)
+    def __init__(self, storage: Storage, **kwargs):
+        super().__init__(storage=storage, **kwargs)
         self._version = 1
         self.uuid: bytes = uuid.uuid4().bytes
         self.hash: bytes = b''

@@ -35,7 +35,8 @@ class Connection():
     log = logging.getLogger(__name__ + '.Connection')
     count = 0
 
-    def __init__(self, config: dict):
+    def __init__(self, config: dict, **kwargs):
+        super().__init__(**kwargs)
         # Ensure DbConfig (types). isinstance(config, DbConfig) cannot be used
         # because DbConfig is a TypedDict.
         con: DbConfig = {

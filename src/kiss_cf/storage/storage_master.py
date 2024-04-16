@@ -27,7 +27,8 @@ class KissStorageMasterError(Exception):
 # or Registry.
 class StorageMaster(ABC):
     ''' Get StorageMethod objects '''
-    def __init__(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self._storage_map: dict[str, Storage] = {}
 
     def register(self, name: str, method: Storage):
@@ -158,8 +159,8 @@ class DerivingStorageMaster(StorageMaster, ABC):
       3) The get_storage() of this DerivingStorageMaster will handle
          the registration.
     '''
-    def __init__(self, storage: StorageMaster | DerivingStorageMaster):
-        StorageMaster.__init__(self)
+    def __init__(self, storage: StorageMaster | DerivingStorageMaster, **kwargs):
+        StorageMaster.__init__(self, **kwargs)
         self._storage = storage
         # Handle potential multiple derivations
         if isinstance(storage, DerivingStorageMaster):

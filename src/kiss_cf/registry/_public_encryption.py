@@ -14,9 +14,9 @@ class PublicEncryption(Storable):
                  security: Security,
                  registry: Registry,
                  # TODO: align default role nomenclature "user" versus "USER"
-                 to_roles: str = 'USER'
-                 ):
-        super().__init__(storage_method)
+                 to_roles: str = 'USER',
+                 **kwargs):
+        super().__init__(storage_method, **kwargs)
         self._security = security
         self._registry = registry
         self._to_roles = to_roles

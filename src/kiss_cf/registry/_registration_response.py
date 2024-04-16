@@ -24,7 +24,8 @@ class RegistrationResponseData(TypedDict):
 
 
 class RegistrationResponse():
-    def __init__(self, data):
+    def __init__(self, data, **kwargs):
+        super().__init__(**kwargs)
         self._data = data
 
     @property

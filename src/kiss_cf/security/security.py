@@ -42,13 +42,14 @@ class Security():
 
     def __init__(self,
                  salt: str,
-                 file: str = './data/security/keys'):
+                 file: str = './data/security/keys',
+                 **kwargs):
         '''Get security context.
 
         The salt used to generate secret keys from password is set with
         something but you should provide your own salt. Any string does.
         '''
-        super().__init__()
+        super().__init__(**kwargs)
         self._salt = salt
         self._file = file
         self._derived_key = b''

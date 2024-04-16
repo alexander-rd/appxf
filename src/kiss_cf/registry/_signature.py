@@ -20,8 +20,9 @@ class Signature(Storable):
     '''
     def __init__(self,
                  storage: Storage,
-                 security: Security):
-        super().__init__(storage=storage)
+                 security: Security,
+                 **kwargs):
+        super().__init__(storage=storage, **kwargs)
         self._security = security
         self._version = 1
         self.pub_key: bytes = b''

@@ -10,8 +10,9 @@ class KissExceptionUserId(Exception):
 class UserId(Storable):
     ''' Storable user ID '''
     def __init__(self,
-                 storage_method: Storage):
-        super().__init__(storage_method)
+                 storage_method: Storage,
+                 **kwargs):
+        super().__init__(storage_method, **kwargs)
         self._id: int = -1
 
     @property

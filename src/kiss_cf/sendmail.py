@@ -29,6 +29,9 @@ class Email(MIMEMultipart):
         '''
         # input handling
         super().__init__()
+        # TODO: the above is not correct, it should pass **kwargs in case of
+        # multiple inheritance. But sendmail has no test coverage and risk of
+        # regressions was too high.
 
         for key, value in kwargs.items():
             if key in ['To', 'CC', 'BCC']:

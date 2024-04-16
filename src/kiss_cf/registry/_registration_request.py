@@ -25,11 +25,12 @@ class RegistrationRequestData(TypedDict):
 
 
 class RegistrationRequest:
-    def __init__(self, data):
+    def __init__(self, data, **kwargs):
         ''' DO NOT USE directly
 
         Use either new() or from_bytes() class methods to construct a
         Registration Response'''
+        super().__init__(**kwargs)
         self._data = data
 
     @property

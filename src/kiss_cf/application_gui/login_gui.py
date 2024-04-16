@@ -41,7 +41,9 @@ class Login():
     def __init__(self, security: Security,
                  config=Config(),
                  app_name='Login',
-                 pwd_min_length=6):
+                 pwd_min_length=6,
+                 **kwargs):
+        super().__init__(**kwargs)
         self._security = security
         self._config = config
         self._app_name = app_name
