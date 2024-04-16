@@ -27,8 +27,8 @@ class NtpTime():  # pragma: no cover
     # time interval after which a re-sync is required
     resync_minutes = 60
 
-    def __init__(self):
-        pass
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     @classmethod
     def get_offset_from_utc_now(cls):

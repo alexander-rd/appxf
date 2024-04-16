@@ -64,7 +64,8 @@ class Config():
     '''
     log = logging.getLogger(__name__ + '.Config')
 
-    def __init__(self, default_storage: StorageMaster | None = None):
+    def __init__(self, default_storage: StorageMaster | None = None, **kwargs):
+        super().__init__(**kwargs)
         self._default_storage = default_storage
         self._sections: dict[str, ConfigSection] = {}
 

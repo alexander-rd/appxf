@@ -27,7 +27,9 @@ class Registry:
     def __init__(self,
                  storage: StorageMaster,
                  security: Security,
-                 config: Config):
+                 config: Config,
+                 **kwargs):
+        super().__init__(**kwargs)
         self._loaded = False
         self._security = security
         self._config = config

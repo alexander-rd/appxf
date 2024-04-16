@@ -25,8 +25,9 @@ class FileStorageMaster(StorageMaster, ABC):
     log = logging.getLogger(__name__ + '.StorageLocation')
 
     def __init__(self,
-                 default_serializer: type[Serializer] = CompactSerializer):
-        StorageMaster.__init__(self)
+                 default_serializer: type[Serializer] = CompactSerializer,
+                 **kwargs):
+        StorageMaster.__init__(self, **kwargs)
         self._default_serializer = default_serializer
 
     def __str__(self):
@@ -115,8 +116,9 @@ class LocationStorageMethod(Storage):
     def __init__(self,
                  location: FileStorageMaster,
                  file: str,
-                 serializer: type[Serializer]):
-        super().__init__()
+                 serializer: type[Serializer],
+                 **kwargs):
+        super().__init__(**kwargs)
         self._location = location
         self._file = file
         self._serializer = serializer

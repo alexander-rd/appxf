@@ -26,10 +26,11 @@ class Buffer(Storable):
     log = logging.getLogger(f'{__name__}.Buffer')
 
     def __init__(self,
-                 storage_handler: Storage = StorageMethodDummy()
+                 storage_handler: Storage = StorageMethodDummy(),
+                 **kwargs
                  ):
 
-        super().__init__(storage_handler)
+        super().__init__(storage_handler, **kwargs)
         self.buffer = dict()
         self.initially_loaded = False
 

@@ -23,8 +23,8 @@ class Storage(ABC):
     then rely on the load() and store() implementation by consuming/providing a
     byte stream.
     '''
-    def __init__(self):
-        pass
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     @abstractmethod
     def exists(self) -> bool:

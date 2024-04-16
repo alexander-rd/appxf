@@ -21,7 +21,11 @@ from kiss_cf.config import Config
 class EditConfigWindow(tkinter.Toplevel):
     log = logging.getLogger(__name__ + '.EditConfigWindow')
 
-    def __init__(self, config: Config, section: str, title='Settings for {0}'):
+    def __init__(self,
+                 config: Config,
+                 section: str,
+                 title='Settings for {0}',
+                 **kwargs):
         '''
         Create GUI window to edit a config section.
 
@@ -30,7 +34,7 @@ class EditConfigWindow(tkinter.Toplevel):
         using the configurations language dictionary. Example:
         EditConfigWindow(config, 'DATABASE', title='Einstellungen für {0}')
         '''
-        super().__init__()
+        super().__init__(**kwargs)
 
         gui_root = self
         # TODO: all commented out lines with ".language"
@@ -85,8 +89,8 @@ class EditConfigWindow(tkinter.Toplevel):
 class ConfigMenu(tkinter.Menu):
     '''Menu containing all configurable sections.'''
 
-    def __init__(self, config: Config):
-        super().__init__(tearoff=0)
+    def __init__(self, config: Config, **kwargs):
+        super().__init__(tearoff=0, **kwargs)
         self._config = config
 
         for section in config.config.sections():

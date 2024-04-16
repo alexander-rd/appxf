@@ -280,11 +280,12 @@ class EditPropertyDictWindow(tkinter.Toplevel):
     def __init__(self, parent,
                  property_dict: dict[str, KissProperty],
                  title: str,
-                 kiss_options: dict = dict()):
+                 kiss_options: dict = dict(),
+                 **kwargs):
         '''
         Create GUI window to edit a dictionary of properties.
         '''
-        super().__init__(parent)
+        super().__init__(parent, **kwargs)
         self.property_dict = property_dict
         self.language = dict()
 

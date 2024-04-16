@@ -32,7 +32,8 @@ class Database():
     log = logging.getLogger(__name__ + 'DataBase')
     buffer = Buffer()
 
-    def __init__(self, config: dict):
+    def __init__(self, config: dict, **kwargs):
+        super().__init__(**kwargs)
         self.connection = kiss_cf.mariadb.Connection(config)
 
     @staticmethod

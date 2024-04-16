@@ -34,10 +34,10 @@ class StorageMasterMock(StorageMaster):
 
 
 class StorageMock(Storage):
-    def __init__(self):
+    def __init__(self, **kwargs):
         self._data = None
         self._time: datetime = datetime.now()
-        super().__init__()
+        super().__init__(**kwargs)
 
     def exists(self) -> bool:
         return self._data is not None

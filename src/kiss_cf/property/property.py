@@ -25,7 +25,8 @@ class KissPropertyConversionError(Exception):
 
     It is used when the KissProperty is not able to validate an input or
     convert it to the base type.'''
-    def __init__(self, prop_class: KissProperty[Any], value):
+    def __init__(self, prop_class: KissProperty[Any], value, **kwargs):
+        super().__init__(**kwargs)
         # The following try/except is required since KissString accepts any
         # input converting it with str(). If that fails, the value can also not
         # be printed.
@@ -150,7 +151,9 @@ class KissProperty(Generic[_BaseTypeT], metaclass=_KissPropertyMetaMerged):
     '''
     def __init__(self,
                  value: _BaseTypeT | None = None,
-                 name: str = ''):
+                 name: str = '',
+                 **kwargs):
+        super().__init__(**kwargs)
         if value is None:
             self._input = self.get_default()
             self._value = self.get_default()

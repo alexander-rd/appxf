@@ -32,8 +32,9 @@ class ConfigSection(Storable):
                  storage: Storage = StorageMethodDummy(),
                  properties: list[str] | dict[str, KissProperty] |
                  dict[str, dict[str, Any]] | None = None,
-                 values: dict[str, Any] | None = None):
-        super().__init__(storage=storage)
+                 values: dict[str, Any] | None = None,
+                 **kwargs):
+        super().__init__(storage=storage, **kwargs)
         if properties is None:
             properties = {}
         if values is None:

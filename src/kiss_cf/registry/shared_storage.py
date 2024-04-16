@@ -25,7 +25,8 @@ class SecureSharedStorageMethod(Storage):
                  storage: StorageMaster,
                  security: Security,
                  registry: Registry,
-                 serializer: type[Serializer]
+                 serializer: type[Serializer],
+                 **kwargs
                  ):
         # TODO: "to roles" is missing input
 
@@ -33,7 +34,7 @@ class SecureSharedStorageMethod(Storage):
         # expect the factory collecting "allowed writers" and "additional
         # readers", assuming writers always must be readers.
 
-        super().__init__()
+        super().__init__(**kwargs)
         self._file = file
         self._base_storage = storage.get_storage(file,
                                                  register=False,

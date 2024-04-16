@@ -50,7 +50,7 @@ class FtpLocation(FileStorageMaster):
 
     log = logging.getLogger(__name__ + '.RemoteConnection')
 
-    def __init__(self, host: str, user: str, password: str, path: str = ''):
+    def __init__(self, host: str, user: str, password: str, path: str = '', **kwargs):
         ''' Maintainer for FTP locations
 
         The handler will handle one path on an FTP host. The host connections
@@ -80,7 +80,7 @@ class FtpLocation(FileStorageMaster):
 
         # Important: super().__init__() already utilizes the specific
         # implementation. Attributes must be available.
-        super().__init__()
+        super().__init__(**kwargs)
 
     def get_id(self, file: str = ''):
         return (self.__class__.__name__ + ': ' +

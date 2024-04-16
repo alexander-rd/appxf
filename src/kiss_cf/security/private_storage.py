@@ -19,8 +19,9 @@ class SecurePrivateStorageMethod(Storage):
                  file: str,
                  storage: StorageMaster,
                  security: Security,
-                 serializer: type[Serializer]):
-        super().__init__()
+                 serializer: type[Serializer],
+                 **kwargs):
+        super().__init__(**kwargs)
         self._file = file
         self._base_storage = storage.get_storage(file,
                                                  register=False,
@@ -55,8 +56,9 @@ class SecurePrivateStorageMaster(DerivingStorageMaster):
     def __init__(self,
                  storage: StorageMaster,
                  security: Security,
-                 default_serializer: type[Serializer] = CompactSerializer):
-        super().__init__(storage)
+                 default_serializer: type[Serializer] = CompactSerializer,
+                 **kwargs):
+        super().__init__(storage, **kwargs)
         self._security = security
         self._default_serializer = default_serializer
 

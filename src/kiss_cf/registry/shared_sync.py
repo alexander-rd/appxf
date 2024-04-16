@@ -28,7 +28,8 @@ class SharedSync():
     SecureShared storage from the registry module.
     '''
 
-    def __init__(self, registry: Registry):
+    def __init__(self, registry: Registry, **kwargs):
+        super().__init__(**kwargs)
         self._registry = registry
         self._sync_pairs: list[SyncPair] = []
 
