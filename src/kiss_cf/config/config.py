@@ -1,21 +1,13 @@
-'''
-The configuration concept is based on configparser for storage. It extends it's
-usage for a generic GUI and flexible (encrypted) storage by aggregating:
- * a configparser object with
- * a dictionary of options for each section on
-     * how to retreive/store the configparser object (see ConfigSection)
- * a dictionary of options for each key/value pair (see OptionConfig)
-     * a dictionary of options for each configuration item in a section (see
-       OptionConfig)
+''' Provide Configuration Handling
+
+The configuration concept is accumulating KissPropertyDict objects as sections.
 '''
 
 from typing import Any
 
 from kiss_cf import logging
-from kiss_cf.property import KissProperty
+from kiss_cf.property import KissProperty, KissPropertyDict
 from kiss_cf.storage import StorageMethodDummy, StorageMaster
-
-from .config_section import ConfigSection
 
 # TODO: config refactoring
 #  1) I need the serialize/deserialize on dictionaries as storable >> to mary
@@ -40,6 +32,10 @@ from .config_section import ConfigSection
 #
 # Note: Section-wise INI handling would imply each section providing it's part.
 # But the file is not section-specific.
+
+# TODO: add_section options should use appropriate types. Those, however, need
+#   to be provided by KissPropertyDict and some potentially be routed through
+#   KissProperty.
 
 
 class KissConfigError(Exception):
@@ -67,7 +63,7 @@ class Config():
     def __init__(self, default_storage: StorageMaster | None = None, **kwargs):
         super().__init__(**kwargs)
         self._default_storage = default_storage
-        self._sections: dict[str, ConfigSection] = {}
+        self._sections: dict[str, KissPropertyDict] = {}
 
         # TODO: clarify how USER section is created. I do not see why this has
         # to be this way
@@ -92,7 +88,7 @@ class Config():
         ''' Return list of sections. '''
         return list(self._sections.keys())
 
-    def section(self, section: str) -> ConfigSection:
+    def section(self, section: str) -> KissPropertyDict:
         ''' Access a section '''
         if section not in self._sections:
             raise KissConfigError(
@@ -103,8 +99,9 @@ class Config():
     def add_section(self,
                     section: str,
                     options: dict[str, KissProperty] |
-                    dict[str, dict[str, Any]] | None = None,
-                    storage_master: StorageMaster | None = None):
+                        dict[str, dict[str, Any]] | None = None,
+                    storage_master: StorageMaster | None = None
+                    ) -> KissPropertyDict:
         '''Add section if not yet existing.  '''
         # ensure section does not yet exist:
         if section in self._sections:
@@ -120,10 +117,11 @@ class Config():
         # construct section
         if options is None:
             options = {}
-        self._sections[section] = ConfigSection(
-            storage=storage,
-            properties=options)
+        self._sections[section] = KissPropertyDict(
+            data=options,
+            storage=storage)
         self.log.info(f'added section: {section}')
+        return self._sections[section]
 
     def store(self):
         ''' Store all sections '''

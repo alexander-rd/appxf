@@ -5,6 +5,7 @@ from kiss_cf import logging
 from kiss_cf.property import KissProperty
 from .option_widget import OptionWidget
 
+# TODO: rewrite to be based on PropertyDict
 
 class OptionDictWidget(tkinter.Frame):
     '''Frame holding all configurable options for a section.
@@ -13,7 +14,7 @@ class OptionDictWidget(tkinter.Frame):
     Consider using backup() on the config (not the frame) before starting this
     frame and providing a cancel button that uses restore() on the config.
     '''
-    log = logging.getLogger(__name__ + '.ConfigSectionWidget')
+    log = logging.getLogger(__name__ + '.OptionDictWidget')
 
     def __init__(self, parent: tkinter.Widget,
                  values: dict[str, str | bool | int] | None = None,

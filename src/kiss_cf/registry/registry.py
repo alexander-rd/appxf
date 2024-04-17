@@ -84,7 +84,7 @@ class Registry:
 
         # TODO: add warning message the _loaded is True
         return RegistrationRequest.new(
-            self._config.section('USER').get_all(),
+            self._config.section('USER').data,
             self._security).get_request_bytes()
 
     def get_request_data(self, request: bytes) -> RegistrationRequest:
@@ -125,7 +125,7 @@ class Registry:
                     f'Section {section} does not exist.')
         response = RegistrationResponse.new(
             user_id,
-            {section: self._config.section(section).get_all()
+            {section: self._config.section(section).data
              for section in sections})
         return response.get_response_bytes()
 
@@ -137,7 +137,7 @@ class Registry:
         response = RegistrationResponse.from_response_bytes(response_bytes)
 
         for section in response.config_sections:
-            self._config.section(section).set_all(
+            self._config.section(section).update(
                 response.config_sections[section])
             self._config.section(section).store()
 
