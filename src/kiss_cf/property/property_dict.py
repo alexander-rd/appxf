@@ -10,7 +10,13 @@ from .property import KissProperty, KissPropertyError
 # corresponding GUI. What would remain for the config section?? Just the
 # storage behavior??
 
-# TODO: Storage behavior.
+# TODO: support for iterable input like [(key1, value1), (key2, value2)].
+
+# TODO: support tuples with additional named value options
+
+# TODO: Storing properties. This would be required for a "configurable config".
+
+# TODO: Loading modes 'add' and 'error'
 
 
 # Implementatino could not use UserDict as first class since UserData
@@ -46,12 +52,6 @@ class KissPropertyDict(Storable, UserDict):
                 value.
         Not yet supported is the dict initialization by iterables.
         '''
-
-        # TODO: support for iterable input like [(key1, value1), (key2,
-        # value2)].
-
-        # TODO: support tuples with additional named value options
-
         # Define KissPropertyDict specific details
         self._property_dict: dict[Any, KissProperty] = {}
         # Initialize dict details
@@ -61,18 +61,12 @@ class KissPropertyDict(Storable, UserDict):
             self.update(data)
         # Storable will initialize with default storage
         #Storable.__init__(self)
-        print(f'>>dict init>>: {self.__dict__}')
-        print(f'MRO: {[x.__name__ for x in KissPropertyDict.__mro__]}')
-
-    def set_storage(self, storage: Storage):
-        ''' Set storage to support store()/load() '''
-        self._storage = storage
+        self._on_load_unknown = 'ignore'
+        self._store_property_config = True
 
     def __setitem__(self, key, value) -> None:
-        print(f'>> setitem for {key} and {value}')
         if not self.__contains__(key):
             self._new_item(key, value)
-            print(f'setitem via new_item for key={key}: {self[key]}')
             return
         # Value already exists. Try to set new value into KissProperty, if this
         # is OK, take value from there:
@@ -80,7 +74,6 @@ class KissPropertyDict(Storable, UserDict):
         super().__setitem__(key, self._property_dict[key].value)
 
     def _new_item(self, key, value):
-        print(f'>> new_item for {key} and {value} type {type(value)}')
         # Generate a KissProperty object if only the class or a type is
         # provided:
         if isinstance(value, type):
@@ -126,3 +119,66 @@ class KissPropertyDict(Storable, UserDict):
         # reuse error handling of dict by accessing the value
         super().__getitem__(key)
         return self._property_dict[key]
+
+    # ## Storage Behavior
+
+    valid_on_load_unknown = ['ignore']
+
+    def set_storage(self,
+                    storage: Storage | None = None,
+                    on_load_unknown: str | None = 'ignore',
+                    store_property_config: bool | None = False
+                    ):
+        ''' Set storage to support store()/load() '''
+        if storage is not None:
+            self._storage = storage
+
+
+        if (isinstance(on_load_unknown, str) and
+                on_load_unknown in self.valid_on_load_unknown):
+            self._on_load_unknown = 'ignore'
+        else:
+            raise KissPropertyError(
+                f'on_load_unknown supports None (no change) '
+                f'and: {valid_on_load_unknown}. Extensions may be added.'
+            )
+
+        if store_property_config is not None:
+            if store_property_config:
+                raise KissPropertyError(
+                    'Storing the property configurations is not '
+                    'yet supported.')
+            if isinstance(store_property_config, bool):
+                self._store_property_config = False
+            else:
+                raise KissPropertyError(
+                    f'store_property_config supports None (no change) '
+                    f'and True. Extensions may be added.'
+                )
+
+    def _get_state(self) -> object:
+        if self._store_property_config:
+            # not yet supported. te restricted unpickler would not be able to
+            # load KissProperty objects. The KissProperties should provide a
+            # public "get_state".
+            data = {'_version': 1,
+                    'properties': self._property_dict}
+        else:
+            # To properly restore the "input" from KissProperties, we need to
+            # store those inputs and not just the values
+            data = {'_version': 1,
+                    'values': {key: prop.input
+                               for key, prop
+                               in self._property_dict.items()}}
+        return data
+
+    def _set_state(self, data: object):
+        if self._on_load_unknown == 'ignore':
+            # cycle through known options and load values
+            for key in self.data:
+                if key in data['values']:
+                    self[key] = data['values'][key]
+        else:
+            raise KissPropertyError(
+                f'on_load_unknown option is not supported. '
+                f'Supported options: {self.valid_on_load_unknown}')

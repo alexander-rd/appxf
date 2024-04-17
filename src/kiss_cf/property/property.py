@@ -157,10 +157,8 @@ class KissProperty(Generic[_BaseTypeT], metaclass=_KissPropertyMetaMerged):
         if value is None:
             self._input = self.get_default()
             self._value = self.get_default()
-            print('>> initialized with default')
         else:
             self._set_value(value)
-            print(f'>> initialized with {self._value} from {self._input}')
 
         # A property may be set not being mutable which blocks any changes to
         # it.
@@ -269,7 +267,6 @@ class KissProperty(Generic[_BaseTypeT], metaclass=_KissPropertyMetaMerged):
                 self._input = value
                 # enforce base type that we do not store derived types
                 self._value = base_type(value)
-                print(f'>> written after type match: {self._value}')
             else:
                 raise KissPropertyConversionError(type(self), value)
         else:
@@ -280,7 +277,6 @@ class KissProperty(Generic[_BaseTypeT], metaclass=_KissPropertyMetaMerged):
                 raise KissPropertyConversionError(type(self), value)
             self._input = value
             self._value = _value
-            print(f'>> written after string conversion: {self._value}')
 
     def validate(self, value: str | _BaseTypeT) -> bool:
         ''' Validate a string to match the KissProperty type '''
@@ -358,7 +354,6 @@ class KissPassword(KissString):
     def __init__(self,
                  min_length: int | None = None,
                  **kwargs):
-        print(f'>> kwargs: {kwargs}')
         # min_length must be set before super super().__init__() since it uses
         # the validation before setting the value.
         self.min_length = 6 if min_length is None else min_length
@@ -368,11 +363,9 @@ class KissPassword(KissString):
 
     def _validate_base_type(self, value: str) -> bool:
         if self.min_length > 0 and len(value) < self.min_length:
-            print(f'>> length check failed {len(value)} < {self.min_length}')
             return False
             # TODO: Error message handling should be better the specific
             # validate should tell what exactly failed.
-        print(f'>> length check OK {len(value)} >= {self.min_length}')
         return True
 
 
@@ -407,8 +400,6 @@ def validated_conversion_configparser(
             value = config.getfloat('DEFAULT', 'test')
     except ValueError:
         return False, default
-    print(f'>> input string [{string}] for interpretation '
-          f'by [{res_type}]: [{value}]')
     return True, value  # type: ignore
 
 

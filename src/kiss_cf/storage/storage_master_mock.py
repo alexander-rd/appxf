@@ -5,6 +5,8 @@ from kiss_cf.storage._meta_data import MetaData
 from .storage_master import StorageMaster
 from .storage import Storage
 
+from copy import deepcopy
+
 
 class StorageMasterMock(StorageMaster):
     ''' Functional Mock to replace StorageLocations
@@ -43,8 +45,8 @@ class StorageMock(Storage):
         return self._data is not None
 
     def load(self) -> object:
-        return self._data
+        return deepcopy(self._data)
 
     def store(self, data: object):
         self._time = datetime.now()
-        self._data = data
+        self._data = deepcopy(data)

@@ -42,11 +42,7 @@ init_values = [
     ('T3',   ('integer',),                              'int',      0,              '0'),
 ]
 
-# TODO: cannot initialize bool/int/float with strings. This would lead to
-# strings.
-
 def _get_prop_reference(t):
-    print(f'<< get_prop_reference with type {type(t[1])} that is {t[1]}')
     if isinstance(t[1], tuple):
         # tuple based init with type+value
         if len(t[1]) == 2:
@@ -85,7 +81,6 @@ def test_property_dict_init_by_dict():
     dict_input = {t[0]: t[1]
                   for t in init_values}
     prop_dict = KissPropertyDict(dict_input)
-    print(prop_dict)
     verify_property_dict(prop_dict, init_values)
 
 def test_property_dict_init_key_value_call():
@@ -93,7 +88,6 @@ def test_property_dict_init_key_value_call():
     dict_input = {t[0]: t[1]
                   for t in init_values}
     prop_dict = KissPropertyDict(**dict_input)
-    print(prop_dict)
     verify_property_dict(prop_dict, init_values)
 
 def test_property_dict_fails_init():
@@ -152,18 +146,35 @@ def test_property_dict_delete_non_existing():
 # ////////////////
 
 
-# def test_property_dict_store_load_cycle():
-#     prop_dict = KissPropertyDict({'entry': ('email', 'some@one.com')})
-#     storage = StorageMasterMock().get_storage('test')
-#     prop_dict.set_storage(storage)
-#     prop_dict.store()
-#
-#     prop_dict_reload = KissPropertyDict({'entry': ('email',)})
-#     prop_dict_reload.set_storage(storage)
-#     prop_dict_reload.load()
-#
-#     assert prop_dict_reload['entry'] == 'some@one.com'
-#     assert prop_dict_reload.get_property('entry') == 'some@one.com'
+def test_property_dict_store_load_cycle():
+    # we use an integer here since it differs in "input" and stored "value".
+    # And we use an arbitrary string (email) to be a bit more verbose.
+    prop_dict = KissPropertyDict({'entry': ('email',), 'input_check': (int,)})
+    storage = StorageMasterMock().get_storage('test')
+    prop_dict.set_storage(storage, on_load_unknown='ignore', store_property_config=False)
+    prop_dict['entry'] = 'before@store.com'
+    prop_dict['input_check'] = '1'
+
+    prop_dict.store()
+    prop_dict['entry'] = 'after@store.com'
+    prop_dict['input_check'] = '2'
+    assert prop_dict['entry'] == 'after@store.com'
+    assert prop_dict.get_property('entry').value == 'after@store.com'
+    assert prop_dict.get_property('entry').input == 'after@store.com'
+    assert prop_dict['input_check'] == 2
+    assert prop_dict.get_property('input_check').value == 2
+    assert prop_dict.get_property('input_check').input == '2'
+
+    prop_dict_reload = KissPropertyDict({'entry': ('email',), 'input_check': (int,)})
+    prop_dict_reload.set_storage(storage)
+    prop_dict_reload.load()
+    assert prop_dict_reload['entry'] == 'before@store.com'
+    assert prop_dict_reload.get_property('entry').value == 'before@store.com'
+    assert prop_dict_reload.get_property('entry').input == 'before@store.com'
+    assert prop_dict_reload['input_check'] == 1
+    assert prop_dict_reload.get_property('input_check').value == 1
+    assert prop_dict_reload.get_property('input_check').input == '1'
+
 
 # TODO: data element loaded that is not in config anymore
 # TODO: data element missing from load >> nothing ??

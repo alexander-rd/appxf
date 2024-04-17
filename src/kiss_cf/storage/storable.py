@@ -24,7 +24,6 @@ class Storable(object):
 
     def __init__(self, storage: Storage = StorageMethodDummy(), **kwargs):
         self._storage = storage
-        print('>>>>>>>>>>>>>>>>> Storage init <<<<<<<<<<<<<<<<<<<<<<<')
         super().__init__(**kwargs)
 
 
