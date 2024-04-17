@@ -63,10 +63,6 @@ the compromised user had writing rights.
   * Downside: New registration when adapting this pattern.
 
 Next:
- 1) Add storage behavior to KissPropertyDict and testing
- 2) Consider renaming of KissProperty* to something without Kiss in it's name
- 3) Adapt config section (split out as "dict of properties")
-    > It uses "format" instead of inheriting storage format from the provided
-      storage. >> config section should be a storable defaulting in "no
-      storage".
- 4) Resolve long TODO remark on how sections should be added
+ 1) Test PropertyDict GUI
+ 2) Add type for application_mock, lines ~55
+ 3) Unit testing Config

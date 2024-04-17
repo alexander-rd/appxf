@@ -62,7 +62,7 @@ class KissPropertyDict(Storable, UserDict):
         # Storable will initialize with default storage
         #Storable.__init__(self)
         self._on_load_unknown = 'ignore'
-        self._store_property_config = True
+        self._store_property_config = False
 
     def __setitem__(self, key, value) -> None:
         if not self.__contains__(key):
