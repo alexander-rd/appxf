@@ -1,6 +1,7 @@
 ''' Provide KissPropertyDict '''
 
-from typing import Any
+from typing import Any, TypeAlias
+from collections.abc import Hashable
 from collections import UserDict
 from kiss_cf.storage import Storable, Storage
 from .property import KissProperty, KissPropertyError
@@ -25,16 +26,13 @@ from .property import KissProperty, KissPropertyError
 # MutableMapping would have resolved in re-implementing UserDict details.
 # Result: putting UserDict last.
 class KissPropertyDict(Storable, UserDict):
-    ''' Maintain a dictionary of config options
+    ''' Maintain a dictionary of properties
 
     The class supports normal dictionary behavior.
-
-    Relations to other classes:
-        Config -- Aggregates sections to an application configuration.
-        Option -- Type and display options
     '''
+    InitType: TypeAlias = dict[Hashable, Any]
 
-    def __init__(self, data: dict | None = None, **kwargs):
+    def __init__(self, data: InitType | None = None, **kwargs):
         ''' KissPropertyDict
 
         Initializations supports initialization by key/value pairs or by a

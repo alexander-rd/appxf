@@ -45,7 +45,7 @@ Bigger things to do:
   * get rid of duplicate KissProperty code
 
 Do I really need URL based sync and the second registry for ADMINS right now?
-Alternative would be that allowed admins are hard-coded (into a temorary
+Alternative would be that allowed admins are hard-coded (into a temporary
 registry object) that can then be used. Main reason for this is: provide a root
 of trust for the registry!
 
@@ -61,8 +61,9 @@ compromized. He also is able to compromise authenticity of any information that
 the compromised user had writing rights.
   * Downside (acceptable): The tool needs an update to add new admins.
   * Downside: New registration when adapting this pattern.
+Plus: The "hardcoded" registry can be provided by the same chanel IF the
+signatures are verified against the old file BEFORE accepting the new file.
 
 Next:
  1) Test PropertyDict GUI
- 2) Add type for application_mock, lines ~55
- 3) Unit testing Config
+ 2) Unit testing Config

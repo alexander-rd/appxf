@@ -16,7 +16,7 @@ class DummyClassErrorOnStrCreation():
         raise TypeError('some failure')
 
 @pytest.mark.parametrize(
-    'kiss_class', property._implementations)
+    'kiss_class', property.KissPropertyMeta.implementations)
 def test_property_init(kiss_class):
     prop = kiss_class(name='test')
     assert prop.name == 'test'
@@ -163,7 +163,7 @@ def test_property_init_with_value_pre_lookup(prop_type, input, valid, value, str
         f'Failed for type [{prop_type}] with input [{input}] '
         f'(expected valid: {valid}) '
         f'and resulting in value [{value}] and string [{string}]')
-    prop_type = property._type_map[prop_type]
+    prop_type = property.KissPropertyMeta.type_map[prop_type]
     if not valid:
         prop_ref = KissProperty.new(prop_type)
         with pytest.raises(KissPropertyConversionError) as exc_info:
@@ -178,20 +178,21 @@ def test_property_init_with_value_pre_lookup(prop_type, input, valid, value, str
 
 def test_property_self_test():
     # conversions covering all registered types:
-    uncovered_type = set(property._type_map.keys()) - set([t[0] for t in param_conversion])
+    uncovered_type = (set(property.KissPropertyMeta.type_map.keys()) -
+                      set([t[0] for t in param_conversion]))
     assert not uncovered_type, (
         f'Following registered types are not covered in '
         f'test_property_conversions: {uncovered_type}')
     # valid conversions covering all implementations
     uncovered_valid = (
-        set(property._implementation_names) -
-        set([property._type_map[t[0]].__name__
+        set(property.KissPropertyMeta.implementation_names) -
+        set([property.KissPropertyMeta.type_map[t[0]].__name__
              for t in param_conversion
              if t[2]
         ]))
     uncovered_invalid = (
-        set(property._implementation_names) -
-        set([property._type_map[t[0]].__name__
+        set(property.KissPropertyMeta.implementation_names) -
+        set([property.KissPropertyMeta.type_map[t[0]].__name__
              for t in param_conversion
              if not t[2]
         ]))
