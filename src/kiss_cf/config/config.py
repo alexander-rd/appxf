@@ -98,8 +98,7 @@ class Config():
 
     def add_section(self,
                     section: str,
-                    options: dict[str, KissProperty] |
-                        dict[str, dict[str, Any]] | None = None,
+                    options: dict[str, Any] | None = None,
                     storage_master: StorageMaster | None = None
                     ) -> KissPropertyDict:
         '''Add section if not yet existing.  '''

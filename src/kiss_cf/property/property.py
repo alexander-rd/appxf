@@ -53,57 +53,59 @@ class KissPropertyConversionError(Exception):
 # implementation of KissProperty such that, for example,
 # KissProperty.new('email') returns a KissEmail object.
 
-# Mapping of types or string references to derived KissProperty classes. This
-# map is used when generating a new KissProperty without the need to import all
-# classes seperately. Note, however, that custom KissProperty implementations
-# still need to be loaded to get registered.
-_type_map: dict[type | str, KissProperty] = {}
-# List of known KissProperty implementations, mainly intended for logging.
-_implementation_names: list[str] = []
-_implementations: list[type] = []
-
-
-def _register_property_class(cls: KissProperty):
-    ''' Handle the registration of a new KissProperty '''
-    # check class
-    if cls.__name__ in _implementation_names:
-        raise KissPropertyError(
-            f'KissProperty {cls.__name__} is already registered.')
-    # check types
-    if not cls.get_supported_types():
-        raise KissPropertyError(
-            f'KissProperty {cls.__name__} does not return any '
-            f'supported type. Consider returning at least some '
-            f'[''your special type''] from get_supported_types().')
-    for prop_type in cls.get_supported_types():
-        if prop_type in _type_map:
-            other_cls = _type_map[prop_type].__name__
-            raise KissPropertyError(
-                f'KissProperty {cls.__name__} supported type '
-                f'{prop_type} is already registered for {other_cls}.'
-                )
-    # check completeness of implementation:
-    if cls.__abstractmethods__:
-        raise KissPropertyError(
-            f'KissProperty {cls.__name__} still has abstract methods: '
-            f'{cls.__abstractmethods__} that need implementation.')
-    # Adding stuff only after ALL checks
-    # add class
-    _implementation_names.append(cls.__name__)
-    _implementations.append(cls)
-    # add prop types
-    _type_map.update({prop_type: cls
-                      for prop_type in cls.get_supported_types()})
-
 
 class KissPropertyMeta(type):
+    # Mapping of types or string references to derived KissProperty classes. This
+    # map is used when generating a new KissProperty without the need to import all
+    # classes seperately. Note, however, that custom KissProperty implementations
+    # still need to be loaded to get registered.
+    type_map: dict[type | str | KissProperty[Any],
+                    KissProperty[Any]] = {}
+
+    # List of known KissProperty implementations, mainly intended for logging.
+    implementation_names: list[str] = []
+    implementations: list[KissProperty[Any]] = []
+
+    @classmethod
+    def _register_property_class(cls, cls_register: KissProperty[Any]):
+        ''' Handle the registration of a new KissProperty '''
+        # check class
+        if cls_register.__name__ in cls.implementation_names:
+            raise KissPropertyError(
+                f'KissProperty {cls_register.__name__} is already registered.')
+        # check types
+        if not cls_register.get_supported_types():
+            raise KissPropertyError(
+                f'KissProperty {cls_register.__name__} does not return any '
+                f'supported type. Consider returning at least some '
+                f'[''your special type''] from get_supported_types().')
+        for prop_type in cls_register.get_supported_types():
+            if prop_type in cls.type_map:
+                other_cls = cls.type_map[prop_type].__name__
+                raise KissPropertyError(
+                    f'KissProperty {cls_register.__name__} supported type '
+                    f'{prop_type} is already registered for {other_cls}.'
+                    )
+        # check completeness of implementation:
+        if cls_register.__abstractmethods__:
+            raise KissPropertyError(
+                f'KissProperty {cls_register.__name__} still has abstract methods: '
+                f'{cls_register.__abstractmethods__} that need implementation.')
+        # Adding stuff only after ALL checks
+        # add class
+        cls.implementation_names.append(cls_register.__name__)
+        cls.implementations.append(cls_register)
+        # add prop types
+        cls.type_map.update({prop_type: cls_register
+                        for prop_type in cls_register.get_supported_types()})
+
+
     ''' Metaclass to trigger registration of new KissProperty classes '''
     def __new__(mcs, clsname, bases, attrs):
-        newclass = super(KissPropertyMeta, mcs).__new__(
-            mcs, clsname, bases, attrs)
+        newclass = super().__new__(mcs, clsname, bases, attrs)
         # Register only non KissProperty classes:
         if clsname != 'KissProperty':
-            _register_property_class(newclass)
+            mcs._register_property_class(newclass)
         return newclass
 
 
@@ -197,7 +199,7 @@ class KissProperty(Generic[_BaseTypeT], metaclass=_KissPropertyMetaMerged):
 
     @classmethod
     def new(cls,
-            prop_type: str | type | KissProperty,
+            prop_type: str | type | KissProperty[Any],
             value: _BaseTypeT | None = None,
             **kwargs
             ) -> KissProperty:
@@ -210,12 +212,12 @@ class KissProperty(Generic[_BaseTypeT], metaclass=_KissPropertyMetaMerged):
             # Note: incomplete KissProperty implementations do not exist. They
             # are blocked upon registration.
             return prop_type(value=value, **kwargs)  # type: ignore
-        if prop_type in _type_map:
-            return _type_map[prop_type](value=value, **kwargs)
+        if prop_type in KissPropertyMeta.type_map:
+            return KissPropertyMeta.type_map[prop_type](value=value, **kwargs)
         raise KissPropertyError(
             f'Property type [{prop_type}] is unknown. Did you import the '
             f'KissProperty implementations you wanted to use? Supported are: '
-            f'{_type_map.keys()}'
+            f'{KissPropertyMeta.type_map.keys()}'
         )
 
     # Default value that must be defined by the implementing class
@@ -347,6 +349,10 @@ class KissEmail(KissString):
 
 
 class KissPassword(KissString):
+    ''' KissProperty for passwords
+
+    Default minimum password length is 6.
+    '''
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
         return ['pass', 'password']
