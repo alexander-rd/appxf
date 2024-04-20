@@ -1,9 +1,9 @@
 ''' Provide KissPropertyDict '''
 
 from typing import Any, TypeAlias
-from collections.abc import Hashable
+from collections.abc import Hashable, Mapping, MutableMapping
 from collections import UserDict
-from kiss_cf.storage import Storable, Storage
+from kiss_cf.storage import Storable, Storage, StorageMethodDummy
 from .property import KissProperty, KissPropertyError
 
 # TODO: Review if the "keep values as separate dict" behavior is worth
@@ -30,9 +30,11 @@ class KissPropertyDict(Storable, UserDict):
 
     The class supports normal dictionary behavior.
     '''
-    InitType: TypeAlias = dict[Hashable, Any]
 
-    def __init__(self, data: InitType | None = None, **kwargs):
+    def __init__(self,
+                 data: Mapping[str, Any] | None = None,
+                 storage: Storage | None = None,
+                 **kwargs):
         ''' KissPropertyDict
 
         Initializations supports initialization by key/value pairs or by a
@@ -53,23 +55,65 @@ class KissPropertyDict(Storable, UserDict):
         # Define KissPropertyDict specific details
         self._property_dict: dict[Any, KissProperty] = {}
         # Initialize dict details
-        super().__init__(**kwargs)
-        # Cunsume data manually:
+        if storage is None:
+            storage = StorageMethodDummy()
+        super().__init__(storage=storage)
+        # Cunsume data and kwargs manually:
         if data is not None:
-            self.update(data)
+            self.add(data)
+        if kwargs:
+            self.add(**kwargs)
         # Storable will initialize with default storage
-        #Storable.__init__(self)
         self._on_load_unknown = 'ignore'
         self._store_property_config = False
 
     def __setitem__(self, key, value) -> None:
         if not self.__contains__(key):
-            self._new_item(key, value)
-            return
+            raise KissPropertyError(
+                f'Key {key} does not exist. Consider KissPropertyDict.add() '
+                f'for adding new properties.')
         # Value already exists. Try to set new value into KissProperty, if this
         # is OK, take value from there:
         self._property_dict[key].value = value
         super().__setitem__(key, self._property_dict[key].value)
+
+    def add(self, data: Mapping[str, Any] | None = None, **kwargs):
+        ''' Add new properties to the property dict
+
+        New properties cannot be written in the same way new elements would be
+        written to a normal dictionaries:
+          propety_dict['new property'] = 42
+        for two reasons:
+          1) Adding a new value may not include the otherwise normal validity
+             check. Example: KissEmail is initialized with an empty string
+             (invalid Email address)
+          2) Protect from unintentional usage
+        '''
+        if data is not None:
+            if (hasattr(data, 'keys') and hasattr(data, '__getitem__')):
+                # We have a mapping object and can cycle:
+                for key in data.keys():
+                    self._new_item(key, data[key])
+            elif hasattr(data, '__iter__'):
+                # The outer is already an iterable, lets iterate the inner and
+                # expect a key and a value:
+                for element in data:
+                    if not hasattr(element, '__iter__'):
+                        raise KissPropertyError(
+                            f'TOTO')
+                    inner_iter = iter(element)
+                    key = next(inner_iter, None)
+                    value = next(inner_iter, None)
+                    if key is None or value is None:
+                        raise KissPropertyError(
+                            f'TOTO')
+                    self._new_item(key, value)
+                    # we just ignore anything else
+            else:
+                raise KissPropertyError(
+                    f'TOTO')
+        for key, value in kwargs.items():
+            self._new_item(key, value)
 
     def _new_item(self, key, value):
         # Generate a KissProperty object if only the class or a type is
@@ -138,7 +182,7 @@ class KissPropertyDict(Storable, UserDict):
         else:
             raise KissPropertyError(
                 f'on_load_unknown supports None (no change) '
-                f'and: {valid_on_load_unknown}. Extensions may be added.'
+                f'and: {self.valid_on_load_unknown}. Extensions may be added.'
             )
 
         if store_property_config is not None:

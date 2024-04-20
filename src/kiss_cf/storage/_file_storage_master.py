@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 
 from kiss_cf import logging
 from .storage import Storage
-from .storage_master import StorageMaster
+from .storage_master import StorageMaster, KissStorageMasterError
 from .serializer import Serializer
 from .serializer_compact import CompactSerializer
 from .serializer_json import JsonSerializer
@@ -18,6 +18,7 @@ from ._meta_data import MetaData
 # always have a newer timestamp. For example: by delaying a write operation or
 # repeating it when the resulting time stamp did not change.
 
+# TODO: merge KissStorageMasterError into aone general KissStorageError
 
 class FileStorageMaster(StorageMaster, ABC):
     ''' Abstraction of File and Path based storage '''
@@ -31,7 +32,7 @@ class FileStorageMaster(StorageMaster, ABC):
         self._default_serializer = default_serializer
 
     def __str__(self):
-        return f'[{self.get_id()}]'
+        return f'[{self.id()}]'
 
     def store(self, file: str, data: bytes):
         ''' Store bytes into file
@@ -48,8 +49,8 @@ class FileStorageMaster(StorageMaster, ABC):
             # generating a new UUID
         self._store(file, data)
 
-    def get_meta_data(self, file: str) -> MetaData:
-        meta_storage = self._get_storage(file + '.meta',
+    def get_meta_data(self, name: str) -> MetaData:
+        meta_storage = self._get_storage(name + '.meta',
                                          serializer=JsonSerializer)
         meta = MetaData(storage=meta_storage)
         if meta_storage.exists():
@@ -64,12 +65,16 @@ class FileStorageMaster(StorageMaster, ABC):
 
     # ## StorageMaster related functions
     def _get_storage(self,
-                     file: str,
+                     name: str,
                      serializer: type[Serializer] | None = None,
+                     **kwargs
                      ) -> Storage:
         if serializer is None:
             serializer = self._default_serializer
-        return LocationStorageMethod(self, file, serializer=serializer)
+        if kwargs:
+            raise KissStorageMasterError(
+                f'The keys {kwargs.keys()} are not supported.')
+        return LocationStorageMethod(self, name, serializer=serializer)
 
     # ## Implemenation dependent abstractions
     @abstractmethod
@@ -122,6 +127,9 @@ class LocationStorageMethod(Storage):
         self._location = location
         self._file = file
         self._serializer = serializer
+
+    def id(self) -> str:
+        return f'{self.__class__.__name__} for {self._file} from {self._location.id()}'
 
     def exists(self):
         return self._location.exists(self._file)

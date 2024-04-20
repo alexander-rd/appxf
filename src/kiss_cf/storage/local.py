@@ -17,11 +17,11 @@ class LocalStorageMaster(FileStorageMaster):
         super().__init__(**kwargs)
 
     # ## Methods from StorageLocation
-    def get_id(self, file: str = '') -> str:
-        return self.__class__.__name__ + ': ' + os.path.join(self.path, file)
+    def id(self, name: str = '') -> str:
+        return self.__class__.__name__ + ': ' + os.path.join(self.path, name)
 
-    def exists(self, file: str) -> bool:
-        return os.path.exists(os.path.join(self.path, file))
+    def exists(self, name: str) -> bool:
+        return os.path.exists(os.path.join(self.path, name))
 
     def _get_location_timestamp(self, file: str) -> datetime | None:
         if self.exists(file):

@@ -73,7 +73,7 @@ def verify_property_dict(prop_dict: KissPropertyDict, t_list: list[tuple]):
 def test_property_dict_init_and_fill():
     prop_dict = KissPropertyDict()
     for t in init_values:
-        prop_dict[t[0]] = t[1]
+        prop_dict.add({t[0]: t[1]})
     verify_property_dict(prop_dict, init_values)
 
 def test_property_dict_init_by_dict():
@@ -133,7 +133,7 @@ def test_property_dict_set_invalid_after_delete():
         'test': ('email', 'my@email.com')
         })
     del prop_dict['test']
-    prop_dict['test'] = 'fail'
+    prop_dict.add(test='fail')
     assert prop_dict['test'] == 'fail'
     assert prop_dict.get_property('test').value == 'fail'
 
@@ -177,6 +177,9 @@ def test_property_dict_store_load_cycle():
 
 
 # TODO: data element loaded that is not in config anymore
+
 # TODO: data element missing from load >> nothing ??
+
 # TODO: reload "only data"
-# TODO: reloas "data + KissProperty".. ..but KissProperty are not storable
+
+# TODO: reload "data + KissProperty".. ..but KissProperty are not storable

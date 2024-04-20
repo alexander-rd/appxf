@@ -82,7 +82,7 @@ class FtpLocation(FileStorageMaster):
         # implementation. Attributes must be available.
         super().__init__(**kwargs)
 
-    def get_id(self, file: str = ''):
+    def id(self, file: str = ''):
         return (self.__class__.__name__ + ': ' +
                 self.user + '@' + self.host +
                 os.path.join(self.path, file))

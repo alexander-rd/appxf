@@ -55,7 +55,7 @@ class SyncData(Storable):
 
     def set_location_uuid(self, storage: StorageMaster, uuid: bytes):
         ''' Set UUID of file in other location. '''
-        loc_id = storage.get_id()
+        loc_id = storage.id()
         if loc_id not in self.location:
             self.location[loc_id] = self._get_location_template()
         self.location[loc_id]['uuid'] = uuid
@@ -65,7 +65,7 @@ class SyncData(Storable):
 
         Returns b'' if location is not known within this sync file.
         '''
-        loc_id = storage.get_id()
+        loc_id = storage.id()
         if loc_id not in self.location:
             return b''
         return self.location[loc_id]['uuid']

@@ -58,7 +58,7 @@ class StorageMaster(ABC):
 
     def deregister(self, name: str):
         ''' Deregister a file from this StorageMaster '''
-        if name not in self._storage_map.keys():
+        if name not in self._storage_map:
             raise KissStorageMasterError(
                f'Cannot remove {name}. It was never added. '
                'Use get_storage() to safely interact '
@@ -122,7 +122,7 @@ class StorageMaster(ABC):
         ''' Construct the storage method '''
 
     @abstractmethod
-    def get_id(self, name: str = '') -> str:
+    def id(self, name: str = '') -> str:
         ''' String representing the specific location or file
 
         Used in logging to indicate which location is failing. Example for FTP
@@ -132,7 +132,10 @@ class StorageMaster(ABC):
 
     @abstractmethod
     def get_meta_data(self, name: str) -> MetaData:
-        ''' '''
+        ''' Get meta data of stored data.
+
+        Contains UUID and/or timestamp used for synchronization.
+        '''
 
 
 class DerivingStorageMaster(StorageMaster, ABC):
@@ -189,10 +192,12 @@ class DerivingStorageMaster(StorageMaster, ABC):
         return self._base_storage.get_registered_list()
 
     def _get_registered_storage(self, name: str) -> Storage | None:
+        # pylint: disable=protected-access  # This forwarding by the subclass
+        # is intended.
         return self._base_storage._get_registered_storage(name)
 
-    def get_id(self, name: str = ''):
-        return self._base_storage.get_id(name)
+    def id(self, name: str = ''):
+        return self._base_storage.id(name)
 
     # ## Implementation specific methods of StorageMaster
     def get_meta_data(self, name: str) -> MetaData:

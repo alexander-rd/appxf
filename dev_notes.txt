@@ -65,5 +65,6 @@ Plus: The "hardcoded" registry can be provided by the same chanel IF the
 signatures are verified against the old file BEFORE accepting the new file.
 
 Next:
- 1) Test PropertyDict GUI
  2) Unit testing Config
+ 1) Test PropertyDict GUI
+ 3) Add an implementation that 'invalid init data' can be loaded (KissPropertyDict)

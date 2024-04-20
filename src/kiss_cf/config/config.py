@@ -26,16 +26,14 @@ from kiss_cf.storage import StorageMethodDummy, StorageMaster
 #     ?? Will it become necessary to define the type on option definition
 #     ** It would be nice to configure an option directly on creation
 
+# TODO: support of translations for section naming
+
 # TODO: recover INI file handling:
 #   1) Loading sections from INI file
 #   2) Store all sections to INI file
 #
 # Note: Section-wise INI handling would imply each section providing it's part.
-# But the file is not section-specific.
-
-# TODO: add_section options should use appropriate types. Those, however, need
-#   to be provided by KissPropertyDict and some potentially be routed through
-#   KissProperty.
+# But the file is not section-specific.<
 
 
 class KissConfigError(Exception):
@@ -43,20 +41,19 @@ class KissConfigError(Exception):
 
 
 class Config():
-    '''Organize configuration settings.
+    ''' Organize configuration settings.
 
-    This class allows to define a list of configuration settings that can be
-    stored in various ways (as pickled data or as ini files) and provides a
-    generic GUI to adapt the config settings.
+    Configuration typically splits into several sets of properties for USER or
+    tool access related options. A Config object collects those configuration
+    sections (internally as KissPropertyDict objects) and adds some
+    convenience:
+      * load/store of all sections
+      * store/load into one human readable INI file to assist the tool
+        developers. !! Evverything including passwords !!
 
-    Internally, it is using configparser.
-
-    The following sections are predefined:
-     * USER has predetermined section settings to work together with the Login
-       feature which collects those settings at app initialization and stores
-       them password protected.
-     * DEFAULT should not be used at all. See configparser documentation for
-       details.
+    In an application, it is recommended to initialize the the aplication parts
+    with the KissPropertyDict's. They are shared by value and can be loaded
+    after initialization.
     '''
     log = logging.getLogger(__name__ + '.Config')
 
@@ -64,24 +61,6 @@ class Config():
         super().__init__(**kwargs)
         self._default_storage = default_storage
         self._sections: dict[str, KissPropertyDict] = {}
-
-        # TODO: clarify how USER section is created. I do not see why this has
-        # to be this way
-        #
-        # Cross-cutting concerns are deeply coupled. Configuration already
-        # prefills USER with expected settings. Where user USER data as part of
-        # configuration is stored is business of configuration, not of login
-        # (secrurity).
-        # self.add_section('USER')
-        # self.section_config['USER'].source_type = 'user encrypted'
-
-    def __str__(self):
-        outStr = ''
-        for section in self._sections:
-            if outStr:
-                outStr += ', '
-            outStr += section + ': ' + str(self._sections[section])
-        return outStr
 
     @property
     def sections(self) -> list[str]:
@@ -98,7 +77,6 @@ class Config():
 
     def add_section(self,
                     section: str,
-                    options: dict[str, Any] | None = None,
                     storage_master: StorageMaster | None = None
                     ) -> KissPropertyDict:
         '''Add section if not yet existing.  '''
@@ -114,11 +92,7 @@ class Config():
         else:
             storage = StorageMethodDummy()
         # construct section
-        if options is None:
-            options = {}
-        self._sections[section] = KissPropertyDict(
-            data=options,
-            storage=storage)
+        self._sections[section] = KissPropertyDict(storage=storage)
         self.log.info(f'added section: {section}')
         return self._sections[section]
 

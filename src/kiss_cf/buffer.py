@@ -35,7 +35,7 @@ class Buffer(Storable):
         self.initially_loaded = False
 
     def ensure_loaded(self):
-        if not self.initially_loaded:
+        if not self.initially_loaded and self.exists():
             self.load()
             self.initially_loaded = True
 

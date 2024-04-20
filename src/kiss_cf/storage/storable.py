@@ -5,6 +5,10 @@ from .storage import Storage, StorageMethodDummy
 # TODO: merge comments
 
 
+class KissStorableError(Exception):
+    ''' General storable exception '''
+
+
 class Storable(object):
     ''' Abstract storable class
 
@@ -44,7 +48,7 @@ class Storable(object):
         The default implementation restores the classes __dict__ which contains
         all class fields. You may update this method to adapt the behavior.
         '''
-        self.__dict__.update(data)
+        self.__dict__.update(data)  # type: ignore # see _get_state() for consistency
 
     def exists(self):
         ''' Storage file exists (call before load()) '''
@@ -52,7 +56,11 @@ class Storable(object):
 
     def load(self):
         ''' Restore Storable with bytes from StorageMethod '''
+        if not self._storage.exists():
+            # Protect deriving classes treating empty data like b''.
+            raise KissStorableError('Storage does not exist.')
         self._set_state(self._storage.load())
+        # TODO: determine if this one needs an if _storage.exists()
 
     def store(self):
         ''' Store bytes representing the Storable state '''

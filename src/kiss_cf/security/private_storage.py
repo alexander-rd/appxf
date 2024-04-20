@@ -29,6 +29,9 @@ class SecurePrivateStorageMethod(Storage):
         self._security = security
         self._serializer = serializer
 
+    def id(self) -> str:
+        return f'{self.__class__.__name__} based on {self._base_storage.id()}'
+
     def exists(self) -> bool:
         return self._base_storage.exists()
 
