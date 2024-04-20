@@ -70,12 +70,14 @@ def verify_property_dict(prop_dict: KissPropertyDict, t_list: list[tuple]):
 # Init Variants
 # ////////////
 
+# manual filling
 def test_property_dict_init_and_fill():
     prop_dict = KissPropertyDict()
     for t in init_values:
         prop_dict.add({t[0]: t[1]})
     verify_property_dict(prop_dict, init_values)
 
+# init by dict
 def test_property_dict_init_by_dict():
     # build dict:
     dict_input = {t[0]: t[1]
@@ -83,6 +85,7 @@ def test_property_dict_init_by_dict():
     prop_dict = KissPropertyDict(dict_input)
     verify_property_dict(prop_dict, init_values)
 
+# key value pairs
 def test_property_dict_init_key_value_call():
     # Like dict, but resolving the dict via **
     dict_input = {t[0]: t[1]
@@ -90,6 +93,35 @@ def test_property_dict_init_key_value_call():
     prop_dict = KissPropertyDict(**dict_input)
     verify_property_dict(prop_dict, init_values)
 
+# init by list
+def test_property_dict_init_by_list_list():
+    # Like dict, but resolving the dict via **
+    dict_input = [(t[0], t[1])
+                  for t in init_values]
+    prop_dict = KissPropertyDict(dict_input)
+    verify_property_dict(prop_dict, init_values)
+
+def test_property_dict_init_by_list_fail1():
+    # iterable without iterable subelement
+    with pytest.raises(KissPropertyError) as exc_info:
+        KissPropertyDict([42, 12])
+    assert 'No second level iterable.' in str(exc_info.value)
+    assert 'KissPropertyDict can be initialized by iterables of iterables where the inner iterables' in str(exc_info.value)
+
+def test_property_dict_init_by_list_fail2():
+    # iterable with a iterable subelement that does not contain key+value
+    with pytest.raises(KissPropertyError) as exc_info:
+        KissPropertyDict([('key', 12), ('key2',)])
+    assert 'No key and/or value provided.' in str(exc_info.value)
+
+# general unknown init type
+def test_property_dict_init_by_list_fail2():
+    # iterable with a iterable subelement that does not contain key+value
+    with pytest.raises(KissPropertyError) as exc_info:
+        KissPropertyDict(data = 42)
+    assert f'Invalid initialization input of type {type(42)}.' in str(exc_info.value)
+
+# inconsistent type/value combinations
 def test_property_dict_fails_init():
     with pytest.raises(KissPropertyConversionError):
         KissPropertyDict({
@@ -126,6 +158,12 @@ def test_property_dict_set_invalid_value():
         })
     with pytest.raises(KissPropertyConversionError):
         prop_dict['test'] = 'fail'
+
+def test_property_dict_set_nonexisting():
+    prop_dict = KissPropertyDict()
+    with pytest.raises(KissPropertyError) as exc_info:
+        prop_dict['test'] = 'test'
+    assert 'Key test does not exist' in str(exc_info.value)
 
 def test_property_dict_set_invalid_after_delete():
     # test case derived from test_property_dict_set_invalid_value
@@ -175,11 +213,19 @@ def test_property_dict_store_load_cycle():
     assert prop_dict_reload.get_property('input_check').value == 1
     assert prop_dict_reload.get_property('input_check').input == '1'
 
-
-# TODO: data element loaded that is not in config anymore
-
-# TODO: data element missing from load >> nothing ??
-
-# TODO: reload "only data"
-
-# TODO: reload "data + KissProperty".. ..but KissProperty are not storable
+def test_property_dict_store_load_invalid_init():
+    storage = StorageMasterMock().get_storage('test')
+    prop_dict = KissPropertyDict(
+        entry=('email',),
+        storage=storage
+        )
+    prop_dict.store()
+    # This load should not fail. Even though we load an invalid value, it shall
+    # be accepted since it is the default value:
+    prop_dict.load()
+    # loading an invalid value while a valid one is stored is intended
+    # behavior as long as it is the default value:
+    prop_dict['entry'] = 'someone@nowhere.com'
+    assert prop_dict['entry'] == 'someone@nowhere.com'
+    prop_dict.load()
+    assert prop_dict['entry'] == ''

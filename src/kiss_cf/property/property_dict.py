@@ -100,18 +100,27 @@ class KissPropertyDict(Storable, UserDict):
                 for element in data:
                     if not hasattr(element, '__iter__'):
                         raise KissPropertyError(
-                            f'TOTO')
+                            'No second level iterable. KissPropertyDict can '
+                            'be initialized by iterables of iterables where '
+                            'the inner iterables must be the key followed by'
+                            'the value.')
                     inner_iter = iter(element)
                     key = next(inner_iter, None)
                     value = next(inner_iter, None)
                     if key is None or value is None:
                         raise KissPropertyError(
-                            f'TOTO')
+                            'No key and/or value provided. '
+                            'KissPropertyDict can '
+                            'be initialized by iterables of iterables where '
+                            'the inner iterables must be the key followed by'
+                            'the value.')
                     self._new_item(key, value)
                     # we just ignore anything else
             else:
                 raise KissPropertyError(
-                    f'TOTO')
+                    f'Invalid initialization input of type {type(data)}. '
+                    f'Initialize with a dictionary of key/value '
+                    f'specifications.')
         for key, value in kwargs.items():
             self._new_item(key, value)
 

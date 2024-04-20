@@ -12,7 +12,7 @@ decion on whether this toolbox is for you and to guide it's development.
 Provided numbers only provide a rough idea.
  * The toolbox aims for **easy application creation**. This includes simple to use
    interfaces and the need for documentation and examples.
-   * Not however that time is limited and support is appreciated. Contact me!
+   * Apparently, time is limited. Support is appreciated. Contact me.
  * Supported are **desktop applications** that are **shared with a limited number of
    people** (like: 50).
    * Not suited for online applications.
