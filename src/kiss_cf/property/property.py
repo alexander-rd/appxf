@@ -266,7 +266,7 @@ class KissProperty(Generic[_BaseTypeT], metaclass=_KissPropertyMetaMerged):
         base_type = type(self.get_default())
         if isinstance(value, base_type):
             # Type is OK but stil needs to be valid:
-            if self.validate(value):
+            if self.validate(value) or value == self.get_default():
                 self._input = value
                 # enforce base type that we do not store derived types
                 self._value = base_type(value)

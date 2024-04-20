@@ -64,7 +64,18 @@ the compromised user had writing rights.
 Plus: The "hardcoded" registry can be provided by the same chanel IF the
 signatures are verified against the old file BEFORE accepting the new file.
 
-Next:
- 2) Unit testing Config
- 1) Test PropertyDict GUI
- 3) Add an implementation that 'invalid init data' can be loaded (KissPropertyDict)
+
+# ## Not happy with the naming Kiss
+#
+# .. what we have here is simply not KISS ..
+#
+# New names are around:
+#  * Application Cross Functionals (too long but that's what it tries to be)
+#  * ACF (already exists)
+#  * acrossf or AxF (axf already exists)
+#  * app_cf
+#  * appcf (only appcfg exists)
+#  * cross_f
+#
+# Arbitrary names:
+#  * Sohal (surgeonfish) - Sohal is an arabic name (A person who is delicate and soft)
