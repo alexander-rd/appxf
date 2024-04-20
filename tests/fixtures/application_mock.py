@@ -51,16 +51,15 @@ class ApplicationMock:
         # by default since only few will be user specific.
         self.user_config = Config(default_storage=self.storage_shared_config)
         # add USER config with some basic user data: email and name
-        self.user_config.add_section('USER', options={
-            'email': ('email',),
-            'name': (str,)},
-            storage_master = self.storage_user_config)
+        self.user_config.add_section(
+            'USER', storage_master = self.storage_user_config).add(
+                email=('email',),
+                name=(str,))
 
         # add credentials options for shared storage (no values!)
-        self.user_config.add_section('SHARED_STORAGE', options=CredentialLocationMock.config_properties)
+        self.user_config.add_section('SHARED_STORAGE').add(CredentialLocationMock.config_properties)
         # add some arbitraty configuration
-        self.user_config.add_section('TEST', options={
-            'test': (int,)})
+        self.user_config.add_section('TEST').add(test=(int,))
 
         # REGISTRY
         self.path_registry = os.path.join(self._app_path, 'data/registry')

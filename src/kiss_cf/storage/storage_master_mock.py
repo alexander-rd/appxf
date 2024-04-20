@@ -23,11 +23,11 @@ class StorageMasterMock(StorageMaster):
       set_buffer(file, data)
       set_buffer_timestamp(file, datetime)
     '''
-    def get_id(self, name: str = '') -> str:
+    def id(self, name: str = '') -> str:
         return self.__class__.__name__ + ': ' + name
 
     def _get_storage(self, name: str, **kwargs) -> Storage:
-        return StorageMock()
+        return StorageMock(name=name)
 
     def get_meta_data(self, name: str) -> MetaData:
         # TODO: this is no reasonable MetaData behavior. It shoud use the
@@ -36,10 +36,15 @@ class StorageMasterMock(StorageMaster):
 
 
 class StorageMock(Storage):
-    def __init__(self, **kwargs):
+    def __init__(self,
+                 name: str,
+                 **kwargs):
         self._data = None
         self._time: datetime = datetime.now()
         super().__init__(**kwargs)
+
+    def id(self) -> str:
+        return 'StorageMock'
 
     def exists(self) -> bool:
         return self._data is not None

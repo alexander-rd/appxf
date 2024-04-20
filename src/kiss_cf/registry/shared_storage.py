@@ -64,6 +64,9 @@ class SecureSharedStorageMethod(Storage):
     # then be responsible for storing/loading also the supporting files. <<
     # this is the way to go!
 
+    def id(self) -> str:
+        return f'{self.__class__.__name__} based on {self._base_storage.id()}'
+
     def exists(self) -> bool:
         return self._base_storage.exists()
 

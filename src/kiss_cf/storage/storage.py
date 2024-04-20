@@ -27,12 +27,20 @@ class Storage(ABC):
         super().__init__(**kwargs)
 
     @abstractmethod
+    def id(self) -> str:
+        ''' ID for the storage object.
+
+        The ID shall use the StorageMaster ID's which, themselves shall be
+        unique. Main purpose of the id() is loggin.
+        '''
+
+    @abstractmethod
     def exists(self) -> bool:
         ''' Check existance of storage before loading '''
 
     @abstractmethod
     def load(self) -> object:
-        ''' Load data from Storage'''
+        ''' Load data from Storage '''
 
     @abstractmethod
     def store(self, data: object):
@@ -49,6 +57,9 @@ class StorageMethodDummy(Storage):
     Note: The _set_bytestream() of the Storable must be robust to receive an
     empty bytestream as indication for "no Storage defined".
     '''
+    def id(self) -> str:
+        return 'StorageMethodDummy'
+
     def exists(self) -> bool:
         return False
 

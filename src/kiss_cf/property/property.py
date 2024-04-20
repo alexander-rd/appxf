@@ -55,6 +55,7 @@ class KissPropertyConversionError(Exception):
 
 
 class KissPropertyMeta(type):
+    ''' Meta class collecting KissProperty implementations '''
     # Mapping of types or string references to derived KissProperty classes. This
     # map is used when generating a new KissProperty without the need to import all
     # classes seperately. Note, however, that custom KissProperty implementations
@@ -280,7 +281,7 @@ class KissProperty(Generic[_BaseTypeT], metaclass=_KissPropertyMetaMerged):
             self._input = value
             self._value = _value
 
-    def validate(self, value: str | _BaseTypeT) -> bool:
+    def validate(self, value: Any) -> bool:
         ''' Validate a string to match the KissProperty type '''
         # KissProperty implementations for string base classes will NOT
         # convert but rely on the _validate_base_type().

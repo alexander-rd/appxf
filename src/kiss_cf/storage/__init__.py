@@ -10,7 +10,7 @@
 
 # Abstract/General Classes
 from .serializer import Serializer, KissSerializerError
-from .storable import Storable
+from .storable import Storable, KissStorableError
 from .storage import Storage
 from .storage_master import StorageMaster, DerivingStorageMaster, KissStorageMasterError
 
