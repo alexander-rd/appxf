@@ -3,10 +3,9 @@ from __future__ import annotations
 import os
 
 from kiss_cf.security import Security, SecurePrivateStorageMaster
-from kiss_cf.registry import Registry
+from kiss_cf.registry import Registry, SharedSync, SecureSharedStorageMaster
 from kiss_cf.config import Config
 from kiss_cf.storage import LocalStorageMaster
-from kiss_cf.property import KissProperty
 
 from .restricted_location import CredentialLocationMock
 
@@ -63,15 +62,44 @@ class ApplicationMock:
 
         # REGISTRY
         self.path_registry = os.path.join(self._app_path, 'data/registry')
-        self.location_registry = LocalStorageMaster(self.path_registry)
-        self.registry = Registry(self.location_registry, self.security, self.user_config)
+        self.storage_registry = SecurePrivateStorageMaster(
+            storage=LocalStorageMaster(self.path_registry),
+            security=self.security)
+        self.registry = Registry(self.storage_registry, self.security, self.user_config)
 
         # some DATA LOCATION
         self.path_data = os.path.join(self._app_path, 'data')
-        self.location_data = LocalStorageMaster(self.path_data)
+        self.storage_data = SecurePrivateStorageMaster(
+            storage=LocalStorageMaster(self.path_data),
+            security=self.security)
 
-        # some REMOTE LOCATION
-        self.path_remote = os.path.join(self._app_path, 'data')
+        # matching REMOTE LOCATIONs
+        self.path_remote_config = os.path.join(self._root_path, 'remote/config')
+        self.storage_remote_config = SecureSharedStorageMaster(
+            storage=LocalStorageMaster(self.path_remote_config),
+            security=self.security,
+            registry=self.registry)
+        self.path_remote_data = os.path.join(self._root_path, 'remote/data')
+        self.storage_remote_data = SecureSharedStorageMaster(
+            storage=LocalStorageMaster(self.path_remote_data),
+            security=self.security,
+            registry=self.registry)
+
+        # setup shared sync:
+        self.shared_sync = SharedSync(registry=self.registry)
+        self.shared_sync.add_sync_pair(
+            local=self.storage_data,
+            remote=self.storage_remote_data,
+            writing_roles=['user', 'admin']
+        )
+        self.shared_sync.add_sync_pair(
+            local=self.storage_shared_config,
+            remote=self.storage_remote_config,
+            writing_roles=['admin'],
+            additional_readers=['user']
+        )
+        # TODO: registry (USER_DB) is not yet included. How would that be
+        # synced? Also by just setting up another pair??
 
 
     #######################################################
@@ -148,8 +176,6 @@ class ApplicationMock:
 
         self.user_config.store()
 
-
-
     def perform_registration_get_request(self) -> bytes:
         ''' Perform registration procedure: get registration bytes
 
@@ -163,3 +189,25 @@ class ApplicationMock:
         # TODO: encryption is missing
         return self.registry.get_request_bytes()
 
+    def perform_registration(self, request_bytes: bytes) -> bytes:
+        ''' Perform registration from request and return with response '''
+        request = self.registry.get_request_data(request_bytes)
+        user_id = self.registry.add_user_from_request(request)
+        response_bytes = self.registry.get_response_bytes(user_id, ['TEST'])
+        self.shared_sync.sync()
+        return response_bytes
+
+    def perform_registration_set_response(self, response_bytes: bytes):
+        ''' Apply registration response to an application '''
+        self.registry.set_response_bytes(response_bytes)
+        # sync and load configuration:
+        self.shared_sync.sync()
+
+        # TODO: the above fails since it tries to sync while registry is not
+        # yet updated. The registry does not even contain the user's entry,
+        # yet to see if it should sync incoming data.
+        #
+        # Alternative A: Just include the user row to the USER_DB until next
+        # sync. But the question will remain: how to sync registry at all.
+
+        self.user_config.load()

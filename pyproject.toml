@@ -36,12 +36,12 @@ legacy_tox_ini = """
 
     commands = pytest -rA tests/fixtures/application.py::test_cleanup
                coverage erase
-               coverage run --source=kiss_cf --context=UNIT --branch -m pytest -rA -k "not application"
+               coverage run --source=kiss_cf --context=UNIT --branch -m pytest -rA --ignore=./tests/bdd --ignore=./tests/application
                coverage report --contexts=UNIT
-               coverage html -d cov_html_UNIT
-               coverage run -a --source=kiss_cf --context=APP --branch -m pytest -rA -k "application"
+               coverage html --contexts=UNIT -d cov_html_UNIT
+               coverage run -a --source=kiss_cf --context=APP --branch -m pytest -rA ./tests/application ./tests/bdd
                coverage report --contexts=APP
-               coverage html -d cov_html_APP
+               coverage html --contexts=APP -d cov_html_APP
                coverage report
                coverage html -d cov_html
 """
