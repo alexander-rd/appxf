@@ -28,14 +28,14 @@ from tests.fixtures.application_mock import ApplicationMock
 # user with different password)
 
 # Uninitialized test location should indicate as not user initialized.
-def test_security_uninitialized(app_fresh_user):
+def test_app_10_security_uninitialized(app_fresh_user):
     app: ApplicationMock = app_fresh_user['app_user']
     assert not app.security.is_user_initialized()
     # also not unlocked
     assert not app.security.is_user_unlocked()
 
 # Initialize a user (write file and authenticate)
-def test_security_init(app_fresh_user):
+def test_app_10_security_init(app_fresh_user):
     app: ApplicationMock = app_fresh_user['app_user']
     app.security.init_user('some_password')
     # file should now be present:
@@ -49,7 +49,7 @@ def test_security_init(app_fresh_user):
     assert app.security.is_user_unlocked()
 
 # Unlock a user
-def test_security_unlock(app_initialized_user):
+def test_app_10_security_unlock(app_initialized_user):
     app: ApplicationMock = app_initialized_user['app_user']
     assert app.security.is_user_initialized()
     assert not app.security.is_user_unlocked()
@@ -58,11 +58,10 @@ def test_security_unlock(app_initialized_user):
     assert app.security.is_user_unlocked()
 
 # Store and load
-def test_security_store_load(app_unlocked_user):
+def test_app10_security_store_load(app_unlocked_user):
     app: ApplicationMock = app_unlocked_user['app_user']
     data = b'123456ABC!'
-    storage = SecurePrivateStorageMaster(
-        app.location_data, app.security).get_storage('some_file')
+    storage = app.storage_data.get_storage('some_file')
     # store
     storage.store(data)
     # load
@@ -76,8 +75,7 @@ def test_security_store_load(app_unlocked_user):
     # Note: need to delete prior storage object. Storage locations do not allow
     # two methods covering the same file.
     del storage
-    storage = SecurePrivateStorageMaster(
-        app.location_data, app.security).get_storage('some_file')
+    storage = app.storage_data.get_storage('some_file')
     data_loaded = storage.load()
     assert data == data_loaded
 
@@ -88,7 +86,7 @@ def test_security_store_load(app_unlocked_user):
 # implementation sign and manual verify. (2) Manual sign and let implementation
 # verify.
 
-def test_security_store_assymetric_keys(app_unlocked_user):
+def test_app_10_security_store_assymetric_keys(app_unlocked_user):
     app: ApplicationMock = app_unlocked_user['app_user']
 
     # get public keys. Note that they might be generated on first time
@@ -106,7 +104,7 @@ def test_security_store_assymetric_keys(app_unlocked_user):
     assert encryp_public_key == security.get_encryption_public_key()
 
 # Verify cycle
-def test_security_sign_verify(app_unlocked_user):
+def test_app_10_security_sign_verify(app_unlocked_user):
     app: ApplicationMock = app_unlocked_user['app_user']
 
     data = b'To Be Signed'
@@ -117,7 +115,7 @@ def test_security_sign_verify(app_unlocked_user):
     assert not app.security.verify(data, signatureFalse)
 
 # Hybrid encrypt/decrypt cycle:
-def test_security_hybrid_encrypt_decrypt(app_unlocked_user):
+def test_app_10_security_hybrid_encrypt_decrypt(app_unlocked_user):
     app: ApplicationMock = app_unlocked_user['app_user']
 
     data = b'To be encrypted'
@@ -127,3 +125,10 @@ def test_security_hybrid_encrypt_decrypt(app_unlocked_user):
 
     assert data != data_encrpted
     assert data == data_decrypted
+
+# TODO: Those two test cases belong in the unit testing context:
+#  * test_app_10_security_sign_verify
+#  * test_app_10_security_hybrid_encrypt_decrypt
+#
+# Currently, unit tests are probably covering this via the BDD sync test cases
+# which should be on APP level.

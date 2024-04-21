@@ -48,6 +48,25 @@ def app_unlocked_user_admin_pair(env_base, request):
         app.perform_login_unlock()
     return data
 
+@pytest.fixture
+def app_registered_unlocked_user_admin_pair(app_unlocked_user_admin_pair):
+    # Fixture is based on already unlocked USER/ADMIN and steps are consistent
+    # to test case test_app_02_registry_basic_cycle.
+    #
+    # Admin is already initialized (as admin). Both are already logged in.
+    # Missing is the user registration:
+    data = app_unlocked_user_admin_pair
+    # registration procedure:
+    app_admin: ApplicationMock = data['app_admin']
+    app_user: ApplicationMock = data['app_user']
+    request_bytes = app_user.perform_registration_get_request()
+    response_bytes = app_admin.perform_registration(request_bytes=request_bytes)
+    app_user.perform_registration_set_response(response_bytes=response_bytes)
+    # TODO: test case missing that reopens USER/ADMIN application after
+    # registration
+    return data
+
+
 ### Application Context Initialization
 
 # This function applies general handling of the context initialization to be
