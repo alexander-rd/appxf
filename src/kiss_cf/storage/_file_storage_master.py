@@ -74,7 +74,7 @@ class FileStorageMaster(StorageMaster, ABC):
         if kwargs:
             raise KissStorageMasterError(
                 f'The keys {kwargs.keys()} are not supported.')
-        return LocationStorageMethod(self, name, serializer=serializer)
+        return FileStorage(self, name, serializer=serializer)
 
     # ## Implemenation dependent abstractions
     @abstractmethod
@@ -112,7 +112,7 @@ class FileStorageMaster(StorageMaster, ABC):
         self.log.error(message)
 
 
-class LocationStorageMethod(Storage):
+class FileStorage(Storage):
     ''' Storage method based on a Storage Location
 
     This class only provides the most basic storage method. Consider adding a

@@ -11,7 +11,7 @@ from ._signature import Signature
 from ._public_encryption import PublicEncryption
 
 
-class SecureSharedStorageMethod(Storage):
+class SecureSharedStorage(Storage):
     ''' Typical setup for shared storage
 
     The typical setup consists of the layers:
@@ -123,7 +123,7 @@ class SecureSharedStorageMaster(DerivingStorageMaster):
                      ) -> Storage:
         if serializer is None:
             serializer = self._default_serializer
-        return SecureSharedStorageMethod(
+        return SecureSharedStorage(
             name,
             storage=self._storage,
             security=self._security,

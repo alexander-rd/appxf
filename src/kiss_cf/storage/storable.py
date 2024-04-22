@@ -1,6 +1,6 @@
 ''' Class definitions for storage handling. '''
 
-from .storage import Storage, StorageMethodDummy
+from .storage import Storage, StorageDummy
 
 # TODO: merge comments
 
@@ -26,7 +26,7 @@ class Storable(object):
     then adapt _set_dict().
     '''
 
-    def __init__(self, storage: Storage = StorageMethodDummy(), **kwargs):
+    def __init__(self, storage: Storage = StorageDummy(), **kwargs):
         self._storage = storage
         super().__init__(**kwargs)
 
@@ -55,7 +55,7 @@ class Storable(object):
         return self._storage.exists()
 
     def load(self):
-        ''' Restore Storable with bytes from StorageMethod '''
+        ''' Restore Storable with bytes from Storage '''
         if not self._storage.exists():
             # Protect deriving classes treating empty data like b''.
             raise KissStorableError('Storage does not exist.')

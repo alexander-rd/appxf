@@ -47,10 +47,10 @@ class Storage(ABC):
         ''' Store data to Storage '''
 
 
-class StorageMethodDummy(Storage):
+class StorageDummy(Storage):
     ''' Storage dummy as default behavior.
 
-    To allow Storable implementations to always assume having a StorageMethod,
+    To allow Storable implementations to always assume having a Storage,
     this class provides a silent replacement. It is recommended if the Storable
     class still uses load()/store() even when not being set up for storage.
 
@@ -58,7 +58,7 @@ class StorageMethodDummy(Storage):
     empty bytestream as indication for "no Storage defined".
     '''
     def id(self) -> str:
-        return 'StorageMethodDummy'
+        return 'StorageDummy'
 
     def exists(self) -> bool:
         return False

@@ -7,7 +7,7 @@ from typing import Any
 
 from kiss_cf import logging
 from kiss_cf.property import KissProperty, KissPropertyDict
-from kiss_cf.storage import StorageMethodDummy, StorageMaster
+from kiss_cf.storage import StorageDummy, StorageMaster
 
 # TODO: config refactoring
 #  1) I need the serialize/deserialize on dictionaries as storable >> to mary
@@ -90,7 +90,7 @@ class Config():
         elif self._default_storage is not None:
             storage = self._default_storage.get_storage(section)
         else:
-            storage = StorageMethodDummy()
+            storage = StorageDummy()
         # construct section
         self._sections[section] = KissPropertyDict(storage=storage)
         self.log.info(f'added section: {section}')
