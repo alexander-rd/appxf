@@ -34,6 +34,16 @@ class Storage(ABC):
         self._storage_master = storage
         self._name = name
 
+    @property
+    def name(self):
+        ''' Name of the Storage'''
+        return self._name
+
+    @property
+    def storage_master(self):
+        ''' StorageMaster from which the Storage was generated '''
+        return self._storage_master
+
     def id(self) -> str:
         ''' ID for the storage object.
 
