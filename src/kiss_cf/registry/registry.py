@@ -31,6 +31,7 @@ class Registry(RegistryBase):
                  remote_base_storage: StorageMaster,
                  security: Security,
                  config: Config,
+                 user_config_section: str = 'USER',
                  **kwargs):
         super().__init__(**kwargs)
         self._loaded = False
@@ -38,6 +39,7 @@ class Registry(RegistryBase):
         self._config = config
         self._local_base_storage = local_base_storage
         self._remote_base_storage = remote_base_storage
+        self._user_config_section = user_config_section
 
         # USER_DB must be secured
         self._local_user_db_storage = SecurePrivateStorageMaster(
@@ -98,12 +100,18 @@ class Registry(RegistryBase):
         Bytes are sent to an admin outside of this tools scope. For example, as
         a file via Email.
         '''
+        return self.get_request().get_request_bytes()
+
+    def get_request(self) -> RegistrationRequest:
+        ''' Get registration request '''
         # TODO: add encryption which will require the AMDIN_DB
 
-        # TODO: add warning message the _loaded is True
-        return RegistrationRequest.new(
-            self._config.section('USER').data,
-            self._security).get_request_bytes()
+        # TODO: add warning message when _loaded is True
+        if self._user_config_section:
+            user_data = self._config.section('USER').data
+        else:
+            user_data = {}
+        return RegistrationRequest.new(user_data, self._security)
 
     def get_request_data(self, request: bytes) -> RegistrationRequest:
         return RegistrationRequest.from_request(request)
