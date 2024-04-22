@@ -65,9 +65,6 @@ class SecureSharedStorage(Storage):
     # then be responsible for storing/loading also the supporting files. <<
     # this is the way to go!
 
-    def id(self) -> str:
-        return f'{self.__class__.__name__} based on {self._base_storage.id()}'
-
     def exists(self) -> bool:
         return self._base_storage.exists()
 
@@ -117,6 +114,12 @@ class SecureSharedStorageMaster(DerivingStorageMaster):
         self._security = security
         self._registry = registry
         self._default_serializer = default_serializer
+
+    def id(self, name: str = ''):
+        user_id = '?'
+        if self._registry.is_initialized():
+            user_id = str(self._registry.user_id)
+        return f'SecureShared({user_id})::{self._base_storage.id(name)}'
 
     def _get_storage(self,
                      name: str,

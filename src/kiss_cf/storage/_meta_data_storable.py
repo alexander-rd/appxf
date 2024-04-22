@@ -19,3 +19,6 @@ class MetaDataStorable(MetaData, Storable):
 
     def update(self):
         self.store()
+
+    def store(self):
+        super().store()

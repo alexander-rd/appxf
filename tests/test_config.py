@@ -27,8 +27,6 @@ def test_config_fill_section():
     config.section('TEST')['email'] = 'someone@nowhere.com'
     assert config.section('TEST')['email'] == 'someone@nowhere.com'
 
-    print(f'>> {config}')
-
 def test_config_empty_section():
     config = Config()
     config.add_section('TEST')
@@ -58,7 +56,6 @@ def test_config_store_load_custom_storage():
     config.add_section('TESTA').add(test='A')
     config.add_section('TESTB', storage_master=storage_master_mock_B).add(test='B')
     config.store()
-    print('>> store complete')
     # new config and load - but this time, B does use default storage master A
     config_restore = Config(default_storage=storage_master_mock_A)
     config_restore.add_section('TESTA').add(test=(str,))

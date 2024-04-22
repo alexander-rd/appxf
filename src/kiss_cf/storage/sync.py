@@ -31,10 +31,15 @@ class SyncData(Storable):
     implies: the latest sync between A and B was done based on the file state
     with this UUID.
     '''
-    def __init__(self, storage: Storage, **kwargs):
+    def __init__(self,
+                 storage: Storage,
+                 this_master: StorageMasterBase,
+                 **kwargs):
         super().__init__(storage=storage, **kwargs)
         self._version = 1
         self.location: dict[str, dict] = {}
+        self.storage: dict[str, dict[str, dict]] = {}
+        self._this_master = this_master
 
     # TODO: The dict in location should be according to MetaData.
 
@@ -53,14 +58,26 @@ class SyncData(Storable):
             'timestamp': None
             }
 
-    def set_location_uuid(self, storage: StorageMasterBase, uuid: bytes):
+    def set_location_uuid_old(self, storage: StorageMasterBase, uuid: bytes):
         ''' Set UUID of file in other location. '''
         loc_id = storage.id()
         if loc_id not in self.location:
             self.location[loc_id] = self._get_location_template()
         self.location[loc_id]['uuid'] = uuid
 
-    def get_location_uuid(self, storage: StorageMasterBase) -> bytes:
+    def set_location_uuid(self,
+                          other_storage_master: StorageMasterBase,
+                          uuid: bytes):
+        ''' Set UUID of file in other location. '''
+        this_id = self._this_master.id()
+        other_id = other_storage_master.id()
+        if this_id not in self.storage:
+            self.storage[this_id] = {}
+        if other_id not in self.storage[this_id]:
+            self.storage[this_id][other_id] = self._get_location_template()
+        self.storage[this_id][other_id]['uuid'] = uuid
+
+    def get_location_uuid_old(self, storage: StorageMasterBase) -> bytes:
         ''' Get UUID of file in other location.
 
         Returns b'' if location is not known within this sync file.
@@ -69,6 +86,28 @@ class SyncData(Storable):
         if loc_id not in self.location:
             return b''
         return self.location[loc_id]['uuid']
+
+    def get_location_uuid(self,
+                          other_storage_master: StorageMasterBase) -> bytes:
+        ''' Get UUID of file in other location.
+
+        Returns b'' if location is not known within this sync file.
+        '''
+        this_id = self._this_master.id()
+        other_id = other_storage_master.id()
+        if this_id not in self.storage:
+            return b''
+        if other_id not in self.storage[this_id]:
+            return b''
+        return self.storage[this_id][other_id]['uuid']
+
+    def _get_state(self) -> object:
+        data: dict = super()._get_state()
+        del data['_this_master']
+        return data
+
+    # _set_state does not need an overload. The stored data will just not
+    # contain what was removed above.
 
 
 log = logging.getLogger(__name__)
@@ -87,7 +126,8 @@ log = logging.getLogger(__name__)
 
 
 def sync(storage_a: Storage | StorageMasterBase,
-         storage_b: Storage | StorageMasterBase):
+         storage_b: Storage | StorageMasterBase,
+         only_a_to_b: bool = False):
     ''' Synchronize items from two StorageMasters
 
     Check timestamps of files on both locations and forward to the refined
@@ -95,7 +135,7 @@ def sync(storage_a: Storage | StorageMasterBase,
     Storable will be ignored.
     '''
     if isinstance(storage_a, Storage) and isinstance(storage_b, Storage):
-        return _sync_storage(storage_a, storage_b)
+        return _sync_storage(storage_a, storage_b, only_a_to_b)
     elif isinstance(storage_a, StorageMaster) and isinstance(storage_b, StorageMaster):
         file_list = set(
             list(storage_a.get_registered_list()) +
@@ -105,8 +145,10 @@ def sync(storage_a: Storage | StorageMasterBase,
                   f'\nA: {storage_a.id()}\nB: {storage_b.id()}')
 
         for file in file_list:
-            _sync_storage(storage_a.get_storage(file),
-                        storage_b.get_storage(file))
+            _sync_storage(
+                storage_a.get_storage(file),
+                storage_b.get_storage(file),
+                only_a_to_b)
     else:
         raise KissStorageSyncException(
             f'Sync between types {type(storage_a)} (A) and {type(storage_b)} '
@@ -115,7 +157,8 @@ def sync(storage_a: Storage | StorageMasterBase,
 
 
 def _sync_storage(storage_a: Storage,
-                  storage_b: Storage):
+                  storage_b: Storage,
+                  only_a_to_b: bool):
     # TODO: theoretically, this one could sync storage of DIFFERENT names,
     # potentially causing confision.
 
@@ -132,7 +175,7 @@ def _sync_storage(storage_a: Storage,
                   f'\nA: {storage_a.id()}\nB: {storage_b.id()}')
         _execute_sync(storage_a, storage_b)
         return
-    if not exists_a:
+    if not exists_a and not only_a_to_b:
         log.debug(f'Storage B does not existing on A'
                   f'\nA: {storage_a.id()}\nB: {storage_b.id()}')
         _execute_sync(storage_b, storage_a)
@@ -143,23 +186,32 @@ def _sync_storage(storage_a: Storage,
     # Get file uuid's
     meta_a = storage_a.get_meta_data()
     meta_b = storage_b.get_meta_data()
+    #print(f'>> uuid_a: {meta_a.uuid}')
+    #print(f'>> uuid_b: {meta_b.uuid}')
     # read sync data
     sync_data_a = _get_sync_data(storage_a)
     sync_data_b = _get_sync_data(storage_b)
     # timestamps and uuid in sync data
-    last_uuid_a = sync_data_a.get_location_uuid(storage_b.storage_master)
-    last_uuid_b = sync_data_b.get_location_uuid(storage_a.storage_master)
+    last_uuid_a = sync_data_a.get_location_uuid(
+        other_storage_master=storage_b.storage_master)
+    #print(f'>> uuid result: {last_uuid_a}')
+    last_uuid_b = sync_data_b.get_location_uuid(
+        other_storage_master=storage_a.storage_master)
+    #print(f'>> uuid result: {last_uuid_b}')
 
     # Defensive implementation: this case cannot happen.
     # StorageLocations should generate a UUID even if the file
     # initially has none.
+    if only_a_to_b:
+        if meta_a.uuid != last_uuid_a:
+            _execute_sync(storage_a, storage_b)
+        return
     if (not last_uuid_a or
             not last_uuid_b):
         raise KissStorageSyncException(
-            f'Storage exists on both locaions but at least one MetaData did'
-            f'not return a UUID. This should not happen. Please '
-            f'reconsider the Storage/StorageMaster implementation. '
-            f'Alternatively. remove the file from one of the locations.'
+            f'Storage exists on both locations but at least one SyncData did '
+            f'not return a UUID. This should not happen. Workaround is to '
+            f'remove the file from one of the locations.'
             f'\nA: {storage_a.id()}\nB: {storage_b.id()}')
     if (meta_a.uuid != last_uuid_a and
             meta_b.uuid != last_uuid_b):
@@ -204,12 +256,16 @@ def _execute_sync(
 
     # update source sync data:
     # source_sync_data.set_location_timestamp(target, target_timestamp)
-    source_sync_data.set_location_uuid(target.storage_master, source_meta.uuid)
+    source_sync_data.set_location_uuid(
+        other_storage_master=target.storage_master,
+        uuid=source_meta.uuid)
     source_sync_data.store()
     # update target sync data: source location must now contain timestamp
     # of newly written data
     # target_sync_data.set_location_timestamp(source, source_timestamp)
-    target_sync_data.set_location_uuid(source.storage_master, source_meta.uuid)
+    target_sync_data.set_location_uuid(
+        other_storage_master=source.storage_master,
+        uuid=source_meta.uuid)
     target_sync_data.store()
 
     # TODO UPGRADE: unmark files "not readable"
@@ -231,7 +287,9 @@ def _get_sync_data(storage: Storage) -> SyncData:
             f'Cannot handle StorageMaster type {type(storage.storage_master)}.'
             f'This should not happen.')
 
-    sync_data = SyncData(file_storage)
+    sync_data = SyncData(
+        storage=file_storage,
+        this_master=storage.storage_master)
     if sync_data.exists():
         sync_data.load()
     return sync_data

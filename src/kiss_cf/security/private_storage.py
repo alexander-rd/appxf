@@ -31,9 +31,6 @@ class SecurePrivateStorage(Storage):
         self._security = security
         self._serializer = serializer
 
-    def id(self) -> str:
-        return f'{self.__class__.__name__} based on {self._base_storage.id()}'
-
     def exists(self) -> bool:
         return self._base_storage.exists()
 
@@ -66,6 +63,9 @@ class SecurePrivateStorageMaster(DerivingStorageMaster):
         super().__init__(storage, **kwargs)
         self._security = security
         self._default_serializer = default_serializer
+
+    def id(self, name: str = ''):
+        return f'SecurePrivate()::{self._base_storage.id(name)}'
 
     def _get_storage(self,
                      name: str,

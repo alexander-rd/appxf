@@ -11,6 +11,19 @@ class RegistryBase(ABC):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+    @property
+    @abstractmethod
+    def user_id(self):
+        ''' Get user ID
+
+        Method will raise KissExceptionUserId if registry is not completed.
+        See: is_initialized().
+        '''
+
+    @abstractmethod
+    def is_initialized(self) -> bool:
+        ''' User is initialized with a user id '''
+
     @abstractmethod
     def get_roles(self, uid: int | None = None) -> list[str]:
         ''' Get roles for a user ID

@@ -82,10 +82,9 @@ class FtpLocation(FileStorageMaster):
         # implementation. Attributes must be available.
         super().__init__(**kwargs)
 
-    def id(self, file: str = ''):
-        return (self.__class__.__name__ + ': ' +
-                self.user + '@' + self.host +
-                os.path.join(self.path, file))
+    def id(self, name: str = ''):
+        name = f'::{name}' if name else ''
+        return f'FTP({self.user}@{self.host}://{self.path}){name}'
 
     def _connect(self):
         # ensure any old connection is closed

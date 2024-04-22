@@ -7,10 +7,15 @@ from kiss_cf.security import SecurityMock
 
 from kiss_cf.registry import Registry
 
-def get_fresh_registry() -> Registry:
+def get_fresh_registry(
+    name: str = '',
+    remote_storage_mock: StorageMasterMock | None = None
+    ) -> Registry:
     ''' Provide a freshly initialized registry '''
-    local_storage_mock = StorageMasterMock()
-    remote_storage_mock = StorageMasterMock()
+    name_addition = f' {(name)}' if name else ''
+    local_storage_mock = StorageMasterMock(name=('local' + name_addition))
+    if remote_storage_mock is None:
+        remote_storage_mock = StorageMasterMock(name=('remote' + name_addition))
     security = SecurityMock()
     security.init_user('test')
     config = Config()
@@ -21,7 +26,6 @@ def get_fresh_registry() -> Registry:
         config=config,
         user_config_section='')
     return registry
-
 
 @pytest.fixture
 def fresh_registry():
@@ -37,16 +41,29 @@ def admin_initialized_registry(fresh_registry):
 
 @pytest.fixture
 def admin_user_initialized_registry_pair(fresh_registry):
+    # shared remote storage master
+    remote_storage_mock = StorageMasterMock(name='remote')
     ''' Provide pair of registries '''
-    admin_registry = get_fresh_registry()
+    admin_registry = get_fresh_registry(
+        name='admin',
+        remote_storage_mock=remote_storage_mock)
     admin_registry.initialize_as_admin()
-    user_registry = get_fresh_registry()
+    user_registry = get_fresh_registry(
+        name='user',
+        remote_storage_mock=remote_storage_mock)
+    user_registry.set_admin_keys([
+        (admin_registry._security.get_signing_public_key(),
+         admin_registry._security.get_encryption_public_key())
+        ])
 
     request = user_registry.get_request()
     user_id = admin_registry.add_user_from_request(request=request, roles=['user', 'new'])
     response = admin_registry.get_response_bytes(user_id)
     user_registry.set_response_bytes(response)
-    return admin_registry, user_registry
+    yield admin_registry, user_registry
+    admin_registry._local_base_storage.print_storages()
+    user_registry._local_base_storage.print_storages()
+    user_registry._remote_base_storage.print_storages()
 
 def test_registry_init(fresh_registry):
     registry: Registry = fresh_registry
@@ -85,3 +102,16 @@ def test_registry_user_init(admin_user_initialized_registry_pair):
     # general roles
     assert 'new' in admin_registry.get_roles()
     assert len(admin_registry.get_roles()) == 3
+
+    # SAME on user side
+    # check roles of new user that should have ID 1
+    assert 'user' in user_registry.get_roles(-1)
+    assert 'new' in user_registry.get_roles(-1)
+    # general roles
+    assert 'new' in user_registry.get_roles()
+    assert len(user_registry.get_roles()) == 3
+
+# TODO: test case adding a second user and information being transferred to
+# first user.
+
+# TODO: test case of adding a second admin
