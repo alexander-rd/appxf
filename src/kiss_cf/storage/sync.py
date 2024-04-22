@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from kiss_cf import logging
-from .storage import Storage
+from .storage import Storage, StorageMasterBase
 from .storable import Storable
 from .storage_master import StorageMaster, DerivingStorageMaster
 from .serializer_json import JsonSerializer
@@ -53,14 +53,14 @@ class SyncData(Storable):
             'timestamp': None
             }
 
-    def set_location_uuid(self, storage: StorageMaster, uuid: bytes):
+    def set_location_uuid(self, storage: StorageMasterBase, uuid: bytes):
         ''' Set UUID of file in other location. '''
         loc_id = storage.id()
         if loc_id not in self.location:
             self.location[loc_id] = self._get_location_template()
         self.location[loc_id]['uuid'] = uuid
 
-    def get_location_uuid(self, storage: StorageMaster) -> bytes:
+    def get_location_uuid(self, storage: StorageMasterBase) -> bytes:
         ''' Get UUID of file in other location.
 
         Returns b'' if location is not known within this sync file.
@@ -86,132 +86,150 @@ log = logging.getLogger(__name__)
 # writing, writing while reading, two writing)
 
 
-def sync(master_a: StorageMaster | DerivingStorageMaster,
-         master_b: StorageMaster | DerivingStorageMaster):
+def sync(storage_a: Storage | StorageMasterBase,
+         storage_b: Storage | StorageMasterBase):
     ''' Synchronize items from two StorageMasters
 
     Check timestamps of files on both locations and forward to the refined
     SyncMechanism.sync(). Files on the remote location that do not match a
     Storable will be ignored.
     '''
-    # TODO: add proper get_registered_files() interface to StorageLocation
-    file_list = set(
-        list(master_a.get_registered_list()) +
-        list(master_b.get_registered_list()))
-    log.debug(f'Starting sync between {master_a} and {master_b}')
+    if isinstance(storage_a, Storage) and isinstance(storage_b, Storage):
+        return _sync_storage(storage_a, storage_b)
+    elif isinstance(storage_a, StorageMaster) and isinstance(storage_b, StorageMaster):
+        file_list = set(
+            list(storage_a.get_registered_list()) +
+            list(storage_b.get_registered_list()))
 
-    # ## Decision Stage 1: File Existance
-    for file in file_list:
-        storage_a = master_a.get_storage(file)
-        storage_b = master_b.get_storage(file)
-        meta_a = master_a.get_meta_data(file)
-        meta_b = master_b.get_meta_data(file)
-        exists_a = storage_a.exists()
-        exists_b = storage_b.exists()
-        if not exists_a and not exists_b:
-            # can happen if file was not created, yet
-            log.debug(f'File {file} not existing on both sides')
-            continue
-        if not exists_b:
-            log.debug(f'File {file} not existing on {master_b}')
-            _execute_sync(file, master_a, master_b, meta_a, meta_b)
-            continue
-        if not exists_a:
-            log.debug(f'File {file} not existing on {master_a}')
-            _execute_sync(file, master_b, master_a, meta_b, meta_a)
-            continue
-        # Both files exist. We continue normally.
+        log.debug(f'Starting sync:'
+                  f'\nA: {storage_a.id()}\nB: {storage_b.id()}')
 
-        # ## Decision Stage 2: Decision based on UUID
-        # Get file uuid's
+        for file in file_list:
+            _sync_storage(storage_a.get_storage(file),
+                        storage_b.get_storage(file))
+    else:
+        raise KissStorageSyncException(
+            f'Sync between types {type(storage_a)} (A) and {type(storage_b)} '
+            f'(B) is not supported. Both must be either a Storage or a '
+            f'StorageMaster')
 
-        # read sync data
-        sync_data_a = _get_sync_data(file, master_a)
-        sync_data_b = _get_sync_data(file, master_b)
-        # timestamps and uuid in sync data
-        last_uuid_a = sync_data_a.get_location_uuid(master_b)
-        last_uuid_b = sync_data_b.get_location_uuid(master_a)
-
-        # Defensive implementation: this case cannot happen.
-        # StorageLocations should generate a UUID even if the file
-        # initially has none.
-        if (not last_uuid_b or
-                not last_uuid_a):
-            raise KissStorageSyncException(
-                f'[{file}] exists on both locaions but StorageLocation did '
-                f'not return a UUID. This should not happen. Please '
-                f'reconsider the StorageLocation implementation. '
-                f'You could alternatively remove the file from one of the '
-                f'locations')
-        if (meta_a.uuid != last_uuid_a and
-                meta_b.uuid != last_uuid_b):
-            raise KissChangeOnBothSidesException(
-                f'[{file}] changed on both sides. Not yet supported.')
-        if meta_a.uuid != last_uuid_a:
-            _execute_sync(file, master_a, master_b, meta_a, meta_b)
-            # logging in _sync_file
-        elif meta_b.uuid != last_uuid_b:
-            _execute_sync(file, master_b, master_a, meta_b, meta_a)
-            # logging in _sync_file
-        else:
-            log.debug(f'File {file} did not change.')
 
 def _sync_storage(storage_a: Storage,
                   storage_b: Storage):
-    pass
+    # TODO: theoretically, this one could sync storage of DIFFERENT names,
+    # potentially causing confision.
+
+    # ## Decision Stage 1: File Existance
+    exists_a = storage_a.exists()
+    exists_b = storage_b.exists()
+    if not exists_a and not exists_b:
+        # can happen if file was not created, yet
+        log.debug(f'Storage does not existing on both sides.'
+                  f'\nA: {storage_a.id()}\nB: {storage_b.id()}')
+        return
+    if not exists_b:
+        log.debug(f'Storage A does not existing on B'
+                  f'\nA: {storage_a.id()}\nB: {storage_b.id()}')
+        _execute_sync(storage_a, storage_b)
+        return
+    if not exists_a:
+        log.debug(f'Storage B does not existing on A'
+                  f'\nA: {storage_a.id()}\nB: {storage_b.id()}')
+        _execute_sync(storage_b, storage_a)
+        return
+    # Both files exist. We continue normally.
+
+    # ## Decision Stage 2: Decision based on UUID
+    # Get file uuid's
+    meta_a = storage_a.get_meta_data()
+    meta_b = storage_b.get_meta_data()
+    # read sync data
+    sync_data_a = _get_sync_data(storage_a)
+    sync_data_b = _get_sync_data(storage_b)
+    # timestamps and uuid in sync data
+    last_uuid_a = sync_data_a.get_location_uuid(storage_b.storage_master)
+    last_uuid_b = sync_data_b.get_location_uuid(storage_a.storage_master)
+
+    # Defensive implementation: this case cannot happen.
+    # StorageLocations should generate a UUID even if the file
+    # initially has none.
+    if (not last_uuid_a or
+            not last_uuid_b):
+        raise KissStorageSyncException(
+            f'Storage exists on both locaions but at least one MetaData did'
+            f'not return a UUID. This should not happen. Please '
+            f'reconsider the Storage/StorageMaster implementation. '
+            f'Alternatively. remove the file from one of the locations.'
+            f'\nA: {storage_a.id()}\nB: {storage_b.id()}')
+    if (meta_a.uuid != last_uuid_a and
+            meta_b.uuid != last_uuid_b):
+        raise KissChangeOnBothSidesException(
+            f'Storage changed on both sides. Not yet supported.'
+            f'\nA: {storage_a.id()}\nB: {storage_b.id()}')
+    if meta_a.uuid != last_uuid_a:
+        _execute_sync(storage_a, storage_b)
+        # logging in _execute_sync
+    elif meta_b.uuid != last_uuid_b:
+        _execute_sync(storage_b, storage_a)
+        # logging in _execute_sync
+    else:
+        log.debug(f'Storages did not change.'
+                  f'\nA: {storage_a.id()}\nB: {storage_b.id()}')
 
 
-def _execute_sync(file,
-               source: StorageMaster | DerivingStorageMaster,
-               target: StorageMaster | DerivingStorageMaster,
-               source_meta: MetaData,
-               target_meta: MetaData):
+def _execute_sync(
+    source: Storage,
+    target: Storage):
 
-    log.info(f'Updating {file} from {source} to {target}')
+    log.info(f'Updating {source.name} from {source.storage_master.id()} to {target.storage_master.id()}')
 
     # TODO UPGRADE: mark files "not readable" during sync
     # self.__mark_file_in_sync
 
     # get data
-    data = source.get_storage(file, create=False).load()
+    data = source.load()
     # source_timestamp = source._get_location_timestamp(file)
     # source_uuid = source.get_uuid(file)
-    source_sync_data = _get_sync_data(file, source)
+    source_sync_data = _get_sync_data(source)
 
     # write data
-    target.get_storage(file, create=False).store(data)
+    target.store(data)
     # update meta data:
+    target_meta = target.get_meta_data()
+    source_meta = source.get_meta_data()
     target_meta.uuid = source_meta.uuid
     target_meta.update()
     # target_timestamp = target._get_location_timestamp(file)
-    target_sync_data = _get_sync_data(file, target)
+    target_sync_data = _get_sync_data(target)
 
     # update source sync data:
     # source_sync_data.set_location_timestamp(target, target_timestamp)
-    source_sync_data.set_location_uuid(target, source_meta.uuid)
+    source_sync_data.set_location_uuid(target.storage_master, source_meta.uuid)
     source_sync_data.store()
     # update target sync data: source location must now contain timestamp
     # of newly written data
     # target_sync_data.set_location_timestamp(source, source_timestamp)
-    target_sync_data.set_location_uuid(source, source_meta.uuid)
+    target_sync_data.set_location_uuid(source.storage_master, source_meta.uuid)
     target_sync_data.store()
 
     # TODO UPGRADE: unmark files "not readable"
     # self.__mark_sync_done(file, data)
 
 
-def _get_sync_data(file,
-                   storage: StorageMaster | DerivingStorageMaster
-                   ) -> SyncData:
+def _get_sync_data(storage: Storage) -> SyncData:
     ''' Get SyncData from StorageMaster '''
-    if isinstance(storage, DerivingStorageMaster):
-        file_storage = storage.get_root_master().get_storage(
-            file + '.sync', register=False,
+    if isinstance(storage.storage_master, DerivingStorageMaster):
+        file_storage = storage.storage_master.get_root_master().get_storage(
+            storage.name + '.sync', register=False,
+            serializer=JsonSerializer)
+    elif isinstance(storage.storage_master, StorageMaster):
+        file_storage = storage.storage_master.get_storage(
+            storage.name + '.sync', register=False,
             serializer=JsonSerializer)
     else:
-        file_storage = storage.get_storage(
-            file + '.sync', register=False,
-            serializer=JsonSerializer)
+        raise KissStorageSyncException(
+            f'Cannot handle StorageMaster type {type(storage.storage_master)}.'
+            f'This should not happen.')
 
     sync_data = SyncData(file_storage)
     if sync_data.exists():

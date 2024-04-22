@@ -107,8 +107,8 @@ general, the situation for registry may still be treated "special".
   >> This can be managed by Registry.
 
 Conclusion:
-  * Registry must know a (remote) storage master (basic, not yet encrypted)
-  * Sync must support an interface to sync two individual files
+  * [done] Registry must know a (remote) storage master (basic, not yet encrypted)
+  * [done] Sync must support an interface to sync two individual files
   * Registry will manually sync when required which is:
     * on startup
     * before/after adding a user
