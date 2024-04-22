@@ -53,11 +53,13 @@ class Registry(RegistryBase):
         # USER_ID does not need to be secured
         self._user_id = UserId(local_base_storage.get_storage('USER_ID'))
 
-    def get_roles(self, id: int | None = None) -> list[str]:
-        if id is None:
+    def get_roles(self, uid: int | None = None) -> list[str]:
+        if uid is None:
+            return self._user_db.get_roles()
+        elif uid < 0:
             self._ensure_loaded()
-            id = self._user_id.id
-        return self._user_db.get_roles(id)
+            uid = self._user_id.id
+        return self._user_db.get_roles(uid)
 
     def is_initialized(self) -> bool:
         return (self._loaded or (
