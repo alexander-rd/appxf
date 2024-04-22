@@ -113,3 +113,8 @@ Conclusion:
     * on startup
     * before/after adding a user
     * after receiving a registration response
+
+.sync files will not work properly. The paths are relative to the pytest
+execution directory. After copying an initialization, those paths will have
+changed, screwing the .sync information. >> execute applications in a changed
+path.

@@ -18,7 +18,8 @@ class LocalStorageMaster(FileStorageMaster):
 
     # ## Methods from StorageLocation
     def id(self, name: str = '') -> str:
-        return self.__class__.__name__ + ': ' + os.path.join(self.path, name)
+        name = f'::{name}' if name else ''
+        return f'Local({self.path}){name}'
 
     def exists(self, name: str) -> bool:
         return os.path.exists(os.path.join(self.path, name))

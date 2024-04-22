@@ -2,7 +2,7 @@
 # allow class name being used before being fully defined (like in same class):
 from __future__ import annotations
 
-from kiss_cf.storage import StorageMaster
+from kiss_cf.storage import StorageMaster, sync
 from kiss_cf.config import Config
 from kiss_cf.security import Security, SecurePrivateStorageMaster
 
@@ -12,6 +12,10 @@ from ._user_id import UserId
 from ._user_db import UserDatabase
 from ._registry_base import RegistryBase
 from .shared_storage import SecureSharedStorageMaster
+
+
+class KissRegistryError(Exception):
+    ''' General registry error '''
 
 
 class KissRegistryUnitialized(Exception):
@@ -55,6 +59,18 @@ class Registry(RegistryBase):
         # USER_ID does not need to be secured
         self._user_id = UserId(local_base_storage.get_storage('USER_ID'))
 
+        # Note: USER_DB cannot be synced from __init__ since security module
+        # will not yet be unlocked
+
+    @property
+    def user_id(self):
+        ''' Get user ID
+
+        Method will raise KissExceptionUserId if registry is not completed.
+        See: is_initialized().
+        '''
+        return self._user_id.id
+
     def get_roles(self, uid: int | None = None) -> list[str]:
         if uid is None:
             return self._user_db.get_roles()
@@ -76,12 +92,18 @@ class Registry(RegistryBase):
             KissRegistryUnitialized('Registry is not initialized.')
 
     def try_load(self) -> bool:
+        if not self._security.is_user_unlocked():
+            return False
         if not self.is_initialized():
             return False
         self._user_id.load()
         self._user_db.load()
         self._loaded = True
         return True
+
+    def set_admin_keys(self, keys: list[tuple[bytes, bytes]]):
+        for key_set in keys:
+            self._user_db.add_new(key_set[0], key_set[1], ['user', 'admin'])
 
     def initialize_as_admin(self):
         ''' Initialize databse
@@ -93,6 +115,37 @@ class Registry(RegistryBase):
             validation_key=self._security.get_signing_public_key(),
             encryption_key=self._security.get_encryption_public_key())
         self._loaded = True
+        # Note: writing into USER_ID  and into USER_DB automatically stores
+        # them.
+        self.sync_with_remote(mode='sending')
+
+    def sync_with_remote(self, mode: str):
+        ''' Sync local registry with remote location.
+
+        A sync should happen at every startup and/or before any snc of shared
+        data. Additionally, sync is executed when admin adds a new member or
+        when user adds the registration response.
+
+        The following prerequisites must be met for the sync to be successful:
+          * the user has unlocked the Security object
+          * the user is registered (is_initialized())
+        '''
+        if self.try_load():
+            is_admin = self._user_db.has_role(self._user_id.id, 'admin')
+            if mode == 'receiving':
+                # receiving is ALWAYS overwriting local USER_DB
+                sync(storage_a=self._remote_user_db_storage,
+                     storage_b=self._local_user_db_storage,
+                     only_a_to_b=True)
+                # reload after sync
+                self._user_db.load()
+            elif mode == 'sending':
+                if is_admin:
+                    sync(storage_a=self._local_user_db_storage,
+                        storage_b=self._remote_user_db_storage,
+                        only_a_to_b=True)
+            else:
+                raise KissRegistryError(f'Mode {mode} is unknown.')
 
     def get_request_bytes(self) -> bytes:
         ''' Get registration request bytes
@@ -128,10 +181,16 @@ class Registry(RegistryBase):
         if not self._loaded:
             raise KissRegistryUnitialized(
                 'registry is not yet loaded, cannot add user')
-        return self._user_db.add_new(
+        # ensure synced state before update:
+        self.sync_with_remote(mode='receiving')
+        # update
+        user_id = self._user_db.add_new(
             validation_key=request.signing_key,
             encryption_key=request.encryption_key,
             roles=roles)
+        # Note: add_new automatically stored the new USER_DB
+        self.sync_with_remote(mode='sending')
+        return user_id
 
     def get_response_bytes(self,
                            user_id: int,
@@ -170,7 +229,8 @@ class Registry(RegistryBase):
         # only store user_id after retrieving all configuration to keep
         # application "uninitialized" until then
         self._user_id.id = response.user_id
-        self._user_id.store()
+        # get full user database
+        self.sync_with_remote(mode='receiving')
 
         # TODO: check incoming information and log (1) the retrieved ID and (2)
         # and incoming config sections that are updated and (3) the admin that
