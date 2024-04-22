@@ -265,14 +265,14 @@ class RemoteLocation():
         self.log.error(f'### Curl/Remote Location failed - exception:\n{message}',
                        exc_info=True)
 
-#! TODO: StorageMethod is thought for a specific file. If we need to support
+#! TODO: Storage is thought for a specific file. If we need to support
 #  maintenance of a specific path, then this needs to be added to the specific
-#  StorageMethod class.
+#  Storage class.
 #
 # 1) The base class will do everything directly
 # 2) An advanced class will prepare all uploads and require a call of sync()
 
-class RemoteStorageMethod(Storage):
+class RemoteStorage(Storage):
     def __init__(self, remote_location: RemoteLocation):
         self.remote_location = remote_location
 

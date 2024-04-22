@@ -114,11 +114,11 @@ def sync(master_a: StorageMaster | DerivingStorageMaster,
             continue
         if not exists_b:
             log.debug(f'File {file} not existing on {master_b}')
-            _sync_file(file, master_a, master_b, meta_a, meta_b)
+            _execute_sync(file, master_a, master_b, meta_a, meta_b)
             continue
         if not exists_a:
             log.debug(f'File {file} not existing on {master_a}')
-            _sync_file(file, master_b, master_a, meta_b, meta_a)
+            _execute_sync(file, master_b, master_a, meta_b, meta_a)
             continue
         # Both files exist. We continue normally.
 
@@ -148,16 +148,20 @@ def sync(master_a: StorageMaster | DerivingStorageMaster,
             raise KissChangeOnBothSidesException(
                 f'[{file}] changed on both sides. Not yet supported.')
         if meta_a.uuid != last_uuid_a:
-            _sync_file(file, master_a, master_b, meta_a, meta_b)
+            _execute_sync(file, master_a, master_b, meta_a, meta_b)
             # logging in _sync_file
         elif meta_b.uuid != last_uuid_b:
-            _sync_file(file, master_b, master_a, meta_b, meta_a)
+            _execute_sync(file, master_b, master_a, meta_b, meta_a)
             # logging in _sync_file
         else:
             log.debug(f'File {file} did not change.')
 
+def _sync_storage(storage_a: Storage,
+                  storage_b: Storage):
+    pass
 
-def _sync_file(file,
+
+def _execute_sync(file,
                source: StorageMaster | DerivingStorageMaster,
                target: StorageMaster | DerivingStorageMaster,
                source_meta: MetaData,

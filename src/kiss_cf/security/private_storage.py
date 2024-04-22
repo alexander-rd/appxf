@@ -1,7 +1,8 @@
-''' Secure StorageMethod for private (non-shared) usage '''
+''' Secure Storage for private (non-shared) usage '''
 
 from kiss_cf.storage import Storage, StorageMaster, DerivingStorageMaster
 from kiss_cf.storage import Serializer, RawSerializer, CompactSerializer
+from kiss_cf.storage import KissStorageMasterError
 
 from .security import Security
 
@@ -9,7 +10,7 @@ from .security import Security
 # base class if not required otherwise.
 
 
-class SecurePrivateStorageMethod(Storage):
+class SecurePrivateStorage(Storage):
     ''' Storage method for local file storage.
 
     Intended usage via the StorageMaster
@@ -66,13 +67,16 @@ class SecurePrivateStorageMaster(DerivingStorageMaster):
         self._default_serializer = default_serializer
 
     def _get_storage(self,
-                     file: str,
+                     name: str,
                      serializer: type[Serializer] | None = None,
-                     ) -> Storage:
+                     **kwargs) -> Storage:
+        if kwargs:
+            raise KissStorageMasterError(
+                f'Unsupported keyword parameters: {list(kwargs.keys())}')
         if serializer is None:
             serializer = self._default_serializer
-        return SecurePrivateStorageMethod(
-            file,
+        return SecurePrivateStorage(
+            name,
             storage=self._storage,
             security=self._security,
             serializer=serializer)

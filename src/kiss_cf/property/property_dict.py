@@ -3,7 +3,7 @@
 from typing import Any, TypeAlias
 from collections.abc import Hashable, Mapping, MutableMapping
 from collections import UserDict
-from kiss_cf.storage import Storable, Storage, StorageMethodDummy
+from kiss_cf.storage import Storable, Storage, StorageDummy
 from .property import KissProperty, KissPropertyError
 
 # TODO: Review if the "keep values as separate dict" behavior is worth
@@ -56,7 +56,7 @@ class KissPropertyDict(Storable, UserDict):
         self._property_dict: dict[Any, KissProperty] = {}
         # Initialize dict details
         if storage is None:
-            storage = StorageMethodDummy()
+            storage = StorageDummy()
         super().__init__(storage=storage)
         # Cunsume data and kwargs manually:
         if data is not None:

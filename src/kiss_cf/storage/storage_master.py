@@ -26,7 +26,7 @@ class KissStorageMasterError(Exception):
 # supporting synchronization. Considered alternative names were Provider, Admin
 # or Registry.
 class StorageMaster(ABC):
-    ''' Get StorageMethod objects '''
+    ''' Get Storage objects '''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._storage_map: dict[str, Storage] = {}
@@ -94,15 +94,15 @@ class StorageMaster(ABC):
             file -- the file name for the storage method
 
         Keyword Arguments:
-            register -- True registers the retrieved StorageMethod in the
+            register -- True registers the retrieved Storage in the
                         StorageFactory to support synchronization of storages.
                         (default: {True})
-            create -- True creates a new StorageMethod if none was registered,
+            create -- True creates a new Storage if none was registered,
                       yet. An Exception will be raised if no registered
-                      StorageMethod exists.  (default: {True})
+                      Storage exists. (default: {True})
 
         Returns:
-            Either a new StorageMethod or the one that was already registered
+            Either a new Storage or the one that was already registered
         '''
         # try to retrieve from registry:
         storage = self._get_registered_storage(name)
@@ -146,18 +146,18 @@ class DerivingStorageMaster(StorageMaster, ABC):
          encryption/decryption in the security module.
       2) Write and load additional files when storing/loading the base file by
          using a second, unregistered file from the base StorageMaster. An
-         example are the signature files used in the SharedStorageMethod of the
+         example are the signature files used in the SecureSharedStorage of the
          registry module.
     The derived class would collect required additional configuration options.
 
     The general strategy when extending a StorageMaster is:
-      1) Create a new StorageMethod. It shall create an unregistered
-         StorageMethod for the requested file. It will use the this
-         unregistered StorageMethod's store/load to add functionality. It may
-         also generate additional unregistered StorageMethod objects to store
+      1) Create a new Storage. It shall create an unregistered
+         Storage for the requested file. It will use the this
+         unregistered Storage's store/load to add functionality. It may
+         also generate additional unregistered Storage objects to store
          information in related files.
       2) Create a new StorageMaster deriving from this DerivingStorageMaster.
-         Let _get_storage() return an object from the StorageMethod in
+         Let _get_storage() return an object from the Storage in
          (1).
       3) The get_storage() of this DerivingStorageMaster will handle
          the registration.

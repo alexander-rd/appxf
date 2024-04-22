@@ -10,7 +10,7 @@ class Signature(Storable):
     ''' Maintain public key and signature
 
     Generated is a class that knows a Security object for signing/verification
-    and a StorageMethod to store/load the signature data.
+    and a Storage to store/load the signature data.
 
     sign() will take a public key and data to fill this class. The class can
     then be stored.
