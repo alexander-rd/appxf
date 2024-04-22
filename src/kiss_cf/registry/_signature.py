@@ -49,6 +49,8 @@ class Signature(Storable):
             data=data,
             signature=self.signature,
             public_key_bytes=self.pub_key)
+        # TODO: there is no verification if the signing key was actually
+        # authorized to write the data
 
     def sign(self, data: bytes):
         ''' Sign data based on public key in Security object

@@ -6,7 +6,7 @@ from kiss_cf.storage import Storage, DerivingStorageMaster, StorageMaster
 from kiss_cf.storage import Serializer, RawSerializer, CompactSerializer
 from kiss_cf.security import Security
 
-from .registry import Registry
+from._registry_base import RegistryBase
 from ._signature import Signature
 from ._public_encryption import PublicEncryption
 
@@ -24,7 +24,7 @@ class SecureSharedStorageMethod(Storage):
                  file: str,
                  storage: StorageMaster,
                  security: Security,
-                 registry: Registry,
+                 registry: RegistryBase,
                  serializer: type[Serializer],
                  **kwargs
                  ):
@@ -101,7 +101,7 @@ class SecureSharedStorageMaster(DerivingStorageMaster):
     def __init__(self,
                  storage: StorageMaster,
                  security: Security,
-                 registry: Registry,
+                 registry: RegistryBase,
                  default_serializer: type[Serializer] = CompactSerializer):
         ''' Get secured and shared storage methods
 

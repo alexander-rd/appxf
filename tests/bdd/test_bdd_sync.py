@@ -1,7 +1,7 @@
 from pytest_bdd import scenarios, scenario, given, when, then, parsers
 from pytest import fixture
 import pytest
-from kiss_cf.storage import LocalStorageMaster, sync
+from kiss_cf.storage import LocalStorageMaster, sync, StorageMasterMock
 from kiss_cf.security import SecurePrivateStorageMaster
 from kiss_cf.registry import SecureSharedStorageMaster, Registry
 from kiss_cf.config import Config
@@ -32,7 +32,8 @@ def env(env_test_directory, env_security_unlocked):
     env['config'] = Config(default_storage=factory)
     env['storage factory'] = {}
     registry = Registry(
-        storage=env['location']['registry'],
+        local_base_storage=env['location']['registry'],
+        remote_base_storage=StorageMasterMock(),
         security=env['security'],
         config=env['config'])
     registry.initialize_as_admin()

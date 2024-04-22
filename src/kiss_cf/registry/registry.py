@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from kiss_cf.storage import StorageMaster
 from kiss_cf.config import Config
-from kiss_cf.security import Security
+from kiss_cf.security import Security, SecurePrivateStorageMaster
 
 from ._registration_request import RegistrationRequest
 from ._registration_response import RegistrationResponse
 from ._user_id import UserId
 from ._user_db import UserDatabase
+from ._registry_base import RegistryBase
+from .shared_storage import SecureSharedStorageMaster
 
 
 class KissRegistryUnitialized(Exception):
@@ -20,12 +22,13 @@ class KissRegistryUnknownConfigSection(Exception):
     ''' Trying to use an uninitialized registry '''
 
 
-class Registry:
+class Registry(RegistryBase):
     ''' User registry maintains the application user's ID and all user
         configurations the user is permitted to see. '''
 
     def __init__(self,
-                 storage: StorageMaster,
+                 local_base_storage: StorageMaster,
+                 remote_base_storage: StorageMaster,
                  security: Security,
                  config: Config,
                  **kwargs):
@@ -33,9 +36,22 @@ class Registry:
         self._loaded = False
         self._security = security
         self._config = config
+        self._local_base_storage = local_base_storage
+        self._remote_base_storage = remote_base_storage
 
-        self._user_db = UserDatabase(storage.get_storage('USER_DB'))
-        self._user_id = UserId(storage.get_storage('USER_ID'))
+        # USER_DB must be secured
+        self._local_user_db_storage = SecurePrivateStorageMaster(
+                storage=local_base_storage,
+                security=security).get_storage('USER_DB')
+        self._user_db = UserDatabase(self._local_user_db_storage)
+        # Matching remote storage
+        self._remote_user_db_storage = SecureSharedStorageMaster(
+            storage=remote_base_storage,
+            security=security,
+            registry=self).get_storage('USER_DB')
+
+        # USER_ID does not need to be secured
+        self._user_id = UserId(local_base_storage.get_storage('USER_ID'))
 
     def get_roles(self, id: int | None = None) -> list[str]:
         if id is None:
