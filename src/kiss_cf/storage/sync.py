@@ -8,7 +8,7 @@ from .storage import Storage
 from .storable import Storable
 from .storage_master import StorageMaster, DerivingStorageMaster
 from .serializer_json import JsonSerializer
-from ._meta_data import MetaData
+from .meta_data import MetaData
 
 
 class KissStorageSyncException(Exception):
@@ -182,7 +182,7 @@ def _execute_sync(file,
     target.get_storage(file, create=False).store(data)
     # update meta data:
     target_meta.uuid = source_meta.uuid
-    target_meta.store()
+    target_meta.update()
     # target_timestamp = target._get_location_timestamp(file)
     target_sync_data = _get_sync_data(file, target)
 
