@@ -12,6 +12,8 @@ class UserEntry(TypedDict):
     validation_key: bytes
     encryption_key: bytes
 
+# TODO: do we need the extra role storage in the UserEntry?
+
 
 class UserDatabase(Storable):
     def __init__(self, storage_method: Storage, **kwargs):
@@ -25,7 +27,7 @@ class UserDatabase(Storable):
         self._user_db: dict[int, UserEntry] = {}
         # The role_map maps roles to lists of ID's to quickly collect lists of
         # keys.
-        self._role_map: dict[str, Set] = {}
+        self._role_map: dict[str, Set] = {'admin': set(), 'user': set()}
 
     def _get_state(self):
         return {'version': self._version,
@@ -59,7 +61,9 @@ class UserDatabase(Storable):
                 encryption_key: bytes,
                 roles: list[str] | str = 'user') -> int:
         if isinstance(roles, str):
-            roles = [roles]
+            roles = [roles.lower()]
+        else:
+            roles = [role.lower() for role in roles]
 
         # TODO: get determine new ID (implementation might already consider
         # sys.maxsize)
@@ -82,6 +86,8 @@ class UserDatabase(Storable):
             encryption_key: bytes,
             roles: list[str]):
 
+        roles = [role.lower() for role in roles]
+
         entry = UserEntry(id=user_id, roles=roles,
                           validation_key=validation_key,
                           encryption_key=encryption_key
@@ -101,9 +107,13 @@ class UserDatabase(Storable):
         The user's signing key remains existent in case there is still shared
         data from this user that might need signature validation.
         '''
-        for role in self.data.keys():
-            if id in self.data[role].keys():
-                del self.data[role][id]
+        for role in self._role_map:
+            if id in self._role_map[role]:
+                self._role_map[role].remove(id)
+            if (not self._role_map[role] and
+                    not role == 'user' and
+                    not role == 'admin'):
+                del self._role_map[role]
 
     def purge_user(self, user_id: int):
         ''' Like remove_user but also deleting the public keys
@@ -111,9 +121,11 @@ class UserDatabase(Storable):
         Using this should ensure that there is no data present anymore that
         needs to be authenticated against this user's signing key.
         '''
+        pass
+        # TODO: implementation is missing
 
     def is_registered(self, user_id):
-        return user_id in self._user_db.keys()
+        return user_id in self._user_db
 
     def _get_user_entry(self, user_id) -> UserEntry:
         if not self.is_registered(user_id):
@@ -121,6 +133,7 @@ class UserDatabase(Storable):
         return self._user_db[user_id]
 
     def has_role(self, user_id: int, role: str):
+        role = role.lower()
         if role not in self._role_map.keys():
             return False
         return user_id in self._role_map[role]
@@ -133,16 +146,29 @@ class UserDatabase(Storable):
 
     def get_encryption_keys(self, roles: list[str] | str) -> list[bytes]:
         keys: list[bytes] = []
+        if isinstance(roles, str):
+            roles = [roles.lower()]
+        else:
+            roles = [role.lower() for role in roles]
+
         for this_role in roles:
             keys += [
                 self._user_db[user]['encryption_key']
                 for user in self._user_db.keys()
                 if self.has_role(user, this_role)
                 ]
+        # TODO: the above may cycle multiple times over the same users. It
+        # would be more efficient to collect user ID's from _role_map and then
+        # accumulate the keys from that.
         keys = list(set(keys))
         return keys
 
-    def get_roles(self, user_id: int) -> list[str]:
+    def get_roles(self, user_id: int | None = None) -> list[str]:
+        if user_id is None:
+            # admin and user will always be present given that _role_map is
+            # intialized with those two roles and those two roles are never
+            # removed.
+            return list(self._role_map.keys())
         entry = self._get_user_entry(user_id)
         return entry['roles']
 

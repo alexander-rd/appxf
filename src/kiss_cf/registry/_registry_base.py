@@ -12,8 +12,13 @@ class RegistryBase(ABC):
         super().__init__(**kwargs)
 
     @abstractmethod
-    def get_roles(self, id: int | None = None) -> list[str]:
-        ''' Get roles for a user ID '''
+    def get_roles(self, uid: int | None = None) -> list[str]:
+        ''' Get roles for a user ID
+
+        If no user ID is provided, all existing roles are returned. Note that
+        roles are case insensitive and 'USER' as well as 'ADMIN' being default
+        roles always being present.
+        '''
 
     @abstractmethod
     def get_encryption_keys(self, roles: list[str] | str) -> list[bytes]:
