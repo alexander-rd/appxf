@@ -3,11 +3,9 @@
 The configuration concept is accumulating KissPropertyDict objects as sections.
 '''
 
-from typing import Any
-
 from kiss_cf import logging
-from kiss_cf.property import KissProperty, KissPropertyDict
-from kiss_cf.storage import StorageDummy, StorageMaster
+from kiss_cf.property import KissPropertyDict
+from kiss_cf.storage import StorageMaster, StorageDummy
 
 # TODO: config refactoring
 #  1) I need the serialize/deserialize on dictionaries as storable >> to mary

@@ -1,9 +1,10 @@
 ''' Provide KissPropertyDict '''
 
-from typing import Any, TypeAlias
-from collections.abc import Hashable, Mapping, MutableMapping
+from typing import Any
+from collections.abc import Mapping
 from collections import UserDict
-from kiss_cf.storage import Storable, Storage, StorageDummy
+from kiss_cf.storage import Storable, Storage
+from kiss_cf.storage.storage_dummy import StorageDummy
 from .property import KissProperty, KissPropertyError
 
 # TODO: Review if the "keep values as separate dict" behavior is worth

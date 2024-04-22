@@ -11,7 +11,7 @@ from .storage_master import StorageMaster, KissStorageMasterError
 from .serializer import Serializer
 from .serializer_compact import CompactSerializer
 from .serializer_json import JsonSerializer
-from ._meta_data import MetaData
+from ._meta_data_storable import MetaDataStorable, MetaData
 
 # TODO RELEASE: StorageLocation should support some sync_with_timestamps().
 # That returns True when the StorageLocation can ensure that new files will
@@ -31,9 +31,6 @@ class FileStorageMaster(StorageMaster, ABC):
         StorageMaster.__init__(self, **kwargs)
         self._default_serializer = default_serializer
 
-    def __str__(self):
-        return f'[{self.id()}]'
-
     def store(self, file: str, data: bytes):
         ''' Store bytes into file
         '''
@@ -43,7 +40,7 @@ class FileStorageMaster(StorageMaster, ABC):
             meta_storage = self._get_storage(file + '.meta',
                                              serializer=JsonSerializer)
             # construction automatically sets a UUID
-            meta = MetaData(storage=meta_storage)
+            meta = MetaDataStorable(storage=meta_storage)
             meta.store()
             # TODO: the hash or file content should be analyzed before
             # generating a new UUID
@@ -52,7 +49,7 @@ class FileStorageMaster(StorageMaster, ABC):
     def get_meta_data(self, name: str) -> MetaData:
         meta_storage = self._get_storage(name + '.meta',
                                          serializer=JsonSerializer)
-        meta = MetaData(storage=meta_storage)
+        meta = MetaDataStorable(storage=meta_storage)
         if meta_storage.exists():
             meta.load()
         return meta
@@ -119,12 +116,12 @@ class FileStorage(Storage):
     security layer when storing data.
     '''
     def __init__(self,
-                 location: FileStorageMaster,
+                 storage: FileStorageMaster,
                  file: str,
                  serializer: type[Serializer],
                  **kwargs):
-        super().__init__(**kwargs)
-        self._location = location
+        super().__init__(storage=storage, name=file, **kwargs)
+        self._location = storage
         self._file = file
         self._serializer = serializer
 

@@ -1,6 +1,7 @@
 ''' Class definitions for storage handling. '''
 
-from .storage import Storage, StorageDummy
+from .storage_dummy import StorageDummy
+from .storage import Storage
 
 # TODO: merge comments
 

@@ -6,8 +6,9 @@ support synchronization.
 from __future__ import annotations
 from abc import ABC, abstractmethod
 
+from._storage_master_base import StorageMasterBase
 from .storage import Storage
-from ._meta_data import MetaData
+from .meta_data import MetaData
 
 
 class KissStorageMasterError(Exception):
@@ -25,7 +26,7 @@ class KissStorageMasterError(Exception):
 # reflect (1) the registration that is performed. This is done for (2)
 # supporting synchronization. Considered alternative names were Provider, Admin
 # or Registry.
-class StorageMaster(ABC):
+class StorageMaster(StorageMasterBase):
     ''' Get Storage objects '''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -120,22 +121,6 @@ class StorageMaster(ABC):
     @abstractmethod
     def _get_storage(self, name: str, **kwargs) -> Storage:
         ''' Construct the storage method '''
-
-    @abstractmethod
-    def id(self, name: str = '') -> str:
-        ''' String representing the specific location or file
-
-        Used in logging to indicate which location is failing. Example for FTP
-        location, this might be "ftp.your-url.com/path/of/location". Also used
-        for synchronization to indicate the source of the file.
-        '''
-
-    @abstractmethod
-    def get_meta_data(self, name: str) -> MetaData:
-        ''' Get meta data of stored data.
-
-        Contains UUID and/or timestamp used for synchronization.
-        '''
 
 
 class DerivingStorageMaster(StorageMaster, ABC):

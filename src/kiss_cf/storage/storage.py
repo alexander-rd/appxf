@@ -2,6 +2,9 @@
 
 from abc import ABC, abstractmethod
 
+from ._storage_master_base import StorageMasterBase
+from .meta_data import MetaData
+
 
 class Storage(ABC):
     ''' Abstract class to model a storage method.
@@ -23,16 +26,25 @@ class Storage(ABC):
     then rely on the load() and store() implementation by consuming/providing a
     byte stream.
     '''
-    def __init__(self, **kwargs):
+    def __init__(self,
+                 storage: StorageMasterBase,
+                 name: str,
+                 **kwargs):
         super().__init__(**kwargs)
+        self._storage_master = storage
+        self._name = name
 
-    @abstractmethod
     def id(self) -> str:
         ''' ID for the storage object.
 
         The ID shall use the StorageMaster ID's which, themselves shall be
         unique. Main purpose of the id() is loggin.
         '''
+        return f'{self.__class__.__name__} for {self._name} from {self._storage_master.id()}'
+
+    def get_meta_data(self) -> MetaData:
+        ''' Get storage meta data like UUID and timestamp '''
+        return self._storage_master.get_meta_data(self._name)
 
     @abstractmethod
     def exists(self) -> bool:
@@ -47,24 +59,3 @@ class Storage(ABC):
         ''' Store data to Storage '''
 
 
-class StorageDummy(Storage):
-    ''' Storage dummy as default behavior.
-
-    To allow Storable implementations to always assume having a Storage,
-    this class provides a silent replacement. It is recommended if the Storable
-    class still uses load()/store() even when not being set up for storage.
-
-    Note: The _set_bytestream() of the Storable must be robust to receive an
-    empty bytestream as indication for "no Storage defined".
-    '''
-    def id(self) -> str:
-        return 'StorageDummy'
-
-    def exists(self) -> bool:
-        return False
-
-    def load(self) -> object:
-        return b''
-
-    def store(self, data: object):
-        pass

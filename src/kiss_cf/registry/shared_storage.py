@@ -21,8 +21,9 @@ class SecureSharedStorage(Storage):
       3) Signature for authenticity
     '''
     def __init__(self,
-                 file: str,
                  storage: StorageMaster,
+                 file: str,
+                 base_storage: StorageMaster,
                  security: Security,
                  registry: RegistryBase,
                  serializer: type[Serializer],
@@ -34,20 +35,20 @@ class SecureSharedStorage(Storage):
         # expect the factory collecting "allowed writers" and "additional
         # readers", assuming writers always must be readers.
 
-        super().__init__(**kwargs)
+        super().__init__(storage=storage, name=file, **kwargs)
         self._file = file
-        self._base_storage = storage.get_storage(file,
+        self._base_storage = base_storage.get_storage(file,
                                                  register=False,
                                                  serializer=RawSerializer)
         self._security = security
         self._registry = registry
         self._serializer = serializer
         self._signature = Signature(
-            storage=storage.get_storage(
+            storage=base_storage.get_storage(
                 file + '.signature', register=False),
             security=security)
         self._public_encryption = PublicEncryption(
-            storage_method=storage.get_storage(
+            storage_method=base_storage.get_storage(
                 file + '.keys', register=False),
             security=security,
             registry=registry)
@@ -124,8 +125,9 @@ class SecureSharedStorageMaster(DerivingStorageMaster):
         if serializer is None:
             serializer = self._default_serializer
         return SecureSharedStorage(
-            name,
-            storage=self._storage,
+            storage=self,
+            file=name,
+            base_storage=self._storage,
             security=self._security,
             registry=self._registry,
             serializer=serializer)

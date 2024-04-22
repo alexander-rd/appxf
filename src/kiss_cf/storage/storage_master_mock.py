@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from kiss_cf.storage._meta_data import MetaData
+from kiss_cf.storage.meta_data import MetaData
 
 from .storage_master import StorageMaster
 from .storage import Storage
@@ -27,7 +27,7 @@ class StorageMasterMock(StorageMaster):
         return self.__class__.__name__ + ': ' + name
 
     def _get_storage(self, name: str, **kwargs) -> Storage:
-        return StorageMock(name=name)
+        return StorageMock(storage=self, name=name)
 
     def get_meta_data(self, name: str) -> MetaData:
         # TODO: this is no reasonable MetaData behavior. It shoud use the
@@ -37,11 +37,12 @@ class StorageMasterMock(StorageMaster):
 
 class StorageMock(Storage):
     def __init__(self,
+                 storage: StorageMasterMock,
                  name: str,
                  **kwargs):
+        super().__init__(storage=storage, name=name, **kwargs)
         self._data = None
         self._time: datetime = datetime.now()
-        super().__init__(**kwargs)
 
     def id(self) -> str:
         return 'StorageMock'

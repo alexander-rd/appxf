@@ -24,7 +24,8 @@ from .local import LocalStorageMaster
 from .ftp import FtpLocation
 
 # Helpers
-from .storage import StorageDummy
+from .meta_data import MetaData
+from .storage_dummy import StorageDummy
 from .storage_master_mock import StorageMasterMock
 
 # Synchronization
