@@ -60,12 +60,20 @@ class ApplicationMock:
         # add some arbitraty configuration
         self.user_config.add_section('TEST').add(test=(int,))
 
-        # REGISTRY
+        # REGISTRY: local storage (security applied within Regisrty)
         self.path_registry = os.path.join(self._app_path, 'data/registry')
         self.storage_registry = SecurePrivateStorageMaster(
             storage=LocalStorageMaster(self.path_registry),
             security=self.security)
-        self.registry = Registry(self.storage_registry, self.security, self.user_config)
+        # REGISTRY: remote storage (security applied within Regisrty)
+        self.path_remote_registry = os.path.join(self._root_path, 'remote/registry')
+        self.storage_remote_registry_base = LocalStorageMaster(self.path_remote_registry)
+        # REGISTRY
+        self.registry = Registry(
+            local_base_storage=self.storage_registry,
+            remote_base_storage=self.storage_remote_registry_base,
+            security=self.security,
+            config=self.user_config)
 
         # some DATA LOCATION
         self.path_data = os.path.join(self._app_path, 'data')
@@ -74,6 +82,7 @@ class ApplicationMock:
             security=self.security)
 
         # matching REMOTE LOCATIONs
+        # CONFIG: REMOTE STORAGE
         self.path_remote_config = os.path.join(self._root_path, 'remote/config')
         self.storage_remote_config = SecureSharedStorageMaster(
             storage=LocalStorageMaster(self.path_remote_config),

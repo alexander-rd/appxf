@@ -5,14 +5,14 @@ from typing import Any
 
 from kiss_cf.storage import Storage, Storable
 from kiss_cf.security import Security
-from .registry import Registry
+from ._registry_base import RegistryBase
 
 
 class PublicEncryption(Storable):
     def __init__(self,
                  storage_method: Storage,
                  security: Security,
-                 registry: Registry,
+                 registry: RegistryBase,
                  # TODO: align default role nomenclature "user" versus "USER"
                  to_roles: str = 'USER',
                  **kwargs):
