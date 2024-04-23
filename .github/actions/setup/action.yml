@@ -1,0 +1,24 @@
+name: Setup
+description: Setup Environment
+inputs:
+  python-version:
+    type: string
+    required: true
+
+runs:
+  using: "composite"
+
+  steps:
+  # COMMON steps
+    - name: Set up Python ${{ inputs.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: upgrade python (Win+Linux)
+      run: python -m pip install --upgrade pip
+      shell: bash
+
+  # LINUX specific steps: none, yet
+
+  # WINDOWS specific steps: none, yet
