@@ -20,101 +20,37 @@ flake8 --count src
 # Changes between working dir and last commit when current commit is in preparation
 git diff --name-only HEAD~1
 
+### Registration
 
-Registration is working up to USER_DB and conveying configuration options.
+Status: Working up to USER_DB, conveying configuration options and conveying
+the USER_DB while concept is not settled and lots of testing is missing.
 
 Next: Demonstrate synchronization after registration by setting up
 synchronization pairs with writing_roles and reading_roles and embedding some
 .sync() call.
 
-Bigger things to do:
+Things to do:
+  * architecture documentation of registration and sync (sequence)
   * encryption during exchange of registration data is missing
-  * Double check if "sync" with sync-meta-file can work uni-directional
+  * Adapt sync algo to limit writing of .sync files in uni-directional sync scenarios.
+    "Users have no writing permissions in some remote location where ADMIN has
+    rights"
   * Add URL based sync (the admin DB)
-  * extend test caes (unit tests) and, thereby, review the code
+    * Do I really need URL based sync and the second registry for ADMINS right now?
+      Alternative would be that allowed admins are hard-coded (into a temporary
+      registry object) that can then be used. Main reason for separate USER_DB
+      is: provide a root of trust for the registry!
+  * extend test cases (unit tests) and, thereby, review the code
   * consider moving stuff from ApplicationMock into an application harness
     that contains the application data structure and activities pretty much
     like they are in ApplicationMock. The Harness will come in different
     variants: LocalAppHarness, SharedDataAppHarness.
-  * Reconsider the naming kiss_cf
+  * .sync files will not work properly. The paths are relative to the pytest
+    execution directory. After copying an initialization, those paths will have
+    changed, screwing the .sync information. >> execute applications in a
+    changed path.
 
-Do I really need URL based sync and the second registry for ADMINS right now?
-Alternative would be that allowed admins are hard-coded (into a temporary
-registry object) that can then be used. Main reason for this is: provide a root
-of trust for the registry!
+## Others
 
-Registry Security A: Registry is sychronized like all other files. An attacker
-could compromise one client, upload a new registry and all would accept that
-since they have to verify the registry signature against the public keys in the
-registry (no other source exists)
-
-Registry Security B: Registry signature verification is based on hard-coded
-public keys. If an attacker now writes a new registry, he's not able to sign
-it. He still compromised confidentiality for all information that he
-compromized. He also is able to compromise authenticity of any information that
-the compromised user had writing rights.
-  * Downside (acceptable): The tool needs an update to add new admins.
-  * Downside: New registration when adapting this pattern.
-Plus: The "hardcoded" registry can be provided by the same chanel IF the
-signatures are verified against the old file BEFORE accepting the new file.
-
-
-# ## Not happy with the naming Kiss
-.. what we have here is simply not KISS ..
-
-New names are around:
- * Application Cross Functionals (too long but that's what it tries to be)
- * ACF (already exists)
- * acrossf or AxF (axf already exists)
- * app_cf
- * appcf (only appcfg exists)
- * cross_f
-
-Arbitrary names:
- * Sohal (surgeonfish) - Sohal is an arabic or indian name (A person who
-   is delicate and soft)
-
-# ## How to exchange USER_DB?
-
-Status Quo: To all 'USER's based on normal sync algorithm.
-  * (-) The registry, however, must be available to all users irrespective of
-    roles.
-  * (-) The receiving user cannot determine it's role for the initial transfer.
-    >> USER_DB would need to be part of response data.
-
-Intermediate conclusion: The sync algorithm shall still apply.
-
-Intermediate observations:
-  * (-) The registry folder also stores the USER_ID. >> Sync algorithm needs
-    some "exclude" remarks.
-  * (-) The registry folder may store role specific collections of user
-    details. Again, sync is specific 'per file' and not per StorageMaster.
-
-Intermediate conclusion: It would be reasonable to define sync roles upon
-definition of the (private) storage. To do this, a NEW StorageMaster would link
-remote and local storages. Upon get_storage(), the role properties would be
-defined. The SharedSync could act as a StorageMaster.
-
-Opposing concepts differ in the sequence of definition:
-  * Define local storage, then link to remote and define roles
-  * Link local/remote storage and define roles when obtaining storage.
-
-Intermediate observation: While the additional concept above makes sense in
-general, the situation for registry may still be treated "special".
-  * Definition of a registry without sync and remote storage does not make
-    sense.
-  * Sync must happen (1) at each startup and (2) with each registration update.
-  >> This can be managed by Registry.
-
-Conclusion:
-  * [done] Registry must know a (remote) storage master (basic, not yet encrypted)
-  * [done] Sync must support an interface to sync two individual files
-  * Registry will manually sync when required which is:
-    * on startup
-    * before/after adding a user
-    * after receiving a registration response
-
-.sync files will not work properly. The paths are relative to the pytest
-execution directory. After copying an initialization, those paths will have
-changed, screwing the .sync information. >> execute applications in a changed
-path.
+Things to do:
+  * architecture documentation of storage module (got quite complex)
