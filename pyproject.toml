@@ -1,0 +1,47 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "appxf"
+version = "0.0.1"
+authors = [
+  { name = "alexander-rd", email="mail@alexander-rd.de" }
+]
+description = "APPXF assists python applications (APP) by delivering the cross functional (XF) concerns "
+readme = "README.md"
+requires-python = ">=3.10"
+license_file = "LICENSE"
+classifiers = [
+    "Programming Language :: Python :: 3"
+]
+
+[tool.hatch.build]
+exclude = [
+  "/.*",
+  "tests",
+  "requirements_test.txt"
+]
+
+[tool.tox]
+legacy_tox_ini = """
+    [tox]
+    isolated_build = True
+    env_list = py310
+
+    [gh-actions]
+    python =
+        3.10: py310
+
+    [testenv]
+    passenv = KISS_*
+    setenv = PYTHONPATH = {toxinidir}
+             VIRTUALENV_DOWNLOAD=0
+    deps =
+      -r{toxinidir}/requirements.txt
+      -r{toxinidir}/requirements_test.txt
+
+    commands = coverage run --source=appxf --branch -m pytest -rA
+               coverage report
+               coverage html -d cov_html
+"""
