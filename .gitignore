@@ -6,6 +6,7 @@ __pycache__/
 cov_*
 pytest-env
 data
+notes
 prof
 .coverage
 .env

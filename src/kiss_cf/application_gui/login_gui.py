@@ -6,7 +6,7 @@ Login.check().
 import tkinter
 import tkinter.ttk
 
-from kiss_cf import logging
+from appxf import logging
 from kiss_cf.config import Config
 from kiss_cf.gui import OptionDictWidget
 from kiss_cf.security import Security

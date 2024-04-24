@@ -3,7 +3,7 @@ import functools
 import typing
 import pickle
 
-from . import logging
+from appxf import logging
 from kiss_cf.storage import Storable, Storage, StorageDummy
 
 log = logging.getLogger(__name__)

@@ -22,7 +22,7 @@ from datetime import datetime, timedelta
 from io import BytesIO, StringIO
 
 from kiss_cf.storage.storage import Storage
-from kiss_cf import logging
+from appxf import logging
 from kiss_cf.utility.ntptime import NtpTime
 
 CURL_RESPONSE_CODE_OK = 200

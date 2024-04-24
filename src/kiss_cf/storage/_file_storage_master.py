@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from kiss_cf import logging
+from appxf import logging
 from .storage import Storage
 from .storage_master import StorageMaster, KissStorageMasterError
 from .serializer import Serializer

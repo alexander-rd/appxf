@@ -1,3 +1,4 @@
+appxf >= 0.0.1
 babel
 cryptography
 ftputil
