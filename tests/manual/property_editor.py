@@ -1,7 +1,7 @@
 from helper import ManualTestHelper
 from kiss_cf.property import KissBool, KissString, KissEmail
 from kiss_cf.gui import property_gui
-from kiss_cf import logging
+from appxf import logging
 
 logging.activate_logging()
 logging.console_handler.setFormatter(logging.file_formatter)

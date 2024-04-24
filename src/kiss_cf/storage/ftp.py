@@ -3,7 +3,7 @@ from ftputil import FTPHost
 from datetime import datetime
 import os.path
 
-from kiss_cf import logging
+from appxf import logging
 
 from ._file_storage_master import FileStorageMaster
 

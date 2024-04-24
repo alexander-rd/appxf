@@ -1,7 +1,7 @@
 import asyncio
 import ntplib
 from datetime import datetime, timedelta
-from kiss_cf import logging
+from appxf import logging
 
 
 class NtpTime():  # pragma: no cover

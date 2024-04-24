@@ -3,7 +3,7 @@
 The configuration concept is accumulating KissPropertyDict objects as sections.
 '''
 
-from kiss_cf import logging
+from appxf import logging
 from kiss_cf.property import KissPropertyDict
 from kiss_cf.storage import StorageMaster, StorageDummy
 

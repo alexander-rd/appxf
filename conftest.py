@@ -1,4 +1,4 @@
-from kiss_cf import logging
+from appxf import logging
 
 
 def pytest_sessionstart(session):

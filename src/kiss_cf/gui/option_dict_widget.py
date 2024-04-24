@@ -1,6 +1,6 @@
 import tkinter
 
-from kiss_cf import logging
+from appxf import logging
 
 from kiss_cf.property import KissProperty
 from .option_widget import OptionWidget

@@ -3,7 +3,7 @@
 # allow class name being used before being fully defined (like in same class):
 from __future__ import annotations
 
-from kiss_cf import logging
+from appxf import logging
 from .storage import Storage, StorageMasterBase
 from .storable import Storable
 from .storage_master import StorageMaster, DerivingStorageMaster

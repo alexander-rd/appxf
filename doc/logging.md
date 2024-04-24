@@ -12,7 +12,7 @@ log files are written, some __log rotation and cleanup of storage would be nice_
 Assumption is that your application structures code into one top-level package. The \_\_init\_\_.py of this top-level package is the place to activate logging:
 
 ```python
-from kiss_cf import logging
+from appxf import logging
 
 logging.activate_logging(__name__)
 ```
@@ -23,7 +23,7 @@ application.
 Each module from which you want to log will then use:
 
 ```python
-from kiss_cf import logging
+from appxf import logging
 
 log = logging.getLogger(__name__)
 ```
@@ -50,7 +50,7 @@ Logging Classes
 If you are working with classes, you likely want to have the class name contained in the log lines. In this case, you can setup logging like:
 
 ```python
-from kiss_cf import logging
+from appxf import logging
 
 
 class YourClass():
@@ -64,7 +64,7 @@ Logging Other Modules
 Warnings and Errors of other modules are logged to console and file just like logs of kiss_cf and your application. What would be missing is uncought exceptions. For that reason, you should embedd your main code into:
 
 ```python
-from kiss_cf import logging
+from appxf import logging
 import your_application
 
 log = logging.getLogger(__name__)
@@ -108,7 +108,7 @@ can __extend to 5 lines of scrollable log lines__.
 
 
 ```python
-from kiss_cf.logging.gui import LoggingFrame
+from appxf.logging.gui import LoggingFrame
 # ... other code that generates your gui
 log_frame = LoggingFrame(parent)
 # you still need to place the frame via, e.g., grid()

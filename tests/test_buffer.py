@@ -1,7 +1,7 @@
 from kiss_cf.buffer import Buffer, buffered
 
 # Used to test logging:
-# from kiss_cf import logging as kiss_logging
+# from appxf import logging as kiss_logging
 # kiss_logging.activate_logging()
 
 

@@ -5,7 +5,7 @@ from tests import fake_tkinter
 fake_tkinter.activate()
 
 # Used to test logging:
-# from kiss_cf import logging as kiss_logging
+# from appxf import logging as kiss_logging
 # kiss_logging.activate_logging()
 
 from kiss_cf.gui.application import KissApplication # noqa E402
