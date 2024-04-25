@@ -1,26 +1,27 @@
-''' Provide KissPropertyDict '''
+''' AppxfSettingDict
+
+Surprise: it bundles AppxfSettings to a dictionary behavior. ;)
+'''
 
 from typing import Any
 from collections.abc import Mapping, MutableMapping
 from kiss_cf.storage import Storable, Storage
 from kiss_cf.storage.storage_dummy import StorageDummy
-from .property import KissProperty, KissPropertyError
-
-# TODO: Review if the "keep values as separate dict" behavior is worth
-# splitting into a separate class in the conrext of property handling and
-# corresponding GUI. What would remain for the config section?? Just the
-# storage behavior??
+from .setting import AppxfSetting, AppxfSettingError
 
 # TODO: support tuples with additional named value options
 
-# TODO: Storing properties. This would be required for a "configurable config".
+# TODO: Storing the AppxfSetting objects. This would be required for a
+# "configurable config".
 
 # TODO: Loading modes 'add' and 'error'
 
-class KissPropertyDict(MutableMapping, Storable):
-    ''' Maintain a dictionary of properties
+class SettingDict(MutableMapping, Storable):
+    ''' Maintain a dictionary of settings
 
-    The class supports normal dictionary behavior.
+    While normal dictionary behavior is supported, be aware that writing to
+    this dictionary can fail with AppxfSettingConversionError if the input is
+    not valid for a setting.
     '''
 
     def __init__(self,
@@ -28,27 +29,26 @@ class KissPropertyDict(MutableMapping, Storable):
                  storage: Storage | None = None,
                  default_visibility: bool = True,
                  **kwargs):
-        ''' KissPropertyDict
+        ''' AppxfSettings collected as dicitonary
 
-        Recommended initialization is by a dictionary like {key: value}.
-        Supported are also initializations by key/value pairs (key=value) which
-        is limited by the already named arguments as well as by iterables of
-        iterables (key, value). The values may be one of:
-          * A value of a supported type. Example: 42 as integer would then use
-            KissInt.
-          * A KissProperty class like KissInt. The value would be initialized
+        Recommended initialization is by a dictionary like {key: setting}.
+        Supported are also the other two ways to initialize a dictionary:
+          * initialization by key/value pairs (key=setting). This is limited by
+            the already named arguments
+          * by iterables of iterables [(key, setting)].
+        The most typical setting specification is a tuple of the setting type
+        and value like ('str', 'appxf') or ('email',) which only specifies the
+        type and uses the default value. Other options are:
+          * A value of a supported type. Example: 42 as integer. It would use
+            AppxfInt.
+          * An AppxfSetting class like AppxfInt. The value would be initialized
             with the default value.
-          * A KissProperty object. The value would be taken over.
-          * A tuple like (int, 42) or ('int', 42) that provide the type and
-            value parameters for a KissProperty.new() call.
-              * Note 1: passing additional parameters is not yet supported.
-              * Note 2: You may also use (int,) as tuple with only one element
-                to only specify the type. The value would then be the default
-                value.
-        Not yet supported is the dict initialization by iterables.
+          * An AppxfSetting object. The value would be taken over.
+        Note: If you need to pass additional arguments to an AppxfSetting, you
+        need to provide the AppxfSetting object.
         '''
-        # Define KissPropertyDict specific details
-        self._property_dict: dict[Any, KissProperty] = {}
+        # Define SettingDict specific details
+        self._setting_dict: dict[Any, AppxfSetting] = {}
         # Initialize dict details
         if storage is None and isinstance(storage, Storage):
             storage = StorageDummy()
@@ -61,42 +61,42 @@ class KissPropertyDict(MutableMapping, Storable):
             self.add(**kwargs)
         # Storable will initialize with default storage
         self._on_load_unknown = 'ignore'
-        self._store_property_config = False
+        self._store_setting_object = False
 
         # TODO: add GUI element concept and derive/aggregate from there
         self.default_visibility = default_visibility
 
     def __len__(self):
-        return self._property_dict.__len__()
+        return self._setting_dict.__len__()
 
     def __iter__(self):
-        return self._property_dict.__iter__()
+        return self._setting_dict.__iter__()
 
     def __getitem__(self, key: str):
-        return self._property_dict[key].value
+        return self._setting_dict[key].value
 
     def __setitem__(self, key, value) -> None:
         if not self.__contains__(key):
-            raise KissPropertyError(
-                f'Key {key} does not exist. Consider KissPropertyDict.add() '
-                f'for adding new properties.')
-        # Value already exists. Try to set new value into KissProperty, if this
+            raise AppxfSettingError(
+                f'Key {key} does not exist. Consider SettingDict.add() '
+                f'for adding new settings.')
+        # Value already exists. Try to set new value into AppxfSetting, if this
         # is OK, take value from there:
-        self._property_dict[key].value = value
+        self._setting_dict[key].value = value
 
     def __delitem__(self, key):
-        del self._property_dict[key]
+        del self._setting_dict[key]
 
     def add(self, data: Mapping[str, Any] | None = None, **kwargs):
-        ''' Add new properties to the property dict
+        ''' Add new settings to the setting dictionary
 
-        New properties cannot be written in the same way new elements would be
+        New settings cannot be written in the same way new elements would be
         written to a normal dictionaries:
           propety_dict['new property'] = 42
-        for two reasons:
+        This has two reasons:
           1) Adding a new value may not include the otherwise normal validity
-             check. Example: KissEmail is initialized with an empty string
-             (invalid Email address)
+             check. Example: AppxfEmail is initialized with an empty string
+             (invalid empty Email address)
           2) Protect from unintentional usage
         '''
         if data is not None:
@@ -109,8 +109,8 @@ class KissPropertyDict(MutableMapping, Storable):
                 # expect a key and a value:
                 for element in data:
                     if not hasattr(element, '__iter__'):
-                        raise KissPropertyError(
-                            'No second level iterable. KissPropertyDict can '
+                        raise AppxfSettingError(
+                            'No second level iterable. SettingDict can '
                             'be initialized by iterables of iterables where '
                             'the inner iterables must be the key followed by'
                             'the value.')
@@ -118,16 +118,16 @@ class KissPropertyDict(MutableMapping, Storable):
                     key = next(inner_iter, None)
                     value = next(inner_iter, None)
                     if key is None or value is None:
-                        raise KissPropertyError(
+                        raise AppxfSettingError(
                             'No key and/or value provided. '
-                            'KissPropertyDict can '
+                            'SettingDict can '
                             'be initialized by iterables of iterables where '
                             'the inner iterables must be the key followed by'
                             'the value.')
                     self._new_item(key, value)
                     # we just ignore anything else
             else:
-                raise KissPropertyError(
+                raise AppxfSettingError(
                     f'Invalid initialization input of type {type(data)}. '
                     f'Initialize with a dictionary of key/value '
                     f'specifications.')
@@ -135,43 +135,43 @@ class KissPropertyDict(MutableMapping, Storable):
             self._new_item(key, value)
 
     def _new_item(self, key, value):
-        # Generate a KissProperty object if only the class or a type is
+        # Generate a AppxfSetting object if only the class or a type is
         # provided:
         if isinstance(value, type):
-            if issubclass(value, KissProperty):
+            if issubclass(value, AppxfSetting):
                 value = value()
             else:
-                value = KissProperty.new(value)
+                value = AppxfSetting.new(value)
         # If input is a tuple of two, first should be the type and second the
         # value:
         if isinstance(value, tuple):
             if len(value) == 1:
-                value = KissProperty.new(value[0])
+                value = AppxfSetting.new(value[0])
             elif len(value) == 2:
-                value = KissProperty.new(value[0], value=value[1])
+                value = AppxfSetting.new(value[0], value=value[1])
             else:
-                raise KissPropertyError(
-                    f'KissPropertyDict can only store KissProperties which '
+                raise AppxfSettingError(
+                    f'SettingDict can only store AppxfSetting object which '
                     f'do not model complex data types like tuples. Tuples are '
                     f'interpreted as [0] providing the type and [1] the '
                     f'initial value. The input tuple had length '
                     f'{len(value)}.')
 
-        # Use the KissProperty object if one is provided
-        if isinstance(value, KissProperty):
-            self._property_dict[key] = value
+        # Use the AppxfSetting object if one is provided
+        if isinstance(value, AppxfSetting):
+            self._setting_dict[key] = value
             return
 
-        # No type or KissProperty is provided, we try to determine the
-        # KissProperty from the type of the value:
-        prop_type = type(value)
-        prop = KissProperty.new(prop_type, value=value)
+        # No type or AppxfSetting is provided, we try to determine the
+        # AppxfSetting from the type of the value:
+        setting_type = type(value)
+        setting = AppxfSetting.new(setting_type, value=value)
         # Fall back again to the code from above
-        self._new_item(key, prop)
+        self._new_item(key, setting)
 
-    def get_property(self, key) -> KissProperty:
-        ''' Access KissProperty object '''
-        return self._property_dict[key]
+    def get_setting(self, key) -> AppxfSetting:
+        ''' Access AppxfSetting object '''
+        return self._setting_dict[key]
 
     # ## Storage Behavior
 
@@ -180,7 +180,7 @@ class KissPropertyDict(MutableMapping, Storable):
     def set_storage(self,
                     storage: Storage | None = None,
                     on_load_unknown: str | None = 'ignore',
-                    store_property_config: bool | None = False
+                    store_setting_object: bool | None = False
                     ):
         ''' Set storage to support store()/load() '''
         if storage is not None:
@@ -191,47 +191,46 @@ class KissPropertyDict(MutableMapping, Storable):
                 on_load_unknown in self.valid_on_load_unknown):
             self._on_load_unknown = 'ignore'
         else:
-            raise KissPropertyError(
+            raise AppxfSettingError(
                 f'on_load_unknown supports None (no change) '
                 f'and: {self.valid_on_load_unknown}. Extensions may be added.'
             )
 
-        if store_property_config is not None:
-            if store_property_config:
-                raise KissPropertyError(
-                    'Storing the property configurations is not '
+        if store_setting_object is not None:
+            if store_setting_object:
+                raise AppxfSettingError(
+                    'Storing the setting objects is not '
                     'yet supported.')
-            if isinstance(store_property_config, bool):
-                self._store_property_config = False
+            if isinstance(store_setting_object, bool):
+                self._store_setting_object = False
             else:
-                raise KissPropertyError(
-                    f'store_property_config supports None (no change) '
-                    f'and True. Extensions may be added.'
+                raise AppxfSettingError(
+                    f'store_setting_object supports None (no change) '
+                    f'and True. Extension for False may be added.'
                 )
 
     def _get_state(self) -> object:
-        if self._store_property_config:
+        if self._store_setting_object:
             # not yet supported. te restricted unpickler would not be able to
-            # load KissProperty objects. The KissProperties should provide a
+            # load AppxfSetting objects. The AppxfSetting should provide a
             # public "get_state".
             data = {'_version': 1,
-                    'properties': self._property_dict}
+                    'settings': self._setting_dict}
         else:
-            # To properly restore the "input" from KissProperties, we need to
+            # To properly restore the "input" from AppxfSetting, we need to
             # store those inputs and not just the values
             data = {'_version': 1,
-                    'values': {key: prop.input
-                               for key, prop
-                               in self._property_dict.items()}}
+                    'values': {key: self._setting_dict[key].input
+                               for key in self._setting_dict}}
         return data
 
-    def _set_state(self, data: object):
+    def _set_state(self, data: dict):  # type: ignore  # see _get_state()
         if self._on_load_unknown == 'ignore':
             # cycle through known options and load values
-            for key in self._property_dict:
+            for key in self._setting_dict:
                 if key in data['values']:
                     self[key] = data['values'][key]
         else:
-            raise KissPropertyError(
+            raise AppxfSettingError(
                 f'on_load_unknown option is not supported. '
                 f'Supported options: {self.valid_on_load_unknown}')

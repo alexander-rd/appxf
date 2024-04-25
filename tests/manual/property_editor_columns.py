@@ -1,5 +1,5 @@
 from helper import ManualTestHelper
-from kiss_cf.property import KissBool
+from kiss_cf.setting import AppxfBool
 from kiss_cf.gui import property_gui
 
 tester = ManualTestHelper('''
@@ -14,7 +14,7 @@ Columns: Placing options on top of this widget will test alignement of entry fie
 # anymore since it's replacement is a simple generator:
 #   {option: property.KissBool(True) for option in some_list}
 
-prop_dict = KissBool.get_selection_dict([
+prop_dict = AppxfBool.get_selection_dict([
     'One', 'Two', 'Three', 'Four',
     'Five', 'Six', 'Seven', 'Eight',
     'Nine', 'Ten'],

@@ -5,11 +5,11 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 from appxf import logging
-from kiss_cf.property import KissPropertyDict
+from kiss_cf.setting import SettingDict
 
 log = logging.getLogger(__name__)
 
-config_property_template = KissPropertyDict(
+config_property_template = SettingDict(
     {'server': (str,),
      'port': (str,),
      'user': (str,),
@@ -79,7 +79,7 @@ class Email(MIMEMultipart):
 
 
 def send(email: list[Email] | Email,
-         config: dict | KissPropertyDict,
+         config: dict | SettingDict,
          debug_send_email: bool = True,
          debug_substituttion_email: str = '',):
 

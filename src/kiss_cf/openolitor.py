@@ -10,7 +10,7 @@ import kiss_cf.mariadb
 from .buffer import Buffer, buffered
 from appxf import logging
 from pandas import DataFrame
-from kiss_cf.property import KissPropertyDict
+from kiss_cf.setting import SettingDict
 
 # Logger must be existing for class logger. Otherwise, hierarchy is lost:
 log = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ class Database():
     log = logging.getLogger(__name__ + 'DataBase')
     buffer = Buffer()
 
-    def __init__(self, config: dict | KissPropertyDict, **kwargs):
+    def __init__(self, config: dict | SettingDict, **kwargs):
         super().__init__(**kwargs)
         self._connection = kiss_cf.mariadb.Connection(config)
 

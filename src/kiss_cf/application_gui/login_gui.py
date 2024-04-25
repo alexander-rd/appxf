@@ -8,7 +8,7 @@ import tkinter.ttk
 
 from appxf import logging
 # from kiss_cf.config import Config
-from kiss_cf.property import KissPropertyDict
+from kiss_cf.setting import SettingDict
 from kiss_cf.gui import PropertyDictWidget
 from kiss_cf.security import Security
 
@@ -40,7 +40,7 @@ class Login():
     log = logging.getLogger(__name__ + '.Login')
 
     def __init__(self, security: Security,
-                 user_config: KissPropertyDict=KissPropertyDict(),
+                 user_config: SettingDict=SettingDict(),
                  app_name='Login',
                  pwd_min_length=6,
                  **kwargs):

@@ -1,5 +1,5 @@
 from helper import ManualTestHelper
-from kiss_cf.property import KissBool, KissString, KissEmail
+from kiss_cf.setting import AppxfBool, AppxfString, AppxfEmail
 from kiss_cf.gui import property_gui
 from appxf import logging
 
@@ -14,9 +14,9 @@ Columns: Placing options on top of this widget will test alignement of entry fie
 
 #  - Label length: the dict uses very short and very long names on purpose:
 prop_dict = {
-    'String:': KissString(),
-    'Email of the master of disaster:': KissEmail(),
-    'Boolean Value:': KissBool(),
+    'String:': AppxfString(),
+    'Email of the master of disaster:': AppxfEmail(),
+    'Boolean Value:': AppxfBool(),
 }
 
 for key in prop_dict.keys():

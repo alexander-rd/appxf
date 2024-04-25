@@ -1,7 +1,7 @@
 
 import pytest
 from kiss_cf.storage import StorageMaster, StorageMasterMock, KissStorableError
-from kiss_cf.property import KissPropertyDict
+from kiss_cf.setting import SettingDict
 from kiss_cf.config import Config, KissConfigError
 
 def test_config_initialization_state():
@@ -18,7 +18,7 @@ def test_config_fill_section():
     # Check sections and values
     assert config.sections == ['TEST']
     section = config.section('TEST')
-    assert isinstance(section, KissPropertyDict)
+    assert isinstance(section, SettingDict)
     assert config.section('TEST')['email'] == ''
     assert config.section('TEST')['string'] == 'hello'
     assert config.section('TEST')['integer'] == 42

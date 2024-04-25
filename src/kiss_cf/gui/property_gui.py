@@ -7,7 +7,7 @@ import math
 
 from appxf import logging
 from kiss_cf.language import translate
-from kiss_cf.property import KissPropertyDict, KissProperty, KissBool
+from kiss_cf.setting import SettingDict, AppxfSetting, AppxfBool
 
 
 # TODO: better option on when to validate input:
@@ -28,7 +28,7 @@ class PropertyWidget(tkinter.Frame):
 
     def __init__(self, parent,
                  label: str,
-                 property: KissProperty,
+                 property: AppxfSetting,
                  **kwargs):
         super().__init__(parent, **kwargs)
 
@@ -71,7 +71,7 @@ class BoolCheckBoxWidget(tkinter.Frame):
     log = logging.getLogger(__name__ + '.BoolCheckBoxWidget')
 
     def __init__(self, parent,
-                 property: KissProperty,
+                 property: AppxfSetting,
                  label: str,
                  kiss_options: dict = dict(),
                  **kwargs):
@@ -117,7 +117,7 @@ class PropertyDictWidget(tkinter.Frame):
     log = logging.getLogger(__name__ + '.PropertyDictWidget')
 
     def __init__(self, parent: tkinter.BaseWidget,
-                 property_dict: KissPropertyDict,
+                 property_dict: SettingDict,
                  **kwargs):
 
         super().__init__(parent, **kwargs)
@@ -125,7 +125,7 @@ class PropertyDictWidget(tkinter.Frame):
         # strip proerties from the dict that are not mutable:
         self.property_dict = {key: property_dict[key]
                               for key in property_dict.keys()
-                              if property_dict.get_property(key).mutable}
+                              if property_dict.get_setting(key).mutable}
 
         # TODO: the above should be applied according to default_visibility.
         # Not mutable should still be displayed but grayed out or not editable.
@@ -142,16 +142,16 @@ class PropertyDictWidget(tkinter.Frame):
         self.frame_list = list()
         for key in self.property_dict.keys():
             self._place_property_frame(
-                property_dict.get_property(key), key,
+                property_dict.get_setting(key), key,
                 element_gui_options.get(key, dict()))
 
-    def _place_property_frame(self, prop: KissProperty, label, gui_options):
+    def _place_property_frame(self, prop: AppxfSetting, label, gui_options):
         self.rowconfigure(len(self.frame_list), weight=1)
 
         if 'frame_type' in gui_options:
             property_frame = gui_options['frame_type'](
                 self, prop, label, gui_options)
-        elif isinstance(prop, KissBool):
+        elif isinstance(prop, AppxfBool):
             property_frame = BoolCheckBoxWidget(
                 self, prop, label, gui_options)
         else:
@@ -225,7 +225,7 @@ class PropertyDictWidget(tkinter.Frame):
 
 class PropertyDictColumnFrame(tkinter.Frame):
     def __init__(self, parent: tkinter.BaseWidget,
-                 property_dict: KissPropertyDict,
+                 property_dict: SettingDict,
                  columns: int,
                  kiss_options: dict = dict(),
                  **kwargs):
@@ -249,7 +249,7 @@ class PropertyDictColumnFrame(tkinter.Frame):
                 f'"right", you provided "{direction}"')
 
         # fill property dictionaries
-        prop_dict_list = [KissPropertyDict() for i in range(columns)]
+        prop_dict_list = [SettingDict() for i in range(columns)]
         for i, key in enumerate(key_list):
             prop_dict_list[key_to_sub_dict[i]].add({key: property_dict[key]})
 
@@ -282,7 +282,7 @@ class EditPropertyDictWindow(tkinter.Toplevel):
 
     def __init__(self, parent,
                  title: str,
-                 property_dict: KissPropertyDict,
+                 property_dict: SettingDict,
                  kiss_options: dict = dict(),
                  **kwargs):
         '''

@@ -27,7 +27,9 @@ class Storable(object):
     then adapt _set_dict().
     '''
 
-    def __init__(self, storage: Storage = StorageDummy(), **kwargs):
+    def __init__(self, storage: Storage | None = None, **kwargs):
+        if storage is None:
+            storage = StorageDummy()
         self._storage = storage
         super().__init__(**kwargs)
 
