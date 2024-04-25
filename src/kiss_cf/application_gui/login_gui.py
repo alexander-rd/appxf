@@ -7,8 +7,9 @@ import tkinter
 import tkinter.ttk
 
 from appxf import logging
-from kiss_cf.config import Config
-from kiss_cf.gui import OptionDictWidget
+# from kiss_cf.config import Config
+from kiss_cf.property import KissPropertyDict
+from kiss_cf.gui import PropertyDictWidget
 from kiss_cf.security import Security
 
 
@@ -39,13 +40,13 @@ class Login():
     log = logging.getLogger(__name__ + '.Login')
 
     def __init__(self, security: Security,
-                 config=Config(),
+                 user_config: KissPropertyDict=KissPropertyDict(),
                  app_name='Login',
                  pwd_min_length=6,
                  **kwargs):
         super().__init__(**kwargs)
         self._security = security
-        self._config = config
+        self._user_config = user_config
         self._app_name = app_name
         self._pwd_min_length = pwd_min_length
 
@@ -70,7 +71,7 @@ class Login():
         guiRoot.rowconfigure(0, weight=1)
         guiRoot.columnconfigure(1, weight=1)
 
-        userConfig = OptionDictWidget(guiRoot, self._config, 'USER')
+        userConfig = PropertyDictWidget(guiRoot, property_dict=self._user_config)
         userConfig.grid(row=0, column=0, sticky='NSWE', columnspan=2)
         left_min_size_config = userConfig.get_left_col_min_width()
 
@@ -118,14 +119,14 @@ class Login():
                 self.log.debug('NOK, Passwords do not match')
                 pwdRepEntry.config(foreground='red')
                 valid = False
-            if not userConfig.is_valid:
+            if not userConfig.valid:
                 self.log.debug('config not valid')
                 valid = False
             if valid:
                 # unlock user
                 self._security.init_user(pwdEntry.get())
                 # store USER configuration
-                self._config.store('USER')
+                self._user_config.store()
                 self.log.debug('OK, quit')
                 guiRoot.destroy()
         okButton = tkinter.Button(guiRoot, text='OK', command=okButtonFunction)

@@ -35,6 +35,7 @@ class KissPropertyDict(Storable, UserDict):
     def __init__(self,
                  data: Mapping[str, Any] | None = None,
                  storage: Storage | None = None,
+                 default_visibility: bool = True,
                  **kwargs):
         ''' KissPropertyDict
 
@@ -68,6 +69,9 @@ class KissPropertyDict(Storable, UserDict):
         self._on_load_unknown = 'ignore'
         self._store_property_config = False
 
+        # TODO: add GUI element concept and derive/aggregate from there
+        self.default_visibility = default_visibility
+
     def __setitem__(self, key, value) -> None:
         if not self.__contains__(key):
             raise KissPropertyError(
@@ -76,7 +80,7 @@ class KissPropertyDict(Storable, UserDict):
         # Value already exists. Try to set new value into KissProperty, if this
         # is OK, take value from there:
         self._property_dict[key].value = value
-        super().__setitem__(key, self._property_dict[key].value)
+        self.data[key] = self._property_dict[key].value
 
     def add(self, data: Mapping[str, Any] | None = None, **kwargs):
         ''' Add new properties to the property dict

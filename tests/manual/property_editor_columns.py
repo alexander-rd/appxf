@@ -9,6 +9,11 @@ Columns: Placing options on top of this widget will test alignement of entry fie
 ''')  # noqa: E501
 
 #  - Label length: the dict uses very short and very long names on purpose:
+
+# TODO: review and remove this test. get_selection_dict() is not supported
+# anymore since it's replacement is a simple generator:
+#   {option: property.KissBool(True) for option in some_list}
+
 prop_dict = KissBool.get_selection_dict([
     'One', 'Two', 'Three', 'Four',
     'Five', 'Six', 'Seven', 'Eight',

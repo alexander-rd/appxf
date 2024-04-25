@@ -4,10 +4,17 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from . import logging
+from appxf import logging
+from kiss_cf.property import KissPropertyDict
 
 log = logging.getLogger(__name__)
 
+config_property_template = KissPropertyDict(
+    {'server': (str,),
+     'port': (str,),
+     'user': (str,),
+     'password': ('password',)})
+# TODO: Properties could add "URL"
 
 class Email(MIMEMultipart):
     ''' Email Object
@@ -72,7 +79,7 @@ class Email(MIMEMultipart):
 
 
 def send(email: list[Email] | Email,
-         config: dict,
+         config: dict | KissPropertyDict,
          debug_send_email: bool = True,
          debug_substituttion_email: str = '',):
 

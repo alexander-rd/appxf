@@ -30,7 +30,7 @@ def test_property_init(kiss_class):
 param_wrong_init = [
     # Type      Value
     (str,       DummyClassErrorOnStrCreation()),
-    (bool,      42),
+    (bool,      'value'),
     (int,       'int'),
     (float,     'abc')
     ]

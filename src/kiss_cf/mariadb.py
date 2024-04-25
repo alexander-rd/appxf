@@ -1,24 +1,21 @@
 import mariadb
 from pandas import DataFrame
 from typing import TypedDict
-from . import logging
 
+from appxf import logging
+from kiss_cf.property import KissPropertyDict
+
+# Logger must be existing for class logger. Otherwise, hierarchy is lost:
 log = logging.getLogger(__name__)
 
-
-# TODO: RecordClass (typed named tuple) should be better suited for DbConfig.
-class DbConfig(TypedDict):
-    ''' target types for config fields
-
-    INTERNAL USE to catch wrong types for config passed into querry().
-    '''
-    host: str
-    port: int
-    database: str
-    user: str
-    password: str
-    ssl: bool
-
+config_property_template = KissPropertyDict(
+    {'host': (str,),
+     'port': (int,),
+     'user': (str,),
+     'password': ('password',),
+     'database': (str,),
+     'ssl': (bool, True),
+     })
 
 class Connection():
     ''' wrapping mariadb connection (aggregating)
@@ -35,42 +32,25 @@ class Connection():
     log = logging.getLogger(__name__ + '.Connection')
     count = 0
 
-    def __init__(self, config: dict, **kwargs):
+    def __init__(self, config: dict | KissPropertyDict, **kwargs):
         super().__init__(**kwargs)
-        # Ensure DbConfig (types). isinstance(config, DbConfig) cannot be used
-        # because DbConfig is a TypedDict.
-        con: DbConfig = {
-            'host': config['host'],
-            'port': (int(config['port'])
-                     if isinstance(config['port'], str)
-                     else config['port']),
-            'database': config['database'],
-            'user': config['user'],
-            'password': config['password'],
-            'ssl': (config['ssl']
-                    if isinstance(config['ssl'], bool)
-                    else (True
-                          if (config['ssl'].lower() in ('yes', 'true', '1'))
-                          else False)
-                    )
-            }
 
-        log.debug(f"{con['host']}:{con['port']} [{con['database']}], "
-                  f"user: {con['user']}, ssl: {con['ssl']}")
+        self.log.debug(f"{config['host']}:{config['port']} [{config['database']}], "
+                  f"user: {config['user']}, ssl: {config['ssl']}")
 
-        self.config = con
-        self.connection = None
+        self._config = config
+        self._connection = None
 
     def ensure_connected(self):
-        if self.connection is None:
-            self.connection = mariadb.connect(**self.config)
+        if self._connection is None:
+            self._connection = mariadb.connect(**self._config)
             Connection.count += 1
             self.log.debug(
                 f'connected, connection count: {Connection.count}')
             # Note that connections will be closed as soon as the object is
             # deleted or when used with a context handler
-        elif not self.connection.open:
-            self.connection.reconnect()
+        elif not self._connection.open:
+            self._connection.reconnect()
             Connection.count += 1
             self.log.debug(
                 f'reconnect, connection count: {Connection.count}')
@@ -102,18 +82,18 @@ class Connection():
         #
         # First one should not be used (by mariadb documentation) and the
         # dictionary variant would repeat the column titles for every row.
-        cur = self.connection.cursor()
+        cur = self._connection.cursor()
         try:
             cur.execute(querry)
         except Exception:
-            log.debug(querry)
+            self.log.debug(querry)
             raise
 
         col_names = [col[0] for col in cur.description]
         result = cur.fetchall()
         data = DataFrame(result, columns=col_names)
 
-        log.debug(f'got {len(data)} rows with columns {col_names}' +
+        self.log.debug(f'got {len(data)} rows with columns {col_names}' +
                   f', column "{index}" will be used as index' if index else '')
 
         if index:

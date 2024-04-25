@@ -424,6 +424,8 @@ class KissBool(KissProperty[bool]):
         if isinstance(value, str):
             return validated_conversion_configparser(value, bool,
                                                      self.get_default())
+        if isinstance(value, int) or isinstance(value, float):
+            return True, bool(value)
         return False, self.get_default()
 
     def to_string(self) -> str:
