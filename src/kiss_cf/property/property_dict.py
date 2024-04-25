@@ -1,8 +1,7 @@
 ''' Provide KissPropertyDict '''
 
 from typing import Any
-from collections.abc import Mapping
-from collections import UserDict
+from collections.abc import Mapping, MutableMapping
 from kiss_cf.storage import Storable, Storage
 from kiss_cf.storage.storage_dummy import StorageDummy
 from .property import KissProperty, KissPropertyError
@@ -12,21 +11,13 @@ from .property import KissProperty, KissPropertyError
 # corresponding GUI. What would remain for the config section?? Just the
 # storage behavior??
 
-# TODO: support for iterable input like [(key1, value1), (key2, value2)].
-
 # TODO: support tuples with additional named value options
 
 # TODO: Storing properties. This would be required for a "configurable config".
 
 # TODO: Loading modes 'add' and 'error'
 
-
-# Implementatino could not use UserDict as first class since UserData
-# implementation does not use super().__init__(), blocking the call of
-# Storable.__init__(). Deriving from dict has too many pitfalls, deriving from
-# MutableMapping would have resolved in re-implementing UserDict details.
-# Result: putting UserDict last.
-class KissPropertyDict(Storable, UserDict):
+class KissPropertyDict(MutableMapping, Storable):
     ''' Maintain a dictionary of properties
 
     The class supports normal dictionary behavior.
@@ -39,8 +30,10 @@ class KissPropertyDict(Storable, UserDict):
                  **kwargs):
         ''' KissPropertyDict
 
-        Initializations supports initialization by key/value pairs or by a
-        dictionary. The values may be one of:
+        Recommended initialization is by a dictionary like {key: value}.
+        Supported are also initializations by key/value pairs (key=value) which
+        is limited by the already named arguments as well as by iterables of
+        iterables (key, value). The values may be one of:
           * A value of a supported type. Example: 42 as integer would then use
             KissInt.
           * A KissProperty class like KissInt. The value would be initialized
@@ -57,8 +50,9 @@ class KissPropertyDict(Storable, UserDict):
         # Define KissPropertyDict specific details
         self._property_dict: dict[Any, KissProperty] = {}
         # Initialize dict details
-        if storage is None:
+        if storage is None and isinstance(storage, Storage):
             storage = StorageDummy()
+        # **kwargs cannot be forwarded. All are resolved into dictionary construction.
         super().__init__(storage=storage)
         # Cunsume data and kwargs manually:
         if data is not None:
@@ -72,6 +66,15 @@ class KissPropertyDict(Storable, UserDict):
         # TODO: add GUI element concept and derive/aggregate from there
         self.default_visibility = default_visibility
 
+    def __len__(self):
+        return self._property_dict.__len__()
+
+    def __iter__(self):
+        return self._property_dict.__iter__()
+
+    def __getitem__(self, key: str):
+        return self._property_dict[key].value
+
     def __setitem__(self, key, value) -> None:
         if not self.__contains__(key):
             raise KissPropertyError(
@@ -80,7 +83,9 @@ class KissPropertyDict(Storable, UserDict):
         # Value already exists. Try to set new value into KissProperty, if this
         # is OK, take value from there:
         self._property_dict[key].value = value
-        self.data[key] = self._property_dict[key].value
+
+    def __delitem__(self, key):
+        del self._property_dict[key]
 
     def add(self, data: Mapping[str, Any] | None = None, **kwargs):
         ''' Add new properties to the property dict
@@ -154,7 +159,6 @@ class KissPropertyDict(Storable, UserDict):
 
         # Use the KissProperty object if one is provided
         if isinstance(value, KissProperty):
-            super().__setitem__(key, value.value)
             self._property_dict[key] = value
             return
 
@@ -165,15 +169,8 @@ class KissPropertyDict(Storable, UserDict):
         # Fall back again to the code from above
         self._new_item(key, prop)
 
-    def __delitem__(self, key: Any) -> None:
-        if self.__contains__(key):
-            del self._property_dict[key]
-            super().__delitem__(key)
-
     def get_property(self, key) -> KissProperty:
         ''' Access KissProperty object '''
-        # reuse error handling of dict by accessing the value
-        super().__getitem__(key)
         return self._property_dict[key]
 
     # ## Storage Behavior
@@ -231,7 +228,7 @@ class KissPropertyDict(Storable, UserDict):
     def _set_state(self, data: object):
         if self._on_load_unknown == 'ignore':
             # cycle through known options and load values
-            for key in self.data:
+            for key in self._property_dict:
                 if key in data['values']:
                     self[key] = data['values'][key]
         else:

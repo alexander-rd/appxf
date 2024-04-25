@@ -11,8 +11,6 @@ config = Config()
 
 config.add_section('EMPTY')
 # Simple string:
-# TODO: OptionProperties is nasty >> dict.
-# TODO: allow to set values directly on section creation. Possibly: option property "default"
 config.add_section('USER',
     {'Email': KissOption(type='email'),
      'Rolle': KissOption(type='str'),

@@ -13,7 +13,7 @@ def test_app_02_registry_basic_cycle(app_unlocked_user_admin_pair):
 
     # admin registration handling
     request = app_admin.registry.get_request_data(request_bytes)
-    assert app_user.user_config.section('USER').data == request.user_data
+    assert app_user.user_config.section('USER') == request.user_data
     # admin would now inspect the user data of the reuquest, likely in a GUI.
     # Most important check: does the user already exist and does it need to be
     # mapped to an existing ID?
@@ -39,8 +39,8 @@ def test_app_02_registry_basic_cycle(app_unlocked_user_admin_pair):
     # user getting response
     app_user.registry.set_response_bytes(response_bytes)
     assert app_user.registry._user_id.id == user_id
-    assert (app_user.user_config.section('TEST').data ==
-            app_admin.user_config.section('TEST').data)
+    assert (app_user.user_config.section('TEST') ==
+            app_admin.user_config.section('TEST'))
 
     # TODO: some details from above do belong into a UNIT testing. The test
     # case should be based on:

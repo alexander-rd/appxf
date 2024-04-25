@@ -119,7 +119,7 @@ class Login():
                 self.log.debug('NOK, Passwords do not match')
                 pwdRepEntry.config(foreground='red')
                 valid = False
-            if not userConfig.valid:
+            if not userConfig.is_valid():
                 self.log.debug('config not valid')
                 valid = False
             if valid:

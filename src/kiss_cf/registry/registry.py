@@ -161,7 +161,7 @@ class Registry(RegistryBase):
 
         # TODO: add warning message when _loaded is True
         if self._user_config_section:
-            user_data = self._config.section('USER').data
+            user_data = dict(self._config.section('USER'))
         else:
             user_data = {}
         return RegistrationRequest.new(user_data, self._security)
@@ -210,7 +210,7 @@ class Registry(RegistryBase):
                     f'Section {section} does not exist.')
         response = RegistrationResponse.new(
             user_id,
-            {section: self._config.section(section).data
+            {section: dict(self._config.section(section))
              for section in sections})
         return response.get_response_bytes()
 
