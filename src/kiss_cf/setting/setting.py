@@ -1,13 +1,12 @@
-''' Provide Property Handlers
+''' Abstract AppxfSetting and Appxf* implementations
 
-Property handlers store simple data types like strings, booleans or integers.
-They add the following support for usage in applications that is mostly visible
-in GUI handling or storage in human readable format:
- - accepting string inputs and convert to expected type
- - ensure validity of stored values while some properties like KissEmail may be
+Settings store simple data types like strings, booleans or integers. They add
+the following support for usage in applications:
+ - accepting string inputs while converting to expected base type like boolean
+ - ensure validity of stored values while some settings like Emails may be
    initialized with an invalid empty string.
- - maintenance of GUI related properties like default visibility or masking
-   (passwords)
+ - maintenance of GUI related options like default visibility or masking
+   for passwords
 '''
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
@@ -16,18 +15,18 @@ import configparser
 from typing import Generic, TypeVar, Type, Any
 
 
-class KissPropertyError(Exception):
-    ''' KissProperty handling error '''
+class AppxfSettingError(Exception):
+    ''' AppxfSetting handling error '''
 
 
-class KissPropertyConversionError(Exception):
-    ''' KissProperty conversion error
+class AppxfSettingConversionError(Exception):
+    ''' AppxfSetting conversion error
 
-    It is used when the KissProperty is not able to validate an input or
+    It is used when the AppxfSetting is not able to validate an input or
     convert it to the base type.'''
-    def __init__(self, prop_class: KissProperty[Any], value, **kwargs):
+    def __init__(self, setting_class: AppxfSetting[Any], value, **kwargs):
         super().__init__(**kwargs)
-        # The following try/except is required since KissString accepts any
+        # The following try/except is required since AppxfString accepts any
         # input converting it with str(). If that fails, the value can also not
         # be printed.
         try:
@@ -36,10 +35,10 @@ class KissPropertyConversionError(Exception):
         except:  # noqa E722
             value_str = '<conversion by str() failed>'
         value_type = type(value)
-        base_type = type(prop_class.get_default())
+        base_type = type(setting_class.get_default())
         self.message = (
             f'Cannot set value {value_str} of type {value_type} into '
-            f'{prop_class.__name__}. Either the base type {base_type} '
+            f'{setting_class.__name__}. Either the base type {base_type} '
             f'is not valid or the conversion failed.')
 
     def __str__(self):
@@ -50,74 +49,77 @@ class KissPropertyConversionError(Exception):
 
 # ## Registry implementation
 # To simplify the usage of properties, new classes register to the base
-# implementation of KissProperty such that, for example,
-# KissProperty.new('email') returns a KissEmail object.
+# implementation of AppxfSetting such that, for example,
+# AppxfSetting.new('email') returns a AppxfEmail object.
+
+# TODO: add a property to allow setting the initial invalid value again.
 
 
-class KissPropertyMeta(type):
-    ''' Meta class collecting KissProperty implementations '''
-    # Mapping of types or string references to derived KissProperty classes. This
-    # map is used when generating a new KissProperty without the need to import all
-    # classes seperately. Note, however, that custom KissProperty implementations
+class AppxfSettingMeta(type):
+    ''' Meta class collecting AppxfSetting implementations '''
+    # Mapping of types or string references to derived AppxfSetting classes. This
+    # map is used when generating a new AppxfSetting without the need to import all
+    # classes seperately. Note, however, that custom AppxfSetting implementations
     # still need to be loaded to get registered.
-    type_map: dict[type | str | KissProperty[Any],
-                    KissProperty[Any]] = {}
+    type_map: dict[type | str | AppxfSetting[Any],
+                    AppxfSetting[Any]] = {}
 
-    # List of known KissProperty implementations, mainly intended for logging.
+    # List of known AppxfSetting implementations, mainly intended for logging.
     implementation_names: list[str] = []
-    implementations: list[KissProperty[Any]] = []
+    implementations: list[AppxfSetting[Any]] = []
 
     @classmethod
-    def _register_property_class(cls, cls_register: KissProperty[Any]):
-        ''' Handle the registration of a new KissProperty '''
+    def _register_setting_class(cls, cls_register: AppxfSetting[Any]):
+        ''' Handle the registration of a new AppxfSetting '''
         # check class
         if cls_register.__name__ in cls.implementation_names:
-            raise KissPropertyError(
-                f'KissProperty {cls_register.__name__} is already registered.')
+            raise AppxfSettingError(
+                f'AppxfSetting {cls_register.__name__} is already registered.')
         # check types
         if not cls_register.get_supported_types():
-            raise KissPropertyError(
-                f'KissProperty {cls_register.__name__} does not return any '
+            raise AppxfSettingError(
+                f'AppxfSetting {cls_register.__name__} does not return any '
                 f'supported type. Consider returning at least some '
                 f'[''your special type''] from get_supported_types().')
-        for prop_type in cls_register.get_supported_types():
-            if prop_type in cls.type_map:
-                other_cls = cls.type_map[prop_type].__name__
-                raise KissPropertyError(
-                    f'KissProperty {cls_register.__name__} supported type '
-                    f'{prop_type} is already registered for {other_cls}.'
+        for setting_type in cls_register.get_supported_types():
+            if setting_type in cls.type_map:
+                other_cls = cls.type_map[setting_type].__name__
+                raise AppxfSettingError(
+                    f'AppxfSetting {cls_register.__name__} supported type '
+                    f'{setting_type} is already registered for {other_cls}.'
                     )
         # check completeness of implementation:
         if cls_register.__abstractmethods__:
-            raise KissPropertyError(
-                f'KissProperty {cls_register.__name__} still has abstract methods: '
+            raise AppxfSettingError(
+                f'AppxfSetting {cls_register.__name__} still has abstract methods: '
                 f'{cls_register.__abstractmethods__} that need implementation.')
         # Adding stuff only after ALL checks
         # add class
         cls.implementation_names.append(cls_register.__name__)
         cls.implementations.append(cls_register)
-        # add prop types
-        cls.type_map.update({prop_type: cls_register
-                        for prop_type in cls_register.get_supported_types()})
+        # add setting types
+        cls.type_map.update(
+            {setting_type: cls_register
+             for setting_type in cls_register.get_supported_types()
+             })
 
-
-    ''' Metaclass to trigger registration of new KissProperty classes '''
+    ''' Metaclass to trigger registration of new AppxfSetting classes '''
     def __new__(mcs, clsname, bases, attrs):
         newclass = super().__new__(mcs, clsname, bases, attrs)
-        # Register only non KissProperty classes:
-        if clsname != 'KissProperty':
-            mcs._register_property_class(newclass)
+        # Register only non AppxfSetting classes:
+        if clsname != 'AppxfSetting':
+            mcs._register_setting_class(newclass)
         return newclass
 
 
 # The custom metaclass from registration and the ABC metaclass for abstract
 # classes need to be merged. Note that the order actually matters. The
-# __abstractmethods__ must be present when executing the KissPropertyMeta.
-class _KissPropertyMetaMerged(KissPropertyMeta, ABCMeta):
+# __abstractmethods__ must be present when executing the AppxfSettingMeta.
+class _AppxfSettingMetaMerged(AppxfSettingMeta, ABCMeta):
     pass
 
 
-# KissProperty uses the ValueType below in it's implementation to allow
+# AppxfSetting uses the ValueType below in it's implementation to allow
 # appropriate type hints.
 #
 # For some reason, pylint and pylance seem to get the typevar rules wrong. See
@@ -127,13 +129,13 @@ class _KissPropertyMetaMerged(KissPropertyMeta, ABCMeta):
 _BaseTypeT = TypeVar('ValueType', bound=object)  # type: ignore
 
 
-class KissProperty(Generic[_BaseTypeT], metaclass=_KissPropertyMetaMerged):
-    ''' Base class for all properties
+class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
+    ''' Abstract base class for settings
 
-    Use KissProperty.new('str') to get matching kiss properties for known
-    types. You may list types by KissProperty.get_registered_types().
+    Use AppxfSetting.new('str') to get matching appxf settings for known
+    types. You may list types by AppxfSetting.get_registered_types().
 
-    Derive from KissProperty to add custom types. You have to add:
+    Derive from AppxfSetting to add custom types. You have to add:
       get_default() classmethod -- providing default values on construction of
         new values and defines the base type.
       get_supported_types() classmethod -- providing a list of the types that
@@ -163,62 +165,62 @@ class KissProperty(Generic[_BaseTypeT], metaclass=_KissPropertyMetaMerged):
         else:
             self._set_value(value)
 
-        # A property may be set not being mutable which blocks any changes to
+        # A setting may be set not being mutable which blocks any changes to
         # it.
         self.mutable = True
 
         # TODO: except mutable above, the ones below do only support GUI
         # handling (or not yet planned handling by console). Therefore, they
         # should be provided by the GUI implementation like:
-        #   KissProperty.gui_option.get(): to get a specific or all GUI options
-        #   KissProperty.gui_option.set(): to set a specific or all GUI options
+        #   AppxfSetting.gui_option.get(): to get a specific or all GUI options
+        #   AppxfSetting.gui_option.set(): to set a specific or all GUI options
         # While gui_options is an object provided by the GUI implementation.
-        # Like: KissGuiItem. Overloading init functions could then alter
+        # Like: AppxfGuiItem. Overloading init functions could then alter
         # default settings for certain properties.
         #
         # Dependencies:
-        #   * KissGuiItem <- KissProperty
-        #   * KissGuiItemWidget <- KissGuiItem
+        #   * AppxfGuiItem <- AppxfSetting
+        #   * AppxfGuiItemWidget <- AppxfGuiItem
         #
-        # Conclusion: if KissProperty derives from KissGuiItem, some list of
-        # KissProperties is identical to a list of KissGuiItems. The access
+        # Conclusion: if AppxfSetting derives from AppxfGuiItem, some list of
+        # AppxfSEttings is identical to a list of AppxfGuiItems. The access
         # from above might now be via property setter/getter to allow
         # overloading:
-        #   KissProperty.default_visibility = True
+        #   AppxfSetting.default_visibility = True
 
         # Name that may be used in the GUI
         self.name = name
 
-        # A property may be hidded in normal GUI views unless explicitly
+        # A setting may be hidded in normal GUI views unless explicitly
         # mentioned.
         self.default_visibility = True
         # TODO: there is no usage/implementation, yet
 
-        # A property may be displayed, masked by asteriks:
+        # A setting may be displayed, masked by asteriks:
         self.masked = False
         # TODO: Implementation in GUI is missing.
 
     @classmethod
     def new(cls,
-            prop_type: str | type | KissProperty[Any],
+            setting_type: str | type | AppxfSetting[Any],
             value: _BaseTypeT | None = None,
             **kwargs
-            ) -> KissProperty:
-        ''' Get specific KissProperty implementation by type '''
-        if isinstance(prop_type, type) and issubclass(prop_type, KissProperty):
-            if prop_type == KissProperty:
-                raise KissPropertyError(
+            ) -> AppxfSetting:
+        ''' Get specific AppxfSetting implementation by type '''
+        if isinstance(setting_type, type) and issubclass(setting_type, AppxfSetting):
+            if setting_type == AppxfSetting:
+                raise AppxfSettingError(
                     'You need to provide a derived, fully implemented class '
-                    'like KissString, not KissProperty directly.')
-            # Note: incomplete KissProperty implementations do not exist. They
+                    'like AppxfString, not AppxfSetting directly.')
+            # Note: incomplete AppxfSetting implementations do not exist. They
             # are blocked upon registration.
-            return prop_type(value=value, **kwargs)  # type: ignore
-        if prop_type in KissPropertyMeta.type_map:
-            return KissPropertyMeta.type_map[prop_type](value=value, **kwargs)
-        raise KissPropertyError(
-            f'Property type [{prop_type}] is unknown. Did you import the '
-            f'KissProperty implementations you wanted to use? Supported are: '
-            f'{KissPropertyMeta.type_map.keys()}'
+            return setting_type(value=value, **kwargs)  # type: ignore
+        if setting_type in AppxfSettingMeta.type_map:
+            return AppxfSettingMeta.type_map[setting_type](value=value, **kwargs)
+        raise AppxfSettingError(
+            f'Setting type [{setting_type}] is unknown. Did you import the '
+            f'AppxfSetting implementations you wanted to use? Supported are: '
+            f'{AppxfSettingMeta.type_map.keys()}'
         )
 
     # Default value that must be defined by the implementing class
@@ -238,7 +240,7 @@ class KissProperty(Generic[_BaseTypeT], metaclass=_KissPropertyMetaMerged):
     def get_supported_types(cls) -> list[type | str]:
         ''' Provide list of suported types
 
-        List typically includes strings and if the KissProperty is intended for
+        List typically includes strings and if the AppxfSetting is intended for
         a specific base class like string, bool or integer, it includes also
         the base type directly.
         '''
@@ -250,14 +252,14 @@ class KissProperty(Generic[_BaseTypeT], metaclass=_KissPropertyMetaMerged):
 
     @property
     def value(self) -> _BaseTypeT:
-        ''' Stored value of the KissProperty (converted to base type) '''
+        ''' Stored value of the AppxfSetting (converted to python builtin type) '''
         return self._value
 
     @value.setter
     def value(self, value: Any):
         if not self.mutable:
             name = '(' + self.name + ')' if self.name else '(no name)'
-            raise KissPropertyError(
+            raise AppxfSettingError(
                 f'{self.__class__.__name__}{name} is set to be not mutable.')
         self._set_value(value)
 
@@ -271,19 +273,19 @@ class KissProperty(Generic[_BaseTypeT], metaclass=_KissPropertyMetaMerged):
                 # enforce base type that we do not store derived types
                 self._value = base_type(value)
             else:
-                raise KissPropertyConversionError(type(self), value)
+                raise AppxfSettingConversionError(type(self), value)
         else:
             # the below line handles validity AND any possible conversion to
             # the _BaseTypeT:
             valid, _value = self._validated_conversion(value)
             if not valid:
-                raise KissPropertyConversionError(type(self), value)
+                raise AppxfSettingConversionError(type(self), value)
             self._input = value
             self._value = _value
 
     def validate(self, value: Any) -> bool:
-        ''' Validate a string to match the KissProperty type '''
-        # KissProperty implementations for string base classes will NOT
+        ''' Validate a string to match the AppxfSetting type '''
+        # AppxfSetting implementations for string base classes will NOT
         # convert but rely on the _validate_base_type().
         if isinstance(value, type(self.get_default())):
             return self._validate_base_type(value)
@@ -298,7 +300,7 @@ class KissProperty(Generic[_BaseTypeT], metaclass=_KissPropertyMetaMerged):
         return isinstance(value, type(self.get_default()))
 
     def _validated_conversion(self, value: Any) -> tuple[bool, _BaseTypeT]:
-        ''' Validate a string to match the KissProperty's expectations
+        ''' Validate a string to match the AppxfSetting's expectations
 
         Shall also provide the conversion to it's base type.
 
@@ -316,8 +318,8 @@ class KissProperty(Generic[_BaseTypeT], metaclass=_KissPropertyMetaMerged):
         return str(self._value)
 
 
-class KissString(KissProperty[str]):
-    ''' KissProperty for basic strings '''
+class AppxfString(AppxfSetting[str]):
+    ''' AppxfSetting for basic strings '''
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
         return [str, 'str', 'string']
@@ -327,9 +329,9 @@ class KissString(KissProperty[str]):
         return ''
 
 
-class KissEmail(KissString):
-    ''' KissProperty for Emails'''
-    # get_default() and to_string() are derived from KissString
+class AppxfEmail(AppxfString):
+    ''' AppxfSetting for Emails'''
+    # get_default() and to_string() are derived from AppxfString
 
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
@@ -349,8 +351,8 @@ class KissEmail(KissString):
         return True
 
 
-class KissPassword(KissString):
-    ''' KissProperty for passwords
+class AppxfPassword(AppxfString):
+    ''' AppxfSetting for passwords
 
     Default minimum password length is 6.
     '''
@@ -410,8 +412,8 @@ def validated_conversion_configparser(
     return True, value  # type: ignore
 
 
-class KissBool(KissProperty[bool]):
-    ''' KissProperty for booleans '''
+class AppxfBool(AppxfSetting[bool]):
+    ''' AppxfSetting for booleans '''
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
         return [bool, 'bool', 'boolean']
@@ -432,8 +434,8 @@ class KissBool(KissProperty[bool]):
         return '1' if self._value else '0'
 
 
-class KissInt(KissProperty[int]):
-    ''' KissProperty for Integers '''
+class AppxfInt(AppxfSetting[int]):
+    ''' AppxfSetting for Integers '''
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
         return [int, 'int', 'integer']
@@ -449,8 +451,8 @@ class KissInt(KissProperty[int]):
         return False, self.get_default()
 
 
-class KissFloat(KissProperty[float]):
-    ''' KissProperty for Float '''
+class AppxfFloat(AppxfSetting[float]):
+    ''' AppxfSetting for Float '''
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
         return [float, 'float']

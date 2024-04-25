@@ -3,12 +3,12 @@ from pandas import DataFrame
 from typing import TypedDict
 
 from appxf import logging
-from kiss_cf.property import KissPropertyDict
+from kiss_cf.setting import SettingDict
 
 # Logger must be existing for class logger. Otherwise, hierarchy is lost:
 log = logging.getLogger(__name__)
 
-config_property_template = KissPropertyDict(
+config_property_template = SettingDict(
     {'host': (str,),
      'port': (int,),
      'user': (str,),
@@ -32,7 +32,7 @@ class Connection():
     log = logging.getLogger(__name__ + '.Connection')
     count = 0
 
-    def __init__(self, config: dict | KissPropertyDict, **kwargs):
+    def __init__(self, config: dict | SettingDict, **kwargs):
         super().__init__(**kwargs)
 
         self.log.debug(f"{config['host']}:{config['port']} [{config['database']}], "

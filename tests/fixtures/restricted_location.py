@@ -5,7 +5,7 @@ procedure.
 '''
 
 from kiss_cf.storage import LocalStorageMaster
-from kiss_cf.property import KissProperty
+from kiss_cf.setting import AppxfSetting
 
 global_credential = 'yes, sir!'
 
@@ -13,7 +13,7 @@ global_credential = 'yes, sir!'
 class CredentialLocationMock(LocalStorageMaster):
 
     config_properties = {
-        'credential': KissProperty.new(str)}
+        'credential': AppxfSetting.new(str)}
 
     def __init__(self, path: str, credential):
         if not credential == global_credential:

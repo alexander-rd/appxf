@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "kiss_cf"
-version = "0.1"
+version = "0.2b0"
 authors = [
   { name = "Alexander Reinhold", email="mail@alexander-reinhold.de" }
 ]

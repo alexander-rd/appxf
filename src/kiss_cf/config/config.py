@@ -4,7 +4,7 @@ The configuration concept is accumulating KissPropertyDict objects as sections.
 '''
 
 from appxf import logging
-from kiss_cf.property import KissPropertyDict
+from kiss_cf.setting import SettingDict
 from kiss_cf.storage import StorageMaster, StorageDummy
 
 # TODO: config refactoring
@@ -58,14 +58,14 @@ class Config():
     def __init__(self, default_storage: StorageMaster | None = None, **kwargs):
         super().__init__(**kwargs)
         self._default_storage = default_storage
-        self._sections: dict[str, KissPropertyDict] = {}
+        self._sections: dict[str, SettingDict] = {}
 
     @property
     def sections(self) -> list[str]:
         ''' Return list of sections. '''
         return list(self._sections.keys())
 
-    def section(self, section: str) -> KissPropertyDict:
+    def section(self, section: str) -> SettingDict:
         ''' Access a section '''
         if section not in self._sections:
             raise KissConfigError(
@@ -76,7 +76,7 @@ class Config():
     def add_section(self,
                     section: str,
                     storage_master: StorageMaster | None = None
-                    ) -> KissPropertyDict:
+                    ) -> SettingDict:
         '''Add section if not yet existing.  '''
         # ensure section does not yet exist:
         if section in self._sections:
@@ -90,7 +90,7 @@ class Config():
         else:
             storage = StorageDummy()
         # construct section
-        self._sections[section] = KissPropertyDict(storage=storage)
+        self._sections[section] = SettingDict(storage=storage)
         self.log.info(f'added section: {section}')
         return self._sections[section]
 
