@@ -33,8 +33,8 @@ for key in prop_dict.keys():
     print(f'{key}: {prop_dict[key]}')
 
 tester.run_toplevel(property_gui.EditPropertyDictWindow,
-                    prop_dict,
                     'Edit Window Title',
+                    prop_dict,
                     gui_property)
 
 for key in prop_dict.keys():

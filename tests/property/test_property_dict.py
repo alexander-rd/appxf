@@ -141,7 +141,7 @@ def test_property_dict_tuple_init_fails2():
     assert 'The input tuple had length 4' in str(exc_info.value)
 
 # ####################/
-# Values Manipulations
+# Value Manipulations
 # ///////////////////
 
 def test_property_dict_set_valid_value():
@@ -165,6 +165,11 @@ def test_property_dict_set_nonexisting():
         prop_dict['test'] = 'test'
     assert 'Key test does not exist' in str(exc_info.value)
 
+def test_property_dict_get_nonexisting():
+    prop_dict = KissPropertyDict()
+    with pytest.raises(KeyError):
+        prop_dict['test']
+
 def test_property_dict_set_invalid_after_delete():
     # test case derived from test_property_dict_set_invalid_value
     prop_dict = KissPropertyDict({
@@ -177,7 +182,28 @@ def test_property_dict_set_invalid_after_delete():
 
 def test_property_dict_delete_non_existing():
     prop_dict = KissPropertyDict()
-    del prop_dict['test']
+    with pytest.raises(KeyError):
+        del prop_dict['test']
+
+# REQ: When changing the underlying Property directly, the value returned by
+# PropertyDict must appear updated accordingly.
+#
+# Origin: The initial implementation used UserDict with a duplicate storage
+# for values in the UserDict.data. This implementation did not satisfy the
+# requirement.
+#
+# Rationale: The GUI implementation has a GUI for just a Property on top of
+# which the GUI for PropertyDict is build.
+def test_property_dict_update_on_property():
+    prop_dict = KissPropertyDict()
+    prop_dict.add({'test': (str, 'seomething')})
+    prop = prop_dict.get_property('test')
+    prop.value = 'new'
+    assert prop.input == 'new'
+    assert prop.value == 'new'
+    assert prop_dict['test'] == 'new'
+    assert prop_dict.get_property('test').input == 'new'
+    assert prop_dict.get_property('test').value == 'new'
 
 # #################/
 # Storable Behavior

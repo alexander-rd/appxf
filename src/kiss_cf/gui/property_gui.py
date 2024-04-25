@@ -50,8 +50,7 @@ class PropertyWidget(tkinter.Frame):
         self.entry = tkinter.Entry(self, textvariable=self.sv, width=15)
         self.entry.grid(row=0, column=1, padx=5, pady=5, sticky='NEW')
 
-    @property
-    def valid(self):
+    def is_valid(self):
         return self.property.validate(self.sv.get())
 
     def focus_set(self):
@@ -96,8 +95,7 @@ class BoolCheckBoxWidget(tkinter.Frame):
         self.iv.trace_add(
             'write', lambda var, index, mode: self.value_update())
 
-    @property
-    def valid(self):
+    def is_valid(self):
         # Checkbox value will always be valid
         return True
 
@@ -218,16 +216,11 @@ class PropertyDictWidget(tkinter.Frame):
         if self.frame_list:
             self.frame_list[0].focus_set()
 
-    @property
-    def valid(self):
+    def is_valid(self):
         valid = True
         for property_frame in self.frame_list:
-            valid &= property_frame.valid
+            valid &= property_frame.is_valid()
         return valid
-    # TODO: valid as property is inconsistent to other usages like
-    # is_initialized(). This should probably be adapted to a is_valid(). In the
-    # particular case, here, the property is not a simple getter - it's
-    # actually computing a small thing.
 
 
 class PropertyDictColumnFrame(tkinter.Frame):
@@ -280,17 +273,16 @@ class PropertyDictColumnFrame(tkinter.Frame):
     def valid(self):
         valid = True
         for frame in self.frame_list:
-            valid &= frame.valid
+            valid &= frame.is_valid()
         return valid
 
 
 class EditPropertyDictWindow(tkinter.Toplevel):
     log = logging.getLogger(__name__ + '.EditPropertyDictWindow')
 
-    # TODO: Logically, the title should come first, then the property_dict.
     def __init__(self, parent,
-                 property_dict: KissPropertyDict,
                  title: str,
+                 property_dict: KissPropertyDict,
                  kiss_options: dict = dict(),
                  **kwargs):
         '''
@@ -338,7 +330,7 @@ class EditPropertyDictWindow(tkinter.Toplevel):
         cancelButton.grid(row=0, column=0, padx=5, pady=5, sticky='SW')
 
         def okButtonFunction(event=None):
-            if property_frame.valid:
+            if property_frame.is_valid():
                 self.log.debug('OK')
                 self.property_dict.store()
                 self.destroy()
