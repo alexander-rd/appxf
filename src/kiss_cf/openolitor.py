@@ -8,9 +8,12 @@ Evetry call to get data will require a database configuration.
 '''
 import kiss_cf.mariadb
 from .buffer import Buffer, buffered
-from . import logging
+from appxf import logging
 from pandas import DataFrame
+from kiss_cf.property import KissPropertyDict
 
+# Logger must be existing for class logger. Otherwise, hierarchy is lost:
+log = logging.getLogger(__name__)
 
 class Database():
     ''' Querry OpenOlitor Database
@@ -32,9 +35,9 @@ class Database():
     log = logging.getLogger(__name__ + 'DataBase')
     buffer = Buffer()
 
-    def __init__(self, config: dict, **kwargs):
+    def __init__(self, config: dict | KissPropertyDict, **kwargs):
         super().__init__(**kwargs)
-        self.connection = kiss_cf.mariadb.Connection(config)
+        self._connection = kiss_cf.mariadb.Connection(config)
 
     @staticmethod
     def clear_buffer():
@@ -57,7 +60,7 @@ class Database():
     def get_table(self, table: str, index: str = '') -> DataFrame:
         @buffered(self.buffer)
         def _get_table(table: str):
-            data = self.connection.querry(
+            data = self._connection.querry(
                 f'SELECT * FROM {table}',
                 index)
             return data
@@ -142,7 +145,7 @@ class Database():
 
         @buffered(self.buffer)
         def _get_abo():
-            data = self.connection.querry(
+            data = self._connection.querry(
                 common_querry('heim')
                 + 'UNION'
                 + common_querry('post')
@@ -166,7 +169,7 @@ class Database():
         '''
         @buffered(self.buffer)
         def _get_zusatzabo():
-            data = self.connection.querry('''-- --sql
+            data = self._connection.querry('''-- --sql
                 SELECT
                     -- Zusatzabo Details
                     za.id as id,
@@ -231,7 +234,7 @@ class Database():
         '''
         @buffered(self.buffer)
         def _get_arbeitseinsaetze():
-            data = self.connection.querry('''-- --sql
+            data = self._connection.querry('''-- --sql
             SELECT
                 ae.id as id,
                 ae.arbeitsangebot_id as arbeitsangebot_id,

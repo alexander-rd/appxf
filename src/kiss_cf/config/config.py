@@ -102,4 +102,5 @@ class Config():
     def load(self):
         ''' Losd all sections '''
         for section in self._sections.values():
-            section.load()
+            if section.exists():
+                section.load()

@@ -10,4 +10,4 @@ Validation: This entry is for a boolean. Latest after loosing focus on entry, wr
 prop = KissBool()
 
 tester.run_frame(property_gui.PropertyWidget,
-                 prop, 'Property')
+                 'Property', prop)

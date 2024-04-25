@@ -5,9 +5,9 @@ Provide GUI classes for KissProperty objects.
 import tkinter
 import math
 
-from .. import logging
-from ..language import translate
-from ..property import KissProperty, KissBool
+from appxf import logging
+from kiss_cf.language import translate
+from kiss_cf.property import KissPropertyDict, KissProperty, KissBool
 
 
 # TODO: better option on when to validate input:
@@ -27,9 +27,8 @@ class PropertyWidget(tkinter.Frame):
     log = logging.getLogger(__name__ + '.PropertyWidget')
 
     def __init__(self, parent,
-                 property: KissProperty,
                  label: str,
-                 kiss_options: dict = dict(),
+                 property: KissProperty,
                  **kwargs):
         super().__init__(parent, **kwargs)
 
@@ -53,7 +52,7 @@ class PropertyWidget(tkinter.Frame):
 
     @property
     def valid(self):
-        return self.property.valid
+        return self.property.validate(self.sv.get())
 
     def focus_set(self):
         self.entry.focus_set()
@@ -61,8 +60,8 @@ class PropertyWidget(tkinter.Frame):
     def value_update(self):
         value = self.sv.get()
         valid = self.property.validate(value)
-        self.property.value = value
         if valid:
+            self.property.value = value
             self.entry.config(foreground='black')
         else:
             self.entry.config(foreground='red')
@@ -120,8 +119,7 @@ class PropertyDictWidget(tkinter.Frame):
     log = logging.getLogger(__name__ + '.PropertyDictWidget')
 
     def __init__(self, parent: tkinter.BaseWidget,
-                 property_dict: dict[str, KissProperty],
-                 kiss_options: dict = dict(),
+                 property_dict: KissPropertyDict,
                  **kwargs):
 
         super().__init__(parent, **kwargs)
@@ -129,16 +127,24 @@ class PropertyDictWidget(tkinter.Frame):
         # strip proerties from the dict that are not mutable:
         self.property_dict = {key: property_dict[key]
                               for key in property_dict.keys()
-                              if property_dict[key].mutable}
+                              if property_dict.get_property(key).mutable}
+
+        # TODO: the above should be applied according to default_visibility.
+        # Not mutable should still be displayed but grayed out or not editable.
 
         self.columnconfigure(0, weight=1)
         # rowconfigure in the loop below
 
-        element_gui_options = kiss_options.get('properties', dict())
+        # TODO: element_gui_options does not do anything anymore. Given the
+        # usage in _place_property_frame() it was intended to  allow
+        # overwriting the usage of checkboxes for booleans. Once the remarks on
+        # default_visibility are resolved, the new concept may incorporate this
+        # setting as well.
+        element_gui_options = {}
         self.frame_list = list()
         for key in self.property_dict.keys():
             self._place_property_frame(
-                property_dict[key], key,
+                property_dict.get_property(key), key,
                 element_gui_options.get(key, dict()))
 
     def _place_property_frame(self, prop: KissProperty, label, gui_options):
@@ -152,7 +158,7 @@ class PropertyDictWidget(tkinter.Frame):
                 self, prop, label, gui_options)
         else:
             property_frame = PropertyWidget(
-                self, prop, label, gui_options)
+                self, label, prop, **gui_options)
         property_frame.grid(
             row=len(self.frame_list), column=0, sticky='NWSE')
         self.frame_list.append(property_frame)
@@ -218,11 +224,15 @@ class PropertyDictWidget(tkinter.Frame):
         for property_frame in self.frame_list:
             valid &= property_frame.valid
         return valid
+    # TODO: valid as property is inconsistent to other usages like
+    # is_initialized(). This should probably be adapted to a is_valid(). In the
+    # particular case, here, the property is not a simple getter - it's
+    # actually computing a small thing.
 
 
 class PropertyDictColumnFrame(tkinter.Frame):
     def __init__(self, parent: tkinter.BaseWidget,
-                 property_dict: dict[str, KissProperty],
+                 property_dict: KissPropertyDict,
                  columns: int,
                  kiss_options: dict = dict(),
                  **kwargs):
@@ -231,7 +241,7 @@ class PropertyDictColumnFrame(tkinter.Frame):
         # want.
         super().__init__(parent)
 
-        key_list = property_dict.keys()
+        key_list = list(property_dict.keys())
         direction = kiss_options.get('column_direction', 'down')
         if direction == 'down':
             items_per_col = math.ceil(len(key_list)/columns)
@@ -246,16 +256,16 @@ class PropertyDictColumnFrame(tkinter.Frame):
                 f'"right", you provided "{direction}"')
 
         # fill property dictionaries
-        prop_dict_list = [dict() for i in range(columns)]
+        prop_dict_list = [KissPropertyDict() for i in range(columns)]
         for i, key in enumerate(key_list):
-            prop_dict_list[key_to_sub_dict[i]][key] = property_dict[key]
+            prop_dict_list[key_to_sub_dict[i]].add({key: property_dict[key]})
 
         # build up frames
         self.frame_list: list[PropertyDictWidget] = []
         for prop_dict in prop_dict_list:
             self.columnconfigure(len(self.frame_list), weight=1)
             this_frame = PropertyDictWidget(
-                self, prop_dict, kiss_options, **kwargs)
+                self, prop_dict, **kwargs)
             this_frame.grid(
                 row=0, column=len(self.frame_list), sticky='NWSE')
             self.frame_list.append(this_frame)
@@ -270,15 +280,16 @@ class PropertyDictColumnFrame(tkinter.Frame):
     def valid(self):
         valid = True
         for frame in self.frame_list:
-            valid &= frame.valid()
+            valid &= frame.valid
         return valid
 
 
 class EditPropertyDictWindow(tkinter.Toplevel):
     log = logging.getLogger(__name__ + '.EditPropertyDictWindow')
 
+    # TODO: Logically, the title should come first, then the property_dict.
     def __init__(self, parent,
-                 property_dict: dict[str, KissProperty],
+                 property_dict: KissPropertyDict,
                  title: str,
                  kiss_options: dict = dict(),
                  **kwargs):
@@ -287,6 +298,12 @@ class EditPropertyDictWindow(tkinter.Toplevel):
         '''
         super().__init__(parent, **kwargs)
         self.property_dict = property_dict
+        # Ensure values are stored. If congiuration fails, values will be reloaded.
+        self.property_dict.store()
+        # TODO: the above strategy will not work for a config that may use
+        # StorageDummy since no real backup is generated. Proposal: the dummy
+        # shall store in RAM and the dummy shall be renamed accordingly.
+
         self.language = dict()
 
         self.title(title)
@@ -296,7 +313,7 @@ class EditPropertyDictWindow(tkinter.Toplevel):
         columns = kiss_options.get('columns', 1)
         if columns <= 1:
             property_frame = PropertyDictWidget(
-                self, property_dict, kiss_options)
+                self, property_dict, **kiss_options)
         else:
             property_frame = PropertyDictColumnFrame(
                 self, property_dict, columns, kiss_options)
@@ -312,7 +329,7 @@ class EditPropertyDictWindow(tkinter.Toplevel):
 
         def cancelButtonFunction(event=None):
             self.log.debug('Cancel')
-            self.restore()
+            self.property_dict.load()
             self.destroy()
         cancelButton = tkinter.Button(
             button_frame,
@@ -320,11 +337,10 @@ class EditPropertyDictWindow(tkinter.Toplevel):
             command=cancelButtonFunction)
         cancelButton.grid(row=0, column=0, padx=5, pady=5, sticky='SW')
 
-        self.backup()
-
         def okButtonFunction(event=None):
             if property_frame.valid:
                 self.log.debug('OK')
+                self.property_dict.store()
                 self.destroy()
             else:
                 self.log.debug('Cannot "OK", config not valid')
@@ -336,11 +352,5 @@ class EditPropertyDictWindow(tkinter.Toplevel):
 
         self.bind('<Return>', okButtonFunction)
         self.bind('<KP_Enter>', okButtonFunction)
-
-    def backup(self):
-        for prop in self.property_dict.values():
-            prop.backup()
-
-    def restore(self):
-        for prop in self.property_dict.values():
-            prop.restore()
+        # cancel action must also apply on window close
+        self.protocol('WM_DELETE_WINDOW', cancelButtonFunction)
