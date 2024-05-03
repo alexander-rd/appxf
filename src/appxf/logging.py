@@ -81,7 +81,7 @@ def activate_logging(app_scope: str | None = None,
     appxf_logger.addHandler(file_handler)
     appxf_logger.setLevel(logging.DEBUG)
     appxf_logger.propagate = False
-    appxf_logger.debug('start logging')
+    appxf_logger.debug('start logging (appxf)')
 
     if app_scope is not None:
         app_logger = logging.getLogger(app_scope)
@@ -89,7 +89,7 @@ def activate_logging(app_scope: str | None = None,
         app_logger.addHandler(file_handler)
         app_logger.setLevel(logging.DEBUG)
         app_logger.propagate = False
-        app_logger.debug('start logging')
+        app_logger.debug(f'start logging ({app_scope})')
 
 
 def cleanup(directory: str, n_files: int = 5):

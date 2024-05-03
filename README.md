@@ -3,6 +3,13 @@
 APPXF covers cross functional concerns like configuration, persisting data,
 logging or security to limit the effort writing simple applications.
 
+__What it is:__ I transfer reusable parts into this package with a strong intend of
+the content being useful for others.
+
+__What it could be:__ With support from you, it could start closing a gap anyone
+needs to cross when writing even a small application to support small
+associations or non-profits.
+
 In Construction
 ===============
 The package is currently "in construction". Main concerns:
