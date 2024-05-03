@@ -239,7 +239,8 @@ class Database():
                 ae.id as id,
                 ae.arbeitsangebot_id as arbeitsangebot_id,
                 ae.arbeitsangebot_titel as arbeitsangebot_titel,
-                ae.arbeitsangebot_status as arbeitsangebot_status,
+                -- reading from aa table to catch deleted aa as 'None'
+                aa.status as arbeitsangebot_status,
                 ae.kunde_id as kunde_id,
                 ae.zeit_von as zeit_von,
                 ae.zeit_bis as zeit_bis,
@@ -248,6 +249,7 @@ class Database():
                 ae.bemerkungen as bemerkungen
             FROM
                 Arbeitseinsatz ae
+            LEFT JOIN (Arbeitsangebot aa) ON (ae.arbeitsangebot_id = aa.id)
             ;''', index='id')
             return data
         return _get_arbeitseinsaetze()
