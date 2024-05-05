@@ -15,6 +15,9 @@ from kiss_cf.setting import SettingDict
 # Logger must be existing for class logger. Otherwise, hierarchy is lost:
 log = logging.getLogger(__name__)
 
+# configuration is identical to mariadb
+config_property_template = kiss_cf.mariadb.config_property_template
+
 class Database():
     ''' Querry OpenOlitor Database
 
