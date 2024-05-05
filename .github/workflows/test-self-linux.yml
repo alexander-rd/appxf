@@ -1,6 +1,6 @@
 name: Test Linux
 # Splitted operating systems to not cancel one OS run if another fails. It also
-# gernetes independent badges.
+# generates independent badges.
 
 on:
   - push
@@ -13,9 +13,12 @@ jobs:
         os: [ubuntu-latest]
         python-version: ['3.10']
 
-    uses: alexander-rd/kiss_cf/.github/workflows/test.yml@main
-    secrets: inherit
-    with:
-      os: ${{ matrix.os }}
-      python-version: ${{ matrix.python-version }}
-      caller-is-kiss-cf: 'yes'
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - id: call_test
+        uses: alexander-rd/kiss_cf/github/test@main
+        with:
+          os: ${{ matrix.os }}
+          python-version: ${{ matrix.python-version }}
+          caller-is-kiss-cf: 'yes'
