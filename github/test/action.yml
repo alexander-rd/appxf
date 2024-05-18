@@ -57,7 +57,7 @@ runs:
     shell: bash
 
   # Test execution via tox must be executed by calling workflow. This is
-  # nessary in case secrets like passwords need to be passed to the tox
+  # neccesary in case secrets like passwords need to be passed to the tox
   # execution.
   - name: Tox Test Execution
     run: tox
