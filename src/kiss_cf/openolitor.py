@@ -227,6 +227,42 @@ class Database():
             return data
         return _get_zusatzabo()
 
+    def get_arbeitseangebote(self) -> DataFrame:
+        ''' Get Arbeitsangebot Table
+
+        ???
+
+        Returns:
+            pandas DataFrame with ???.
+        '''
+        @buffered(self.buffer)
+        def _get_arbeitseangebote():
+            data = self._connection.querry('''-- --sql
+            SELECT
+                aa.id as id,
+                aa.titel as titel,
+                aa.bezeichnung as bezeichnung,
+                aa.ort as ort,
+                aa.zeit_von as zeit_von,
+                aa.zeit_bis as zeit_bis,
+                aa.arbeitskategorien as arbeitskategorien,
+                IFNULL(aa.anzahl_eingeschriebene, 0) as anzahl_eingeschriebene,
+                IFNULL(aa.anzahl_personen, 0) as anzahl_personen,
+                IFNULL(aa.mehr_personen_ok, 0) as mehr_personen_ok,
+                aa.einsatz_zeit as einsatz_zeit,
+                aa.status as status
+            FROM
+                Arbeitsangebot aa
+            ;''', index='id')
+            # adjust column types
+            data['anzahl_eingeschriebene'] = data['anzahl_eingeschriebene'].astype('int64')
+            data['anzahl_personen'] = data['anzahl_eingeschriebene'].astype('int64')
+            data['mehr_personen_ok'] = data['mehr_personen_ok'].astype('bool')
+            data['einsatz_zeit'] = data['einsatz_zeit'].astype('float64')
+            return data
+        return _get_arbeitseangebote()
+
+
     def get_arbeitseinsaetze(self) -> DataFrame:
         ''' Get Mitarbeit data
 
