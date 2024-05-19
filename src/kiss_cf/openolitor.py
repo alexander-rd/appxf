@@ -230,13 +230,16 @@ class Database():
     def get_arbeitseangebote(self) -> DataFrame:
         ''' Get Arbeitsangebot Table
 
-        ???
+        Note that anzahl_eingeschrieben shall be computed from
+        arbeitseinsaetze.
 
         Returns:
-            pandas DataFrame with ???.
+            pandas DataFrame with arbeitsangebote
         '''
         @buffered(self.buffer)
         def _get_arbeitseangebote():
+            # NOTE: anzahl_eingeschrieben shall be computed from
+            #       arbeitseinsaetze table
             data = self._connection.querry('''-- --sql
             SELECT
                 aa.id as id,
@@ -246,7 +249,6 @@ class Database():
                 aa.zeit_von as zeit_von,
                 aa.zeit_bis as zeit_bis,
                 aa.arbeitskategorien as arbeitskategorien,
-                IFNULL(aa.anzahl_eingeschriebene, 0) as anzahl_eingeschriebene,
                 IFNULL(aa.anzahl_personen, 0) as anzahl_personen,
                 IFNULL(aa.mehr_personen_ok, 0) as mehr_personen_ok,
                 aa.einsatz_zeit as einsatz_zeit,
@@ -255,8 +257,10 @@ class Database():
                 Arbeitsangebot aa
             ;''', index='id')
             # adjust column types
-            data['anzahl_eingeschriebene'] = data['anzahl_eingeschriebene'].astype('int64')
-            data['anzahl_personen'] = data['anzahl_eingeschriebene'].astype('int64')
+            data['anzahl_personen'] = data['anzahl_personen'].astype('int64')
+            # String needs to convert first to int, otherwise nonempty string
+            # like '0' will result in true
+            data['mehr_personen_ok'] = data['mehr_personen_ok'].astype('int64')
             data['mehr_personen_ok'] = data['mehr_personen_ok'].astype('bool')
             data['einsatz_zeit'] = data['einsatz_zeit'].astype('float64')
             return data
@@ -266,10 +270,8 @@ class Database():
     def get_arbeitseinsaetze(self) -> DataFrame:
         ''' Get Mitarbeit data
 
-        ???
-
         Returns:
-            pandas DataFrame with ???.
+            pandas DataFrame with arbeitseinsaetze.
         '''
         @buffered(self.buffer)
         def _get_arbeitseinsaetze():
@@ -290,5 +292,8 @@ class Database():
                 Arbeitseinsatz ae
             LEFT JOIN (Arbeitsangebot aa) ON (ae.arbeitsangebot_id = aa.id)
             ;''', index='id')
+            # adjust column types
+            data['anzahl_personen'] = data['anzahl_personen'].astype('int64')
+            data['einsatz_zeit'] = data['einsatz_zeit'].astype('float64')
             return data
         return _get_arbeitseinsaetze()
