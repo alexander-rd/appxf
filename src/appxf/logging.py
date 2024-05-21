@@ -28,7 +28,7 @@ console_handler.setLevel(logging.DEBUG)
 console_handler.setFormatter(console_formatter)
 
 
-def activate_logging(app_scope: str | None = None,
+def activate_logging(app_scope: list[str] | str | None = None,
                      directory: str = './data',
                      n_files: int = 5):
     ''' Activate logging for application
@@ -84,12 +84,15 @@ def activate_logging(app_scope: str | None = None,
     appxf_logger.debug('start logging (appxf)')
 
     if app_scope is not None:
-        app_logger = logging.getLogger(app_scope)
-        app_logger.addHandler(console_handler)
-        app_logger.addHandler(file_handler)
-        app_logger.setLevel(logging.DEBUG)
-        app_logger.propagate = False
-        app_logger.debug(f'start logging ({app_scope})')
+        if isinstance(app_scope, str):
+            app_scope = [app_scope]
+        for this_scope in app_scope:
+            app_logger = logging.getLogger(this_scope)
+            app_logger.addHandler(console_handler)
+            app_logger.addHandler(file_handler)
+            app_logger.setLevel(logging.DEBUG)
+            app_logger.propagate = False
+            app_logger.debug(f'start logging ({this_scope})')
 
 
 def cleanup(directory: str, n_files: int = 5):
