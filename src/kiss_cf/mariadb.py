@@ -35,13 +35,15 @@ class Connection():
     def __init__(self, config: dict | SettingDict, **kwargs):
         super().__init__(**kwargs)
 
-        self.log.debug(f"{config['host']}:{config['port']} [{config['database']}], "
-                  f"user: {config['user']}, ssl: {config['ssl']}")
-
         self._config = config
         self._connection = None
 
     def ensure_connected(self):
+        self.log.debug(
+            f"Ensuring connection for {self._config ['host']}:{self._config ['port']} "
+            f"[{self._config ['database']}], "
+            f"user: {self._config ['user']}, ssl: {self._config ['ssl']}")
+
         if self._connection is None:
             self._connection = mariadb.connect(**self._config)
             Connection.count += 1
