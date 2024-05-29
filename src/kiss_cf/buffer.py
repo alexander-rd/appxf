@@ -69,9 +69,9 @@ class Buffer(Storable):
 
     def clear(self, what=''):
         self.ensure_loaded()
-        if what in self.buffer:
+        if what and what in self.buffer:
             self.buffer[what] = dict()
-        elif what:
+        elif not what:
             self.buffer = dict()
         self.store()
 
