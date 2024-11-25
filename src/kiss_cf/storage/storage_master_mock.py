@@ -15,7 +15,6 @@ class StorageMasterMock(StorageMaster):
 
     store/load will act on a buffer. Obtained behavior:
      * exists() will return True if there is something in the buffer
-     * _get_location_timestamp will return the timestamp of the last store()
      * _store() will write into the buffer
      * _load() will read from the buffer
      * _remove() will purge the buffer
@@ -29,7 +28,7 @@ class StorageMasterMock(StorageMaster):
                  name: str = 'mock',
                  **kwargs):
         self._name = name
-        # While not having a StorageMaster registry, for fiels to appear as
+        # While not having a StorageMaster registry, for files to appear as
         # "were stored", every generated storage must be recorded.
         self._mock_registry: dict[str, StorageMock] = {}
         super().__init__(**kwargs)

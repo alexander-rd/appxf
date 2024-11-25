@@ -22,7 +22,7 @@ from kiss_cf.setting import SettingDict, AppxfSetting, AppxfBool
 # TODO: the above suggests: larger review and rework
 
 
-class PropertyWidget(tkinter.Frame):
+class SettingFrame(tkinter.Frame):
     '''Frame holding a single property.'''
     log = logging.getLogger(__name__ + '.PropertyWidget')
 
@@ -66,7 +66,7 @@ class PropertyWidget(tkinter.Frame):
             self.entry.config(foreground='red')
 
 
-class BoolCheckBoxWidget(tkinter.Frame):
+class BoolCheckBoxFrame(tkinter.Frame):
     '''CheckBox frame for a single boolean.'''
     log = logging.getLogger(__name__ + '.BoolCheckBoxWidget')
 
@@ -107,14 +107,14 @@ class BoolCheckBoxWidget(tkinter.Frame):
         self.property.value = self.iv.get()
 
 
-class PropertyDictWidget(tkinter.Frame):
+class SettingDictFrame(tkinter.Frame):
     '''Frame holding PropertyWidgets for a dictionary of KissProperty.
 
     Changes are directly applied to the properties if they are valid. Consider
     using backup() on the properties before starting this frame and
     providing a cancel button that uses restore() on the config.
     '''
-    log = logging.getLogger(__name__ + '.PropertyDictWidget')
+    log = logging.getLogger(__name__ + '.SettingDictFrame')
 
     def __init__(self, parent: tkinter.BaseWidget,
                  property_dict: SettingDict,
@@ -152,10 +152,10 @@ class PropertyDictWidget(tkinter.Frame):
             property_frame = gui_options['frame_type'](
                 self, prop, label, gui_options)
         elif isinstance(prop, AppxfBool):
-            property_frame = BoolCheckBoxWidget(
+            property_frame = BoolCheckBoxFrame(
                 self, prop, label, gui_options)
         else:
-            property_frame = PropertyWidget(
+            property_frame = SettingFrame(
                 self, label, prop, **gui_options)
         property_frame.grid(
             row=len(self.frame_list), column=0, sticky='NWSE')
@@ -167,7 +167,7 @@ class PropertyDictWidget(tkinter.Frame):
         Can only be called after placing the widget (e.g. using grid()).
         Example:
         ```
-            w = PropertyDictWidget(root, property_dict)
+            w = SettingDictFrame(root, property_dict)
             w.grid(row=0, column=0)
             min_width = w.get_left_col_min_width()
         ```
@@ -203,7 +203,7 @@ class PropertyDictWidget(tkinter.Frame):
         Can only be called after placing the widget (e.g. using grid()). You
         also need to update the root before doing so. Example:
         ```
-            w = PropertyDictWidget(root, property_dict)
+            w = SettingDictFrame(root, property_dict)
             w.grid(row=0, column=0)
             w.winfo_toplevel().update()
             w.adjust_left_columnwidth()
@@ -223,18 +223,21 @@ class PropertyDictWidget(tkinter.Frame):
         return valid
 
 
-class PropertyDictColumnFrame(tkinter.Frame):
+class SettingDictColumnFrame(tkinter.Frame):
     def __init__(self, parent: tkinter.BaseWidget,
-                 property_dict: SettingDict,
+                 setting_dict: SettingDict,
                  columns: int,
-                 kiss_options: dict = dict(),
+                 kiss_options: dict = None,
                  **kwargs):
         # kwargs is NOT passed down to THIS frame. It will be passed down to
         # the column frames. This is hopefully more likely what a user might
         # want.
         super().__init__(parent)
 
-        key_list = list(property_dict.keys())
+        if kiss_options is None:
+            kiss_options = {}
+
+        key_list = list(setting_dict.keys())
         direction = kiss_options.get('column_direction', 'down')
         if direction == 'down':
             items_per_col = math.ceil(len(key_list)/columns)
@@ -251,13 +254,13 @@ class PropertyDictColumnFrame(tkinter.Frame):
         # fill property dictionaries
         prop_dict_list = [SettingDict() for i in range(columns)]
         for i, key in enumerate(key_list):
-            prop_dict_list[key_to_sub_dict[i]].add({key: property_dict[key]})
+            prop_dict_list[key_to_sub_dict[i]].add({key: setting_dict[key]})
 
         # build up frames
-        self.frame_list: list[PropertyDictWidget] = []
+        self.frame_list: list[SettingDictFrame] = []
         for prop_dict in prop_dict_list:
             self.columnconfigure(len(self.frame_list), weight=1)
-            this_frame = PropertyDictWidget(
+            this_frame = SettingDictFrame(
                 self, prop_dict, **kwargs)
             this_frame.grid(
                 row=0, column=len(self.frame_list), sticky='NWSE')
@@ -277,19 +280,21 @@ class PropertyDictColumnFrame(tkinter.Frame):
         return valid
 
 
-class EditPropertyDictWindow(tkinter.Toplevel):
-    log = logging.getLogger(__name__ + '.EditPropertyDictWindow')
+class SettingDictWindow(tkinter.Toplevel):
+    log = logging.getLogger(__name__ + '.SettingDictWindow')
 
     def __init__(self, parent,
                  title: str,
-                 property_dict: SettingDict,
-                 kiss_options: dict = dict(),
+                 setting_dict: SettingDict,
+                 kiss_options: dict = None,
                  **kwargs):
         '''
         Create GUI window to edit a dictionary of properties.
         '''
         super().__init__(parent, **kwargs)
-        self.property_dict = property_dict
+        if kiss_options is None:
+            kiss_options = {}
+        self.property_dict = setting_dict
         # Ensure values are stored. If congiuration fails, values will be reloaded.
         self.property_dict.store()
         # TODO: the above strategy will not work for a config that may use
@@ -304,11 +309,11 @@ class EditPropertyDictWindow(tkinter.Toplevel):
 
         columns = kiss_options.get('columns', 1)
         if columns <= 1:
-            property_frame = PropertyDictWidget(
-                self, property_dict, **kiss_options)
+            property_frame = SettingDictFrame(
+                self, setting_dict, **kiss_options)
         else:
-            property_frame = PropertyDictColumnFrame(
-                self, property_dict, columns, kiss_options)
+            property_frame = SettingDictColumnFrame(
+                self, setting_dict, columns, kiss_options)
         property_frame.grid(row=0, column=0, padx=0, pady=0, sticky='NSWE')
         self.update()
         property_frame.adjust_left_columnwidth()

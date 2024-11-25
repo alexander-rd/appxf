@@ -9,7 +9,7 @@ import tkinter.ttk
 from appxf import logging
 # from kiss_cf.config import Config
 from kiss_cf.setting import SettingDict
-from kiss_cf.gui import PropertyDictWidget
+from kiss_cf.gui import SettingDictFrame
 from kiss_cf.security import Security
 
 
@@ -71,7 +71,7 @@ class Login():
         guiRoot.rowconfigure(0, weight=1)
         guiRoot.columnconfigure(1, weight=1)
 
-        userConfig = PropertyDictWidget(guiRoot, property_dict=self._user_config)
+        userConfig = SettingDictFrame(guiRoot, property_dict=self._user_config)
         userConfig.grid(row=0, column=0, sticky='NSWE', columnspan=2)
         left_min_size_config = userConfig.get_left_col_min_width()
 

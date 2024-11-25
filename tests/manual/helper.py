@@ -11,8 +11,8 @@ import tkinter
 
 # TODO: provide a script to execute all manual tests that are open
 
-# TODO: find a way to star/stop the testing window together with a debug window
-# to show states.
+# TODO: find a way to start/stop the testing window together with a debug
+# window to show states.
 
 
 class ManualTestHelper(tkinter.Tk):

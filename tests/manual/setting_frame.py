@@ -1,6 +1,6 @@
-from tests.manual.helper import ManualTestHelper
+from helper import ManualTestHelper
 from kiss_cf.setting import AppxfBool
-from kiss_cf.gui import property_gui
+from kiss_cf.gui import SettingFrame
 
 tester = ManualTestHelper('''
 Resizing: should only affect the right entry part.
@@ -9,5 +9,5 @@ Validation: This entry is for a boolean. Latest after loosing focus on entry, wr
 
 prop = AppxfBool()
 
-tester.run_frame(property_gui.PropertyWidget,
+tester.run_frame(SettingFrame,
                  'Property', prop)

@@ -67,5 +67,3 @@ class Storage(ABC):
     @abstractmethod
     def store(self, data: object):
         ''' Store data to Storage '''
-
-
