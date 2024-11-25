@@ -16,7 +16,7 @@ from .setting import AppxfSetting, AppxfSettingError
 
 # TODO: Loading modes 'add' and 'error'
 
-class SettingDict(MutableMapping, Storable):
+class SettingDict(Storable, MutableMapping):
     ''' Maintain a dictionary of settings
 
     While normal dictionary behavior is supported, be aware that writing to
@@ -50,10 +50,11 @@ class SettingDict(MutableMapping, Storable):
         # Define SettingDict specific details
         self._setting_dict: dict[Any, AppxfSetting] = {}
         # Initialize dict details
-        if storage is None and isinstance(storage, Storage):
+        if storage is None:
             storage = StorageDummy()
         # **kwargs cannot be forwarded. All are resolved into dictionary construction.
         super().__init__(storage=storage)
+
         # Cunsume data and kwargs manually:
         if data is not None:
             self.add(data)

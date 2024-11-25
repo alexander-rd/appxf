@@ -1,6 +1,6 @@
 from helper import ManualTestHelper
-from kiss_cf.setting import AppxfBool, AppxfString, AppxfEmail
-from kiss_cf.gui import property_gui
+from kiss_cf.setting import AppxfBool, AppxfString, AppxfEmail, SettingDict
+from kiss_cf.gui import SettingDictWindow
 from appxf import logging
 
 logging.activate_logging()
@@ -13,18 +13,12 @@ Columns: Placing options on top of this widget will test alignement of entry fie
 ''')  # noqa: E501
 
 #  - Label length: the dict uses very short and very long names on purpose:
-prop_dict = {
+setting_dict = SettingDict({
     'String:': AppxfString(),
     'Email of the master of disaster:': AppxfEmail(),
     'Boolean Value:': AppxfBool(),
-}
+    })
 
-for key in prop_dict.keys():
-    print(f'{key}: {prop_dict[key]}')
-
-tester.run_toplevel(property_gui.EditPropertyDictWindow,
+tester.run_toplevel(SettingDictWindow,
                     'Edit Window Title',
-                    prop_dict)
-
-for key in prop_dict.keys():
-    print(f'{key}: {prop_dict[key]}')
+                    setting_dict)

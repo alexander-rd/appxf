@@ -5,7 +5,7 @@ Provide GUI classes for yagni_cft Config objects.
 import tkinter
 
 from appxf import logging
-from kiss_cf.gui import PropertyDictWidget, EditPropertyDictWindow
+from kiss_cf.gui import SettingDictWindow
 from kiss_cf.config import Config
 
 # TODO: reconsider language concept: maybe something configurable, working on
@@ -29,9 +29,9 @@ class ConfigMenu(tkinter.Menu):
                 break
 
             def command(section=section):
-                window = EditPropertyDictWindow(parent,
+                window = SettingDictWindow(parent,
                     title=f'Settings for {section}',
-                    property_dict=self._config.section(section),
+                    setting_dict=self._config.section(section),
                     )
                 window.grab_set()
             self.add_command(label=section, command=command)

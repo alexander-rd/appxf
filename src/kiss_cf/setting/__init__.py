@@ -29,6 +29,8 @@ from .setting import AppxfSetting, AppxfSettingError, AppxfSettingConversionErro
 from .setting import AppxfString, AppxfEmail, AppxfPassword
 from .setting import AppxfBool, AppxfInt, AppxfFloat
 
+# from .setting_select import AppxfStringSelect
+
 from .setting_dict import SettingDict
 
 from .setting import validated_conversion_configparser
