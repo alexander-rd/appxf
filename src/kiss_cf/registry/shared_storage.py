@@ -2,16 +2,19 @@
 # allow class name being used before being fully defined (like in same class):
 from __future__ import annotations
 
-from kiss_cf.storage import Storage, DerivingStorageMaster, StorageMaster
-from kiss_cf.storage import Serializer, RawSerializer, CompactSerializer
+from kiss_cf.storage import StorageToBytes, StorageToBytes, Storage, AppxfStorageError
+from kiss_cf.storage import Serializer, CompactSerializer, JsonSerializer
 from kiss_cf.security import Security
 
 from._registry_base import RegistryBase
 from ._signature import Signature
 from ._public_encryption import PublicEncryption
 
+# SecureSharedStorage uses two meta files for which we define the serializers:
+StorageToBytes.set_meta_serializer('signature', JsonSerializer)
+StorageToBytes.set_meta_serializer('keys', CompactSerializer)
 
-class SecureSharedStorage(Storage):
+class SecureSharedStorage(StorageToBytes):
     ''' Typical setup for shared storage
 
     The typical setup consists of the layers:
@@ -21,37 +24,40 @@ class SecureSharedStorage(Storage):
       3) Signature for authenticity
     '''
     def __init__(self,
-                 storage: StorageMaster,
-                 file: str,
-                 base_storage: StorageMaster,
+                 base_storage: StorageToBytes,
                  security: Security,
                  registry: RegistryBase,
-                 serializer: type[Serializer],
-                 **kwargs
+                 serializer: type[Serializer] = CompactSerializer,
                  ):
-        # TODO: "to roles" is missing input
+        # TODO: "to roles" is missing input. Alternatively "to users" should be
+        # supported. Likewise "allowed roles"/"allowed users" is required to
+        # ensure (1) only allowed roles are writing the data and (2) receivers
+        # can verify authenticity. BEWARE the FACTORY interface: each name in a
+        # predefined path may hold files with different permissions.
 
-        # TODO: Reconsider how "allowed writing roles" are considered. I would
-        # expect the factory collecting "allowed writers" and "additional
-        # readers", assuming writers always must be readers.
-
-        super().__init__(storage=storage, name=file, **kwargs)
-        self._file = file
-        self._base_storage = base_storage.get_storage(file,
-                                                 register=False,
-                                                 serializer=RawSerializer)
+        super().__init__(name=base_storage.name,
+                         location=base_storage.location,
+                         base_storage=base_storage,
+                         serializer=serializer)
         self._security = security
         self._registry = registry
-        self._serializer = serializer
+        # indicate unusable user with None
+        if self._registry.is_initialized():
+            self._user = self._registry.user_id
+        else:
+            self._user = None
+        # TODO: is this the right way of doing it, Storage base class already
+        # knows _user and may already act accordingly.
+
         self._signature = Signature(
-            storage=base_storage.get_storage(
-                file + '.signature', register=False),
+            storage=base_storage.get_meta('signature'),
             security=security)
         self._public_encryption = PublicEncryption(
-            storage_method=base_storage.get_storage(
-                file + '.keys', register=False),
+            storage=base_storage.get_meta('keys'),
             security=security,
             registry=registry)
+
+    # TODO: update documentation below. Put elsewhere??
 
     # Stacking concept: The classes used here shall only:
     #  1) process bytes input/output like encrypting/decrypting while
@@ -65,21 +71,95 @@ class SecureSharedStorage(Storage):
     # then be responsible for storing/loading also the supporting files. <<
     # this is the way to go!
 
-    def exists(self) -> bool:
-        return self._base_storage.exists()
+    #TODO: __init__ and get are missing the serializer argument
 
-    def store(self, data: object):
+    #TODO: here and in SecureStorage.. ..document clearly which serializer is
+    #  applied. The one from the base_storage or the one added to
+    #  SecureShared/SecurePrivate storage.
+
+    @classmethod
+    def get(cls,
+            base_storage: StorageToBytes,
+            security: Security,
+            registry: RegistryBase,
+            serializer: type[Serializer] = CompactSerializer) -> Storage:
+        ''' Get a known storage object or create one. '''
+        return super().get(name=base_storage.name,
+                           location=base_storage.location,
+                           storage_init_fun=lambda: SecureSharedStorage(
+                               base_storage=base_storage,
+                               security=security, registry=registry,
+                               serializer=serializer
+                           ))
+
+    @classmethod
+    def get_factory(cls, base_storage_factory: Storage.Factory,
+                    security: Security, registry: RegistryBase,
+                    serializer: type[Serializer] = CompactSerializer) -> Storage.Factory:
+        return super().get_factory(base_storage=base_storage_factory,
+                                   storage_get_fun=lambda name: SecureSharedStorage.get(
+                                       base_storage=base_storage_factory(name),
+                                       security=security, registry=registry,
+                                       serializer=serializer
+                                   ))
+
+    def ensure_usable(self):
+        ''' Check security and registry objects
+
+        No storage operation is possible if security is not unlocked and
+        registry is not initialized with user id.
+        '''
+        if not self._security.is_user_unlocked():
+            return False
+        if not self._registry.is_initialized():
+            return False
+        if self._user is None:
+            self._user = self._registry.user_id
+        return True
+
+    def exists(self) -> bool:
+        if self.base_storage is None:
+            raise AppxfStorageError(
+                f'{self.__class__.__name__} required a base storage but you used None.')
+        # security and registry must have appropriate states
+        if not self.ensure_usable():
+            return False
+        # file must exist:
+        if not self.base_storage.exists():
+            return False
+        # if a meta ends up in this function, then it also needs signature and
+        # public_encryption (keys). It should, however be using the base
+        # storage.
+        if not self._signature.exists():
+            return False
+        if not self._public_encryption.exists():
+            return False
+        return True
+
+    def store_raw(self, data: bytes):
+        # registry and security must be initialized:
+        if not self.ensure_usable():
+            raise AppxfStorageError(
+                'Store on SecureSharedStorage is only possible with '
+                'unlocked security and initialized registry.')
         # encryption
-        data_bytes = self._serializer.serialize(data)
-        data_bytes = self._public_encryption.encrypt(data_bytes)
+        data_bytes = self._public_encryption.encrypt(data)
         self._public_encryption.store()
-        # signing (encrypted data)
+        #data_bytes = data
+        ## signing (encrypted data)
         self._signature.sign(data_bytes)
         self._signature.store()
-        self._base_storage.store(data_bytes)
+        self.base_storage.store_raw(data_bytes)
 
-    def load(self) -> object:
-        data_bytes: bytes = self._base_storage.load()
+    def load_raw(self) -> bytes:
+        if not self.ensure_usable():
+            raise AppxfStorageError(
+                'Load on SecureSharedStorage is only possible with '
+                'unlocked security and initialized registry.')
+        # load raw
+        data_bytes: bytes = self.base_storage.load_raw()
+        if data_bytes == b'':
+            return b''
         self._signature.load()
         if not self._signature.verify(data_bytes):
             # TODO: test case for failing signature
@@ -89,48 +169,8 @@ class SecureSharedStorage(Storage):
         # decryption
         self._public_encryption.load()
         data_bytes = self._public_encryption.decrypt(data_bytes)
-        return self._serializer.deserialize(data_bytes)
+        return data_bytes
 
-
-# TODO: validate the concept that only particular roles are allowed to write
-# data. It shall be possible to get files that are configured individually.
-class SecureSharedStorageMaster(DerivingStorageMaster):
-    ''' Get secured and shared storage methods '''
-    def __init__(self,
-                 storage: StorageMaster,
-                 security: Security,
-                 registry: RegistryBase,
-                 default_serializer: type[Serializer] = CompactSerializer):
-        ''' Get secured and shared storage methods
-
-        Arguments:
-            location -- the shared location in which files are stored
-            security -- an unlocked security object to access private keys as
-                        well as signing/encryption algorithms
-            registry -- the user registry to access other users public keys and
-                        role assignments
-        '''
-        super().__init__(storage=storage)
-        self._security = security
-        self._registry = registry
-        self._default_serializer = default_serializer
-
-    def id(self, name: str = ''):
-        user_id = '?'
-        if self._registry.is_initialized():
-            user_id = str(self._registry.user_id)
-        return f'SecureShared({user_id})::{self._base_storage.id(name)}'
-
-    def _get_storage(self,
-                     name: str,
-                     serializer: type[Serializer] | None = None,
-                     ) -> Storage:
-        if serializer is None:
-            serializer = self._default_serializer
-        return SecureSharedStorage(
-            storage=self,
-            file=name,
-            base_storage=self._storage,
-            security=self._security,
-            registry=self._registry,
-            serializer=serializer)
+    # TODO: id() logged the user under which the registry was opened. User and
+    # role details may be reasonable added logging. But here is also no logging
+    # concept added to support debug logs. Like: details on init,

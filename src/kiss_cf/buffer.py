@@ -4,7 +4,7 @@ import typing
 import pickle
 
 from appxf import logging
-from kiss_cf.storage import Storable, Storage, StorageDummy
+from kiss_cf.storage import Storable, Storage, RamStorage
 
 log = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class Buffer(Storable):
     log = logging.getLogger(f'{__name__}.Buffer')
 
     def __init__(self,
-                 storage_handler: Storage = StorageDummy(),
+                 storage_handler: Storage = RamStorage(),
                  **kwargs
                  ):
 

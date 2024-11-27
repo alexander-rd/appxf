@@ -1,4 +1,4 @@
-from kiss_cf.storage import Storable, Storage
+from kiss_cf.storage import Storable, Storage, CompactSerializer
 from typing import Set, TypedDict
 
 
@@ -46,6 +46,15 @@ class UserDatabase(Storable):
         self._role_map = data['role_map']
         # TODO: recreate next_id and unused_id_list
 
+    # public get_state/set_state to transfer an initial user_db from admin to
+    # new user:
+    def get_state(self) -> bytes:
+        return CompactSerializer.serialize(self._get_state())
+
+    def set_state(self, data: bytes):
+        self._set_state(CompactSerializer.deserialize(data))
+        self.store()
+
     def init_user_db(self,
                      validation_key: bytes,
                      encryption_key: bytes) -> int:
@@ -55,6 +64,9 @@ class UserDatabase(Storable):
             encryption_key=encryption_key,
             roles=['user', 'admin'])
         return user_id
+
+    def get_users(self) -> list[int]:
+        return list(self._user_db.keys())
 
     def add_new(self,
                 validation_key: bytes,
@@ -108,7 +120,7 @@ class UserDatabase(Storable):
         data from this user that might need signature validation.
         '''
         for role in self._role_map:
-            if id in self._role_map[role]:
+            if user_id in self._role_map[role]:
                 self._role_map[role].remove(id)
             if (not self._role_map[role] and
                     not role == 'user' and
@@ -179,6 +191,6 @@ class UserDatabase(Storable):
         #  2) It shall be usable with a config editor (read only)
         pass
 
-# TODO: Support is needed to verify conditions to purge a user. This can only
-# be done together with StorageMaster implementation that needs to track all
-# StorageMaster and registered storages.
+# TODO: Support is needed to verify conditions to purge a user. This requires a
+# complete registry of all files the user may have stored in the past. This
+# data would need to be re-written by the admin before purging.

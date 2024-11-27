@@ -5,8 +5,7 @@ Surprise: it bundles AppxfSettings to a dictionary behavior. ;)
 
 from typing import Any
 from collections.abc import Mapping, MutableMapping
-from kiss_cf.storage import Storable, Storage
-from kiss_cf.storage.storage_dummy import StorageDummy
+from kiss_cf.storage import Storable, Storage, RamStorage
 from .setting import AppxfSetting, AppxfSettingError
 
 # TODO: support tuples with additional named value options
@@ -51,7 +50,7 @@ class SettingDict(Storable, MutableMapping):
         self._setting_dict: dict[Any, AppxfSetting] = {}
         # Initialize dict details
         if storage is None:
-            storage = StorageDummy()
+            storage = RamStorage()
         # **kwargs cannot be forwarded. All are resolved into dictionary construction.
         super().__init__(storage=storage)
 

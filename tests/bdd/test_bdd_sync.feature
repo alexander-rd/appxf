@@ -10,18 +10,21 @@ Feature: Synchronization
     Examples:
     | method               |
     | Default              |
+    | LocalStorage         |
     | SecurePrivateStorage |
     | SecureSharedStorage  |
 
 
     Scenario: Simple Initialization
     Given Locations [A, B]
+    And Location [A, B] is using LocalStorage
     When A writes "some data" into some_data
     And Synchronizing A with B
     Then Data in A matches data in B
 
     Scenario: Update Loop
     Given Locations [A, B]
+    And Location [A, B] is using LocalStorage
     And A writes "some data" into some_data
     And Synchronizing A with B
     When A writes "some new data" into some_data
@@ -30,6 +33,7 @@ Feature: Synchronization
 
     Scenario: Synchronization round trip
     Given Locations [A, B, C]
+    And Location [A, B, C] is using LocalStorage
     And A writes "some data" into some_data
     And Synchronizing A with B
     And Synchronizing B with C

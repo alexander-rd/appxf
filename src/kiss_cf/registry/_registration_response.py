@@ -20,11 +20,12 @@ class KissExceptionRegistrationResponse(Exception):
 class RegistrationResponseData(TypedDict):
     version: int
     user_id: int
+    user_db: bytes
     config_sections: dict[str, dict[str, Any]]
 
 
 class RegistrationResponse():
-    def __init__(self, data, **kwargs):
+    def __init__(self, data: RegistrationResponseData, **kwargs):
         super().__init__(**kwargs)
         self._data = data
 
@@ -33,17 +34,23 @@ class RegistrationResponse():
         return self._data['user_id']
 
     @property
+    def user_db_bytes(self):
+        return self._data['user_db']
+
+    @property
     def config_sections(self):
         return self._data['config_sections']
 
     @classmethod
     def new(cls,
             user_id: int,
-            config_sections: dict[str, dict[str, Any]]
+            user_db: bytes,
+            config_sections: dict[str, dict[str, Any]],
             ) -> RegistrationResponse:
         data: RegistrationResponseData = {
             'version': 1,
             'user_id': user_id,
+            'user_db': user_db,
             'config_sections': config_sections
             }
         return cls(data)
@@ -52,7 +59,7 @@ class RegistrationResponse():
     def from_response_bytes(cls,
                             registration_response: bytes
                             ) -> RegistrationResponse:
-        data = CompactSerializer.deserialize(registration_response)
+        data: RegistrationResponseData = CompactSerializer.deserialize(registration_response)
         return cls(data)
 
     def get_response_bytes(self) -> bytes:

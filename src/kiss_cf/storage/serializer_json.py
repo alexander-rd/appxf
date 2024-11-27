@@ -30,7 +30,7 @@ class _RestrictedJsonEncoder(json.JSONEncoder):
         if isinstance(o, dict):
             if not all(isinstance(key, str) for key in o.keys()):
                 raise KissSerializerError(
-                    f'Cannot serialize: keys must be str but are {o.keys()}. '
+                    f'Cannot serialize: keys must be str but are {list(o.keys())}. '
                     f'Deserializing would not work as expected.')
 
     def default(self, o: Any) -> Any:

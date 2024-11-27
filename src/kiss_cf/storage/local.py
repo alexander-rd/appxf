@@ -1,45 +1,72 @@
 
+from __future__ import annotations
 from datetime import datetime
 import os.path
+from typing import Any
 
-from ._file_storage_master import FileStorageMaster
+from .storage_to_bytes import StorageToBytes, Storage, CompactSerializer, Serializer
 
 
-class LocalStorageMaster(FileStorageMaster):
+class LocalStorage(StorageToBytes):
     ''' Maintain files in a local path. '''
-    def __init__(self, path: str, **kwargs):
+
+    def __init__(self,
+                 file: str,
+                 path: str,
+                 serializer: type[Serializer] = CompactSerializer,
+                 ):
         # Ensure the path will exist
         if not os.path.exists(path):
             os.makedirs(path, exist_ok=True)
-        self.path = path
         # Important: super().__init__() already utilizes the specific
         # implementation. Attributes must be available.
-        super().__init__(**kwargs)
+        super().__init__(name=file,
+                         location=path,
+                         serializer=serializer,
+                         )
+        self._path = path
 
-    # ## Methods from StorageLocation
-    def id(self, name: str = '') -> str:
-        name = f'::{name}' if name else ''
-        return f'Local({self.path}){name}'
+    @classmethod
+    def get(cls, file: str, path: str,
+            serializer: type[Serializer] = CompactSerializer,
+            ) -> Storage:
+        return super().get(name=file, location=path,
+                           storage_init_fun=lambda: LocalStorage(
+                               file=file, path=path,
+                               serializer=serializer))
 
-    def exists(self, name: str) -> bool:
-        return os.path.exists(os.path.join(self.path, name))
+    @classmethod
+    def get_factory(cls, path: str,
+                    serializer: type[Serializer] = CompactSerializer
+                    ) -> Storage.Factory:
+        return super().get_factory(location=path,
+                                   storage_get_fun=lambda name: LocalStorage.get(
+                                        file=name, path=path,
+                                        serializer=serializer))
 
-    def _get_location_timestamp(self, file: str) -> datetime | None:
-        if self.exists(file):
-            return datetime.fromtimestamp(os.path.getmtime(
-                os.path.join(self.path, file)
-                ))
-        return None
+    def _get_file_path(self, create_dir: bool):
+        if self._meta:
+            path = os.path.join(self._path, '.meta')
+            if create_dir and not os.path.exists(path):
+                os.makedirs(path)
+            return os.path.join(path, self._name + '.' + self._meta)
+        return os.path.join(self._path, self._name)
 
-    def _store(self, file: str, data: bytes):
-        with open(os.path.join(self.path, file), 'wb') as f:
+    def exists(self) -> bool:
+        return os.path.exists(self._get_file_path(create_dir=False))
+
+    def store_raw(self, data: bytes):
+        with open(self._get_file_path(create_dir=True), 'wb') as f:
             f.write(data)
 
-    def _load(self, file: str) -> bytes:
-        with open(os.path.join(self.path, file), 'rb') as f:
+    def load_raw(self) -> bytes:
+        path = self._get_file_path(create_dir=False)
+        if not os.path.exists(path):
+            return b''
+        with open(path, 'rb') as f:
             return f.read()
 
     def _remove(self, file: str):
-        full_path = os.path.join(self.path, file)
+        full_path = os.path.join(self._path, file)
         if os.path.exists(full_path):
             os.remove(full_path)

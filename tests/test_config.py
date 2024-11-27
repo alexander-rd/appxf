@@ -1,8 +1,12 @@
 
 import pytest
-from kiss_cf.storage import StorageMaster, StorageMasterMock, KissStorableError
+from kiss_cf.storage import AppxfStorableError, RamStorage, Storage
 from kiss_cf.setting import SettingDict
 from kiss_cf.config import Config, KissConfigError
+
+@pytest.fixture(autouse=True)
+def setup():
+    Storage.reset()
 
 def test_config_initialization_state():
     config = Config()
@@ -33,14 +37,13 @@ def test_config_empty_section():
     assert config.sections == ['TEST']
 
 def test_config_store_load():
-    storage_master_mock = StorageMasterMock()
-    config = Config(default_storage=storage_master_mock)
+    config = Config(default_storage_factory=RamStorage.get_factory())
     config.add_section('TESTA').add(test='A')
     config.add_section('TESTB').add(test='B')
     config.add_section('TESTC').add(test='C')
     config.store()
     # new config and load
-    config_restore = Config(default_storage=storage_master_mock)
+    config_restore = Config(default_storage_factory=RamStorage.get_factory())
     config_restore.add_section('TESTA').add(test=(str,))
     config_restore.add_section('TESTB') # no added options will NOT load it
     config_restore.add_section('TESTC').add(test=(str,))
@@ -50,19 +53,20 @@ def test_config_store_load():
     assert config_restore.section('TESTC')['test'] == 'C'
 
 def test_config_store_load_custom_storage():
-    storage_master_mock_A = StorageMasterMock()
-    storage_master_mock_B = StorageMasterMock()
-    config = Config(default_storage=storage_master_mock_A)
+    RamStorage.reset()
+    factory_a = RamStorage.get_factory(ram_area='mock_A')
+    factory_b = RamStorage.get_factory(ram_area='mock_B')
+    config = Config(default_storage_factory=factory_a)
     config.add_section('TESTA').add(test='A')
-    config.add_section('TESTB', storage_master=storage_master_mock_B).add(test='B')
+    config.add_section('TESTB', storage_factory=factory_b).add(test='B')
     config.store()
     # new config and load - but this time, B does use default storage master A
-    config_restore = Config(default_storage=storage_master_mock_A)
+    config_restore = Config(default_storage_factory=factory_a)
     config_restore.add_section('TESTA').add(test=(str,))
     config_restore.add_section('TESTB').add(test=(str,))
     config_restore.section('TESTA').load()
     assert config_restore.section('TESTA')['test'] == 'A'
-    with pytest.raises(KissStorableError) as exc_info:
+    with pytest.raises(AppxfStorableError) as exc_info:
         config_restore.section('TESTB').load()
     assert 'Storage does not exist' in str(exc_info.value)
 

@@ -1,10 +1,11 @@
 import pytest
 
 from tests.fixtures.application_mock import ApplicationMock
-from tests.fixtures.env_base import env_base
+from tests.fixtures import appxf_objects
 from tests.fixtures.application import app_unlocked_user_admin_pair
 
-
+# TODO: CURRENT REFACTORING: move unlocked user/admin pair from registry test
+#       to appxf_objects to use in here.
 
 def test_app_80_large_scale_sync(app_unlocked_user_admin_pair):
     # TODO: build up large scale application
