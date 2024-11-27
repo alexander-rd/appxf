@@ -2,16 +2,16 @@
 # allow class name being used before being fully defined (like in same class):
 from __future__ import annotations
 
-from kiss_cf.storage import StorageMaster, sync
+from kiss_cf.storage import sync, Storage
 from kiss_cf.config import Config
-from kiss_cf.security import Security, SecurePrivateStorageMaster
+from kiss_cf.security import Security, SecurePrivateStorage
 
 from ._registration_request import RegistrationRequest
 from ._registration_response import RegistrationResponse
 from ._user_id import UserId
 from ._user_db import UserDatabase
 from ._registry_base import RegistryBase
-from .shared_storage import SecureSharedStorageMaster
+from .shared_storage import SecureSharedStorage
 
 
 class KissRegistryError(Exception):
@@ -31,33 +31,48 @@ class Registry(RegistryBase):
         configurations the user is permitted to see. '''
 
     def __init__(self,
-                 local_base_storage: StorageMaster,
-                 remote_base_storage: StorageMaster,
+                 local_storage_factory: Storage.Factory,
+                 remote_storage_factory: Storage.Factory,
                  security: Security,
                  config: Config,
                  user_config_section: str = 'USER',
                  **kwargs):
+        ''' Create Registry Handler
+
+        local_storage_factory: The local storage is where your view on the user
+            database is stored for offline usage. This is typically
+            LocalStorage and Registry stores data via SecurePrivateStorage.
+        remote_storage_factory: The remote storage is where the overall user
+            database is stored for all users to sync with. A typical use case
+            is FtpStorage while also LocalStorage may be used. Registry employs
+            a SecureSharedStorage on top for stored files.
+        security: a local login Security object is required to employ the
+            SecurePrivate and SecureShared storage as mentioned above.
+        config: The registration procedure allows to convey certain parts of
+            the application configuration which may be required to access the
+            remote storage mentioned above.
+        '''
         super().__init__(**kwargs)
         self._loaded = False
         self._security = security
         self._config = config
-        self._local_base_storage = local_base_storage
-        self._remote_base_storage = remote_base_storage
+        self._local_storage_factory = local_storage_factory
+        self._remote_storage_factory = remote_storage_factory
         self._user_config_section = user_config_section
 
+        # USER_ID does not need to be secured
+        self._user_id = UserId(local_storage_factory('USER_ID'))
+
         # USER_DB must be secured
-        self._local_user_db_storage = SecurePrivateStorageMaster(
-                storage=local_base_storage,
-                security=security).get_storage('USER_DB')
+        self._local_user_db_storage = SecurePrivateStorage(
+            base_storage = local_storage_factory('USER_DB'),
+            security=security)
         self._user_db = UserDatabase(self._local_user_db_storage)
         # Matching remote storage
-        self._remote_user_db_storage = SecureSharedStorageMaster(
-            storage=remote_base_storage,
+        self._remote_user_db_storage = SecureSharedStorage(
+            base_storage=remote_storage_factory('USER_DB'),
             security=security,
-            registry=self).get_storage('USER_DB')
-
-        # USER_ID does not need to be secured
-        self._user_id = UserId(local_base_storage.get_storage('USER_ID'))
+            registry=self)
 
         # Note: USER_DB cannot be synced from __init__ since security module
         # will not yet be unlocked
@@ -75,16 +90,20 @@ class Registry(RegistryBase):
         if uid is None:
             return self._user_db.get_roles()
         elif uid < 0:
+            # TODO: why does only require access of _user_id an ensure_loaded()
+            # but not access of _user_db above and below?
             self._ensure_loaded()
             uid = self._user_id.id
         return self._user_db.get_roles(uid)
 
     def is_initialized(self) -> bool:
         return (self._loaded or (
-                self._user_id._storage.exists() and
-                self._user_db._storage.exists()
+                self._user_id.exists() and
+                self._user_db.exists()
                 ))
 
+    # TODO: ensure_loaded is only used once. This instance could just use
+    # try_load.
     def _ensure_loaded(self):
         if self._loaded:
             return None
@@ -96,10 +115,14 @@ class Registry(RegistryBase):
             return False
         if not self.is_initialized():
             return False
+        if not self._user_id.exists():
+            return False
         self._user_id.load()
+        if not self._user_db.exists():
+            return False
         self._user_db.load()
         self._loaded = True
-        return True
+        return self._loaded
 
     def set_admin_keys(self, keys: list[tuple[bytes, bytes]]):
         for key_set in keys:
@@ -115,14 +138,16 @@ class Registry(RegistryBase):
             validation_key=self._security.get_signing_public_key(),
             encryption_key=self._security.get_encryption_public_key())
         self._loaded = True
-        # Note: writing into USER_ID  and into USER_DB automatically stores
+        # Note: writing into USER_ID and into USER_DB automatically stores
         # them.
-        self.sync_with_remote(mode='sending')
+
+        # No update of remote USER_DB - there is no one who would need that
+        # with only the admin being registered.
 
     def sync_with_remote(self, mode: str):
         ''' Sync local registry with remote location.
 
-        A sync should happen at every startup and/or before any snc of shared
+        A sync should happen at every startup and/or before any sync of shared
         data. Additionally, sync is executed when admin adds a new member or
         when user adds the registration response.
 
@@ -130,9 +155,31 @@ class Registry(RegistryBase):
           * the user has unlocked the Security object
           * the user is registered (is_initialized())
         '''
+        print(f' -- {mode} from user={self.user_id}')
+        # TODO: receiving after getting registration response on user side
+        # cannot work since try_load() includes trying to load the user_db
+        # which is not existent yet? .. .. is it not? It could be if the
+        # registration response would already include it, not? But it does not
+        # include it. So.. ..what is the original purpose of try_load() OR what
+        # is the purpose of the below try_load() protection?
+        #
+        # AFTER the response, I should already know my roles, not? Or does the
+        # user only know it's ID and can access the user_db by ID since it will
+        # find the decryption key?
+        #
+        # ANALYSIS - what is required to RECEIVE data from SharedStorage?
+        #
+        # (1) To decrypt, I need my private key in my security object >> not a
+        #     problem.
+        #
+        # (2) To check the signature, I need to verify the payload with MY COPY
+        #     of the public key which is only available in the user_db.
+        #
+        # >> For the first sync, all admin public keys should be sent.
         if self.try_load():
             is_admin = self._user_db.has_role(self._user_id.id, 'admin')
             if mode == 'receiving':
+                print(' -- receiving')
                 # receiving is ALWAYS overwriting local USER_DB
                 sync(storage_a=self._remote_user_db_storage,
                      storage_b=self._local_user_db_storage,
@@ -141,6 +188,7 @@ class Registry(RegistryBase):
                 self._user_db.load()
             elif mode == 'sending':
                 if is_admin:
+                    print(' -- sending')
                     sync(storage_a=self._local_user_db_storage,
                         storage_b=self._remote_user_db_storage,
                         only_a_to_b=True)
@@ -181,8 +229,11 @@ class Registry(RegistryBase):
         if not self._loaded:
             raise KissRegistryUnitialized(
                 'registry is not yet loaded, cannot add user')
-        # ensure synced state before update:
-        self.sync_with_remote(mode='receiving')
+        # ensure synced state before update - exception being that the admin is
+        # still the only existant user in which case, there is nothing to get
+        # from the remote USER_DB.
+        if len(self._user_db.get_users()) > 1:
+            self.sync_with_remote(mode='receiving')
         # update
         user_id = self._user_db.add_new(
             validation_key=request.signing_key,
@@ -209,8 +260,9 @@ class Registry(RegistryBase):
                 raise KissRegistryUnknownConfigSection(
                     f'Section {section} does not exist.')
         response = RegistrationResponse.new(
-            user_id,
-            {section: dict(self._config.section(section))
+            user_id=user_id,
+            user_db=self._user_db.get_state(),
+            config_sections={section: dict(self._config.section(section))
              for section in sections})
         return response.get_response_bytes()
 
@@ -229,6 +281,7 @@ class Registry(RegistryBase):
         # only store user_id after retrieving all configuration to keep
         # application "uninitialized" until then
         self._user_id.id = response.user_id
+        self._user_db.set_state(response.user_db_bytes)
         # get full user database
         self.sync_with_remote(mode='receiving')
 

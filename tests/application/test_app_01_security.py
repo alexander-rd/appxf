@@ -5,16 +5,12 @@ setup within the application.
 '''
 
 import os
-import pytest
-import shutil
 
-from kiss_cf.security import Security, SecurePrivateStorageMaster
-from kiss_cf.storage import LocalStorageMaster
+from kiss_cf.security import Security
 
 # Indirectly used environments still need to be importet
-from tests.fixtures.env_base import env_base
-from tests.fixtures.application import app_fresh_user, app_initialized_user, app_unlocked_user
 from tests.fixtures.application_mock import ApplicationMock
+from tests.fixtures.application import app_unlocked_user, app_fresh_user, app_initialized_user, app_registered_unlocked_user_admin_pair, app_unlocked_user_admin_pair
 
 
 # TODO UPGRADE: Is the "user" in interface name "is_user_unlocked" necessary?
@@ -26,6 +22,12 @@ from tests.fixtures.application_mock import ApplicationMock
 
 # TODO LATER: test case for failing loading (use a file encrypted from a different
 # user with different password)
+
+# TODO LATER: "fresh" and "initialized" user folders appear for each test case.
+# I guess this is not intended and they are actually there to be copied (and
+# not re-created) each time. -- ALSO -- If those folders are for later version
+# testing (reloading application data after implementation changes).. ..then
+# there is probably more to do.
 
 # Uninitialized test location should indicate as not user initialized.
 def test_app_10_security_uninitialized(app_fresh_user):
@@ -58,10 +60,10 @@ def test_app_10_security_unlock(app_initialized_user):
     assert app.security.is_user_unlocked()
 
 # Store and load
-def test_app10_security_store_load(app_unlocked_user):
+def test_app_10_security_store_load(app_unlocked_user):
     app: ApplicationMock = app_unlocked_user['app_user']
     data = b'123456ABC!'
-    storage = app.storage_data.get_storage('some_file')
+    storage = app.storagef_data('some_file')
     # store
     storage.store(data)
     # load
@@ -75,7 +77,7 @@ def test_app10_security_store_load(app_unlocked_user):
     # Note: need to delete prior storage object. Storage locations do not allow
     # two methods covering the same file.
     del storage
-    storage = app.storage_data.get_storage('some_file')
+    storage = app.storagef_data('some_file')
     data_loaded = storage.load()
     assert data == data_loaded
 

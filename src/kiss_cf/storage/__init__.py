@@ -10,23 +10,23 @@
 
 # Abstract/General Classes
 from .serializer import Serializer, KissSerializerError
-from .storable import Storable, KissStorableError
+from .storable import Storable, AppxfStorableError
 from .storage import Storage
-from .storage_master import StorageMaster, DerivingStorageMaster, KissStorageMasterError
+from .storage import AppxfStorageError, AppxfStorageWarning
 
 # Serializer Implementations:
 from .serializer_raw import RawSerializer
 from .serializer_compact import CompactSerializer
 from .serializer_json import JsonSerializer
+from .storage_to_bytes import StorageToBytes
 
-# Storage Locations
-from .local import LocalStorageMaster
-from .ftp import FtpLocation
+# Storage Implementations
+from .local import LocalStorage
+#from .ftp import FtpStorage
+from .ram import RamStorage
 
 # Helpers
 from .meta_data import MetaData
-from .storage_dummy import StorageDummy
-from .storage_master_mock import StorageMasterMock
 
 # Synchronization
 from .sync import sync

@@ -1,9 +1,9 @@
 from typing import NamedTuple
 
-from kiss_cf.storage import StorageMaster, sync
+from kiss_cf.storage import Storage, sync
 
 from .registry import Registry
-from .shared_storage import SecureSharedStorageMaster
+from .shared_storage import SecureSharedStorage
 
 
 class KissSharedSyncError(Exception):
@@ -11,8 +11,8 @@ class KissSharedSyncError(Exception):
 
 
 class SyncPair(NamedTuple):
-    local: StorageMaster
-    remote: SecureSharedStorageMaster
+    local: Storage
+    remote: SecureSharedStorage
     writing: list[str]
     additional_reading: list[str]
 
@@ -34,8 +34,8 @@ class SharedSync():
         self._sync_pairs: list[SyncPair] = []
 
     def add_sync_pair(self,
-                      local: StorageMaster,
-                      remote: SecureSharedStorageMaster,
+                      local: Storage.Factory,
+                      remote: Storage.Factory,
                       writing_roles: list[str] | None = None,
                       additional_readers: list[str] | None = None):
         ''' Register two storages for synchronization '''

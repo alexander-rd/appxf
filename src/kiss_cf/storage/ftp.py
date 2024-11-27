@@ -5,7 +5,7 @@ import os.path
 
 from appxf import logging
 
-from ._file_storage_master import FileStorageMaster
+from .storage_to_bytes import StorageToBytes
 
 # Notes on ftputil. While ftputil offers an upload_if_newer and
 # download_if_newer together with synchronize_times(), it is based on files on
@@ -43,7 +43,7 @@ def retry_method_with_reconnect(method):
     return method_wrapper
 
 
-class FtpLocation(FileStorageMaster):
+class FtpLocation(StorageToBytes):
 
     # TODO UPGRADE: The verbose logging should be collected and printet to info
     # when errors occur
@@ -114,7 +114,7 @@ class FtpLocation(FileStorageMaster):
             raise e
 
     @retry_method_with_reconnect
-    def _load(self, file: str) -> bytes:
+    def load_raw(self, file: str) -> bytes:
         file = os.path.join(self.path, file)
         try:
             with self.connection.open(file, 'rb') as remote_file:
@@ -127,7 +127,7 @@ class FtpLocation(FileStorageMaster):
         return data
 
     @retry_method_with_reconnect
-    def _store(self, file: str, data: bytes):
+    def store_raw(self, file: str, data: bytes):
         file = os.path.join(self.path, file)
         try:
             with self.connection.open(file, 'wb') as remote_file:
@@ -149,13 +149,3 @@ class FtpLocation(FileStorageMaster):
             # implementation.
             raise e
 
-    def _get_location_timestamp(self, file: str) -> datetime | None:
-        file = os.path.join(self.path, file)
-        try:
-            timestamp = self.connection.path.getmtime(file)
-            return datetime.fromtimestamp(timestamp)
-        except Exception as e:
-            # TODO UPGRADE: better error handling: message, retrieve info from
-            # ftplib object. Consider collecting from obsolete pycurl
-            # implementation.
-            raise e

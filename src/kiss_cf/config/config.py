@@ -4,8 +4,10 @@ The configuration concept is accumulating KissPropertyDict objects as sections.
 '''
 
 from appxf import logging
+
 from kiss_cf.setting import SettingDict
-from kiss_cf.storage import StorageMaster, StorageDummy
+from kiss_cf.storage import Storage, RamStorage
+
 
 # TODO: config refactoring
 #  1) I need the serialize/deserialize on dictionaries as storable >> to mary
@@ -55,9 +57,9 @@ class Config():
     '''
     log = logging.getLogger(__name__ + '.Config')
 
-    def __init__(self, default_storage: StorageMaster | None = None, **kwargs):
-        super().__init__(**kwargs)
-        self._default_storage = default_storage
+    def __init__(self, default_storage_factory: Storage.Factory | None = None, **kwargs):
+        super().__init__()
+        self._default_storage_factory = default_storage_factory
         self._sections: dict[str, SettingDict] = {}
 
     @property
@@ -75,7 +77,7 @@ class Config():
 
     def add_section(self,
                     section: str,
-                    storage_master: StorageMaster | None = None
+                    storage_factory: Storage.Factory | None = None
                     ) -> SettingDict:
         '''Add section if not yet existing.  '''
         # ensure section does not yet exist:
@@ -83,12 +85,12 @@ class Config():
             raise KissConfigError(
                 f'Cannot add section {section}, it does already exist.')
         # define storage
-        if storage_master is not None:
-            storage = storage_master.get_storage(section)
-        elif self._default_storage is not None:
-            storage = self._default_storage.get_storage(section)
+        if storage_factory is not None:
+            storage = storage_factory(section)
+        elif self._default_storage_factory is not None:
+            storage = self._default_storage_factory(section)
         else:
-            storage = StorageDummy()
+            storage = RamStorage()
         # construct section
         self._sections[section] = SettingDict(storage=storage)
         self.log.info(f'added section: {section}')
@@ -100,7 +102,7 @@ class Config():
             section.store()
 
     def load(self):
-        ''' Losd all sections '''
+        ''' Load all sections '''
         for section in self._sections.values():
             if section.exists():
                 section.load()

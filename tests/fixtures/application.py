@@ -7,8 +7,8 @@ import os
 import shutil
 import pytest
 import toml
-
-from tests.fixtures.env_base import env_base
+from kiss_cf.storage import Storage
+from tests.fixtures import appxf_objects
 from tests.fixtures.application_mock import ApplicationMock
 
 # get current kiss_cf version
@@ -17,16 +17,20 @@ version = toml_data['project']['version']
 print(f'Current kiss_cf version: {version}')
 
 @pytest.fixture
-def app_fresh_user(env_base, request):
+def app_fresh_user(request):
+    Storage.reset()
+    dir = appxf_objects.get_initialized_test_path(request)
     return _init_application_fixture(
-        env_base['path_testing'],
+        dir,
         _init_app_context_fresh_user,
         request)
 
 @pytest.fixture
-def app_initialized_user(env_base, request):
+def app_initialized_user(request):
+    Storage.reset()
+    dir = appxf_objects.get_initialized_test_path(request)
     return _init_application_fixture(
-        env_base['path_testing'],
+        dir,
         _init_app_context_initialized_user,
         request)
 
@@ -38,14 +42,19 @@ def app_unlocked_user(app_initialized_user):
     return app_initialized_user
 
 @pytest.fixture
-def app_unlocked_user_admin_pair(env_base, request):
+def app_unlocked_user_admin_pair(request):
+    Storage.reset()
+    dir = appxf_objects.get_initialized_test_path(request)
     data = _init_application_fixture(
-        env_base['path_testing'],
+        dir,
         _init_app_context_user_admin_pair,
         request)
+    # unlock users
     for user in data['users']:
+        Storage.switch_context('user')
         app: ApplicationMock = data[f'app_{user}']
         app.perform_login_unlock()
+    Storage.switch_context('')
     return data
 
 @pytest.fixture
@@ -91,7 +100,10 @@ def _init_application_fixture(path_testing, context_init_fun, request):
     _init_path_from_origin(path, path_origin)
     fixed_dict = {'path': path,
                   'users': original_dict['users']}
-    app_dict = {f'app_{user}': ApplicationMock(path, user)
+    def add_app(path, user):
+        Storage.switch_context(user)
+        return ApplicationMock(path, user)
+    app_dict = {f'app_{user}': add_app(path, user)
                 for user in original_dict['users']}
     return {**fixed_dict, **app_dict}
 
@@ -114,7 +126,8 @@ def _init_app_context_fresh_user(path_testing: str):
     _init_path_from_origin(path_origin, keep = True)
     # A fresh user has no data on the path but the user's application path is
     # generated on adding application:
-    app_user = ApplicationMock(path_origin, 'user')
+    Storage.switch_context('user')
+    app_user = ApplicationMock(root_path=path_origin, user='user')
     return return_dict
 
 def _init_app_context_initialized_user(path_testing: str):
@@ -128,6 +141,7 @@ def _init_app_context_initialized_user(path_testing: str):
     # otherwise, create:
     _init_path_from_origin(path_origin, origin_path=data_derive['path'], keep = True)
     # We need to get the app to set the password
+    Storage.switch_context('user')
     app_user = ApplicationMock(path_origin, 'user')
     app_user.perform_login_init()
     return return_dict
@@ -142,11 +156,14 @@ def _init_app_context_user_admin_pair(path_testing: str):
     _init_path_from_origin(path_origin, keep = True)
     # Admin and user will be, at least initialized with their own passwords.
     # Admin will be initialized with registry.
+    Storage.switch_context('admin')
     app_user = ApplicationMock(path_origin, 'admin')
     app_user.perform_login_init()
     app_user.perform_registration_admin_init()
+    Storage.switch_context('user')
     app_admin = ApplicationMock(path_origin, 'user')
     app_admin.perform_login_init()
+    Storage.switch_context('')
     return return_dict
 
 def _init_path_from_origin(target_path, origin_path: str = '', keep: bool = False):
@@ -178,15 +195,15 @@ def _init_path_from_origin(target_path, origin_path: str = '', keep: bool = Fals
         print(f'Created path {target_path}')
 
 ### Cleanup support
-def test_cleanup(env_base):
+def test_cleanup(request):
     ''' cleanup current kiss_cf directories
 
     Fucntion is expected to be executed before any test case. Modelled as test
     case to re-use fixtures.
     '''
-    env = env_base
+    dir = appxf_objects.get_initialized_test_path(request)
     for context in ['fresh_user', 'initialized_user', 'app_admin_user_pair', ]:
-        path = os.path.join(env['path_testing'], f'app_{context}_{version}')
+        path = os.path.join(dir, f'app_{context}_{version}')
         if os.path.exists(path):
             shutil.rmtree(path)
             print(f'Removed {path}')

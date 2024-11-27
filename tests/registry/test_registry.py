@@ -1,69 +1,85 @@
 import pytest
 from unittest.mock import patch
 
-from kiss_cf.config import Config
-from kiss_cf.storage import StorageMasterMock
-from kiss_cf.security import SecurityMock
-
+from kiss_cf.storage import Storage
 from kiss_cf.registry import Registry
 
-def get_fresh_registry(
-    name: str = '',
-    remote_storage_mock: StorageMasterMock | None = None
-    ) -> Registry:
-    ''' Provide a freshly initialized registry '''
-    name_addition = f' {(name)}' if name else ''
-    local_storage_mock = StorageMasterMock(name=('local' + name_addition))
-    if remote_storage_mock is None:
-        remote_storage_mock = StorageMasterMock(name=('remote' + name_addition))
-    security = SecurityMock()
-    security.init_user('test')
-    config = Config()
-    registry = Registry(
-        local_base_storage=local_storage_mock,
-        remote_base_storage=remote_storage_mock,
-        security=security,
-        config=config,
-        user_config_section='')
-    return registry
+from tests.fixtures import appxf_objects
+
+#! TODO: those getters should be moved into appxf_objects as functions and not
+#  as fixtures
+
+# TODO: test cases on size of registry with multiple users and roles (may be
+# part of application testing)
 
 @pytest.fixture
-def fresh_registry():
+def fresh_registry(request):
     ''' Provide an uninitialized registry '''
-    return get_fresh_registry()
+    Storage.reset()
+    # Usually, testing uses RAM objects (quicker)
+    path = None
+    # For debugging, you may want to use real files:
+    path = appxf_objects.get_initialized_test_path(request)
+    print(path)
+    #path = env_base['dir']
+    return appxf_objects.get_fresh_registry(
+        path=path,
+        security=appxf_objects.get_security_unlocked(),
+        config=appxf_objects.get_dummy_config())
 
 @pytest.fixture
 def admin_initialized_registry(fresh_registry):
     ''' Provide an admin-initialized registry '''
-    registry = get_fresh_registry()
-    registry.initialize_as_admin()
-    return registry
+    reg: Registry = fresh_registry
+    reg.initialize_as_admin()
+    return reg
 
 @pytest.fixture
-def admin_user_initialized_registry_pair(fresh_registry):
-    # shared remote storage master
-    remote_storage_mock = StorageMasterMock(name='remote')
-    ''' Provide pair of registries '''
-    admin_registry = get_fresh_registry(
-        name='admin',
-        remote_storage_mock=remote_storage_mock)
-    admin_registry.initialize_as_admin()
-    user_registry = get_fresh_registry(
-        name='user',
-        remote_storage_mock=remote_storage_mock)
-    user_registry.set_admin_keys([
-        (admin_registry._security.get_signing_public_key(),
-         admin_registry._security.get_encryption_public_key())
-        ])
+def admin_user_initialized_registry_pair(request):
+    Storage.reset()
+    # Usually, testing uses RAM objects (quicker)
+    path = None
+    # For debugging, you may want to use real files:
+    path = appxf_objects.get_initialized_test_path(request)
 
+    Storage.switch_context('admin')
+    admin_config = appxf_objects.get_dummy_user_config()
+    print(f'FANCY INIT obtained config for admin: {admin_config}')
+    admin_registry = appxf_objects.get_fresh_registry(
+        path=path,
+        security=appxf_objects.get_security_unlocked(),
+        config=admin_config,
+        local_name='local_registry_admin',
+        remote_name='remote_registry')
+    # Note: admin and user have their own config and security objects since
+    # both are not file based.
+    Storage.switch_context('user')
+    user_config = appxf_objects.get_dummy_user_config()
+    print(f'FANCY INIT obtained config for admin: {user_config}')
+    user_registry = appxf_objects.get_fresh_registry(
+        path=path,
+        security=appxf_objects.get_security_unlocked(),
+        config=user_config,
+        local_name='local_registry_user',
+        remote_name='remote_registry')
+    Storage.switch_context('')
+
+    # initialize admin:
+    admin_registry.initialize_as_admin()
+
+    # initialize user via admin:
     request = user_registry.get_request()
+    print(f'Size of user request: {len(request.get_request_bytes())}')
     user_id = admin_registry.add_user_from_request(request=request, roles=['user', 'new'])
     response = admin_registry.get_response_bytes(user_id)
+    print(f'Size of response: {len(response)}')
     user_registry.set_response_bytes(response)
+
     yield admin_registry, user_registry
-    admin_registry._local_base_storage.print_storages()
-    user_registry._local_base_storage.print_storages()
-    user_registry._remote_base_storage.print_storages()
+
+    # Testing used context swtiching, ensure proper state for anything after:
+    Storage.switch_context('')
+    Storage.reset()
 
 def test_registry_init(fresh_registry):
     registry: Registry = fresh_registry
@@ -95,6 +111,10 @@ def test_registry_user_init(admin_user_initialized_registry_pair):
     admin_registry: Registry = admin_user_initialized_registry_pair[0]
     user_registry: Registry = admin_user_initialized_registry_pair[1]
     #assert user_registry.is_initialized()
+
+    # verify user ID's
+    assert admin_registry.user_id == 0
+    assert user_registry.user_id == 1
 
     # check roles of new user that should have ID 1
     assert 'user' in admin_registry.get_roles(1)

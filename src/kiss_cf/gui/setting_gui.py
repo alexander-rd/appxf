@@ -299,7 +299,8 @@ class SettingDictWindow(tkinter.Toplevel):
         self.property_dict.store()
         # TODO: the above strategy will not work for a config that may use
         # StorageDummy since no real backup is generated. Proposal: the dummy
-        # shall store in RAM and the dummy shall be renamed accordingly.
+        # shall store in RAM and the dummy shall be renamed accordingly. >>
+        # This is not adapted but is not (re-)tested, yet.
 
         self.language = dict()
 

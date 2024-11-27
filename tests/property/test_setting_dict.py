@@ -5,7 +5,7 @@ from kiss_cf.setting import SettingDict, AppxfSetting
 from kiss_cf.setting import AppxfSettingConversionError, AppxfSettingError
 from kiss_cf.setting import AppxfString, AppxfInt, AppxfFloat, AppxfBool
 
-from kiss_cf.storage import StorageMasterMock
+from kiss_cf.storage import RamStorage
 
 sample_input = {
     'string': 'test',
@@ -214,7 +214,7 @@ def test_setting_dict_store_load_cycle():
     # we use an integer here since it differs in "input" and stored "value".
     # And we use an arbitrary string (email) to be a bit more verbose.
     setting_dict = SettingDict({'entry': ('email',), 'input_check': (int,)})
-    storage = StorageMasterMock().get_storage('test')
+    storage = RamStorage()
     setting_dict.set_storage(storage, on_load_unknown='ignore', store_setting_object=False)
     setting_dict['entry'] = 'before@store.com'
     setting_dict['input_check'] = '1'
@@ -239,8 +239,8 @@ def test_setting_dict_store_load_cycle():
     assert setting_dict_reload.get_setting('input_check').value == 1
     assert setting_dict_reload.get_setting('input_check').input == '1'
 
-def test_setting_dict_store_load_invalid_init():
-    storage = StorageMasterMock().get_storage('test')
+def test_setting_dict_store_loadpyte_invalid_init():
+    storage = RamStorage()
     setting_dict = SettingDict(
         entry=('email',),
         storage=storage

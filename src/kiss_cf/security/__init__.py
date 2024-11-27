@@ -9,4 +9,4 @@ secure Storages from the storage module.
 
 from .security import Security, KissSecurityException
 from .security_mock import SecurityMock
-from .private_storage import SecurePrivateStorageMaster
+from .private_storage import SecurePrivateStorage

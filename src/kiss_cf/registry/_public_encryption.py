@@ -10,13 +10,13 @@ from ._registry_base import RegistryBase
 
 class PublicEncryption(Storable):
     def __init__(self,
-                 storage_method: Storage,
+                 storage: Storage,
                  security: Security,
                  registry: RegistryBase,
                  # TODO: align default role nomenclature "user" versus "USER"
                  to_roles: str = 'USER',
                  **kwargs):
-        super().__init__(storage_method, **kwargs)
+        super().__init__(storage, **kwargs)
         self._security = security
         self._registry = registry
         self._to_roles = to_roles

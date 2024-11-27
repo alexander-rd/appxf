@@ -1,9 +1,9 @@
 from kiss_cf.storage.sync import SyncData
-from kiss_cf.storage import LocalStorageMaster, StorageMaster
+from kiss_cf.storage import Storage
 from datetime import datetime
 import pytest
 
-# TODO: is this still required??
+# TODO: check if those test cases are still required.
 
 # class DummyLocation(StorageLocation):
 #

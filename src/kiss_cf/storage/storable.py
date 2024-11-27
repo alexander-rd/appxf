@@ -1,12 +1,10 @@
 ''' Class definitions for storage handling. '''
 
-from .storage_dummy import StorageDummy
+from .ram import RamStorage
 from .storage import Storage
 
-# TODO: merge comments
 
-
-class KissStorableError(Exception):
+class AppxfStorableError(Exception):
     ''' General storable exception '''
 
 
@@ -14,25 +12,26 @@ class Storable(object):
     ''' Abstract storable class
 
     A class with storable behavior defines _what_ is stored on store() via
-    _set_state() and provides _get_state() to restore it's state upon load().
+    _get_state() and provides _set_state() to restore it's state upon load().
     The Storage class handles _how_ data is stored, like: serializing it to
     bytes and writing to a file.
 
     When deriving from this class, the default behavior would store the classes
-    __dict__ which contains all class fields. Overload _set_state() and
-    _get_state() to change the behavior. Typically, a dictionary is used.
+    __dict__ which contains all class attributes. Overload _set_state() and
+    _get_state() to change the behavior. Stay simplistic with the types you
+    hand over to a storage. Serializers only support a limited set of objects
+    either because of implementation complexity (JSON) or because loading
+    arbitrary objects is not safe (pickle).
 
-    It is recommended that the deriving class applies a _version field. When
-    the storable implementation changes and you need compatibility, you can
-    then adapt _set_dict().
+    It is recommended that the deriving class adds version information to be
+    stored. When the storable implementation changes and you need
+    compatibility, you can then adapt _set_dict() to handle legacy data.
     '''
-
     def __init__(self, storage: Storage | None = None, **kwargs):
         if storage is None:
-            storage = StorageDummy()
-        self._storage = storage
+            storage = RamStorage()
+        self._storage: Storage = storage
         super().__init__(**kwargs)
-
 
     def _get_state(self) -> object:
         ''' Get object state
@@ -58,13 +57,12 @@ class Storable(object):
         return self._storage.exists()
 
     def load(self):
-        ''' Restore Storable with bytes from Storage '''
+        ''' Load from provided Storage '''
         if not self._storage.exists():
             # Protect deriving classes treating empty data like b''.
-            raise KissStorableError('Storage does not exist.')
+            raise AppxfStorableError('Storage does not exist.')
         self._set_state(self._storage.load())
-        # TODO: determine if this one needs an if _storage.exists()
 
     def store(self):
-        ''' Store bytes representing the Storable state '''
+        ''' Store to provided Storage '''
         self._storage.store(self._get_state())

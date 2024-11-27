@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import os
 
-from kiss_cf.security import Security, SecurePrivateStorageMaster
-from kiss_cf.registry import Registry, SharedSync, SecureSharedStorageMaster
+from kiss_cf.security import Security, SecurePrivateStorage
+from kiss_cf.registry import Registry, SharedSync, SecureSharedStorage
 from kiss_cf.config import Config
-from kiss_cf.storage import LocalStorageMaster
+from kiss_cf.storage import LocalStorage
 
 from .restricted_location import CredentialLocationMock
 
@@ -40,18 +40,22 @@ class ApplicationMock:
 
         # CONFIG::LOCAL USER
         self.path_user_config = os.path.join(self._app_path, 'data/user/config')
-        self.storage_user_config = SecurePrivateStorageMaster(
-            LocalStorageMaster(self.path_user_config), self.security)
+        self.storagef_user_config = SecurePrivateStorage.get_factory(
+            base_storage_factory=LocalStorage.get_factory(
+                path=self.path_user_config),
+            security=self.security)
         # CONGIG::SHARED TOOL
         self.path_shared_config = os.path.join(self._app_path, 'data/shared/config')
-        self.storage_shared_config = SecurePrivateStorageMaster(
-            LocalStorageMaster(self.path_shared_config), self.security)
+        self.storagef_shared_config = SecurePrivateStorage.get_factory(
+            LocalStorage.get_factory(
+                path=self.path_shared_config),
+            security=self.security)
         # We still apply one config for all that stores to shared tool storage
         # by default since only few will be user specific.
-        self.user_config = Config(default_storage=self.storage_shared_config)
+        self.user_config = Config(default_storage=self.storagef_shared_config)
         # add USER config with some basic user data: email and name
         self.user_config.add_section(
-            'USER', storage_master = self.storage_user_config).add(
+            'USER', storage_factory=self.storagef_user_config).add(
                 email=('email',),
                 name=(str,))
 
@@ -62,48 +66,52 @@ class ApplicationMock:
 
         # REGISTRY: local storage (security applied within Regisrty)
         self.path_registry = os.path.join(self._app_path, 'data/registry')
-        self.storage_registry = SecurePrivateStorageMaster(
-            storage=LocalStorageMaster(self.path_registry),
-            security=self.security)
+        self.storagef_registry = LocalStorage.get_factory(path=self.path_registry)
         # REGISTRY: remote storage (security applied within Regisrty)
         self.path_remote_registry = os.path.join(self._root_path, 'remote/registry')
-        self.storage_remote_registry_base = LocalStorageMaster(self.path_remote_registry)
+        self.storagef_remote_registry = LocalStorage.get_factory(path=self.path_remote_registry)
         # REGISTRY
         self.registry = Registry(
-            local_base_storage=self.storage_registry,
-            remote_base_storage=self.storage_remote_registry_base,
+            local_storage_factory=self.storagef_registry,
+            remote_storage_factory=self.storagef_remote_registry,
             security=self.security,
             config=self.user_config)
 
         # some DATA LOCATION
         self.path_data = os.path.join(self._app_path, 'data')
-        self.storage_data = SecurePrivateStorageMaster(
-            storage=LocalStorageMaster(self.path_data),
+        self.storagef_data = SecurePrivateStorage.get_factory(
+            base_storage_factory=LocalStorage.get_factory(path=self.path_data),
             security=self.security)
 
         # matching REMOTE LOCATIONs
         # CONFIG: REMOTE STORAGE
         self.path_remote_config = os.path.join(self._root_path, 'remote/config')
-        self.storage_remote_config = SecureSharedStorageMaster(
-            storage=LocalStorageMaster(self.path_remote_config),
+        self.storagef_remote_config = SecureSharedStorage.get_factory(
+            base_storage_factory=LocalStorage.get_factory(path=self.path_remote_config),
             security=self.security,
             registry=self.registry)
         self.path_remote_data = os.path.join(self._root_path, 'remote/data')
-        self.storage_remote_data = SecureSharedStorageMaster(
-            storage=LocalStorageMaster(self.path_remote_data),
+        self.storagef_remote_data = SecureSharedStorage.get_factory(
+            base_storage_factory=LocalStorage.get_factory(path=self.path_remote_data),
             security=self.security,
             registry=self.registry)
+
+        # TODO: Setting up remote storage like this is quite cumbersome. A sync
+        # short cut should allow some: sync(local_factory, remote_factory(w/o
+        # path)). The remote factoy would not have the full path defined, yet.
+        # And allow: factory(name=bla, path='sub/location') which would be done
+        # by sync.
 
         # setup shared sync:
         self.shared_sync = SharedSync(registry=self.registry)
         self.shared_sync.add_sync_pair(
-            local=self.storage_data,
-            remote=self.storage_remote_data,
+            local=self.storagef_data,
+            remote=self.storagef_remote_data,
             writing_roles=['user', 'admin']
         )
         self.shared_sync.add_sync_pair(
-            local=self.storage_shared_config,
-            remote=self.storage_remote_config,
+            local=self.storagef_shared_config,
+            remote=self.storagef_remote_config,
             writing_roles=['admin'],
             additional_readers=['user']
         )

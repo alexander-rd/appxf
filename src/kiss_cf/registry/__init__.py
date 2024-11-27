@@ -8,5 +8,5 @@ secure Storages from the storage module.
 # flake8: noqa F401
 
 from .registry import Registry
-from .shared_storage import SecureSharedStorageMaster
+from .shared_storage import SecureSharedStorage
 from .shared_sync import SharedSync

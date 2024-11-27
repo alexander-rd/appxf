@@ -1,4 +1,5 @@
 from kiss_cf.buffer import Buffer, buffered
+from kiss_cf.storage import Storage
 
 # Used to test logging:
 # from appxf import logging as kiss_logging
@@ -21,6 +22,7 @@ def assert_buffer_contains(buffer: Buffer,
 
 # 1) Tests for class Buffer
 def test_init():
+    Storage.reset()
     buffer = Buffer()
     # Expected default storage dir to remain consistent with other modules:
     assert not buffer.buffer
@@ -32,6 +34,7 @@ def test_init():
 # executed (agagin) >> check missing.
 
 def test_buffered_args():
+    Storage.reset()
     buffer = Buffer()
 
     @buffered(buffer)
@@ -46,6 +49,7 @@ def test_buffered_args():
 
 
 def test_buffered_kwargs():
+    Storage.reset()
     buffer = Buffer()
 
     @buffered(buffer)
@@ -64,6 +68,7 @@ def test_buffered_kwargs():
 
 
 def test_buffered_mixedargs():
+    Storage.reset()
     buffer = Buffer()
 
     @buffered(buffer)

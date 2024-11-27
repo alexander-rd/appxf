@@ -1,7 +1,6 @@
 import pytest
 
 from tests.fixtures.application_mock import ApplicationMock
-from tests.fixtures.env_base import env_base
 from tests.fixtures.application import app_unlocked_user_admin_pair
 
 def test_app_02_registry_basic_cycle(app_unlocked_user_admin_pair):
