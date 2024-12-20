@@ -57,28 +57,15 @@ class AppxfStringSelect(AppxfSetting[str]):
         if options is None:
             options = {}
         self._options = options
-    #def __init__(self, options: dict | None = None):
-    #    if options is None:
-    #        options = {}
-    #    self._options = options
 
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
         return [AppxfSelect, 'StringSelect']
 
-    def _validate_base_type(self, value: str) -> bool:
-        # any string input value is just this and must run through the conversion
-        return self._validated_conversion(value)[0]
-    # TODO: Problem is that despite string input, just verifying input is not
-    # sufficient.
-
     def _validated_conversion(self, value: str) -> tuple[bool, AppxfSelect]:
-        print(f'Validating {value}')
         if value == '':
-            print(f'Default value {self._options.values()[0]}')
             return True, self._options.values()[0]
         if value in self._options:
-            print(f'Existing value {self._options[value]}')
             return True, self._options[value]
         return False, self.get_default()
 

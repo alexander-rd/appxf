@@ -144,8 +144,6 @@ class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
         directly as well.
 
     Dependent on the provided type, you may need to overload:
-      _validate_base_type() -- where the default implementation returns
-        True/False if the input matches the base type.
       _validated_conversion() -- where the default implementation returns
         (False, det_default()) indicating that no conversion is possible. You
         typically need to consider providing conversions from strings.
@@ -227,12 +225,7 @@ class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
     @classmethod
     @abstractmethod
     def get_default(cls) -> _BaseTypeT:
-        ''' Provide default value when initializing
-
-        This default value also sets the base type of the storage which decides
-        if _validated_conversion() or _validate_base_type() is used to validate
-        input.
-        '''
+        ''' Provide default value when initializing '''
 
     # Implementing class must provide it's supported types
     @classmethod
@@ -265,40 +258,22 @@ class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
 
     def _set_value(self, value: Any):
         ''' Reusable implentation for value setter and __init__ '''
-        print(f'SETTING {value}')
-        base_type = type(self.get_default())
-        if isinstance(value, base_type):
-            # Type is OK but stil needs to be valid:
-            if self.validate(value) or value == self.get_default():
-                self._input = value
-                # enforce base type that we do not store derived types
-                self._value = base_type(value)
-            else:
-                raise AppxfSettingConversionError(type(self), value)
-        else:
-            # the below line handles validity AND any possible conversion to
-            # the _BaseTypeT:
-            valid, _value = self._validated_conversion(value)
-            if not valid:
-                raise AppxfSettingConversionError(type(self), value)
-            self._input = value
-            self._value = _value
+        valid, _value = self._validated_conversion(value)
+        if not valid:
+            raise AppxfSettingConversionError(type(self), value)
+        self._input = value
+        self._value = _value
 
     def validate(self, value: Any) -> bool:
         ''' Validate a string to match the AppxfSetting type '''
-        # AppxfSetting implementations for string base classes will NOT
-        # convert but rely on the _validate_base_type().
-        if isinstance(value, type(self.get_default())):
-            return self._validate_base_type(value)
-        # Anything else must try a conversion
+        # There was a different implementation before with simplified
+        # validation check if the base type is already matched, now we just
+        # rely on the _validated_convertion.
         return self._validated_conversion(value)[0]
 
-    def _validate_base_type(self, value: _BaseTypeT) -> bool:
-        ''' Validate the input of a base type
-
-        When deriving, it's recommended to still check the expected base type.
-        '''
-        return isinstance(value, type(self.get_default()))
+    # Note: neither validate nor _validated_conversion can be class methods.
+    # They may rely on instance specific configurations (like in select
+    # settings)
 
     def _validated_conversion(self, value: Any) -> tuple[bool, _BaseTypeT]:
         ''' Validate a string to match the AppxfSetting's expectations
@@ -329,6 +304,10 @@ class AppxfString(AppxfSetting[str]):
     def get_default(cls):
         return ''
 
+    def _validated_conversion(self, value: Any) -> tuple[bool, str]:
+        if not issubclass(type(value), str):
+            return False, self.get_default()
+        return True, value
 
 class AppxfEmail(AppxfString):
     ''' AppxfSetting for Emails'''
@@ -338,8 +317,10 @@ class AppxfEmail(AppxfString):
     def get_supported_types(cls) -> list[type | str]:
         return ['email', 'Email']
 
-    def _validate_base_type(self, value: str) -> bool:
-        # taken from here:
+    def _validated_conversion(self, value: Any) -> tuple[bool, str]:
+        if not super()._validated_conversion(value)[0]:
+            return False, self.get_default()
+        # Check Email based on regexp, taken from here:
         # https://stackabuse.com/python-validate-email-address-with-regular-expressions-regex/
         regex = (r'([A-Za-z0-9]+[.-_])*'
                  r'[A-Za-z0-9]+@'
@@ -348,8 +329,8 @@ class AppxfEmail(AppxfString):
         # fallback to generic regexp handling
         regex = re.compile(regex)
         if not re.fullmatch(regex, value):
-            return False
-        return True
+            return False, self.get_default()
+        return True, value
 
 
 class AppxfPassword(AppxfString):
@@ -371,12 +352,15 @@ class AppxfPassword(AppxfString):
 
         self.masked = True
 
-    def _validate_base_type(self, value: str) -> bool:
+    def _validated_conversion(self, value: Any) -> tuple[bool, str]:
+        if not super()._validated_conversion(value)[0]:
+            return False, self.get_default()
+        # only length check:
         if self.min_length > 0 and len(value) < self.min_length:
-            return False
-            # TODO: Error message handling should be better the specific
+            return False, self.get_default()
+            # TODO: Error message handling should be better. The specific
             # validate should tell what exactly failed.
-        return True
+        return True, value
 
 
 def validated_conversion_configparser(
@@ -424,6 +408,8 @@ class AppxfBool(AppxfSetting[bool]):
         return False
 
     def _validated_conversion(self, value: Any) -> tuple[bool, bool]:
+        if issubclass(type(value), bool):
+            return True, value
         if isinstance(value, str):
             return validated_conversion_configparser(value, bool,
                                                      self.get_default())
@@ -446,6 +432,8 @@ class AppxfInt(AppxfSetting[int]):
         return 0
 
     def _validated_conversion(self, value: Any) -> tuple[bool, int]:
+        if issubclass(type(value), int):
+            return True, value
         if isinstance(value, str):
             return validated_conversion_configparser(value, int,
                                                      self.get_default())
@@ -463,6 +451,8 @@ class AppxfFloat(AppxfSetting[float]):
         return 0.0
 
     def _validated_conversion(self, value: Any) -> tuple[bool, float]:
+        if issubclass(type(value), float):
+            return True, value
         if isinstance(value, int):
             return True, float(value)
         if isinstance(value, str):
