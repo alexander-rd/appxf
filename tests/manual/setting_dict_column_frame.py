@@ -13,7 +13,7 @@ Columns: Placing options on top of this widget will test alignement of entry fie
 #  - Label length: the dict uses very short and very long names on purpose:
 prop_dict = {
     'String': AppxfString(),
-    'Email of the master of disaster:': AppxfEmail(),
+    'Email of the master of disaster': AppxfEmail(),
     'Boolean Value': AppxfBool(),
     'Already having content': AppxfString('some content')
 }

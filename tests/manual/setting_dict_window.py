@@ -14,10 +14,13 @@ Columns: Placing options on top of this widget will test alignement of entry fie
 
 #  - Label length: the dict uses very short and very long names on purpose:
 setting_dict = SettingDict({
-    'String:': AppxfString(),
-    'Email of the master of disaster:': AppxfEmail(),
-    'Boolean Value:': AppxfBool(),
+    'String': AppxfString(),
+    'Email of the master of disaster': AppxfEmail(),
+    'Boolean Value': AppxfBool(),
     })
+
+print(setting_dict.get_setting('String').name)
+print(setting_dict.get_setting('Boolean Value').name)
 
 tester.run_toplevel(SettingDictWindow,
                     'Edit Window Title',

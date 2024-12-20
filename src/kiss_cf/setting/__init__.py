@@ -28,6 +28,7 @@ the following classes are the entry points:
 from .setting import AppxfSetting, AppxfSettingError, AppxfSettingConversionError
 from .setting import AppxfString, AppxfEmail, AppxfPassword
 from .setting import AppxfBool, AppxfInt, AppxfFloat
+from .setting_select import AppxfSelect, AppxfStringSelect
 
 # from .setting_select import AppxfStringSelect
 

@@ -27,21 +27,20 @@ class SettingFrame(tkinter.Frame):
     log = logging.getLogger(__name__ + '.PropertyWidget')
 
     def __init__(self, parent,
-                 label: str,
-                 property: AppxfSetting,
+                 setting: AppxfSetting,
                  **kwargs):
         super().__init__(parent, **kwargs)
 
         self.rowconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
 
-        self.property = property
+        self.setting = setting
 
         self.label = tkinter.Label(self, justify='right')
-        self.label.config(text=label)
+        self.label.config(text=setting.name + ':')
         self.label.grid(row=0, column=0, padx=5, pady=5, sticky='NE')
 
-        value = str(self.property.value)
+        value = str(self.setting.value)
         self.sv = tkinter.StringVar(self, value)
         self.sv.trace_add(
             'write', lambda var, index, mode: self.value_update())
@@ -51,16 +50,16 @@ class SettingFrame(tkinter.Frame):
         self.entry.grid(row=0, column=1, padx=5, pady=5, sticky='NEW')
 
     def is_valid(self):
-        return self.property.validate(self.sv.get())
+        return self.setting.validate(self.sv.get())
 
     def focus_set(self):
         self.entry.focus_set()
 
     def value_update(self):
         value = self.sv.get()
-        valid = self.property.validate(value)
+        valid = self.setting.validate(value)
         if valid:
-            self.property.value = value
+            self.setting.value = value
             self.entry.config(foreground='black')
         else:
             self.entry.config(foreground='red')
@@ -71,8 +70,7 @@ class BoolCheckBoxFrame(tkinter.Frame):
     log = logging.getLogger(__name__ + '.BoolCheckBoxWidget')
 
     def __init__(self, parent,
-                 property: AppxfSetting,
-                 label: str,
+                 setting: AppxfSetting,
                  kiss_options: dict = dict(),
                  **kwargs):
         super().__init__(parent, **kwargs)
@@ -80,10 +78,10 @@ class BoolCheckBoxFrame(tkinter.Frame):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
 
-        self.property = property
+        self.property = setting
 
         self.label = tkinter.Label(self, justify='right')
-        self.label.config(text=label)
+        self.label.config(text=setting.name + ':')
         self.label.grid(row=0, column=0, padx=5, pady=5, sticky='NE')
 
         self.iv = tkinter.IntVar(self, value=self.property.value)
@@ -142,21 +140,21 @@ class SettingDictFrame(tkinter.Frame):
         self.frame_list = list()
         for key in self.property_dict.keys():
             self._place_property_frame(
-                property_dict.get_setting(key), key,
+                property_dict.get_setting(key),
                 element_gui_options.get(key, dict()))
 
-    def _place_property_frame(self, prop: AppxfSetting, label, gui_options):
+    def _place_property_frame(self, prop: AppxfSetting, gui_options):
         self.rowconfigure(len(self.frame_list), weight=1)
 
         if 'frame_type' in gui_options:
             property_frame = gui_options['frame_type'](
-                self, prop, label, gui_options)
+                self, prop, gui_options)
         elif isinstance(prop, AppxfBool):
             property_frame = BoolCheckBoxFrame(
-                self, prop, label, gui_options)
+                self, prop, gui_options)
         else:
             property_frame = SettingFrame(
-                self, label, prop, **gui_options)
+                self, prop, **gui_options)
         property_frame.grid(
             row=len(self.frame_list), column=0, sticky='NWSE')
         self.frame_list.append(property_frame)
