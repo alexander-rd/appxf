@@ -265,6 +265,7 @@ class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
 
     def _set_value(self, value: Any):
         ''' Reusable implentation for value setter and __init__ '''
+        print(f'SETTING {value}')
         base_type = type(self.get_default())
         if isinstance(value, base_type):
             # Type is OK but stil needs to be valid:
