@@ -18,18 +18,18 @@ class SettingSelectFrame(SettingFrame):
         # necessary. we just need to replyce the Entry by an OptionMenu
         self.entry.destroy()
         self.entry = ttk.Combobox(self, textvariable=self.sv)
-        self.entry['values'] = list(setting._options.keys())
+        self.entry['values'] = list(setting.get_options()['select_map'].keys())
         self.entry.grid(row=0, column=1, padx=5, pady=5, sticky='NEW')
-
-        # add edit button
-        self.edit_button = tkinter.Button(self, text='Edit',
-                                          padx=0, pady=0, relief='flat')
-        self.edit_button.grid(row=0, column=2, padx=5, pady=5, sticky='NE')
         self.entry.bind('<Enter>', lambda event: self.show_tooltip())
         self.entry.bind('<Leave>', lambda event: self.remove_tooltip())
 
-        self.tipwindow = None
+        # add edit button if options are mutable
+        if getattr(setting.options, 'mutable', False):
+            self.edit_button = tkinter.Button(self, text='Edit',
+                                            padx=0, pady=0, relief='flat')
+            self.edit_button.grid(row=0, column=2, padx=5, pady=5, sticky='NE')
 
+        self.tipwindow = None
 
     def show_tooltip(self):
         "Display text in tooltip window"
