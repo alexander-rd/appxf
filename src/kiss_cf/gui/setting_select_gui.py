@@ -39,17 +39,17 @@ class SettingSelectFrame(SettingFrame):
         if self.tipwindow is not None:
             return
 
-        x, y, cx, cy = self.entry.bbox("insert")
-        x = x + self.entry.winfo_rootx() + 57
-        y = y + cy + self.entry.winfo_rooty() +27
         x = self.entry.winfo_rootx()
         y = self.entry.winfo_rooty() + self.entry.winfo_height()
         self.tipwindow = tkinter.Toplevel(self.entry)
         self.tipwindow.wm_overrideredirect(1)
         self.tipwindow.wm_geometry("+%d+%d" % (x, y))
+        #self.tipwindow.maxsize(int(1/3*self.winfo_screenwidth()),
+        #                       int(1/2*self.winfo_screenheight()))
         label = tkinter.Label(
             self.tipwindow, text=text, justify='left',
             background="#ffffe0", relief='solid', borderwidth=1,
+            wraplength=self.winfo_width(),
             font=("tahoma", "8", "normal"))
         label.pack(ipadx=1)
 
