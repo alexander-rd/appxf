@@ -23,8 +23,8 @@ gui_property = {
 }
 
 
-for key in prop_dict.keys():
-    print(f'{key}: {prop_dict[key]}')
+#for key in prop_dict.keys():
+#    print(f'{key}: {prop_dict[key]}')
 
 setting_gui.SettingDictColumnFrame
 setting_gui.SettingDictWindow

@@ -46,17 +46,17 @@ from typing import NewType
 
 AppxfSelect = NewType('AppxfSelect', object)
 
-# A precondition for string select is an editable mapping
-class AppxfStringSelect(AppxfSetting[dict]):
-    def __init__(self, key_type=str, value_type=str):
-        pass
-# TODO: the above will be mainly motivated by the way an AppxfStringSelect
-# should be edited.
-
 class AppxfStringSelect(AppxfSetting[str]):
     ''''''
-    def __init__(self, value: str | None = None, name: str = '', **kwargs):
+    def __init__(self,
+                 value: str | None = None,
+                 options: dict[str, str] | None = None,
+                 name: str = '',
+                 **kwargs):
         super().__init__(value, name, **kwargs)
+        if options is None:
+            options = {}
+        self._options = options
     #def __init__(self, options: dict | None = None):
     #    if options is None:
     #        options = {}
@@ -71,8 +71,12 @@ class AppxfStringSelect(AppxfSetting[str]):
     # TODO: Problem is that despite string input, just verifying input is not
     # sufficient.
 
-    def _validated_conversion(self, value: Any) -> tuple[bool, AppxfSelect]:
-        pass
+    def _validated_conversion(self, value: str) -> tuple[bool, AppxfSelect]:
+        if value == '':
+            return True, self._options.values()[0]
+        if value in self._options:
+            return True, self._options[value]
+        return False, self.get_default()
 
     @classmethod
     def get_default(cls):
