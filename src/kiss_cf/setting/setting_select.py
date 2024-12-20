@@ -1,6 +1,6 @@
 ''' Settings selecting a value from a predefined list '''
 from .setting import AppxfSetting, AppxfString
-from typing import NewType
+from typing import NewType, MutableMapping, Any
 
 # Intent is to support complex data like long text templates by selecting and
 # referencing it by a title.
@@ -56,7 +56,14 @@ class AppxfStringSelect(AppxfSetting[str]):
         super().__init__(value, name, **kwargs)
         if options is None:
             options = {}
-        self._options = options
+        self.options['select_map']: dict[str, str] = options
+        # usualy, options are not mutable
+        self.options['mutable'] = False
+
+    @property
+    def select_map(self) -> MutableMapping[str, Any]:
+        ''' Select map (shortcut to options['select_map'])'''
+        return self.options['select_map']
 
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
@@ -64,9 +71,9 @@ class AppxfStringSelect(AppxfSetting[str]):
 
     def _validated_conversion(self, value: str) -> tuple[bool, AppxfSelect]:
         if value == '':
-            return True, self._options.values()[0]
-        if value in self._options:
-            return True, self._options[value]
+            return True, self.options['select_map'].values()[0]
+        if value in self.options['select_map']:
+            return True, self.options['select_map'][value]
         return False, self.get_default()
 
     @classmethod

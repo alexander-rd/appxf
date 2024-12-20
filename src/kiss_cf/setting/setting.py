@@ -12,7 +12,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 import re
 import configparser
-from typing import Generic, TypeVar, Type, Any
+from typing import Generic, TypeVar, Type, Any, MutableMapping
 
 
 class AppxfSettingError(Exception):
@@ -166,25 +166,22 @@ class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
         # A setting may be set not being mutable which blocks any changes to
         # it.
         self.mutable = True
+        # same applies to setting specific options and gui options. However, as
+        # long as there are no options defined, there is not editing or
+        # storing. This is why the "mutable" goes into the dict for those
+        # options.
 
-        # TODO: except mutable above, the ones below do only support GUI
-        # handling (or not yet planned handling by console). Therefore, they
-        # should be provided by the GUI implementation like:
-        #   AppxfSetting.gui_option.get(): to get a specific or all GUI options
-        #   AppxfSetting.gui_option.set(): to set a specific or all GUI options
-        # While gui_options is an object provided by the GUI implementation.
-        # Like: AppxfGuiItem. Overloading init functions could then alter
-        # default settings for certain properties.
+        # It does make sense in future the option dict becoming a setting dict.
+        # This should not pose a circular dependency since the hierarchy is:
+        #   1) AppxfSetting (generic)
+        #   2) AppxfSettingDict
+        #   3) SpecificSetting with options
         #
-        # Dependencies:
-        #   * AppxfGuiItem <- AppxfSetting
-        #   * AppxfGuiItemWidget <- AppxfGuiItem
-        #
-        # Conclusion: if AppxfSetting derives from AppxfGuiItem, some list of
-        # AppxfSEttings is identical to a list of AppxfGuiItems. The access
-        # from above might now be via property setter/getter to allow
-        # overloading:
-        #   AppxfSetting.default_visibility = True
+        # Just the GUI part would like to apply a generic handling like placing
+        # the edit button. >> Problems for later.
+
+        self.gui_options = {}
+        self.options = {}
 
         # Name that may be used in the GUI
         self.name = name
@@ -192,11 +189,9 @@ class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
         # A setting may be hidded in normal GUI views unless explicitly
         # mentioned.
         self.default_visibility = True
-        # TODO: there is no usage/implementation, yet
-
         # A setting may be displayed, masked by asteriks:
         self.masked = False
-        # TODO: Implementation in GUI is missing.
+        # TODO: Both settings shouild be part of gui_options
 
     @classmethod
     def new(cls,
@@ -292,6 +287,19 @@ class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
     def to_string(self) -> str:
         ''' Return stored value as string '''
         return str(self._value)
+
+    # option handling
+    def get_options(self) -> MutableMapping[str, Any]:
+        return self.options
+
+    def set_options(self, data=MutableMapping[str, Any]):
+        self.options.update(data)
+
+    def get_gui_options(self) -> MutableMapping[str, Any]:
+        return self.options
+
+    def set_gui_options(self, data=MutableMapping[str, Any]):
+        self.options.update(data)
 
 
 class AppxfString(AppxfSetting[str]):
