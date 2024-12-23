@@ -52,8 +52,6 @@ class AppxfSettingConversionError(Exception):
 # implementation of AppxfSetting such that, for example,
 # AppxfSetting.new('email') returns a AppxfEmail object.
 
-# TODO: add a property to allow setting the initial invalid value again.
-
 class AppxfSettingMeta(type):
     ''' Meta class collecting AppxfSetting implementations '''
     # Mapping of types or string references to derived AppxfSetting classes. This
@@ -504,6 +502,9 @@ def validated_conversion_configparser(
         with (2) the conversion result. If the conversion failed, (1) False
         will be returned and the provided default value.
     '''
+    # avoid problems when string contains newlines:
+    if '\n' in string:
+        return False, default
     config = configparser.ConfigParser()
     config.read_string(f'[DEFAULT]\ntest = {string}')
     try:

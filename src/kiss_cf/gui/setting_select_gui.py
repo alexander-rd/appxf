@@ -1,23 +1,35 @@
 import tkinter
-from PIL import Image, ImageTk
 from tkinter import ttk
-from pytablericons import FilledIcon, TablerIcons, OutlineIcon
 
+from appxf import logging
 from kiss_cf.setting import AppxfSetting, AppxfSettingSelect
-from .setting_gui import SettingFrame
+from .setting_gui import GridFrame
 
-class SettingSelectFrame(SettingFrame):
+class SettingSelectFrame(GridFrame):
+
+    log = logging.getLogger(__name__ + '.SettingSelectFrame')
+
     def __init__(self, parent,
                  setting: AppxfSettingSelect,
                  **kwargs):
-        super().__init__(parent,
-                         setting=setting,
-                         **kwargs)
+        '''Frame holding a single property.'''
+        super().__init__(parent, **kwargs)
 
-        # The StringVar in self.sv remains the same, there is no change
-        # necessary. we just need to replyce the Entry by an OptionMenu
-        self.entry.destroy()
-        self.entry = ttk.Combobox(self, textvariable=self.sv)
+        self.columnconfigure(1, weight=1)
+
+        self.setting = setting
+
+        self.label = tkinter.Label(self, justify='right')
+        self.label.config(text=setting.name + ':')
+        self.label.grid(row=0, column=0, padx=5, pady=5, sticky='NE')
+
+        value = str(self.setting.value)
+        self.sv = tkinter.StringVar(self, value)
+        self.sv.trace_add(
+            'write', lambda var, index, mode: self.value_update())
+
+        entry_width = setting.gui_options.get('width', 15)
+        self.entry = ttk.Combobox(self, textvariable=self.sv, width=entry_width)
         self.entry['values'] = list(setting.get_options()['select_map'].keys())
         self.entry.grid(row=0, column=1, padx=5, pady=5, sticky='NEW')
         self.entry.bind('<Enter>', lambda event: self.show_tooltip())
@@ -30,6 +42,21 @@ class SettingSelectFrame(SettingFrame):
             self.edit_button.grid(row=0, column=2, padx=5, pady=5, sticky='NE')
 
         self.tipwindow = None
+
+    def is_valid(self):
+        return self.setting.validate(self.sv.get())
+
+    def focus_set(self):
+        self.entry.focus_set()
+
+    def value_update(self):
+        value = self.sv.get()
+        valid = self.setting.validate(value)
+        if valid:
+            self.setting.value = value
+            self.entry.config(foreground='black')
+        else:
+            self.entry.config(foreground='red')
 
     def show_tooltip(self):
         "Display text in tooltip window"
