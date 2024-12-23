@@ -85,7 +85,7 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
 
     def _validated_conversion(self, value: str) -> tuple[bool, _BaseTypeT]:
         if value == '':
-            return True, self._base_setting.get_default()
+            return True, self.base_setting_class.get_default()
         if value in self.options['select_map']:
             return True, self.options['select_map'][value]
         return False, self.get_default()
