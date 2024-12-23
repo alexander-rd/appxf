@@ -3,12 +3,12 @@ from PIL import Image, ImageTk
 from tkinter import ttk
 from pytablericons import FilledIcon, TablerIcons, OutlineIcon
 
-from kiss_cf.setting import AppxfSetting, AppxfStringSelect
+from kiss_cf.setting import AppxfSetting, AppxfSettingSelect
 from .setting_gui import SettingFrame
 
 class SettingSelectFrame(SettingFrame):
     def __init__(self, parent,
-                 setting: AppxfStringSelect,
+                 setting: AppxfSettingSelect,
                  **kwargs):
         super().__init__(parent,
                          setting=setting,

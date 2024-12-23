@@ -1,7 +1,8 @@
 
 import pytest
 
-from kiss_cf.setting import AppxfSetting, AppxfSettingError, AppxfSettingConversionError
+from kiss_cf.setting import AppxfSetting, AppxfSettingExtension
+from kiss_cf.setting import AppxfSettingError, AppxfSettingConversionError
 from kiss_cf.setting import AppxfString, AppxfEmail, AppxfPassword
 from kiss_cf.setting import AppxfBool, AppxfInt, AppxfFloat
 
@@ -18,6 +19,9 @@ class DummyClassErrorOnStrCreation():
 @pytest.mark.parametrize(
     'appxf_class', setting_module.AppxfSettingMeta.implementations)
 def test_setting_init(appxf_class):
+    # skip any AppxfExtension
+    if issubclass(appxf_class, AppxfSettingExtension):
+        return
     setting = appxf_class(name='test')
     assert setting.name == 'test'
     assert setting.mutable
@@ -37,7 +41,7 @@ param_wrong_init = [
 @pytest.mark.parametrize(
     'setting_type, value', param_wrong_init)
 def test_setting_wrong_init(setting_type, value):
-    # Utiliting AppxfSetting.new() still uses the corresponding __init__
+    # Utilizing AppxfSetting.new() still uses the corresponding __init__
     with pytest.raises(AppxfSettingConversionError) as exc_info:
         AppxfSetting.new(setting_type, value)
     # general error statement
@@ -61,6 +65,7 @@ param_conversion = [
     # Type      Input           Valid   Value           String
     ('str',     'hello',        True,   'hello',        'hello'),
     (str,       '!"§$%&/()=?\n',True,   '!"§$%&/()=?\n','!"§$%&/()=?\n'),
+    (str,       42,             False,  '',             ''),
     ('string',  '42',           True,   '42',           '42'),
     ('email',   'some@thing.it',True,   'some@thing.it','some@thing.it'),
     ('Email',   'something.it', False,  '',             ''),
@@ -166,21 +171,24 @@ def test_setting_init_with_value_pre_lookup(setting_type, input, valid, value, s
 
 def test_setting_self_test():
     # conversions covering all registered types:
-    uncovered_type = (set(setting_module.AppxfSettingMeta.type_map.keys()) -
-                      set([t[0] for t in param_conversion]))
+    tested_types = set([t[0] for t in param_conversion])
+    uncovered_type = [setting_type for setting_type in setting_module.AppxfSettingMeta.type_map.keys()
+                      if setting_type not in tested_types]
     assert not uncovered_type, (
         f'Following registered types are not covered in '
         f'test_setting_conversions: {uncovered_type}')
     # valid conversions covering all implementations
+    implementation_list = [setting_type for setting_type in setting_module.AppxfSettingMeta.implementations
+                           if not issubclass(setting_type, AppxfSettingExtension)]
     uncovered_valid = (
-        set(setting_module.AppxfSettingMeta.implementation_names) -
-        set([setting_module.AppxfSettingMeta.type_map[t[0]].__name__
+        set(implementation_list) -
+        set([setting_module.AppxfSettingMeta.type_map[t[0]]
              for t in param_conversion
              if t[2]
         ]))
     uncovered_invalid = (
-        set(setting_module.AppxfSettingMeta.implementation_names) -
-        set([setting_module.AppxfSettingMeta.type_map[t[0]].__name__
+        set(implementation_list) -
+        set([setting_module.AppxfSettingMeta.type_map[t[0]]
              for t in param_conversion
              if not t[2]
         ]))
@@ -210,6 +218,9 @@ def test_setting_register_type_twice():
             @classmethod
             def get_supported_types(cls) -> list[type | str]:
                 return ['email']
+            @classmethod
+            def get_default(cls) -> str:
+                return ''
     assert 'is already registered' in str(exc_info.value)
     assert 'DummyAppxfString' in str(exc_info.value)
     assert 'AppxfEmail' in str(exc_info.value)
@@ -220,6 +231,9 @@ def test_setting_register_class_twice():
             @classmethod
             def get_supported_types(cls) -> list[type | str]:
                 return ['moreEmail']
+            @classmethod
+            def get_default(cls) -> str:
+                return ''
     assert 'is already registered' in str(exc_info.value)
     assert 'AppxfEmail' in str(exc_info.value)
 
@@ -229,6 +243,9 @@ def test_setting_register_no_supported_type():
             @classmethod
             def get_supported_types(cls) -> list[type | str]:
                 return []
+            @classmethod
+            def get_default(cls) -> str:
+                return ''
     assert 'does not return any supported type' in str(exc_info.value)
 
 def test_setting_register_incopmlete_class():
@@ -243,8 +260,8 @@ def test_setting_register_incopmlete_class():
 def test_setting_init_with_base_class():
     with pytest.raises(AppxfSettingError) as exc_info:
         AppxfSetting.new(AppxfSetting)
-    assert 'You need to provide a derived, fully implemented class' in str(exc_info.value)
-    assert 'not AppxfSetting directly' in str(exc_info.value)
+    assert 'You need to provide a fully implemented class' in str(exc_info.value)
+    assert 'AppxfSetting is not' in str(exc_info.value)
 
 def test_setting_init_with_unknown_type():
     with pytest.raises(AppxfSettingError) as exc_info:
