@@ -10,6 +10,10 @@ from kiss_cf.language import translate
 from kiss_cf.setting import SettingDict, AppxfSetting, AppxfBool
 
 
+def apply_debug_lines(frame: tkinter.Frame):
+    frame.configure(borderwidth=1, relief=tkinter.SOLID)
+    #pass
+
 # TODO: better option on when to validate input:
 # https://www.plus2net.com/python/tkinter-validation.php
 
@@ -21,8 +25,37 @@ from kiss_cf.setting import SettingDict, AppxfSetting, AppxfBool
 
 # TODO: the above suggests: larger review and rework
 
+class GridFrame(tkinter.Frame):
+    ''' Class to support general APPXF frames
 
-class SettingFrame(tkinter.Frame):
+    Frames are cascaded in a grid. RESIZING uses the  row/column weights that
+    are supposed to be propagated as follows:
+      1) The lowest level frames apply weights dependent on whether they want
+         to be resized (weight=1) or not (weight=0).
+      2) Any frame provides the sum of weights over it's rows or columns.
+    Parents, when placing a frame, consider the sum of weights from (2) for
+    their own row/column configuration according to:
+      3) The row weight a parent shall apply is the maximum row weight of all
+         child frames in this row.
+      4) The column weigfht a parent shall apply is the maximum column weight
+         of all frames in this column.
+    Recommendation is to avoid copmlex matrix grids where and rather subdivide
+    a frame either into multiple columns f frames in one row or multiple rows
+    of frames in one column.
+    '''
+
+    def __init__(self, parent, **kwargs):
+        super().__init__(parent, **kwargs)
+
+    def get_total_row_weight(self):
+        ''' Get sum of row weights '''
+        grid_rows = [widget.grid_info()['row'] for widget in self.grid_slaves()]
+        max_row_number = max(grid_rows)
+        row_weights = [self.rowconfigure(row).get('weight', 0) for row in range(max_row_number+1)]
+        return sum(row_weights)
+
+
+class SettingFrame(GridFrame):
     '''Frame holding a single property.'''
     log = logging.getLogger(__name__ + '.PropertyWidget')
 
@@ -31,7 +64,6 @@ class SettingFrame(tkinter.Frame):
                  **kwargs):
         super().__init__(parent, **kwargs)
 
-        self.rowconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
 
         self.setting = setting
@@ -45,9 +77,35 @@ class SettingFrame(tkinter.Frame):
         self.sv.trace_add(
             'write', lambda var, index, mode: self.value_update())
 
-        # TODO: have width from some input
-        self.entry = tkinter.Entry(self, textvariable=self.sv, width=15)
-        self.entry.grid(row=0, column=1, padx=5, pady=5, sticky='NEW')
+        entry_width = setting.gui_options.get('width', 15)
+        entry_height = setting.gui_options.get('heigth', 1)
+        if entry_height > 1:
+            self.entry = tkinter.Text(self, width=entry_width, height=entry_height)
+            self.entry.bind('<KeyRelease>', lambda event: self._text_field_changed())
+            entry_sticky = 'NSEW'
+            x_padding = (5,0)
+            self.rowconfigure(0, weight=1)
+        else:
+            self.entry = tkinter.Entry(self, textvariable=self.sv, width=entry_width)
+            entry_sticky = 'NEW'
+            x_padding = 5
+            self.rowconfigure(0, weight=0)
+        self.entry.grid(row=0, column=1, padx=x_padding, pady=5, sticky=entry_sticky)
+        # add scrollbar for long texts
+        scrollbar = setting.gui_options.get('scrollbar', bool(entry_height >= 3))
+        if scrollbar and isinstance(self.entry, tkinter.Text):
+            self.scrollbar = tkinter.Scrollbar(self, orient=tkinter.VERTICAL,
+                                               command=self.entry.yview) # type: ignore (entry is Text)
+            self.scrollbar.grid(row=0, column=2, padx=(0,5), pady=5, sticky='NSE')
+            self.entry.configure(yscrollcommand=self.scrollbar.set)
+
+        apply_debug_lines(self)
+
+    def _text_field_changed(self):
+        value = self.entry.get('1.0', tkinter.END)
+        if value.endswith('\n'):
+            value = value[0:-1]
+        self.sv.set(value)
 
     def is_valid(self):
         return self.setting.validate(self.sv.get())
@@ -65,7 +123,7 @@ class SettingFrame(tkinter.Frame):
             self.entry.config(foreground='red')
 
 
-class BoolCheckBoxFrame(tkinter.Frame):
+class BoolCheckBoxFrame(GridFrame):
     '''CheckBox frame for a single boolean.'''
     log = logging.getLogger(__name__ + '.BoolCheckBoxWidget')
 
@@ -75,7 +133,7 @@ class BoolCheckBoxFrame(tkinter.Frame):
                  **kwargs):
         super().__init__(parent, **kwargs)
 
-        self.rowconfigure(0, weight=1)
+        self.rowconfigure(0, weight=0)
         self.columnconfigure(1, weight=1)
 
         self.property = setting
@@ -93,6 +151,8 @@ class BoolCheckBoxFrame(tkinter.Frame):
         self.iv.trace_add(
             'write', lambda var, index, mode: self.value_update())
 
+        apply_debug_lines(self)
+
     def is_valid(self):
         # Checkbox value will always be valid
         return True
@@ -105,7 +165,7 @@ class BoolCheckBoxFrame(tkinter.Frame):
         self.property.value = self.iv.get()
 
 
-class SettingDictFrame(tkinter.Frame):
+class SettingDictFrame(GridFrame):
     '''Frame holding PropertyWidgets for a dictionary of KissProperty.
 
     Changes are directly applied to the properties if they are valid. Consider
@@ -144,8 +204,6 @@ class SettingDictFrame(tkinter.Frame):
                 element_gui_options.get(key, dict()))
 
     def _place_property_frame(self, prop: AppxfSetting, gui_options):
-        self.rowconfigure(len(self.frame_list), weight=1)
-
         if 'frame_type' in gui_options:
             property_frame = gui_options['frame_type'](
                 self, prop, gui_options)
@@ -157,6 +215,9 @@ class SettingDictFrame(tkinter.Frame):
                 self, prop, **gui_options)
         property_frame.grid(
             row=len(self.frame_list), column=0, sticky='NWSE')
+        # apply row weight from underlying frame:
+        self.rowconfigure(len(self.frame_list), weight=property_frame.get_total_row_weight())
+
         self.frame_list.append(property_frame)
 
     def get_left_col_min_width(self) -> int:
@@ -221,7 +282,7 @@ class SettingDictFrame(tkinter.Frame):
         return valid
 
 
-class SettingDictColumnFrame(tkinter.Frame):
+class SettingDictColumnFrame(GridFrame):
     def __init__(self, parent: tkinter.BaseWidget,
                  setting_dict: SettingDict,
                  columns: int,
@@ -256,6 +317,7 @@ class SettingDictColumnFrame(tkinter.Frame):
 
         # build up frames
         self.frame_list: list[SettingDictFrame] = []
+        max_row_weight_over_columns = 0
         for prop_dict in prop_dict_list:
             self.columnconfigure(len(self.frame_list), weight=1)
             this_frame = SettingDictFrame(
@@ -263,6 +325,14 @@ class SettingDictColumnFrame(tkinter.Frame):
             this_frame.grid(
                 row=0, column=len(self.frame_list), sticky='NWSE')
             self.frame_list.append(this_frame)
+            if this_frame.get_total_row_weight() > max_row_weight_over_columns:
+                max_row_weight_over_columns = this_frame.get_total_row_weight()
+        # column weights are configured above in the for loop. The weight of
+        # the one row containing all columns equals the maximum row weight of
+        # the columns. If no column needs vertical resizing, this ColumnFrame
+        # would also not need resizing. If a single row needs resizing, the
+        # other settings would spread out likewise.
+        self.rowconfigure(0, weight=max_row_weight_over_columns)
 
     def adjust_left_columnwidth(self):
         for frame in self.frame_list:
@@ -303,8 +373,6 @@ class SettingDictWindow(tkinter.Toplevel):
         self.language = dict()
 
         self.title(title)
-        self.rowconfigure(1, weight=1)
-        self.columnconfigure(0, weight=1)
 
         columns = kiss_options.get('columns', 1)
         if columns <= 1:
@@ -322,6 +390,13 @@ class SettingDictWindow(tkinter.Toplevel):
         button_frame.columnconfigure(0, weight=1)
         button_frame.columnconfigure(1, weight=1)
         button_frame.grid(row=1, column=0, sticky='NSEW')
+
+        # Column stretch is easy, there is only one column:
+        self.columnconfigure(0, weight=1)
+        # Row stretch depends on the property frame:
+        property_row_weight = property_frame.get_total_row_weight()
+        self.rowconfigure(0, weight=property_row_weight)
+        self.rowconfigure(1, weight=(1 if property_row_weight == 0 else 0))
 
         def cancelButtonFunction(event=None):
             self.log.debug('Cancel')

@@ -70,5 +70,9 @@ voluptua.''',
              'Integer': 42,
              }, name='Dropdown')
 
+# TODO: the integer 42 should not be an allowed option. But there are not
+# checks yet implemented. >> unit testing for AppxfSettingSelect as soon as GUI
+# is ready.
+
 tester.run_frame(SettingSelectFrame,
                  setting)
