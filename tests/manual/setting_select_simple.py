@@ -1,5 +1,5 @@
 from helper import ManualTestHelper
-from kiss_cf.setting import AppxfStringSelect
+from kiss_cf.setting import AppxfSettingSelect, AppxfSetting
 from kiss_cf.gui import SettingSelectFrame
 
 # Scope: SettingSelect functionality by single SettingFrame
@@ -14,7 +14,7 @@ based on the "Long Single Line", the tooltip width shall be the width of the
 frame.
 ''')  # noqa: E501
 
-setting = AppxfStringSelect(
+setting = AppxfSetting.new('select::string',
     options={'Long Broken Text': '''Lorem ipsum dolor sit amet,
 
 consetetur sadipscing elitr, sed diam nonumy eirmod tempor

@@ -1,6 +1,8 @@
 ''' Settings selecting a value from a predefined list '''
-from .setting import AppxfSetting, AppxfString
-from typing import NewType, MutableMapping, Any
+from typing import MutableMapping, Any
+
+from .setting import AppxfSettingExtension, _BaseTypeT, _BaseSettingT
+
 
 # Intent is to support complex data like long text templates by selecting and
 # referencing it by a title.
@@ -44,38 +46,56 @@ from typing import NewType, MutableMapping, Any
 # construction time and no storage is necessary. Only (1) possible is not
 # reasonable, but only (2) has valid use cases.
 
-AppxfSelect = NewType('AppxfSelect', object)
 
-class AppxfStringSelect(AppxfSetting[str]):
-    ''''''
+class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
+    ''' Setting restricted to a named, predefined set
+
+    You typically provide the available options during construction, like:
+    [sel = AppxfSetting.new('int', options={'one': 1, 'two': 2})].
+    '''
+    # This AppxfSetting class is an extention on an existing AppxfSetting type
+    # which is marked by this class attribute:
+    setting_extension = 'select'
+    # The class can be instantiated either by AppxfSetting.new('int_select')
+    # for string based type selection or via AppxfSetting[AppxfInt]() for
+    # direct type based initialization.
+
     def __init__(self,
+                 base_setting: _BaseSettingT,
                  value: str | None = None,
                  options: dict[str, str] | None = None,
                  name: str = '',
                  **kwargs):
-        super().__init__(value, name, **kwargs)
+        if value is None:
+            value = ''
+        # unusual, but select_map in options has to be set before
+        # super().__init__ to have it available in _validated_conversion.
         if options is None:
             options = {}
-        self.options['select_map']: dict[str, str] = options
+        self.options = {'select_map': options}
         # usualy, options are not mutable
         self.options['mutable'] = False
+        super().__init__(base_setting=base_setting,
+                         value=value,
+                         name=name,
+                         **kwargs)
 
-    @property
-    def select_map(self) -> MutableMapping[str, Any]:
-        ''' Select map (shortcut to options['select_map'])'''
-        return self.options['select_map']
+    # Note: get_supported_types and get_default is taken from the
+    # AppxfSelect[type] we are deriving from.
 
-    @classmethod
-    def get_supported_types(cls) -> list[type | str]:
-        return [AppxfSelect, 'StringSelect']
-
-    def _validated_conversion(self, value: str) -> tuple[bool, AppxfSelect]:
+    def _validated_conversion(self, value: str) -> tuple[bool, _BaseTypeT]:
         if value == '':
-            return True, self.options['select_map'].values()[0]
+            return True, self._base_setting.get_default()
         if value in self.options['select_map']:
             return True, self.options['select_map'][value]
         return False, self.get_default()
 
-    @classmethod
-    def get_default(cls):
-        return ''
+    ###################/
+    ## Option Handling
+    #/
+
+    # a shortcut to the select_map, first used in the GUI implementation
+    @property
+    def select_map(self) -> MutableMapping[str, Any]:
+        ''' Select map (shortcut to options['select_map'])'''
+        return self.options['select_map']

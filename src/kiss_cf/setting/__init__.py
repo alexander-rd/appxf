@@ -25,12 +25,10 @@ the following classes are the entry points:
 
 # flake8: noqa F401
 
-from .setting import AppxfSetting, AppxfSettingError, AppxfSettingConversionError
+from .setting import AppxfSetting, AppxfSettingExtension, AppxfSettingError, AppxfSettingConversionError
 from .setting import AppxfString, AppxfEmail, AppxfPassword
 from .setting import AppxfBool, AppxfInt, AppxfFloat
-from .setting_select import AppxfSelect, AppxfStringSelect
-
-# from .setting_select import AppxfStringSelect
+from .setting_select import AppxfSettingSelect
 
 from .setting_dict import SettingDict
 
