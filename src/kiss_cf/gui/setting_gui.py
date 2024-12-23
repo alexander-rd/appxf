@@ -4,6 +4,7 @@ Provide GUI classes for KissProperty objects.
 
 import tkinter
 import math
+from typing import Callable
 
 from appxf import logging
 from kiss_cf.language import translate
@@ -46,6 +47,7 @@ class GridFrame(tkinter.Frame):
 
     def __init__(self, parent, **kwargs):
         super().__init__(parent, **kwargs)
+        self.on_update_callback_list: list[Callable[[], None]] = []
 
     def get_total_row_weight(self):
         ''' Get sum of row weights '''
@@ -53,6 +55,26 @@ class GridFrame(tkinter.Frame):
         max_row_number = max(grid_rows)
         row_weights = [self.rowconfigure(row).get('weight', 0) for row in range(max_row_number+1)]
         return sum(row_weights)
+
+    def update(self):
+        ''' Update frame content
+
+        This function is called from outside of the frame to issue an update of
+        the Frame content. Default: no implementation.
+        '''
+        pass
+
+    def add_callback_on_update(self, func: Callable[[], None]):
+        self.on_update_callback_list.append(func)
+
+    def handle_calls_on_update(self):
+        ''' Call registered callbacks
+
+        The implementing class shall call this function if the frame content
+        was updated and should be handled.
+        '''
+        for func in self.on_update_callback_list:
+            func()
 
 
 class SettingFrame(GridFrame):
@@ -78,9 +100,10 @@ class SettingFrame(GridFrame):
             'write', lambda var, index, mode: self.value_update())
 
         entry_width = setting.gui_options.get('width', 15)
-        entry_height = setting.gui_options.get('heigth', 1)
+        entry_height = setting.gui_options.get('height', 1)
         if entry_height > 1:
             self.entry = tkinter.Text(self, width=entry_width, height=entry_height)
+            self.entry.insert('1.0', self.setting.value)
             self.entry.bind('<KeyRelease>', lambda event: self._text_field_changed())
             entry_sticky = 'NSEW'
             x_padding = (5,0)
@@ -100,6 +123,13 @@ class SettingFrame(GridFrame):
             self.entry.configure(yscrollcommand=self.scrollbar.set)
 
         apply_debug_lines(self)
+
+    def update(self):
+        if isinstance(self.entry, tkinter.Text):
+            self.entry.delete('1.0', tkinter.END)
+            self.entry.insert('1.0', self.setting.value)
+        else:
+            self.sv.set(self.setting.value)
 
     def _text_field_changed(self):
         value = self.entry.get('1.0', tkinter.END)

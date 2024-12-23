@@ -390,14 +390,16 @@ class AppxfSettingExtension(Generic[_BaseSettingT, _BaseTypeT], AppxfSetting[_Ba
         # The base_type should validate it as intended and the deriving
         # extension may or may not utilize it. Also, _base_setting has to be
         # available during __init__ in case _validated_conversion relies on it.
-        self._base_setting = base_setting(value=value, **kwargs)
+        self.base_setting_class = base_setting
+        # TODO: after rendering an instantiated base_setting to just storing
+        # the class, the comment above needs to be adapted.
         super().__init__(name=name, value=value, **kwargs)
 
 
     # This realization only applies to instances. The class registration for
     # AppxfExtensions will not rely on get_default().
     def get_default(self) -> _BaseTypeT:
-        return self._base_setting.get_default()
+        return self.base_setting_class.get_default()
     # To still provide an implementaiton of the classmethod, we provide a dummy
     # implementation (which violates the assumed types)
     @classmethod
