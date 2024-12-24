@@ -232,6 +232,8 @@ class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
     def __init__(self,
                  value: _BaseTypeT | None = None,
                  name: str = '',
+                 width: int = 0,
+                 height: int = 0,
                  **kwargs):
         super().__init__(**kwargs)
         if value is None:
@@ -259,6 +261,11 @@ class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
 
         if not hasattr(self, 'gui_options'):
             self.gui_options = {}
+        if height:
+            self.gui_options['height'] = height
+        if width:
+            self.gui_options['width'] = width
+
         if not hasattr(self, 'options'):
             self.options = {}
 
@@ -272,6 +279,8 @@ class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
         # A setting may be displayed, masked by asteriks:
         self.masked = False
         # TODO: Both settings shouild be part of gui_options
+        print(f'Constructed {self.__class__.__name__} [{name}] with height={height}')
+        print(f'{self.gui_options}')
 
     @classmethod
     def new(cls,
@@ -385,16 +394,23 @@ class AppxfSettingExtension(Generic[_BaseSettingT, _BaseTypeT], AppxfSetting[_Ba
                  value: _BaseTypeT | None = None,
                  name: str = '',
                  **kwargs):
-        # name is only applied to the extension, the base setting should not
-        # require a name since it remains hidden. The value applies to both.
-        # The base_type should validate it as intended and the deriving
-        # extension may or may not utilize it. Also, _base_setting has to be
-        # available during __init__ in case _validated_conversion relies on it.
+        # base_setting has to be available during __init__ of AppxfSetting
+        # since it will validate the value which should rely on the
+        # base_setting.
         self.base_setting_class = base_setting
-        # TODO: after rendering an instantiated base_setting to just storing
-        # the class, the comment above needs to be adapted.
+        # We also need to catch kwargs since those are meant for a value entry,
+        # based on an instantiated base setting.
+        self._base_setting_kwargs = kwargs
         super().__init__(name=name, value=value, **kwargs)
 
+    @property
+    def base_setting_kwargs(self) -> dict[str, Any]:
+        ''' kwargs that should be applied if constructing a base setting '''
+        # the kwargs upon construction must be merged with the gui options that
+        # may be added later:
+        this_kwargs = self._base_setting_kwargs.copy()
+        this_kwargs.update(self.gui_options)
+        return this_kwargs
 
     # This realization only applies to instances. The class registration for
     # AppxfExtensions will not rely on get_default().
@@ -403,8 +419,8 @@ class AppxfSettingExtension(Generic[_BaseSettingT, _BaseTypeT], AppxfSetting[_Ba
     # To still provide an implementaiton of the classmethod, we provide a dummy
     # implementation (which violates the assumed types)
     @classmethod
-    def get_defauls(cls) -> _BaseTypeT:
-        return None
+    def get_default(cls) -> _BaseTypeT:
+        return None # type: ignore
     # Same applies to get_supported_types
     @classmethod
     def get_supported_types(cls) -> list[type | str]:

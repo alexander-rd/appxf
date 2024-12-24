@@ -10,11 +10,6 @@ from appxf import logging
 from kiss_cf.language import translate
 from kiss_cf.setting import SettingDict, AppxfSetting, AppxfBool
 
-
-def apply_debug_lines(frame: tkinter.Frame):
-    frame.configure(borderwidth=1, relief=tkinter.SOLID)
-    #pass
-
 # TODO: better option on when to validate input:
 # https://www.plus2net.com/python/tkinter-validation.php
 
@@ -47,6 +42,8 @@ class GridFrame(tkinter.Frame):
 
     def __init__(self, parent, **kwargs):
         super().__init__(parent, **kwargs)
+        # debugging:
+        #self.configure(borderwidth=1, relief=tkinter.SOLID)
 
     def get_total_row_weight(self):
         ''' Get sum of row weights '''
@@ -90,6 +87,8 @@ class SettingFrame(GridFrame):
 
         entry_width = setting.gui_options.get('width', 15)
         entry_height = setting.gui_options.get('height', 1)
+        print(f'SettingFrame for {setting.name} with height={entry_height}')
+        print(setting.gui_options)
         if entry_height > 1:
             self.entry = tkinter.Text(self, width=entry_width, height=entry_height)
             self.entry.insert('1.0', self.setting.value)
@@ -110,8 +109,6 @@ class SettingFrame(GridFrame):
                                                command=self.entry.yview) # type: ignore (entry is Text)
             self.scrollbar.grid(row=0, column=2, padx=(0,5), pady=5, sticky='NSE')
             self.entry.configure(yscrollcommand=self.scrollbar.set)
-
-        apply_debug_lines(self)
 
     def update(self):
         if isinstance(self.entry, tkinter.Text):
@@ -169,8 +166,6 @@ class BoolCheckBoxFrame(GridFrame):
 
         self.iv.trace_add(
             'write', lambda var, index, mode: self.value_update())
-
-        apply_debug_lines(self)
 
     def is_valid(self):
         # Checkbox value will always be valid

@@ -39,7 +39,9 @@ class SettingSelectDropdown(GridFrame):
 
     def _place_combobox(self):
         self.entry = ttk.Combobox(self, textvariable=self.sv, width=self.entry_width)
-        self.entry['values'] = list(self.setting.get_options()['select_map'].keys())
+        key_list = list(self.setting.get_options()['select_map'].keys())
+        key_list.sort()
+        self.entry['values'] = key_list
         self.entry.grid(row=0, column=1, padx=5, pady=5, sticky='NEW')
         self.entry.bind('<Enter>', lambda event: self.show_tooltip())
         self.entry.bind('<Leave>', lambda event: self.remove_tooltip())
@@ -111,14 +113,14 @@ class SettingSelectEditRowOne(GridFrame):
         self.delete_button = tkinter.Button(
             self, text='Delete',
             command=lambda: self.handle_delete_button())
-        self.delete_button.grid(row=0, column=1, padx=5, pady=5, sticky='NE')
+        self.delete_button.grid(row=0, column=1, padx=5, pady=5, sticky='E')
 
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
 
     def _place_dropdown(self):
         self.dropdown = SettingSelectDropdown(self, setting=self.setting)
-        self.dropdown.grid(row=0, column=0, padx=5, pady=5, sticky='NEW')
+        self.dropdown.grid(row=0, column=0, sticky='EW')
         self.dropdown.bind('<<ValueUpdated>>',
                            lambda event: self.event_generate('<<ValueUpdated>>'))
 
@@ -145,14 +147,14 @@ class SettingSelectEditRowThree(GridFrame):
         self.save_button = tkinter.Button(
             self, text='Save',
             command=lambda: self.handle_save_button())
-        self.save_button.grid(row=0, column=1, padx=5, pady=5, sticky='SE')
+        self.save_button.grid(row=0, column=1, padx=5, pady=5, sticky='E')
 
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
 
     def _place_entry(self):
         self.entry = SettingFrame(parent=self, setting=self.setting)
-        self.entry.grid(row=0, column=0, padx=5, pady=5, sticky='SEW')
+        self.entry.grid(row=0, column=0, sticky='EW')
 
     def update(self):
         if self.entry is not None:
@@ -190,8 +192,8 @@ class SettingSelectEditFrame(GridFrame):
         self.setting = setting
         self.value_setting: AppxfSetting = setting.base_setting_class(
             value=setting.value,
-            name='select entry')
-        self.value_setting.gui_options['height'] = 1
+            name='select entry',
+            **(setting.base_setting_kwargs))
         self.new_option_name_setting = AppxfSetting.new(str, value=setting.input, name='new option')
         # All three rows may be updated according to events such that the init
         # will be reused in actions. They fill the following fields:
@@ -288,3 +290,5 @@ class SettingSelectFrame(SettingSelectDropdown):
         popup = SettingSelectEditWindow(self, setting=self.setting)
         popup.grab_set()
         self.wait_window(popup)
+        # replace the dropdown to consider updated information
+        self.update()
