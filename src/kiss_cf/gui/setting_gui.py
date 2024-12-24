@@ -47,7 +47,6 @@ class GridFrame(tkinter.Frame):
 
     def __init__(self, parent, **kwargs):
         super().__init__(parent, **kwargs)
-        self.on_update_callback_list: list[Callable[[], None]] = []
 
     def get_total_row_weight(self):
         ''' Get sum of row weights '''
@@ -59,22 +58,12 @@ class GridFrame(tkinter.Frame):
     def update(self):
         ''' Update frame content
 
-        This function is called from outside of the frame to issue an update of
-        the Frame content. Default: no implementation.
+        The implementing frame shall update it's content (like displayed
+        values) based on the content containers it received on construction.
+        The implementing frame can assume GUI options (like size constraints)
+        remain unchanged. In such cases, the user of the frame shall rather
+        destroy the frame and recreate it. Default: no implementation.
         '''
-        pass
-
-    def add_callback_on_update(self, func: Callable[[], None]):
-        self.on_update_callback_list.append(func)
-
-    def handle_calls_on_update(self):
-        ''' Call registered callbacks
-
-        The implementing class shall call this function if the frame content
-        was updated and should be handled.
-        '''
-        for func in self.on_update_callback_list:
-            func()
 
 
 class SettingFrame(GridFrame):
