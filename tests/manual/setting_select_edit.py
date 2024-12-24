@@ -36,6 +36,22 @@ magna aliquam erat volutpat.''',
              'Integer': '42',
              }, name='Dropdown')
 setting.options['mutable'] = True
+setting.gui_options['height'] = 20
+setting.gui_options['width'] = 60
+
+# TODO: remove "setting name" form middle entry field
+
+# TODO: larger problem on GUI settings for the base_setting and for the
+# extended_setting. They have to be differentiated - like: width of dropdown
+# entry is not the same as width for the value entry.
+
+# TODO: to incorporate the Close/Done button, the GUI should be redesigned:
+#  1) Delete/Save buttons in the same first row.
+#  2) Upon Save, the new name must be defined by another window (Cancel & OK)
+#  3) (1) and (2) is a FRAME where Save/Delete buttons are present if the
+#     setting is mutable.
+#  4) The Close button is added to a window that uses this Frame (OK only since
+#     it does not store)
 
 tester.run_frame(SettingSelectFrame,
                  setting)
