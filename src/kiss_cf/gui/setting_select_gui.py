@@ -58,7 +58,6 @@ class SettingSelectDropdown(GridFrame):
         if valid:
             self.setting.value = value
             self.entry.config(foreground='black')
-            print('ValueUpdated')
             self.event_generate('<<ValueUpdated>>')
         else:
             self.entry.config(foreground='red')
@@ -221,7 +220,6 @@ class SettingSelectEditFrame(GridFrame):
                                  lambda event: self.save_option())
 
     def handle_dropdown_update(self):
-        print('handle_dropdown_update')
         self.new_option_name_setting.value = self.setting.input
         self.value_setting.value = self.setting.value
         self.entry_row_frame.update()

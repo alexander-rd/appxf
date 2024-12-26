@@ -1,3 +1,4 @@
+from appxf import logging
 import tkinter
 
 # TODO: find a way to accumulate coverage as part of the reporting
@@ -14,6 +15,7 @@ import tkinter
 # TODO: find a way to start/stop the testing window together with a debug
 # window to show states.
 
+logging.activate_logging()
 
 class ManualTestHelper(tkinter.Tk):
     def __init__(self, explanation: str):

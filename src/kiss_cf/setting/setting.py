@@ -279,8 +279,6 @@ class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
         # A setting may be displayed, masked by asteriks:
         self.masked = False
         # TODO: Both settings shouild be part of gui_options
-        print(f'Constructed {self.__class__.__name__} [{name}] with height={height}')
-        print(f'{self.gui_options}')
 
     @classmethod
     def new(cls,
@@ -386,6 +384,10 @@ class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
 # AppxfSetting.
 _BaseSettingT = TypeVar('_BaseSettingT', bound=type[AppxfSetting])
 
+# TODO: reconsider AppxfSettingExtension aggregating AppxfSetting instead of
+# deriving from it. It certainly shares a lot of behavior but it is not the
+# same thing.
+
 class AppxfSettingExtension(Generic[_BaseSettingT, _BaseTypeT], AppxfSetting[_BaseTypeT]):
     setting_extension = ''
 
@@ -400,17 +402,11 @@ class AppxfSettingExtension(Generic[_BaseSettingT, _BaseTypeT], AppxfSetting[_Ba
         self.base_setting_class = base_setting
         # We also need to catch kwargs since those are meant for a value entry,
         # based on an instantiated base setting.
-        self._base_setting_kwargs = kwargs
-        super().__init__(name=name, value=value, **kwargs)
 
-    @property
-    def base_setting_kwargs(self) -> dict[str, Any]:
-        ''' kwargs that should be applied if constructing a base setting '''
-        # the kwargs upon construction must be merged with the gui options that
-        # may be added later:
-        this_kwargs = self._base_setting_kwargs.copy()
-        this_kwargs.update(self.gui_options)
-        return this_kwargs
+        #self._base_setting_kwargs = kwargs
+        self.base_setting_kwargs = {}
+
+        super().__init__(name=name, value=value, **kwargs)
 
     # This realization only applies to instances. The class registration for
     # AppxfExtensions will not rely on get_default().

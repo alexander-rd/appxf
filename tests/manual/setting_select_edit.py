@@ -36,10 +36,10 @@ magna aliquam erat volutpat.''',
              'Integer': '42',
              }, name='Dropdown')
 setting.options['mutable'] = True
-setting.gui_options['height'] = 20
-setting.gui_options['width'] = 60
+setting.base_setting_kwargs['height'] = 20
+setting.base_setting_kwargs['width'] = 60
 
-# TODO: remove "setting name" form middle entry field
+# TODO: remove "setting name" from middle entry field
 
 # TODO: larger problem on GUI settings for the base_setting and for the
 # extended_setting. They have to be differentiated - like: width of dropdown
@@ -52,6 +52,14 @@ setting.gui_options['width'] = 60
 #     setting is mutable.
 #  4) The Close button is added to a window that uses this Frame (OK only since
 #     it does not store)
+
+# TODO: After delete and now since elements are sorted (in GUI), the default
+#    setting goes to an "arbitrary element" since the first in the internal
+#    dict is arbitrary when sorted. Expected would be to select the one after
+#    or the last in sorted list if nothing else is left. >> A bit more complex
+#    but nothing wild. >> Option delete functionality should be within the
+#    setting. >> Same for getting the sorted list?? >> most general would be to
+#    provide a sorting function (for strings).
 
 tester.run_frame(SettingSelectFrame,
                  setting)
