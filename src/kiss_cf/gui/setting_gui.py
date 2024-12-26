@@ -10,6 +10,8 @@ from appxf import logging
 from kiss_cf.language import translate
 from kiss_cf.setting import SettingDict, AppxfSetting, AppxfBool
 
+from .common import GridFrame, FrameWindow
+
 # TODO: better option on when to validate input:
 # https://www.plus2net.com/python/tkinter-validation.php
 
@@ -21,46 +23,8 @@ from kiss_cf.setting import SettingDict, AppxfSetting, AppxfBool
 
 # TODO: the above suggests: larger review and rework
 
-class GridFrame(tkinter.Frame):
-    ''' Class to support general APPXF frames
-
-    Frames are cascaded in a grid. RESIZING uses the  row/column weights that
-    are supposed to be propagated as follows:
-      1) The lowest level frames apply weights dependent on whether they want
-         to be resized (weight=1) or not (weight=0).
-      2) Any frame provides the sum of weights over it's rows or columns.
-    Parents, when placing a frame, consider the sum of weights from (2) for
-    their own row/column configuration according to:
-      3) The row weight a parent shall apply is the maximum row weight of all
-         child frames in this row.
-      4) The column weigfht a parent shall apply is the maximum column weight
-         of all frames in this column.
-    Recommendation is to avoid copmlex matrix grids where and rather subdivide
-    a frame either into multiple columns f frames in one row or multiple rows
-    of frames in one column.
-    '''
-
-    def __init__(self, parent, **kwargs):
-        super().__init__(parent, **kwargs)
-        # debugging:
-        #self.configure(borderwidth=1, relief=tkinter.SOLID)
-
-    def get_total_row_weight(self):
-        ''' Get sum of row weights '''
-        grid_rows = [widget.grid_info()['row'] for widget in self.grid_slaves()]
-        max_row_number = max(grid_rows)
-        row_weights = [self.rowconfigure(row).get('weight', 0) for row in range(max_row_number+1)]
-        return sum(row_weights)
-
-    def update(self):
-        ''' Update frame content
-
-        The implementing frame shall update it's content (like displayed
-        values) based on the content containers it received on construction.
-        The implementing frame can assume GUI options (like size constraints)
-        remain unchanged. In such cases, the user of the frame shall rather
-        destroy the frame and recreate it. Default: no implementation.
-        '''
+# TODO: There is an abstract SettingFrame missing which could be configured as
+#       default for a setting.
 
 
 class SettingFrame(GridFrame):
@@ -87,8 +51,6 @@ class SettingFrame(GridFrame):
 
         entry_width = setting.gui_options.get('width', 15)
         entry_height = setting.gui_options.get('height', 1)
-        print(f'SettingFrame for {setting.name} with height={entry_height}')
-        print(setting.gui_options)
         if entry_height > 1:
             self.entry = tkinter.Text(self, width=entry_width, height=entry_height)
             self.entry.insert('1.0', self.setting.value)
@@ -123,7 +85,7 @@ class SettingFrame(GridFrame):
             value = value[0:-1]
         self.sv.set(value)
 
-    def is_valid(self):
+    def is_valid(self) -> bool:
         return self.setting.validate(self.sv.get())
 
     def focus_set(self):
@@ -211,11 +173,11 @@ class SettingDictFrame(GridFrame):
         # default_visibility are resolved, the new concept may incorporate this
         # setting as well.
         element_gui_options = {}
-        self.frame_list = list()
+        self.frame_list: list[SettingFrame] = []
         for key in self.property_dict.keys():
             self._place_property_frame(
                 property_dict.get_setting(key),
-                element_gui_options.get(key, dict()))
+                element_gui_options.get(key, {}))
 
     def _place_property_frame(self, prop: AppxfSetting, gui_options):
         if 'frame_type' in gui_options:
@@ -289,7 +251,7 @@ class SettingDictFrame(GridFrame):
         if self.frame_list:
             self.frame_list[0].focus_set()
 
-    def is_valid(self):
+    def is_valid(self) -> bool:
         valid = True
         for property_frame in self.frame_list:
             valid &= property_frame.is_valid()
@@ -362,7 +324,7 @@ class SettingDictColumnFrame(GridFrame):
         return valid
 
 
-class SettingDictWindow(tkinter.Toplevel):
+class SettingDictWindow(FrameWindow):
     log = logging.getLogger(__name__ + '.SettingDictWindow')
 
     def __init__(self, parent,
@@ -373,69 +335,40 @@ class SettingDictWindow(tkinter.Toplevel):
         '''
         Create GUI window to edit a dictionary of properties.
         '''
-        super().__init__(parent, **kwargs)
+        super().__init__(parent,
+                         title=title,
+                         buttons=['Cancel', 'OK'],
+                         key_enter_as_button='OK',
+                         **kwargs)
         if kiss_options is None:
             kiss_options = {}
         self.property_dict = setting_dict
         # Ensure values are stored. If congiuration fails, values will be reloaded.
         self.property_dict.store()
-        # TODO: the above strategy will not work for a config that may use
-        # StorageDummy since no real backup is generated. Proposal: the dummy
-        # shall store in RAM and the dummy shall be renamed accordingly. >>
-        # This is not adapted but is not (re-)tested, yet.
-
-        self.language = dict()
-
-        self.title(title)
 
         columns = kiss_options.get('columns', 1)
         if columns <= 1:
-            property_frame = SettingDictFrame(
+            self.dict_frame = SettingDictFrame(
                 self, setting_dict, **kiss_options)
         else:
-            property_frame = SettingDictColumnFrame(
+            self.dict_frame = SettingDictColumnFrame(
                 self, setting_dict, columns, kiss_options)
-        property_frame.grid(row=0, column=0, padx=0, pady=0, sticky='NSWE')
+        self.place_frame(self.dict_frame)
         self.update()
-        property_frame.adjust_left_columnwidth()
+        self.dict_frame.adjust_left_columnwidth()
 
-        button_frame = tkinter.Frame(self)
-        button_frame.rowconfigure(0, weight=1)
-        button_frame.columnconfigure(0, weight=1)
-        button_frame.columnconfigure(1, weight=1)
-        button_frame.grid(row=1, column=0, sticky='NSEW')
+        self.bind('<<Cancel>>', lambda event: self.handle_cancel_button())
+        self.bind('<<OK>>', lambda event: self.handle_ok_button())
 
-        # Column stretch is easy, there is only one column:
-        self.columnconfigure(0, weight=1)
-        # Row stretch depends on the property frame:
-        property_row_weight = property_frame.get_total_row_weight()
-        self.rowconfigure(0, weight=property_row_weight)
-        self.rowconfigure(1, weight=(1 if property_row_weight == 0 else 0))
-
-        def cancelButtonFunction(event=None):
-            self.log.debug('Cancel')
-            self.property_dict.load()
+    def handle_ok_button(self):
+        self.log.debug('OK')
+        if self.dict_frame.is_valid():
+            self.property_dict.store()
             self.destroy()
-        cancelButton = tkinter.Button(
-            button_frame,
-            text=translate(self.language, 'Cancel'),
-            command=cancelButtonFunction)
-        cancelButton.grid(row=0, column=0, padx=5, pady=5, sticky='SW')
+        else:
+            self.log.debug('Cannot "OK", config not valid')
 
-        def okButtonFunction(event=None):
-            if property_frame.is_valid():
-                self.log.debug('OK')
-                self.property_dict.store()
-                self.destroy()
-            else:
-                self.log.debug('Cannot "OK", config not valid')
-        okButton = tkinter.Button(
-            button_frame,
-            text=translate(self.language, 'OK'),
-            command=okButtonFunction)
-        okButton.grid(row=0, column=1, padx=5, pady=5, sticky='SE')
-
-        self.bind('<Return>', okButtonFunction)
-        self.bind('<KP_Enter>', okButtonFunction)
-        # cancel action must also apply on window close
-        self.protocol('WM_DELETE_WINDOW', cancelButtonFunction)
+    def handle_cancel_button(self):
+        self.log.debug('Cancel')
+        self.property_dict.load()
+        self.destroy()

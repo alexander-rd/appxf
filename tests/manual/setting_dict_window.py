@@ -25,3 +25,6 @@ print(setting_dict.get_setting('Boolean Value').name)
 tester.run_toplevel(SettingDictWindow,
                     'Edit Window Title',
                     setting_dict)
+
+#for key, setting in setting_dict.items():
+#    print(f'{key}: {setting}')
