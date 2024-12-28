@@ -1,18 +1,18 @@
 ''' Abstract AppxfSetting and Appxf* implementations
 
-Settings store simple data types like strings, booleans or integers. They add
+Settings hold simple data types like strings, booleans or integers. They add
 the following support for usage in applications:
  - accepting string inputs while converting to expected base type like boolean
- - ensure validity of stored values while some settings like Emails may be
-   initialized with an invalid empty string.
- - maintenance of GUI related options like default visibility or masking
-   for passwords
+ - ensure validity of stored values
+ - maintaining GUI related options like default visibility or masking for
+   passwords
 '''
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
+from typing import Generic, TypeVar, Type, Any
+
 import re
 import configparser
-from typing import Generic, TypeVar, Type, Any, MutableMapping
 
 
 class AppxfSettingError(Exception):
@@ -24,7 +24,7 @@ class AppxfSettingConversionError(Exception):
 
     It is used when the AppxfSetting is not able to validate an input or
     convert it to the base type.'''
-    def __init__(self, setting_class: AppxfSetting[Any], value, **kwargs):
+    def __init__(self, setting_class: type[AppxfSetting[Any]], value, **kwargs):
         super().__init__(**kwargs)
         # The following try/except is required since AppxfString accepts any
         # input converting it with str(). If that fails, the value can also not
@@ -51,6 +51,9 @@ class AppxfSettingConversionError(Exception):
 # To simplify the usage of properties, new classes register to the base
 # implementation of AppxfSetting such that, for example,
 # AppxfSetting.new('email') returns a AppxfEmail object.
+
+# TODO: refactoring according to ticket #16: substitute meta_class by
+# __init_subclass__
 
 class AppxfSettingMeta(type):
     ''' Meta class collecting AppxfSetting implementations '''
@@ -198,12 +201,7 @@ class _AppxfSettingMetaMerged(AppxfSettingMeta, ABCMeta):
 
 # AppxfSetting uses the ValueType below in it's implementation to allow
 # appropriate type hints.
-#
-# For some reason, pylint and pylance seem to get the typevar rules wrong. See
-# reference:
-# https://stackoverflow.com/questions/74589610/whats-pylints-typevar-name-specification
-# pylint: disable=typevar-name-mismatch
-_BaseTypeT = TypeVar('ValueType', bound=object)  # type: ignore
+_BaseTypeT = TypeVar('_BaseTypeT', bound=object)
 
 
 class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
@@ -246,12 +244,12 @@ class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
         # it.
         self.mutable = True
         # same applies to setting specific options and gui options. However, as
-        # long as there are no options defined, there is not editing or
-        # storing. This is why the "mutable" goes into the dict for those
-        # options.
+        # long as there are no options defined, there is no editing or storing.
+        # This is why the "mutable" goes into the dict for those options.
 
-        # It does make sense in future the option dict becoming a setting dict.
-        # This should not pose a circular dependency since the hierarchy is:
+        # TODO: It does make sense in future that the option dict becomes a
+        # setting dict. This should not pose a circular dependency since the
+        # hierarchy is:
         #   1) AppxfSetting (generic)
         #   2) AppxfSettingDict
         #   3) SpecificSetting with options
@@ -270,7 +268,7 @@ class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
             self.options = {}
 
         # Name that may be used in the GUI while it is more typical that the
-        # setting inherits it's name from the setting_dict containeing it.
+        # setting inherits it's name from the setting_dict containing it.
         self.name = name
 
         # A setting may be hidded in normal GUI views unless explicitly
@@ -278,7 +276,7 @@ class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
         self.default_visibility = True
         # A setting may be displayed, masked by asteriks:
         self.masked = False
-        # TODO: Both settings shouild be part of gui_options
+        # TODO: Both settings should be part of gui_options
 
     @classmethod
     def new(cls,
@@ -363,19 +361,6 @@ class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
         ''' Return stored value as string '''
         return str(self._value)
 
-    # option handling
-    def get_options(self) -> MutableMapping[str, Any]:
-        return self.options
-
-    def set_options(self, data=MutableMapping[str, Any]):
-        self.options.update(data)
-
-    def get_gui_options(self) -> MutableMapping[str, Any]:
-        return self.options
-
-    def set_gui_options(self, data=MutableMapping[str, Any]):
-        self.options.update(data)
-
 
 # Fancy: an AppxfSetting can also be extended with additional behavior. An
 # AppxfExtension needs to remain generic with respect to the original base type
@@ -384,9 +369,8 @@ class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
 # AppxfSetting.
 _BaseSettingT = TypeVar('_BaseSettingT', bound=type[AppxfSetting])
 
-# TODO: reconsider AppxfSettingExtension aggregating AppxfSetting instead of
-# deriving from it. It certainly shares a lot of behavior but it is not the
-# same thing.
+# TODO: refactoring according to ticket #17: aggregate AppxfSetting instead of
+# deriving from it.
 
 class AppxfSettingExtension(Generic[_BaseSettingT, _BaseTypeT], AppxfSetting[_BaseTypeT]):
     setting_extension = ''
