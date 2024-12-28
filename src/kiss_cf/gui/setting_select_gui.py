@@ -112,14 +112,14 @@ class SettingSelectEditRowOne(GridFrame):
         self.delete_button = tkinter.Button(
             self, text='Delete',
             command=lambda: self.handle_delete_button())
-        self.delete_button.grid(row=0, column=1, padx=5, pady=5, sticky='E')
+        self.place(widget=self.delete_button, row=0, column=1)
 
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
 
     def _place_dropdown(self):
         self.dropdown = SettingSelectDropdown(self, setting=self.setting)
-        self.dropdown.grid(row=0, column=0, sticky='EW')
+        self.place(widget=self.dropdown, row=0, column=0)
         self.dropdown.bind('<<ValueUpdated>>',
                            lambda event: self.event_generate('<<ValueUpdated>>'))
 
