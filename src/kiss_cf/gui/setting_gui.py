@@ -10,7 +10,7 @@ from appxf import logging
 from kiss_cf.language import translate
 from kiss_cf.setting import SettingDict, AppxfSetting, AppxfBool
 
-from .common import GridFrame, FrameWindow, GridSetting
+from .common import GridFrame, FrameWindow, GridSetting, AppxfGuiError
 
 # TODO: better option on when to validate input:
 # https://www.plus2net.com/python/tkinter-validation.php
@@ -88,6 +88,7 @@ class SettingFrame(GridFrame):
             self.entry.insert('1.0', self.setting.value)
         else:
             self.sv.set(self.setting.value)
+        super().update()
 
     def _text_field_changed(self):
         value = self.entry.get('1.0', tkinter.END)
@@ -337,11 +338,12 @@ class SettingDictColumnFrame(GridFrame):
 
 
 class SettingDictWindow(FrameWindow):
+    ''' Display dialog for Settings or Setting dicts '''
     log = logging.getLogger(__name__ + '.SettingDictWindow')
 
     def __init__(self, parent,
                  title: str,
-                 setting_dict: SettingDict,
+                 setting: AppxfSetting | SettingDict,
                  kiss_options: dict = None,
                  **kwargs):
         '''
@@ -354,25 +356,34 @@ class SettingDictWindow(FrameWindow):
                          **kwargs)
         if kiss_options is None:
             kiss_options = {}
-        self.property_dict = setting_dict
+        # Whole class operated on SettingDict and a single setting is just cast
+        # up to a SettingDict to handle it (required to obtain store/load
+        # behavior for backup&restore upon cancel)
+        if isinstance(setting, AppxfSetting):
+            self.property_dict = SettingDict(data={setting.name: setting})
+        elif isinstance(setting, SettingDict):
+            self.property_dict = setting
+        else:
+            raise AppxfGuiError(f'Setting must be AppxfSetting or SettingDict '
+                                f'but is {type(setting)}')
         # Ensure values are stored. If congiuration fails, values will be reloaded.
         self.property_dict.store()
 
         columns = kiss_options.get('columns', 1)
         if columns <= 1:
             self.dict_frame = SettingDictFrame(
-                self, setting_dict, row_spread=True, **kiss_options)
+                self, self.property_dict, row_spread=True, **kiss_options)
         else:
             self.dict_frame = SettingDictColumnFrame(
-                self, setting_dict, columns, kiss_options, row_spread=True)
+                self, self.property_dict, columns, kiss_options, row_spread=True)
         self.place_frame(self.dict_frame)
         self.update()
         self.dict_frame.adjust_left_columnwidth()
 
-        self.bind('<<Cancel>>', lambda event: self.handle_cancel_button())
-        self.bind('<<OK>>', lambda event: self.handle_ok_button())
+        self.bind('<<Cancel>>', lambda event: self._handle_cancel_button())
+        self.bind('<<OK>>', lambda event: self._handle_ok_button())
 
-    def handle_ok_button(self):
+    def _handle_ok_button(self):
         self.log.debug('OK')
         if self.dict_frame.is_valid():
             self.property_dict.store()
@@ -380,7 +391,7 @@ class SettingDictWindow(FrameWindow):
         else:
             self.log.debug('Cannot "OK", config not valid')
 
-    def handle_cancel_button(self):
+    def _handle_cancel_button(self):
         self.log.debug('Cancel')
         self.property_dict.load()
         self.destroy()

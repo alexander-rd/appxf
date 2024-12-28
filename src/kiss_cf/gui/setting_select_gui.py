@@ -3,7 +3,9 @@ from tkinter import ttk
 
 from appxf import logging
 from kiss_cf.setting import AppxfSetting, AppxfSettingSelect
-from .setting_gui import GridFrame, SettingFrame
+from .common import ButtonFrame, FrameWindow
+from .setting_gui import GridFrame, SettingFrame, SettingDictWindow
+from copy import deepcopy
 
 
 class SettingSelectDropdown(GridFrame):
@@ -16,10 +18,12 @@ class SettingSelectDropdown(GridFrame):
 
     def __init__(self, parent,
                  setting: AppxfSettingSelect,
+                 tooltip: bool = True,
                  **kwargs):
         '''Frame holding a single property.'''
         super().__init__(parent, **kwargs)
         self.setting = setting
+        self.tooltip = tooltip
 
         self.columnconfigure(1, weight=1)
 
@@ -39,12 +43,11 @@ class SettingSelectDropdown(GridFrame):
 
     def _place_combobox(self):
         self.entry = ttk.Combobox(self, textvariable=self.sv, width=self.entry_width)
-        key_list = list(self.setting.get_options()['select_map'].keys())
-        key_list.sort()
-        self.entry['values'] = key_list
+        self.entry['values'] = self.setting.get_options()
         self.entry.grid(row=0, column=1, padx=5, pady=5, sticky='NEW')
-        self.entry.bind('<Enter>', lambda event: self.show_tooltip())
-        self.entry.bind('<Leave>', lambda event: self.remove_tooltip())
+        if self.tooltip:
+            self.entry.bind('<Enter>', lambda event: self.show_tooltip())
+            self.entry.bind('<Leave>', lambda event: self.remove_tooltip())
 
     def is_valid(self):
         return self.setting.validate(self.sv.get())
@@ -66,8 +69,11 @@ class SettingSelectDropdown(GridFrame):
         # an update implies that anything on the input SettingSelect changed.
         # Easiest way to handle this is by destroying the ComboBox and
         # re-creating it:
-        self.entry.destroy()
-        self._place_combobox()
+        #self.entry.destroy()
+        self.sv.set(self.setting.input)
+        #self._place_combobox()
+        self.entry['values'] = self.setting.get_options()
+        super().update()
 
     def show_tooltip(self):
         "Display text in tooltip window"
@@ -95,24 +101,27 @@ class SettingSelectDropdown(GridFrame):
             self.tipwindow.destroy()
             self.tipwindow = None
 
-class SettingSelectEditRowOne(GridFrame):
-    '''
+class _SettingSelectEditRowOne(GridFrame):
+    ''' Holds GUI Elements WITHOUT actions
 
     Provides Events:
-      <<DeleteOption>> on press of the "Delete" button
-      <<ValueUpdated>> as forwarded event from the DropDown field
+      <<Add>>, <<Delete>> -- corresponding buttons pressed
+      <<ValueUpdated>> -- dropdown selection changed (forwarded from
+          dropdown)
     '''
-
     def __init__(self, parent,
                  setting: AppxfSettingSelect):
         super().__init__(parent)
         self.setting = setting
 
+        # column=0:
         self._place_dropdown()
-        self.delete_button = tkinter.Button(
-            self, text='Delete',
-            command=lambda: self.handle_delete_button())
-        self.place(widget=self.delete_button, row=0, column=1)
+
+        # column=1: button frame
+        self.button_frame = ButtonFrame(self, buttons=['Delete', 'Add'])
+        self.place(self.button_frame, row=0, column=1)
+        self.button_frame.bind('<<Delete>>', lambda event: self.event_generate('<<Delete>>'))
+        self.button_frame.bind('<<Add>>', lambda event: self.event_generate('<<Add>>'))
 
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
@@ -126,45 +135,9 @@ class SettingSelectEditRowOne(GridFrame):
     def update(self):
         self.dropdown.destroy()
         self._place_dropdown()
+        super().update()
 
-    def handle_delete_button(self):
-        if self.setting.input in self.setting.options:
-            del self.setting.options[self.setting.input]
-        self.event_generate('<<DeleteOption>>')
-
-class SettingSelectEditRowThree(GridFrame):
-    '''
-
-    Provides Events:
-      <<SaveOption>> on press of the "Save" button
-    '''
-    def __init__(self, parent,
-                 setting: AppxfSetting):
-        super().__init__(parent)
-        self.setting = setting
-        self._place_entry()
-        self.save_button = tkinter.Button(
-            self, text='Save',
-            command=lambda: self.handle_save_button())
-        self.save_button.grid(row=0, column=1, padx=5, pady=5, sticky='E')
-
-        self.rowconfigure(0, weight=1)
-        self.columnconfigure(0, weight=1)
-
-    def _place_entry(self):
-        self.entry = SettingFrame(parent=self, setting=self.setting)
-        self.entry.grid(row=0, column=0, sticky='EW')
-
-    def update(self):
-        if self.entry is not None:
-            self.entry.destroy()
-            self.entry = None
-        self._place_entry()
-
-    def handle_save_button(self):
-        self.event_generate('<<SaveOption>>')
-
-class SettingSelectEditFrame(GridFrame):
+class SettingSelectEdit(GridFrame):
     ''' Frame to edit a SettingSelect
 
     Setting frames cannot store changes. You have to access this frame via a
@@ -172,7 +145,7 @@ class SettingSelectEditFrame(GridFrame):
     creating.
 
     The Frame consists of three rows:
-      1) The SettingSelect dropdown with delete button
+      1) The SettingSelect dropdown with delete/add button
       2) An entry field to for new/changed dropdown items
       3) A setting name entry and save button
 
@@ -181,89 +154,104 @@ class SettingSelectEditFrame(GridFrame):
     using the save button, the current value is added to the name in the
     setting.
     '''
+    log = logging.getLogger(__name__ + '.SettingSelectEdit')
+
     def __init__(self, parent,
                  setting: AppxfSettingSelect,
                  **kwargs):
         super().__init__(parent, **kwargs)
-        # Date is maintained in the setting (SettingSelect) and a setting used
+        # Data is maintained in the setting (SettingSelect) and a setting used
         # in the free entry field.
-        self.parent = parent
         self.setting = setting
         self.value_setting: AppxfSetting = setting.base_setting_class(
             value=setting.value,
             name='select entry',
             **(setting.base_setting_kwargs))
-        self.new_option_name_setting = AppxfSetting.new(str, value=setting.input, name='new option')
         # All three rows may be updated according to events such that the init
         # will be reused in actions. They fill the following fields:
-        self.dropdown_row_frame = SettingSelectEditRowOne(self, setting=self.setting)
-        self.dropdown_row_frame.grid(row=0, column=0, sticky='NEW')
+        self.dropdown_frame = _SettingSelectEditRowOne(self, setting=self.setting)
+        self.dropdown_frame.place(self.dropdown_frame, row=0, column=0)
 
-        self.entry_row_frame = SettingFrame(self,
-                                            setting=self.value_setting)
-        self.entry_row_frame.grid(row=1, column=0, sticky='NSEW')
+        self.setting_frame = SettingFrame(self,
+                                          setting=self.value_setting)
+        self.place(self.setting_frame, row=1, column=0)
 
-        self.save_row_frame = SettingSelectEditRowThree(self, setting=self.new_option_name_setting)
-        self.save_row_frame.grid(row=2, column=0, sticky='SEW')
-
-        self.rowconfigure(0, weight=0)
-        self.rowconfigure(1, weight=1)
-        self.rowconfigure(2, weight=0)
-        self.columnconfigure(0, weight=1)
-
-        self.dropdown_row_frame.bind(
+        self.dropdown_frame.bind(
             '<<ValueUpdated>>',
             lambda event: self.handle_dropdown_update())
-        self.dropdown_row_frame.bind('<<DeleteOption>>',
-                                     lambda event: self.delete_option())
-        self.save_row_frame.bind('<<SaveOption>>',
-                                 lambda event: self.save_option())
+        self.dropdown_frame.bind('<<Delete>>',
+                                 lambda event: self.handle_delete_option())
+        self.dropdown_frame.bind('<<Add>>',
+                                 lambda event: self.handle_add_option())
 
     def handle_dropdown_update(self):
-        self.new_option_name_setting.value = self.setting.input
+        self.log.debug(f'Setting [{self.setting.name}] updated')
         self.value_setting.value = self.setting.value
-        self.entry_row_frame.update()
-        self.save_row_frame.update()
+        self.setting_frame.update()
 
-    def save_option(self):
-        # store new option
-        self.setting.select_map[self.new_option_name_setting.value] = self.value_setting.value
-        # select the new option
-        self.setting.value = self.new_option_name_setting.value
-        # Note: neither the entry field for new values nor the entry field for
-        # the new option name need an update.
-        self.dropdown_row_frame.update()
-
-    def delete_option(self):
+    def handle_delete_option(self):
+        self.log.debug(f'Deleting Option [{self.setting.input}] from setting [{self.setting.name}]')
         # Delete current selection from the options
-        if self.setting.input in self.setting.select_map:
-            self.setting.select_map.pop(self.setting.input)
-        # Default select the first item:
-        if self.setting.select_map.keys():
-            self.setting.value = list(self.setting.select_map.keys())[0]
-        else:
-            self.setting.value = ''
-        # Apply SettingSelect state to the other two variables
+        self.setting.delete_option(self.setting.input)
+        # Apply SettingSelect state to the entry variable
         self.value_setting.value = self.setting.value
-        self.new_option_name_setting.value = self.setting.input
         # Update all frames
-        self.dropdown_row_frame.update()
-        self.entry_row_frame.update()
-        self.save_row_frame.update()
+        self.dropdown_frame.update()
+        self.setting_frame.update()
+
+    def handle_add_option(self):
+        if not self.setting_frame.is_valid():
+            self.log.warning(f'Current value for setting [{self.setting.name}] is not valid')
+            return
+
+        new_option_setting = AppxfSetting.new(str, value=self.setting.input, name='Option Name')
+        popup = SettingDictWindow(parent=self,
+                                  setting=new_option_setting,
+                                  title='Save setting as ...')
+        popup.grab_set()
+        self.wait_window(popup)
+        if popup.last_event == '<<Cancel>>':
+            return
+        new_option = new_option_setting.value
+        self.setting.add_option(option=new_option,
+                                value=self.value_setting.input)
+        self.setting.value = new_option
+        # Update all frames
+        self.log.debug(f'Added Option [{new_option}] for setting [{self.setting.name}]')
+        self.dropdown_frame.update()
+        self.setting_frame.update()
 
 # The updated content in Save/Delete is not really updated content. It's more
 # like "action triggered". The Action registration may need a more detailed
 # concept on "actions".
 
-class SettingSelectEditWindow(tkinter.Toplevel):
-    def __init__(self, parent, setting: AppxfSettingSelect, **kwargs):
-        super().__init__(parent, **kwargs)
-        self.title(f'Editing {setting.name}')
+class SettingSelectEditWindow(FrameWindow):
+    log = logging.getLogger(__name__ + '.SettingSelectEditWindow')
 
-        self.frame = SettingSelectEditFrame(self, setting=setting)
-        self.frame.grid(row=0, column=0, sticky='NSEW')
-        self.rowconfigure(0, weight=1)
-        self.columnconfigure(0, weight=1)
+    def __init__(self, parent, setting: AppxfSettingSelect, **kwargs):
+        super().__init__(parent,
+                         title=f'Editing {setting.name}',
+                         buttons=['Cancel', 'OK'],
+                         closing='Cancel',
+                         **kwargs)
+        self.setting = setting
+        self.backup_options = deepcopy(self.setting.options)
+        self.backup_setting = self.setting.input
+        self.setting_frame = SettingSelectEdit(self, setting=setting)
+        self.place_frame(self.setting_frame)
+
+        self.bind('<<Cancel>>', lambda event: self.handle_cancel_button())
+        self.bind('<<OK>>', lambda event: self.handle_ok_button())
+
+    def handle_ok_button(self):
+        self.log.debug('OK')
+        self.destroy()
+
+    def handle_cancel_button(self):
+        self.log.debug('Cancel')
+        self.setting.options = deepcopy(self.backup_options)
+        self.setting.value = self.backup_setting
+        self.destroy()
 
 class SettingSelectFrame(SettingSelectDropdown):
     log = logging.getLogger(__name__ + '.SettingSelectFrame')
@@ -289,4 +277,4 @@ class SettingSelectFrame(SettingSelectDropdown):
         popup.grab_set()
         self.wait_window(popup)
         # replace the dropdown to consider updated information
-        self.update()
+        super().update()

@@ -1,7 +1,7 @@
 ''' Settings selecting a value from a predefined list '''
-from typing import MutableMapping, Any
+from typing import Any
 
-from .setting import AppxfSettingExtension, _BaseTypeT, _BaseSettingT
+from .setting import AppxfSettingExtension, _BaseTypeT, _BaseSettingT, AppxfSettingError
 
 
 # Intent is to support complex data like long text templates by selecting and
@@ -93,9 +93,36 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
     ###################/
     ## Option Handling
     #/
+    def get_options(self) -> list[str]:
+        ''' Get list of selectable options
 
-    # a shortcut to the select_map, first used in the GUI implementation
-    @property
-    def select_map(self) -> MutableMapping[str, Any]:
-        ''' Select map (shortcut to options['select_map'])'''
-        return self.options['select_map']
+        The list is sorted alphabetically.
+        '''
+        return sorted(list(self.options['select_map'].keys()))
+
+    def get_option_value(self, option: str) -> Any:
+        ''' Get the value for an option '''
+        return self.options['select_map'].get(option, self.base_setting_class.get_default())
+
+    def delete_option(self, option: str):
+        ''' Delete an option from selectable items '''
+        original_options = self.get_options()
+        if option in self.options['select_map']:
+            self.options['select_map'].pop(option)
+        if option == self.input:
+            index = original_options.index(option)
+            new_list = self.get_options()
+            if not new_list:
+                self.value = ''
+            elif index < len(new_list):
+                self.value = new_list[index]
+            else:
+                self.value = new_list[-1]
+
+    def add_option(self, option: str, value: Any):
+        ''' Add an option to the selectable items '''
+        setting = self.base_setting_class()
+        # We try to set the value and take error message from there:
+        setting.value = value
+        # We also take the readily transformed value, not just the input
+        self.options['select_map'][option] = setting.value

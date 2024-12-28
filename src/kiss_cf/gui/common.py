@@ -5,7 +5,7 @@ MainWindow: TopLevel window with configurable buttons on
 
 '''
 from __future__ import annotations
-from dataclasses import dataclass, fields
+from typing import NamedTuple
 from appxf import logging
 
 import functools
@@ -13,34 +13,21 @@ import functools
 import tkinter
 from tkinter import ttk
 
-@dataclass(eq=False, order=False)
-class _GridSettingNotNone:
-    sticky: str
-    padx: int
-    pady: int
-    row_weight: int
-    column_weight: int
+class AppxfGuiError(Exception):
+    ''' Error thrown in context of GUI handling '''
 
-    def update_from_grid_setting(self, override: GridSetting):
-        ''' Update fields fields that are not None
-
-        End user will use GridSetting where None is allowed. Implementation of
-        GridFrame will use this dataclass and update from user input via this
-        function.
-        '''
-        for field in fields(self):
-            this_override = getattr(override, field.name, None)
-            if this_override is not None:
-                setattr(self, field.name, this_override)
-
-
-@dataclass(eq=False, order=False)
-class GridSetting(_GridSettingNotNone):
+class GridSetting(NamedTuple):
     sticky: str | None = None
     padx: int | None = None
     pady: int | None = None
     row_weight: int | None = None
     column_weight: int | None = None
+
+    def get(self, field: str, default: GridSetting):
+        value = getattr(self, field, None)
+        if value is None:
+            value = getattr(default, field)
+        return value
 
 
 class GridFrame(tkinter.Frame):
@@ -65,23 +52,23 @@ class GridFrame(tkinter.Frame):
     # Note that the weights are read from it's Frame contents. If it contains
     # widgets, they may sum up to zero. If they contain nothing, the frame
     # weight will be 1.
-    frame_setting = _GridSettingNotNone(
+    frame_setting = GridSetting(
         sticky='EWNS', padx=0, pady=0, row_weight=1, column_weight=1)
 
     classes_horizontal_stretch_setting = [tkinter.Entry, ttk.Entry, ttk.Combobox]
-    item_horizontal_stretch_setting = _GridSettingNotNone(
+    item_horizontal_stretch_setting = GridSetting(
         sticky='EW', padx=5, pady=5, row_weight=0, column_weight=1)
 
     classes_full_stretch_setting = [tkinter.Text, ttk.Entry]
-    item_full_stretch_setting = _GridSettingNotNone(
+    item_full_stretch_setting = GridSetting(
         sticky='EWNS', padx=5, pady=5, row_weight=1, column_weight=1)
 
     classes_right_aligned_setting = [tkinter.Label]
-    item_right_aligned_setting = _GridSettingNotNone(
+    item_right_aligned_setting = GridSetting(
         sticky='E', padx=5, pady=5, row_weight=0, column_weight=0)
 
     # applies to anything else
-    item_centered_setting = _GridSettingNotNone(
+    item_centered_setting = GridSetting(
         sticky='', padx=5, pady=5, row_weight=0, column_weight=0)
 
     def __init__(self,
@@ -113,39 +100,42 @@ class GridFrame(tkinter.Frame):
         if setting is None:
             setting = GridSetting()
 
-        if issubclass(type(widget), tkinter.Frame):
+        if isinstance(widget, tkinter.Frame):
             default_setting = self.frame_setting
-            if issubclass(type(widget), GridFrame):
-                default_setting.row_weight = widget.get_total_row_weight() # type: ignore
-                default_setting.column_weight = widget.get_total_column_weight() # type: ignore
+            if isinstance(widget, GridFrame):
+                default_setting = default_setting._replace(
+                    row_weight=widget.get_total_row_weight(),
+                    column_weight=widget.get_total_column_weight())
+                #default_setting.row_weight = widget.get_total_row_weight() # type: ignore
+                #default_setting.column_weight = widget.get_total_column_weight() # type: ignore
             print(f'Placing FRAME ({type(widget)}): {default_setting}')
-        elif issubclass(type(widget), tuple(self.classes_horizontal_stretch_setting)):
+        elif isinstance(widget, tuple(self.classes_horizontal_stretch_setting)):
             print('Placing HORIZONTAL ITEM')
             default_setting = self.item_horizontal_stretch_setting
-        elif issubclass(type(widget), tuple(self.classes_full_stretch_setting)):
+        elif isinstance(widget, tuple(self.classes_full_stretch_setting)):
             print('Placing FULL ITEM')
             default_setting = self.item_full_stretch_setting
-        elif issubclass(type(widget), tuple(self.classes_right_aligned_setting)):
+        elif isinstance(widget, tuple(self.classes_right_aligned_setting)):
             default_setting = self.item_right_aligned_setting
             print('Placing RIGHT ITEM')
         else:
             print('Placing CENTERED ITEM')
             default_setting = self.item_centered_setting
-        # apply override
-        default_setting.update_from_grid_setting(setting)
         print(f'placing with setting: {default_setting}')
         # TODO: this handling (overwriting) just to get the type warnings that
         # would pop up below right is not sppropriate.
         widget.grid(row=row, column=column,
-                    sticky=default_setting.sticky,
-                    padx=default_setting.padx,
-                    pady=default_setting.pady)
+                    sticky=setting.get('sticky', default_setting),
+                    padx=setting.get('padx', default_setting),
+                    pady=setting.get('pady', default_setting))
         # apply maximum row/column weights; ">="" is used to ensure the index
         # is written to the dict
-        if default_setting.row_weight >= self.row_weights.get(row, 0):
-            self.row_weights[row] = default_setting.row_weight
-        if default_setting.column_weight >= self.column_weights.get(column, 0):
-            self.column_weights[column] = default_setting.column_weight
+        row_weight = setting.get('row_weight', default_setting)
+        if row_weight >= self.row_weights.get(row, 0):
+            self.row_weights[row] = row_weight
+        column_weight = setting.get('column_weight', default_setting)
+        if column_weight >= self.column_weights.get(column, 0):
+            self.column_weights[column] = column_weight
         self._apply_weights()
 
     def _apply_weights(self):
@@ -160,15 +150,14 @@ class GridFrame(tkinter.Frame):
         if sum(self.row_weights.values()) > 0:
             # if there is any weight, there is no reason to enforce weight=1
             spread = False
-        print(f'Utilizing column_spread: {spread}, {self.row_weights}')
+        #print(f'Utilizing column_spread: {spread}, {self.row_weights}')
         for row, weight in self.row_weights.items():
             self.rowconfigure(row, weight=1 if spread else weight)
 
         spread = self.row_spread
-        #print(f'Configured row_spread: {spread}')
         if sum(self.column_weights.values()) > 0:
             spread = False
-        #print(f'Utilizing row_spread: {spread}, {self.column_weights}')
+        print(f'Utilizing row_spread: {spread}, {self.column_weights}')
         for column, weight in self.column_weights.items():
             self.columnconfigure(column, weight=1 if spread else weight)
 
@@ -204,16 +193,6 @@ class GridFrame(tkinter.Frame):
             column_weights = [0]
         return sum(column_weights)
 
-    def update(self):
-        ''' Update frame content
-
-        The implementing frame shall update it's content (like displayed
-        values) based on the content containers it received on construction.
-        The implementing frame can assume GUI options (like size constraints)
-        remain unchanged. In such cases, the user of the frame shall rather
-        destroy the frame and recreate it. Default: no implementation.
-        '''
-
 
 class ButtonFrame(GridFrame):
     ''' Window to display a frame with configurable buttons
@@ -227,7 +206,7 @@ class ButtonFrame(GridFrame):
                  buttons: list[str],
                  spread: bool = False,
                  **kwargs):
-        '''_summary_
+        ''' Frame with buttons left to right
 
         Arguments:
             parent -- any valid tkinter parent
@@ -241,10 +220,14 @@ class ButtonFrame(GridFrame):
                 cells as default. (default: {['']})
             key_enter_as_button -- handle pressing of the Enter key equal to
                 pressing the button name (default: {['']})
+
+        Provides Events:
+            <<Button Name>> according to provided button names.
         '''
         super().__init__(parent,
                          row_spread=spread,
                          **kwargs)
+        self.last_event = None
 
         # add buttons:
         self.button_frame_list: list[tkinter.Frame] = []
@@ -264,6 +247,7 @@ class ButtonFrame(GridFrame):
 
     def handle_button_press(self, button: str):
         self.log.debug(f'Button press: {button}')
+        self.last_event = f'<<{button}>>'
         self.event_generate(f'<<{button}>>')
 
 
@@ -328,6 +312,15 @@ class FrameWindow(tkinter.Toplevel):
         # Closing via window manager:
         self.protocol('WM_DELETE_WINDOW',
                       lambda: self.button_frame.handle_button_press('WM_DELETE_WINDOW'))
+
+    @property
+    def last_event(self) -> str | None:
+        ''' Obtain the last triggered event
+
+        Typically required to identify whether the window was cancelled (event
+        <<Cancelled>>) or properly exited (event <<OK>>)
+        '''
+        return self.button_frame.last_event
 
     def place_frame(self, frame: GridFrame):
         if self.frame is not None:

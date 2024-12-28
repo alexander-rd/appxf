@@ -26,9 +26,6 @@ gui_property = {
 #for key in prop_dict.keys():
 #    print(f'{key}: {prop_dict[key]}')
 
-setting_gui.SettingDictColumnFrame
-setting_gui.SettingDictWindow
-
 tester.run_toplevel(setting_gui.SettingDictWindow,
                     'Edit Window Title',
                     prop_dict,
