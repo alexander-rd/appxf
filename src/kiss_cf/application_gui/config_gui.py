@@ -31,7 +31,7 @@ class ConfigMenu(tkinter.Menu):
             def command(section=section):
                 window = SettingDictWindow(parent,
                     title=f'Settings for {section}',
-                    setting_dict=self._config.section(section),
+                    setting=self._config.section(section),
                     )
                 window.grab_set()
             self.add_command(label=section, command=command)
