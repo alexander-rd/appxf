@@ -10,7 +10,7 @@ from appxf import logging
 from kiss_cf.language import translate
 from kiss_cf.setting import SettingDict, AppxfSetting, AppxfBool
 
-from .common import GridFrame, FrameWindow
+from .common import GridFrame, FrameWindow, GridSetting
 
 # TODO: better option on when to validate input:
 # https://www.plus2net.com/python/tkinter-validation.php
@@ -36,13 +36,15 @@ class SettingFrame(GridFrame):
                  **kwargs):
         super().__init__(parent, **kwargs)
 
+        print(f'Setting frame for {setting.name}')
+
         self.columnconfigure(1, weight=1)
 
         self.setting = setting
 
         self.label = tkinter.Label(self, justify='right')
         self.label.config(text=setting.name + ':')
-        self.label.grid(row=0, column=0, padx=5, pady=5, sticky='NE')
+        self.place(self.label, row=0, column=0)
 
         value = str(self.setting.value)
         self.sv = tkinter.StringVar(self, value)
@@ -63,13 +65,21 @@ class SettingFrame(GridFrame):
             entry_sticky = 'NEW'
             x_padding = 5
             self.rowconfigure(0, weight=0)
-        self.entry.grid(row=0, column=1, padx=x_padding, pady=5, sticky=entry_sticky)
+        self.place(self.entry, row=0, column=1,
+                   setting=GridSetting(padx=x_padding, pady=5,
+                                       sticky=entry_sticky))
+        # TODO: to apply place() properly without the nonsense setting, the
+        # scollable Text must be distinguished from a non-scollable text. The
+        # scrollable Text would become it's own widget (a frame with both
+        # contained and no padding applied)
+
         # add scrollbar for long texts
         scrollbar = setting.gui_options.get('scrollbar', bool(entry_height >= 3))
         if scrollbar and isinstance(self.entry, tkinter.Text):
             self.scrollbar = tkinter.Scrollbar(self, orient=tkinter.VERTICAL,
                                                command=self.entry.yview) # type: ignore (entry is Text)
-            self.scrollbar.grid(row=0, column=2, padx=(0,5), pady=5, sticky='NSE')
+            self.place(self.scrollbar, row=0, column=2,
+                       setting=GridSetting(padx=(0,5), sticky='NSE'))
             self.entry.configure(yscrollcommand=self.scrollbar.set)
 
     def update(self):
@@ -118,13 +128,13 @@ class BoolCheckBoxFrame(GridFrame):
 
         self.label = tkinter.Label(self, justify='right')
         self.label.config(text=setting.name + ':')
-        self.label.grid(row=0, column=0, padx=5, pady=5, sticky='NE')
+        self.place(self.label, row=0, column=0)
 
         self.iv = tkinter.IntVar(self, value=self.property.value)
 
         # TODO: have width from some input
         self.checkbox = tkinter.Checkbutton(self, text='', variable=self.iv)
-        self.checkbox.grid(row=0, column=1, padx=5, pady=5, sticky='NW')
+        self.place(self.checkbox, row=0, column=1)
 
         self.iv.trace_add(
             'write', lambda var, index, mode: self.value_update())
@@ -189,8 +199,7 @@ class SettingDictFrame(GridFrame):
         else:
             property_frame = SettingFrame(
                 self, prop, **gui_options)
-        property_frame.grid(
-            row=len(self.frame_list), column=0, sticky='NWSE')
+        self.place(property_frame, row=len(self.frame_list), column=0)
         # apply row weight from underlying frame:
         self.rowconfigure(len(self.frame_list), weight=property_frame.get_total_row_weight())
 
@@ -207,6 +216,10 @@ class SettingDictFrame(GridFrame):
             min_width = w.get_left_col_min_width()
         ```
         '''
+        # TODO: docstring above is not correct anymore after grid() is
+        # substituted by place(). When touching this, I may reconsider
+        # overwriting grid() (and pack() and the other placing mechanisms).
+        # There is no need for a new naming.
         self.winfo_toplevel().update()
         n_rows = self.grid_size()[1]
         # get minimum size
@@ -298,8 +311,7 @@ class SettingDictColumnFrame(GridFrame):
             self.columnconfigure(len(self.frame_list), weight=1)
             this_frame = SettingDictFrame(
                 self, prop_dict, **kwargs)
-            this_frame.grid(
-                row=0, column=len(self.frame_list), sticky='NWSE')
+            self.place(this_frame, row=0, column=len(self.frame_list))
             self.frame_list.append(this_frame)
             if this_frame.get_total_row_weight() > max_row_weight_over_columns:
                 max_row_weight_over_columns = this_frame.get_total_row_weight()
@@ -317,7 +329,7 @@ class SettingDictColumnFrame(GridFrame):
     def focus_set(self):
         self.frame_list[0].focus_set()
 
-    def valid(self):
+    def is_valid(self):
         valid = True
         for frame in self.frame_list:
             valid &= frame.is_valid()
@@ -349,10 +361,10 @@ class SettingDictWindow(FrameWindow):
         columns = kiss_options.get('columns', 1)
         if columns <= 1:
             self.dict_frame = SettingDictFrame(
-                self, setting_dict, **kiss_options)
+                self, setting_dict, row_spread=True, **kiss_options)
         else:
             self.dict_frame = SettingDictColumnFrame(
-                self, setting_dict, columns, kiss_options)
+                self, setting_dict, columns, kiss_options, row_spread=True)
         self.place_frame(self.dict_frame)
         self.update()
         self.dict_frame.adjust_left_columnwidth()
