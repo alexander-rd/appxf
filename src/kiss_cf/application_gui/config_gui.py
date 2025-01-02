@@ -5,7 +5,7 @@ Provide GUI classes for yagni_cft Config objects.
 import tkinter
 
 from appxf import logging
-from kiss_cf.gui import SettingDictWindow
+from kiss_cf.gui.setting_dict import SettingDictWindow
 from kiss_cf.config import Config
 
 # TODO: reconsider language concept: maybe something configurable, working on

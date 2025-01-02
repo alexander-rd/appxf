@@ -1,6 +1,6 @@
 from helper import ManualTestHelper
 from kiss_cf.setting import AppxfBool, AppxfString, AppxfEmail
-from kiss_cf.gui import setting_gui
+from kiss_cf.gui import setting_dict
 
 tester = ManualTestHelper('''
 Resizing: should only affect the right entry part.
@@ -18,5 +18,5 @@ prop_dict = {
     'Already having content': AppxfString('some content')
 }
 
-tester.run_frame(setting_gui.SettingDictColumnFrame,
+tester.run_frame(setting_dict.SettingDictColumnFrame,
                  prop_dict, columns=2)

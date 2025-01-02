@@ -1,6 +1,15 @@
 from appxf import logging
 import tkinter
 
+# Manual tests are not pytests but general setup (like start of logging) is
+# configured in conftest. To enable reuse and the import the root path of the
+# module is added to the system path:
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__),'../../'))
+from conftest import pytest_runtest_setup
+pytest_runtest_setup(None)
+
 # TODO: find a way to accumulate coverage as part of the reporting
 # I will need:
 # coverage run --source=kiss_cf --data-file=.coerage.<test-module>
@@ -15,7 +24,7 @@ import tkinter
 # TODO: find a way to start/stop the testing window together with a debug
 # window to show states.
 
-logging.activate_logging(app_scope='kiss_cf')
+#logging.activate_logging(app_scope='kiss_cf')
 #for logger_name in logging.logging.Logger.manager.loggerDict:
 #    print(logger_name)
 

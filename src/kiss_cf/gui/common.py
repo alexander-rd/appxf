@@ -5,7 +5,7 @@ MainWindow: TopLevel window with configurable buttons on
 
 '''
 from __future__ import annotations
-from typing import NamedTuple
+from typing import NamedTuple, Iterable, Callable
 from appxf import logging
 
 import functools
@@ -49,6 +49,8 @@ class GridFrame(tkinter.Frame):
     of frames in one column.
     '''
 
+    log = logging.getLogger(f'{__name__}.GridFrame')
+
     # Note that the weights are read from it's Frame contents. If it contains
     # widgets, they may sum up to zero. If they contain nothing, the frame
     # weight will be 1.
@@ -82,7 +84,7 @@ class GridFrame(tkinter.Frame):
         self.row_weights: dict[int, int] = {}
         self.column_weights: dict[int, int] = {}
         # debugging:
-        self.configure(borderwidth=1, relief=tkinter.SOLID)
+        #self.configure(borderwidth=1, relief=tkinter.SOLID)
 
     def place(self,
               widget: tkinter.Widget | GridFrame,
@@ -108,20 +110,15 @@ class GridFrame(tkinter.Frame):
                     column_weight=widget.get_total_column_weight())
                 #default_setting.row_weight = widget.get_total_row_weight() # type: ignore
                 #default_setting.column_weight = widget.get_total_column_weight() # type: ignore
-            print(f'Placing FRAME ({type(widget)}): {default_setting}')
         elif isinstance(widget, tuple(self.classes_horizontal_stretch_setting)):
-            print('Placing HORIZONTAL ITEM')
             default_setting = self.item_horizontal_stretch_setting
         elif isinstance(widget, tuple(self.classes_full_stretch_setting)):
-            print('Placing FULL ITEM')
             default_setting = self.item_full_stretch_setting
         elif isinstance(widget, tuple(self.classes_right_aligned_setting)):
             default_setting = self.item_right_aligned_setting
-            print('Placing RIGHT ITEM')
         else:
-            print('Placing CENTERED ITEM')
             default_setting = self.item_centered_setting
-        print(f'placing with setting: {default_setting}')
+        self.log.debug(f'Placing frame {type(widget)} with setting: {default_setting}')
         # TODO: this handling (overwriting) just to get the type warnings that
         # would pop up below right is not sppropriate.
         widget.grid(row=row, column=column,
@@ -150,14 +147,12 @@ class GridFrame(tkinter.Frame):
         if sum(self.row_weights.values()) > 0:
             # if there is any weight, there is no reason to enforce weight=1
             spread = False
-        #print(f'Utilizing column_spread: {spread}, {self.row_weights}')
         for row, weight in self.row_weights.items():
             self.rowconfigure(row, weight=1 if spread else weight)
 
         spread = self.row_spread
         if sum(self.column_weights.values()) > 0:
             spread = False
-        print(f'Utilizing row_spread: {spread}, {self.column_weights}')
         for column, weight in self.column_weights.items():
             self.columnconfigure(column, weight=1 if spread else weight)
 
@@ -203,7 +198,7 @@ class ButtonFrame(GridFrame):
     log = logging.getLogger(__name__ + '.ButtonFrame')
 
     def __init__(self, parent: tkinter.BaseWidget,
-                 buttons: list[str],
+                 buttons: Iterable[str],
                  spread: bool = False,
                  **kwargs):
         ''' Frame with buttons left to right
@@ -234,13 +229,11 @@ class ButtonFrame(GridFrame):
         button_number = 0
         for button in buttons:
             if button:
-                print(f'Adding button {button}')
                 this_widget = tkinter.Button(
                     self,
                     text=button,
                     command=functools.partial(self.handle_button_press, button))
             else:
-                print(f'Adding empty frame')
                 this_widget = GridFrame(self)
             self.place(widget=this_widget, row=0, column=button_number)
             button_number += 1
@@ -265,8 +258,8 @@ class FrameWindow(tkinter.Toplevel):
     '''
     def __init__(self, parent: tkinter.BaseWidget,
                  title: str,
-                 buttons: list[str],
-                 closing: list[str] | None = None,
+                 buttons: Iterable[str] = ('Cancel', 'OK'),
+                 closing: str | list[str] = 'Cancel',
                  key_enter_as_button: str = '',
                  **kwargs):
         '''_summary_
@@ -285,8 +278,8 @@ class FrameWindow(tkinter.Toplevel):
                 pressing the button name (default: {['']})
         '''
         super().__init__(parent, **kwargs)
-        if closing is None:
-            closing = []
+        if isinstance(closing, str):
+            closing = [closing]
 
         self.title(title)
         # there will only be a single columnn:
@@ -311,7 +304,8 @@ class FrameWindow(tkinter.Toplevel):
             self.button_frame.bind(f'<<{button}>>', lambda event: self.destroy(), add=True)
         # Closing via window manager:
         self.protocol('WM_DELETE_WINDOW',
-                      lambda: self.button_frame.handle_button_press('WM_DELETE_WINDOW'))
+                      lambda: self.button_frame.handle_button_press(
+                          closing[0] if closing else 'WM_DELETE_WINDOW'))
 
     @property
     def last_event(self) -> str | None:
@@ -331,8 +325,10 @@ class FrameWindow(tkinter.Toplevel):
         self.rowconfigure(0, weight=frame_row_weight)
         # reconfigure the button row
         self.rowconfigure(1, weight=(0 if frame_row_weight else 1))
-        print(f'Placed Frame with weight: {frame_row_weight}')
 
     # any bind on this window shall be intended for the underlying button frame
-    def bind(self, sequence=None, func=None, add=None):
+    def bind(self,
+             sequence: str | None =None,
+             func: Callable[[tkinter.Event], object] | None = None,
+             add: bool | None = None):
         self.button_frame.bind(sequence=sequence, func=func, add=add)

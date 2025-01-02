@@ -1,5 +1,6 @@
 from helper import ManualTestHelper
-from kiss_cf.setting import AppxfSettingSelect, AppxfSetting
+from kiss_cf.gui.setting_dict import SettingDictSingleFrame
+from kiss_cf.setting import AppxfSettingSelect, AppxfSetting, SettingDict
 from kiss_cf.gui import SettingSelectFrame
 
 # Scope: SettingSelect edit options functionality
@@ -8,7 +9,7 @@ tester = ManualTestHelper('''
 TBD
 ''')  # noqa: E501
 
-setting = AppxfSetting.new('select::string',
+settingOne = AppxfSetting.new('select::string',
     options={'Long Broken Text': '''Lorem ipsum dolor sit amet,
 
 consetetur sadipscing elitr, sed diam nonumy eirmod tempor
@@ -33,11 +34,18 @@ dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer
 adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore
 magna aliquam erat volutpat.''',
              'Long Single Line': 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.',
-             'Integer': '42',
-             }, name='Dropdown')
-setting.options['mutable'] = True
-setting.base_setting_kwargs['height'] = 20
-setting.base_setting_kwargs['width'] = 60
+             'Short': 'String',
+             }, name='SelectString')
+settingOne.options['mutable'] = True
+settingOne.base_setting_kwargs['height'] = 20
+settingOne.base_setting_kwargs['width'] = 60
+
+settingTwo = AppxfSetting.new('select::int',
+    options={'1 Eins': 1, '2 Zwei': 2, '3 Drei': 3},
+    name='Integers')
+settingTwo.options['mutable'] = True
+
+setting = SettingDict(data={'SelectString': settingOne, 'Integer': settingTwo})
 
 # TODO: remove "setting name" from middle entry field
 
@@ -61,5 +69,5 @@ setting.base_setting_kwargs['width'] = 60
 #    setting. >> Same for getting the sorted list?? >> most general would be to
 #    provide a sorting function (for strings).
 
-tester.run_frame(SettingSelectFrame,
+tester.run_frame(SettingDictSingleFrame,
                  setting)
