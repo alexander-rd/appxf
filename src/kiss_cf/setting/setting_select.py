@@ -85,7 +85,7 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
 
     def _validated_conversion(self, value: str) -> tuple[bool, _BaseTypeT]:
         if value == '':
-            return True, self.base_setting_class.get_default()
+            return True, self.base_setting.get_default()
         if value in self.options['select_map']:
             return True, self.options['select_map'][value]
         return False, self.get_default()
@@ -102,7 +102,7 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
 
     def get_option_value(self, option: str) -> Any:
         ''' Get the value for an option '''
-        return self.options['select_map'].get(option, self.base_setting_class.get_default())
+        return self.options['select_map'].get(option, self.base_setting.get_default())
 
     def delete_option(self, option: str):
         ''' Delete an option from selectable items '''
@@ -121,7 +121,7 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
 
     def add_option(self, option: str, value: Any):
         ''' Add an option to the selectable items '''
-        setting = self.base_setting_class()
+        setting = self.base_setting()
         # We try to set the value and take error message from there:
         setting.value = value
         # We also take the readily transformed value, not just the input

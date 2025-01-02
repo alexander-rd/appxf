@@ -28,7 +28,7 @@ class AppxfSettingConversionError(Exception):
         super().__init__(**kwargs)
         # The following try/except is required since AppxfString accepts any
         # input converting it with str(). If that fails, the value can also not
-        # be printed.
+        # be displayed.
         try:
             value_str = str(value)
         # pylint: disable=bare-except
@@ -145,11 +145,12 @@ class AppxfSettingMeta(type):
         return newclass
 
     @classmethod
-    def get_appxf_setting_type(cls,
-                               requested_type: str | type,
-                               value: Any,
-                               name: str,
-                               **kwargs) -> AppxfSetting[Any]:
+    def get_appxf_setting(
+        cls,
+        requested_type: str | type,
+        value: Any,
+        name: str,
+        **kwargs) -> AppxfSetting[Any]:
         ''' Get AppxfSetting type from string or base type
 
         The type may also be an AppxfSetting directly
@@ -182,9 +183,11 @@ class AppxfSettingMeta(type):
                     f'Base type [{type_split[1]}] is unknown. '
                     f'Known are: {list(cls.type_map.keys())}')
             base_setting_type = cls.type_map[type_split[1]]
+            extension_options = {key: value for key, value in kwargs.items() if key != 'base_setting_options'}
+            base_options = kwargs['base_setting_options'] if 'base_setting_options' in kwargs else {}
             return extension_type(name=name, value=value,
-                                  base_setting = base_setting_type,
-                                  **kwargs)
+                                  base_setting = base_setting_type(**base_options),
+                                  **extension_options)
         raise AppxfSettingError(
             f'Setting type [{requested_type}] is unknown. Did you import the '
             f'AppxfSetting implementations you wanted to use? Supported are: '
@@ -287,7 +290,7 @@ class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
             ) -> AppxfSetting:
         ''' Get specific AppxfSetting implementation by type '''
         # Behavior is more appropriate in the meta class:
-        return AppxfSettingMeta.get_appxf_setting_type(setting_type, value, name, **kwargs)
+        return AppxfSettingMeta.get_appxf_setting(setting_type, value, name, **kwargs)
 
     # Default value that must be defined by the implementing class
     @classmethod
@@ -367,7 +370,7 @@ class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
 # (like int or str) but also with respect to the specific AppxfSetting it
 # extends. To remain an AppxfSetting, it also needs to derive from
 # AppxfSetting.
-_BaseSettingT = TypeVar('_BaseSettingT', bound=type[AppxfSetting])
+_BaseSettingT = TypeVar('_BaseSettingT', bound=AppxfSetting)
 
 # TODO: refactoring according to ticket #17: aggregate AppxfSetting instead of
 # deriving from it.
@@ -382,8 +385,18 @@ class AppxfSettingExtension(Generic[_BaseSettingT, _BaseTypeT], AppxfSetting[_Ba
                  **kwargs):
         # base_setting has to be available during __init__ of AppxfSetting
         # since it will validate the value which should rely on the
-        # base_setting.
-        self.base_setting_class = base_setting
+        # base_setting. ++ base_setting also has to be an instance:
+        #   * to consistently store base setting options
+        #   * the base_setting is used in GUI (example is text that is
+        #     supported by templates via SettingSelect but the final output
+        #     being the changed entry that may or may not be stored as a new
+        #     template)
+        #   * to allow extensions of extensions (no use case, yet)
+        if isinstance(base_setting, type):
+            raise AppxfSettingError(
+                f'base_setting input must be an AppxfSetting instance, not '
+                f'just a type. You provided {base_setting}')
+        self.base_setting = base_setting
         # We also need to catch kwargs since those are meant for a value entry,
         # based on an instantiated base setting.
 
@@ -395,7 +408,7 @@ class AppxfSettingExtension(Generic[_BaseSettingT, _BaseTypeT], AppxfSetting[_Ba
     # This realization only applies to instances. The class registration for
     # AppxfExtensions will not rely on get_default().
     def get_default(self) -> _BaseTypeT:
-        return self.base_setting_class.get_default()
+        return self.base_setting.get_default()
     # To still provide an implementaiton of the classmethod, we provide a dummy
     # implementation (which violates the assumed types)
     @classmethod

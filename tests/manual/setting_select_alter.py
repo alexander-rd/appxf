@@ -24,10 +24,10 @@ setting = AppxfSetting.new('select::string',
     options={'01 One': 'Template text 01 to be adapted.',
              '02 Two': 'Template text 02 to be adapted.',
              '42 Fourty Two': 'Template text 42 to be adapted.',
-             }, name='Templated String')
+             },
+    name='Templated String',
+    base_setting_options={'height': 20, 'width': 60})
 setting.options['mutable'] = True
-setting.base_setting_kwargs['height'] = 20
-setting.base_setting_kwargs['width'] = 60
 
 class WindowForTesting(FrameWindow):
     def __init__(self, parent: tkinter.BaseWidget):
@@ -37,6 +37,8 @@ class WindowForTesting(FrameWindow):
         self.place_frame(SettingSelectFrameDetail(self, setting))
 
     def _handle_ok(self):
-        print(f'Current Text:\n{setting.value}')
+        print(f'Current Text:\n{setting.base_setting.value}')
 
 tester.run(WindowForTesting)
+
+print(f'Final Text:\n{setting.base_setting.value}')
