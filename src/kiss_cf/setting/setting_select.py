@@ -66,18 +66,28 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
                  options: dict[str, str] | None = None,
                  name: str = '',
                  **kwargs):
-        # unusual, but select_map in options has to be set before
-        # super().__init__ to have it available in _validated_conversion.
-        if options is None:
-            options = {}
-        self.options = {
-            'mutable': False, # usualy, options are not mutable
-            'select_map': options}
+        # Initialization sequence matters quite a bit, be careful with changes!
 
+        # SettingExtension places base_setting attribute before trying to set
+        # the default value and _validated_conversion handles default version
+        # first.
         super().__init__(base_setting=base_setting,
-                         value=value,
                          name=name,
                          **kwargs)
+        # usualy, options are not mutable
+        self.options = {'mutable': False,
+                        'select_map': {}}
+        # in case of options input, handle them via add_options to reuse the
+        # validation over there
+        if options is not None:
+            for key, val in options.items():
+                self.add_option(key, val)
+        # finally, set the intended value which may be one of the added options
+        # above:
+        if value is not None:
+            self.value = value
+
+
 
     def _validated_conversion(self, value: str) -> tuple[bool, _BaseTypeT]:
         if value == self.base_setting.get_default():
