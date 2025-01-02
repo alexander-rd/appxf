@@ -167,16 +167,13 @@ class SettingSelectFrameDetail(GridFrame):
         # Data is maintained in the setting (SettingSelect) and a setting used
         # in the free entry field.
         self.setting = setting
-        self.value_setting: AppxfSetting = setting.base_setting_class(
-            value=setting.value,
-            **(setting.base_setting_kwargs))
         # All three rows may be updated according to events such that the init
         # will be reused in actions. They fill the following fields:
         self.dropdown_frame = _DropdownWithButtons(self, setting=self.setting)
         self.dropdown_frame.place(self.dropdown_frame, row=0, column=0)
 
-        self.setting_frame = SettingFrameDefault(self,
-                                          setting=self.value_setting)
+        self.setting_frame = SettingFrameDefault(
+            self, setting=self.setting.base_setting)
         self.place(self.setting_frame, row=1, column=0)
 
         self.dropdown_frame.bind(
@@ -189,7 +186,7 @@ class SettingSelectFrameDetail(GridFrame):
 
     def _handle_dropdown_update(self):
         self.log.debug(f'Setting [{self.setting.name}] updated')
-        self.value_setting.value = self.setting.value
+        self.setting.base_setting.value = self.setting.value
         self.setting_frame.update()
 
     def _handle_delete_option(self):
@@ -197,7 +194,7 @@ class SettingSelectFrameDetail(GridFrame):
         # Delete current selection from the options
         self.setting.delete_option(self.setting.input)
         # Apply SettingSelect state to the entry variable
-        self.value_setting.value = self.setting.value
+        self.setting.base_setting.value = self.setting.value
         # Update all frames
         self.dropdown_frame.update()
         self.setting_frame.update()
@@ -220,7 +217,7 @@ class SettingSelectFrameDetail(GridFrame):
             return
         new_option = new_option_setting.value
         self.setting.add_option(option=new_option,
-                                value=self.value_setting.input)
+                                value=self.setting.base_setting.input)
         self.setting.value = new_option
         # Update all frames
         self.log.debug(f'Added Option [{new_option}] for setting [{self.setting.name}]')
