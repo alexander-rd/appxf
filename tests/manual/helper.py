@@ -1,4 +1,4 @@
-from appxf import logging
+import inspect
 import tkinter
 
 # Manual tests are not pytests but general setup (like start of logging) is
@@ -74,6 +74,21 @@ class ManualTestHelper(tkinter.Tk):
     def run_toplevel(self,
                      toplevel_type: type[tkinter.Toplevel],
                      *args, **kwargs):
+        # print out caller docstring
+        stack = inspect.stack()
+        try:
+            # Find the caller's frame
+            caller_frame = stack[1]
+            caller_module = inspect.getmodule(caller_frame[0])
+            if caller_module and caller_module.__doc__:
+                print("Caller Module Docstring:")
+                print(caller_module.__doc__)
+            else:
+                print("No docstring available for the caller module.")
+        finally:
+            del stack  # Clean up to avoid reference cycles
+
+        # window handling
         test_window = toplevel_type(self, *args, **kwargs)
         # test_window.grab_set()
         self.place_toplevel(test_window)
