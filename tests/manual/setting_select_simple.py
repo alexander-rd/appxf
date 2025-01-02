@@ -1,5 +1,5 @@
 from helper import ManualTestHelper
-from kiss_cf.setting import AppxfSettingSelect, AppxfSetting
+from kiss_cf.setting import AppxfSetting
 from kiss_cf.gui import SettingSelectFrame
 
 # Scope: SettingSelect functionality by single SettingFrame
@@ -69,10 +69,6 @@ voluptua.''',
              'Long Single Line': 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.',
              'Integer': 42,
              }, name='Dropdown')
-
-# TODO: the integer 42 should not be an allowed option. But there are not
-# checks yet implemented. >> unit testing for AppxfSettingSelect as soon as GUI
-# is ready.
 
 tester._run_frame(SettingSelectFrame,
                  setting)

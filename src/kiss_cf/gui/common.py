@@ -5,13 +5,13 @@ MainWindow: TopLevel window with configurable buttons on
 
 '''
 from __future__ import annotations
-from typing import NamedTuple, Iterable, Callable
-from appxf import logging
-
 import functools
-
 import tkinter
 from tkinter import ttk
+from typing import NamedTuple, Iterable, Callable
+
+from appxf import logging
+
 
 class AppxfGuiError(Exception):
     ''' Error thrown in context of GUI handling '''
@@ -33,7 +33,20 @@ class GridSetting(NamedTuple):
 class GridFrame(tkinter.Frame):
     ''' Class to support general APPXF frames
 
-    Frames are cascaded in a grid. RESIZING uses the  row/column weights that
+    Widgets/Frames are distinguished into the following categories for default
+    settings:
+      * no stretching, placement in cell center and padding of 5 (default if
+        nothing else fits)
+      * horizontally stretching, vertically aligned in center and a padding of
+        5 (typical for entry fields)
+      * stretching in all dimensions and a padding of 5 (typical for text
+        fields)
+      * stretching in all dimensions but no padding (typical for any frame only
+        holding other content that alrady applied padding)
+      * no stretch but aligned to the right with padding of 5 -- currently
+        applied for labels AND LIKELY TO CHANGE IN FUTURE
+
+    Frames are cascaded in a grid. RESIZING uses the row/column weights that
     are supposed to be propagated as follows:
       1) The lowest level frames apply weights dependent on whether they want
          to be resized (weight=1) or not (weight=0).
@@ -86,18 +99,20 @@ class GridFrame(tkinter.Frame):
         # debugging:
         #self.configure(borderwidth=1, relief=tkinter.SOLID)
 
+    # Consistent would be to stick with widget.grid() for placement but the
+    # tkinter grid geometry does not include hooks that can be adjusted in this
+    # frame class to support the injection of default values. Hence, the
+    # GridFrame needs to provide the method for widget placement.
     def place(self,
               widget: tkinter.Widget | GridFrame,
               row: int,
               column: int,
               setting: GridSetting | None  = None):
-        ''' Place Widgets or Frames into using default settings
+        ''' Place Widgets/Frames into this Frame, using default settings
 
         You can always manually place via grid or use rowconfigure and
-        columnconfigure to perform adjustments. The following defaults apply:
-          * Frames are by default added with sum of contained weights or weight
-            1, stretching in x- and y-direction.
-          * Buttons and Anything else is added without stretching.
+        columnconfigure to perform adjustments. See the class description for
+        applied defaults.
         '''
         if setting is None:
             setting = GridSetting()

@@ -66,29 +66,25 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
                  options: dict[str, str] | None = None,
                  name: str = '',
                  **kwargs):
-        if value is None:
-            value = ''
         # unusual, but select_map in options has to be set before
         # super().__init__ to have it available in _validated_conversion.
         if options is None:
             options = {}
-        self.options = {'select_map': options}
-        # usualy, options are not mutable
-        self.options['mutable'] = False
+        self.options = {
+            'mutable': False, # usualy, options are not mutable
+            'select_map': options}
+
         super().__init__(base_setting=base_setting,
                          value=value,
                          name=name,
                          **kwargs)
 
-    # Note: get_supported_types and get_default is taken from the
-    # AppxfSelect[type] we are deriving from.
-
     def _validated_conversion(self, value: str) -> tuple[bool, _BaseTypeT]:
-        if value == '':
+        if value == self.base_setting.get_default():
             return True, self.base_setting.get_default()
         if value in self.options['select_map']:
             return True, self.options['select_map'][value]
-        return False, self.get_default()
+        return False, self.base_setting.get_default()
 
     ###################/
     ## Option Handling
@@ -121,8 +117,10 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
 
     def add_option(self, option: str, value: Any):
         ''' Add an option to the selectable items '''
-        setting = self.base_setting()
         # We try to set the value and take error message from there:
-        setting.value = value
+        if not self.base_setting.validate(value):
+            raise AppxfSettingError(
+                f'Cannot add option [{option}] with value {value} of type '
+                f'{value.__class__.__name__} because the value is not valid.')
         # We also take the readily transformed value, not just the input
-        self.options['select_map'][option] = setting.value
+        self.options['select_map'][option] = value
