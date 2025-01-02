@@ -3,15 +3,15 @@
 This module handles, in particular, SettingDict but aggregates all setting_*
 modules.
 '''
-from appxf import logging
 from typing import Any, Mapping, Iterable, TypeAlias
 import tkinter
 import math
 
+from appxf import logging
 from kiss_cf.setting import AppxfBool, AppxfSetting, SettingDict, AppxfSettingSelect
 
 from .common import AppxfGuiError, FrameWindow, GridFrame
-from .setting_base import SettingFrameBool, SettingFrameDefault
+from .setting_base import SettingFrameBase, SettingFrameBool, SettingFrameDefault
 from .setting_select import SettingSelectFrame
 
 # TODO: There is a matter of style open for displaying settings in a column.
@@ -23,21 +23,17 @@ SettingInput: TypeAlias = (AppxfSetting | SettingDict |
 
 def get_single_setting_frame(parent: tkinter.BaseWidget,
                              setting: AppxfSetting,
-                             **kwargs) -> GridFrame:
-    print(f'Selecting for {setting.name} [{setting.__class__}]')
+                             **kwargs) -> SettingFrameBase:
     if isinstance(setting, AppxfSettingSelect):
-        print(f'SELECT')
         return SettingSelectFrame(
             parent=parent,
             setting=setting,
             **kwargs)
     if isinstance(setting, AppxfBool):
-        print(f'BOOL')
         return SettingFrameBool(
             parent=parent,
             setting=setting,
             **kwargs)
-    print(f'DEFAULT')
     return SettingFrameDefault(
             parent=parent,
             setting=setting,
@@ -68,7 +64,7 @@ def input_type_to_setting_dict(setting: SettingInput) -> SettingDict:
     raise AppxfGuiError(f'Input type unknown: {setting.__class__.__name__}')
 
 
-class SettingDictSingleFrame(GridFrame):
+class SettingDictSingleFrame(SettingFrameBase):
     '''Frame holding PropertyWidgets for a dictionary of KissProperty.
 
     Changes are directly applied to the properties if they are valid. Consider
@@ -101,7 +97,7 @@ class SettingDictSingleFrame(GridFrame):
         # default_visibility are resolved, the new concept may incorporate this
         # setting as well.
         element_gui_options = {}
-        self.frame_list: list[GridFrame] = []
+        self.frame_list: list[SettingFrameBase] = []
         for key in self.setting_dict.keys():
             self._place_setting_frame(
                 setting.get_setting(key),
@@ -137,9 +133,9 @@ class SettingDictSingleFrame(GridFrame):
         n_rows = self.grid_size()[1]
         # get minimum size
         min_size = 0
-        for iRow in range(n_rows):
+        for i_row in range(n_rows):
             # Get the ConfigOptionWidget of the row
-            config_option_widget = self.grid_slaves(row=iRow, column=0)[0]
+            config_option_widget = self.grid_slaves(row=i_row, column=0)[0]
             # get the label
             label_widget = config_option_widget.grid_slaves(row=0, column=0)[0]
             # get label size
@@ -149,7 +145,7 @@ class SettingDictSingleFrame(GridFrame):
                 min_size = size
         # we can simply add 10 here since we know the hard coded
         # padding.
-        return (min_size + 10)
+        return min_size + 10
 
     def set_left_column_min_width(self, width: int):
         n_rows = self.grid_size()[1]
@@ -179,16 +175,16 @@ class SettingDictSingleFrame(GridFrame):
 
     def is_valid(self) -> bool:
         valid = True
-        for property_frame in self.frame_list:
-            valid &= property_frame.is_valid()
+        for setting_frame in self.frame_list:
+            valid &= setting_frame.is_valid()
         return valid
 
 
-class SettingDictColumnFrame(GridFrame):
+class SettingDictColumnFrame(SettingFrameBase):
     def __init__(self, parent: tkinter.BaseWidget,
                  setting: SettingInput,
                  columns: int,
-                 kiss_options: dict = None,
+                 kiss_options: dict | None = None,
                  **kwargs):
         # kwargs is NOT passed down to THIS frame. It will be passed down to
         # the column frames. This is hopefully more likely what a user might
@@ -257,7 +253,7 @@ class SettingDictWindow(FrameWindow):
     def __init__(self, parent,
                  title: str,
                  setting: AppxfSetting | SettingDict,
-                 kiss_options: dict = None,
+                 kiss_options: dict | None = None,
                  **kwargs):
         '''
         Create GUI window to edit a dictionary of properties.

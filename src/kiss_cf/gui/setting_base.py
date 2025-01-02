@@ -1,7 +1,7 @@
 '''
 Provide GUI classes for KissProperty objects.
 '''
-
+from abc import ABC, abstractmethod
 import tkinter
 
 from appxf import logging
@@ -12,19 +12,17 @@ from .common import GridFrame, GridSetting
 # TODO: better option on when to validate input:
 # https://www.plus2net.com/python/tkinter-validation.php
 
-# TODO: Class naming is a mess
+class SettingFrameBase(GridFrame, ABC):
+    ''' defining required interfaces for setting based frames '''
+    def __init__(self, parent: tkinter.BaseWidget, **kwargs):
+        super().__init__(parent=parent, **kwargs)
 
-# TODO: GUI options handling does not seem to be very straight
-
-# TODO: Documentation of options
-
-# TODO: the above suggests: larger review and rework
-
-# TODO: There is an abstract SettingFrame missing which could be configured as
-#       default for a setting.
+    @abstractmethod
+    def is_valid(self) -> bool:
+        ''' Maintained setting state is valid '''
 
 
-class SettingFrameDefault(GridFrame):
+class SettingFrameDefault(SettingFrameBase):
     '''Frame holding a single property.'''
     log = logging.getLogger(__name__ + '.PropertyWidget')
 
@@ -108,13 +106,12 @@ class SettingFrameDefault(GridFrame):
             self.entry.config(foreground='red')
 
 
-class SettingFrameBool(GridFrame):
+class SettingFrameBool(SettingFrameBase):
     '''CheckBox frame for a single boolean.'''
     log = logging.getLogger(__name__ + '.BoolCheckBoxWidget')
 
     def __init__(self, parent,
                  setting: AppxfSetting,
-                 kiss_options: dict = dict(),
                  **kwargs):
         super().__init__(parent, **kwargs)
 
@@ -129,14 +126,13 @@ class SettingFrameBool(GridFrame):
 
         self.iv = tkinter.IntVar(self, value=self.setting.value)
 
-        # TODO: have width from some input
         self.checkbox = tkinter.Checkbutton(self, text='', variable=self.iv)
         self.place(self.checkbox, row=0, column=1)
 
         self.iv.trace_add(
             'write', lambda var, index, mode: self.value_update())
 
-    def is_valid(self):
+    def is_valid(self) -> bool:
         # Checkbox value will always be valid
         return True
 

@@ -37,7 +37,7 @@ class AppxfSettingConversionError(Exception):
         value_type = type(value)
         base_type = type(setting_class.get_default())
         self.message = (
-            f'Cannot set value {value_str} of type {value_type} into '
+            f'Cannot set value [{value_str}] of type {value_type} into '
             f'{setting_class.__name__}. Either the base type {base_type} '
             f'is not valid or the conversion failed.')
 
@@ -183,10 +183,13 @@ class AppxfSettingMeta(type):
                     f'Base type [{type_split[1]}] is unknown. '
                     f'Known are: {list(cls.type_map.keys())}')
             base_setting_type = cls.type_map[type_split[1]]
-            extension_options = {key: value for key, value in kwargs.items() if key != 'base_setting_options'}
+            extension_options = {key: val for key, val in kwargs.items() if key != 'base_setting_options'}
             base_options = kwargs['base_setting_options'] if 'base_setting_options' in kwargs else {}
+            base_setting = base_setting_type(**base_options)
+            if value is None:
+                value = base_setting.get_default()
             return extension_type(name=name, value=value,
-                                  base_setting = base_setting_type(**base_options),
+                                  base_setting=base_setting,
                                   **extension_options)
         raise AppxfSettingError(
             f'Setting type [{requested_type}] is unknown. Did you import the '
@@ -397,13 +400,11 @@ class AppxfSettingExtension(Generic[_BaseSettingT, _BaseTypeT], AppxfSetting[_Ba
                 f'base_setting input must be an AppxfSetting instance, not '
                 f'just a type. You provided {base_setting}')
         self.base_setting = base_setting
-        # We also need to catch kwargs since those are meant for a value entry,
-        # based on an instantiated base setting.
-
-        #self._base_setting_kwargs = kwargs
-        self.base_setting_kwargs = {}
-
         super().__init__(name=name, value=value, **kwargs)
+        # also apply initial value to the base_setting - this needs to be
+        # self.value since original value may be tranlated by the extension to
+        # something else like SettingSelect does it
+        self.base_setting.value = self.value
 
     # This realization only applies to instances. The class registration for
     # AppxfExtensions will not rely on get_default().
@@ -418,6 +419,13 @@ class AppxfSettingExtension(Generic[_BaseSettingT, _BaseTypeT], AppxfSetting[_Ba
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
         return []
+
+    @AppxfSetting.value.setter
+    def value(self, value: Any):
+        # first step is like in base implementation - whatever the extension does
+        AppxfSetting.value.fset(self, value)  # type: ignore
+        # but the result is also applied to the base_setting
+        self.base_setting.value = self.value
 
 
 class AppxfString(AppxfSetting[str]):
