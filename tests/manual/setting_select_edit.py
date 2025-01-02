@@ -69,5 +69,5 @@ setting = SettingDict(data={'SelectString': settingOne, 'Integer': settingTwo})
 #    setting. >> Same for getting the sorted list?? >> most general would be to
 #    provide a sorting function (for strings).
 
-tester.run_frame(SettingDictSingleFrame,
+tester._run_frame(SettingDictSingleFrame,
                  setting)

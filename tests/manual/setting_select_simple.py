@@ -74,5 +74,5 @@ voluptua.''',
 # checks yet implemented. >> unit testing for AppxfSettingSelect as soon as GUI
 # is ready.
 
-tester.run_frame(SettingSelectFrame,
+tester._run_frame(SettingSelectFrame,
                  setting)

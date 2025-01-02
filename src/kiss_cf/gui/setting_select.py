@@ -169,7 +169,6 @@ class SettingSelectFrameDetail(GridFrame):
         self.setting = setting
         self.value_setting: AppxfSetting = setting.base_setting_class(
             value=setting.value,
-            name='select entry',
             **(setting.base_setting_kwargs))
         # All three rows may be updated according to events such that the init
         # will be reused in actions. They fill the following fields:

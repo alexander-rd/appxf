@@ -21,7 +21,7 @@ setting_dict = SettingDict({
     'Boolean Value': AppxfBool(),
     })
 
-tester.run_toplevel(SettingDictWindow,
+tester._run_toplevel(SettingDictWindow,
                     'Edit Window Title',
                     setting_dict)
 

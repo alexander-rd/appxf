@@ -29,12 +29,12 @@ pytest_runtest_setup(None)
 #    print(logger_name)
 
 class ManualTestHelper(tkinter.Tk):
-    def __init__(self, explanation: str):
+    def __init__(self, explanation: str | None):
 
         super().__init__()
         self.title('Test Control')
 
-        self.explanation = explanation.strip()
+        self.explanation = explanation.strip() if explanation else ''
 
         explanation_label = tkinter.Label(
             self, text=self.explanation,
@@ -56,7 +56,14 @@ class ManualTestHelper(tkinter.Tk):
     def button_ok(self):
         self.destroy()
 
-    def run_frame(self, frame_type: type[tkinter.Frame], *args, **kwargs):
+    def run(self, tkinter_class: type[tkinter.BaseWidget], *args, **kwargs):
+        if issubclass(tkinter_class, tkinter.Toplevel):
+            self._run_toplevel(tkinter_class, *args, **kwargs)
+        elif issubclass(tkinter_class, tkinter.Frame):
+            self._run_frame(tkinter_class, *args, **kwargs)
+
+
+    def _run_frame(self, frame_type: type[tkinter.Frame], *args, **kwargs):
         test_window = tkinter.Toplevel(self)
 
         test_window.rowconfigure(0, weight=1)
@@ -71,7 +78,7 @@ class ManualTestHelper(tkinter.Tk):
 
         self.mainloop()
 
-    def run_toplevel(self,
+    def _run_toplevel(self,
                      toplevel_type: type[tkinter.Toplevel],
                      *args, **kwargs):
         # print out caller docstring
