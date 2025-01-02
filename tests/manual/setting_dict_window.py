@@ -1,10 +1,10 @@
 from helper import ManualTestHelper
 from kiss_cf.setting import AppxfBool, AppxfString, AppxfEmail, SettingDict
-from kiss_cf.gui import SettingDictWindow
+from kiss_cf.gui.setting_dict import SettingDictWindow
 from appxf import logging
 
-logging.activate_logging()
-logging.console_handler.setFormatter(logging.file_formatter)
+#logging.activate_logging()
+#logging.console_handler.setFormatter(logging.file_formatter)
 
 tester = ManualTestHelper('''
 Resizing: should only affect the right entry part.
@@ -18,9 +18,6 @@ setting_dict = SettingDict({
     'Email of the master of disaster': AppxfEmail(),
     'Boolean Value': AppxfBool(),
     })
-
-print(setting_dict.get_setting('String').name)
-print(setting_dict.get_setting('Boolean Value').name)
 
 tester.run_toplevel(SettingDictWindow,
                     'Edit Window Title',

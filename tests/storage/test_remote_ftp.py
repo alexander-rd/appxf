@@ -1,6 +1,3 @@
-from appxf import logging
-logging.activate_logging(__name__)
-
 import pytest
 import datetime
 from dotenv import load_dotenv

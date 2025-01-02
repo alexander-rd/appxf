@@ -1,158 +1,74 @@
-'''
-Provide GUI classes for KissProperty objects.
-'''
+''' Aggregate single setting frames/windows into one interface
 
+This module handles, in particular, SettingDict but aggregates all setting_*
+modules.
+'''
+from appxf import logging
+from typing import Any, Mapping, Iterable, TypeAlias
 import tkinter
 import math
-from typing import Callable
 
-from appxf import logging
-from kiss_cf.language import translate
-from kiss_cf.setting import SettingDict, AppxfSetting, AppxfBool
+from kiss_cf.setting import AppxfBool, AppxfSetting, SettingDict, AppxfSettingSelect
 
-from .common import GridFrame, FrameWindow, GridSetting, AppxfGuiError
+from .common import AppxfGuiError, FrameWindow, GridFrame
+from .setting_base import SettingFrameBool, SettingFrameDefault
+from .setting_select import SettingSelectFrame
 
-# TODO: better option on when to validate input:
-# https://www.plus2net.com/python/tkinter-validation.php
+# TODO: There is a matter of style open for displaying settings in a column.
+# Should the labels be aligned or should the space rather be used for entries.
+# What's the default setting and how to adjust?
 
-# TODO: Class naming is a mess
+SettingInput: TypeAlias = (AppxfSetting | SettingDict |
+                           dict[str, Any] | Iterable[AppxfSetting])
 
-# TODO: GUI options handling does not seem to be very straight
+def get_single_setting_frame(parent: tkinter.BaseWidget,
+                             setting: AppxfSetting,
+                             **kwargs) -> GridFrame:
+    print(f'Selecting for {setting.name} [{setting.__class__}]')
+    if isinstance(setting, AppxfSettingSelect):
+        print(f'SELECT')
+        return SettingSelectFrame(
+            parent=parent,
+            setting=setting,
+            **kwargs)
+    if isinstance(setting, AppxfBool):
+        print(f'BOOL')
+        return SettingFrameBool(
+            parent=parent,
+            setting=setting,
+            **kwargs)
+    print(f'DEFAULT')
+    return SettingFrameDefault(
+            parent=parent,
+            setting=setting,
+            **kwargs)
 
-# TODO: Documentation of options
+def input_type_to_setting_dict(setting: SettingInput) -> SettingDict:
+    ''' Convert allowed compound setting inputs to a SettingDict'''
 
-# TODO: the above suggests: larger review and rework
+    if isinstance(setting, SettingDict):
+        return setting
+    # The following two should also not already be a setging dict (which is
+    # Iterable and Mapping). Dictionaries of settings are cast into a
+    # SettingDict object:
+    if isinstance(setting, Mapping):
+        # Typing is ignored below since an Iterable[AppxfSetting] could
+        # theoretically be a Mapping[AppxfSetting, Unknown] which would also
+        # end up here. This is invalid input and not cought here.
+        return SettingDict(data=setting) # type: ignore
+    # iterables of settings are also handled like SettingDict
+    if isinstance(setting, Iterable) and not isinstance(setting, Mapping):
+        return SettingDict(data={
+            this_setting.name: this_setting for this_setting in setting
+            })
 
-# TODO: There is an abstract SettingFrame missing which could be configured as
-#       default for a setting.
+    if isinstance(setting, AppxfSetting):
+        return SettingDict(data={setting.name: setting})
 
-
-class SettingFrame(GridFrame):
-    '''Frame holding a single property.'''
-    log = logging.getLogger(__name__ + '.PropertyWidget')
-
-    def __init__(self, parent,
-                 setting: AppxfSetting,
-                 **kwargs):
-        super().__init__(parent, **kwargs)
-
-        print(f'Setting frame for {setting.name}')
-
-        self.columnconfigure(1, weight=1)
-
-        self.setting = setting
-
-        self.label = tkinter.Label(self, justify='right')
-        self.label.config(text=setting.name + ':')
-        self.place(self.label, row=0, column=0)
-
-        value = str(self.setting.value)
-        self.sv = tkinter.StringVar(self, value)
-        self.sv.trace_add(
-            'write', lambda var, index, mode: self.value_update())
-
-        entry_width = setting.gui_options.get('width', 15)
-        entry_height = setting.gui_options.get('height', 1)
-        if entry_height > 1:
-            self.entry = tkinter.Text(self, width=entry_width, height=entry_height)
-            self.entry.insert('1.0', self.setting.value)
-            self.entry.bind('<KeyRelease>', lambda event: self._text_field_changed())
-            entry_sticky = 'NSEW'
-            x_padding = (5,0)
-            self.rowconfigure(0, weight=1)
-        else:
-            self.entry = tkinter.Entry(self, textvariable=self.sv, width=entry_width)
-            entry_sticky = 'NEW'
-            x_padding = 5
-            self.rowconfigure(0, weight=0)
-        self.place(self.entry, row=0, column=1,
-                   setting=GridSetting(padx=x_padding, pady=5,
-                                       sticky=entry_sticky))
-        # TODO: to apply place() properly without the nonsense setting, the
-        # scollable Text must be distinguished from a non-scollable text. The
-        # scrollable Text would become it's own widget (a frame with both
-        # contained and no padding applied)
-
-        # add scrollbar for long texts
-        scrollbar = setting.gui_options.get('scrollbar', bool(entry_height >= 3))
-        if scrollbar and isinstance(self.entry, tkinter.Text):
-            self.scrollbar = tkinter.Scrollbar(self, orient=tkinter.VERTICAL,
-                                               command=self.entry.yview) # type: ignore (entry is Text)
-            self.place(self.scrollbar, row=0, column=2,
-                       setting=GridSetting(padx=(0,5), sticky='NSE'))
-            self.entry.configure(yscrollcommand=self.scrollbar.set)
-
-    def update(self):
-        if isinstance(self.entry, tkinter.Text):
-            self.entry.delete('1.0', tkinter.END)
-            self.entry.insert('1.0', self.setting.value)
-        else:
-            self.sv.set(self.setting.value)
-        super().update()
-
-    def _text_field_changed(self):
-        value = self.entry.get('1.0', tkinter.END)
-        if value.endswith('\n'):
-            value = value[0:-1]
-        self.sv.set(value)
-
-    def is_valid(self) -> bool:
-        return self.setting.validate(self.sv.get())
-
-    def focus_set(self):
-        self.entry.focus_set()
-
-    def value_update(self):
-        value = self.sv.get()
-        valid = self.setting.validate(value)
-        if valid:
-            self.setting.value = value
-            self.entry.config(foreground='black')
-        else:
-            self.entry.config(foreground='red')
+    raise AppxfGuiError(f'Input type unknown: {setting.__class__.__name__}')
 
 
-class BoolCheckBoxFrame(GridFrame):
-    '''CheckBox frame for a single boolean.'''
-    log = logging.getLogger(__name__ + '.BoolCheckBoxWidget')
-
-    def __init__(self, parent,
-                 setting: AppxfSetting,
-                 kiss_options: dict = dict(),
-                 **kwargs):
-        super().__init__(parent, **kwargs)
-
-        self.rowconfigure(0, weight=0)
-        self.columnconfigure(1, weight=1)
-
-        self.property = setting
-
-        self.label = tkinter.Label(self, justify='right')
-        self.label.config(text=setting.name + ':')
-        self.place(self.label, row=0, column=0)
-
-        self.iv = tkinter.IntVar(self, value=self.property.value)
-
-        # TODO: have width from some input
-        self.checkbox = tkinter.Checkbutton(self, text='', variable=self.iv)
-        self.place(self.checkbox, row=0, column=1)
-
-        self.iv.trace_add(
-            'write', lambda var, index, mode: self.value_update())
-
-    def is_valid(self):
-        # Checkbox value will always be valid
-        return True
-
-    def focus_set(self):
-        # there is nothing we can focus on
-        pass
-
-    def value_update(self):
-        self.property.value = self.iv.get()
-
-
-class SettingDictFrame(GridFrame):
+class SettingDictSingleFrame(GridFrame):
     '''Frame holding PropertyWidgets for a dictionary of KissProperty.
 
     Changes are directly applied to the properties if they are valid. Consider
@@ -162,15 +78,16 @@ class SettingDictFrame(GridFrame):
     log = logging.getLogger(__name__ + '.SettingDictFrame')
 
     def __init__(self, parent: tkinter.BaseWidget,
-                 property_dict: SettingDict,
+                 setting: SettingInput,
                  **kwargs):
 
         super().__init__(parent, **kwargs)
+        setting = input_type_to_setting_dict(setting)
 
-        # strip proerties from the dict that are not mutable:
-        self.property_dict = {key: property_dict[key]
-                              for key in property_dict.keys()
-                              if property_dict.get_setting(key).mutable}
+        # strip properties from the dict that are not mutable:
+        self.setting_dict = {key: setting.get_setting(key)
+                             for key in setting.keys()
+                             if setting.get_setting(key).mutable}
 
         # TODO: the above should be applied according to default_visibility.
         # Not mutable should still be displayed but grayed out or not editable.
@@ -184,27 +101,22 @@ class SettingDictFrame(GridFrame):
         # default_visibility are resolved, the new concept may incorporate this
         # setting as well.
         element_gui_options = {}
-        self.frame_list: list[SettingFrame] = []
-        for key in self.property_dict.keys():
-            self._place_property_frame(
-                property_dict.get_setting(key),
+        self.frame_list: list[GridFrame] = []
+        for key in self.setting_dict.keys():
+            self._place_setting_frame(
+                setting.get_setting(key),
                 element_gui_options.get(key, {}))
 
-    def _place_property_frame(self, prop: AppxfSetting, gui_options):
+    def _place_setting_frame(self, setting: AppxfSetting, gui_options):
         if 'frame_type' in gui_options:
-            property_frame = gui_options['frame_type'](
-                self, prop, gui_options)
-        elif isinstance(prop, AppxfBool):
-            property_frame = BoolCheckBoxFrame(
-                self, prop, gui_options)
-        else:
-            property_frame = SettingFrame(
-                self, prop, **gui_options)
-        self.place(property_frame, row=len(self.frame_list), column=0)
+            setting_frame = gui_options['frame_type'](
+                self, setting, gui_options)
+        setting_frame = get_single_setting_frame(self, setting, **gui_options)
+        self.place(setting_frame, row=len(self.frame_list), column=0)
         # apply row weight from underlying frame:
-        self.rowconfigure(len(self.frame_list), weight=property_frame.get_total_row_weight())
+        self.rowconfigure(len(self.frame_list), weight=setting_frame.get_total_row_weight())
 
-        self.frame_list.append(property_frame)
+        self.frame_list.append(setting_frame)
 
     def get_left_col_min_width(self) -> int:
         '''Get minimum width of left column.
@@ -274,7 +186,7 @@ class SettingDictFrame(GridFrame):
 
 class SettingDictColumnFrame(GridFrame):
     def __init__(self, parent: tkinter.BaseWidget,
-                 setting_dict: SettingDict,
+                 setting: SettingInput,
                  columns: int,
                  kiss_options: dict = None,
                  **kwargs):
@@ -282,11 +194,12 @@ class SettingDictColumnFrame(GridFrame):
         # the column frames. This is hopefully more likely what a user might
         # want.
         super().__init__(parent)
+        setting = input_type_to_setting_dict(setting)
 
         if kiss_options is None:
             kiss_options = {}
 
-        key_list = list(setting_dict.keys())
+        key_list = list(setting.keys())
         direction = kiss_options.get('column_direction', 'down')
         if direction == 'down':
             items_per_col = math.ceil(len(key_list)/columns)
@@ -303,14 +216,14 @@ class SettingDictColumnFrame(GridFrame):
         # fill property dictionaries
         prop_dict_list = [SettingDict() for i in range(columns)]
         for i, key in enumerate(key_list):
-            prop_dict_list[key_to_sub_dict[i]].add({key: setting_dict[key]})
+            prop_dict_list[key_to_sub_dict[i]].add({key: setting.get_setting(key)})
 
         # build up frames
-        self.frame_list: list[SettingDictFrame] = []
+        self.frame_list: list[SettingDictSingleFrame] = []
         max_row_weight_over_columns = 0
         for prop_dict in prop_dict_list:
             self.columnconfigure(len(self.frame_list), weight=1)
-            this_frame = SettingDictFrame(
+            this_frame = SettingDictSingleFrame(
                 self, prop_dict, **kwargs)
             self.place(this_frame, row=0, column=len(self.frame_list))
             self.frame_list.append(this_frame)
@@ -371,7 +284,7 @@ class SettingDictWindow(FrameWindow):
 
         columns = kiss_options.get('columns', 1)
         if columns <= 1:
-            self.dict_frame = SettingDictFrame(
+            self.dict_frame = SettingDictSingleFrame(
                 self, self.property_dict, row_spread=True, **kiss_options)
         else:
             self.dict_frame = SettingDictColumnFrame(

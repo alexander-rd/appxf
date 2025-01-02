@@ -15,7 +15,7 @@ from .setting import AppxfSetting, AppxfSettingError
 
 # TODO: Loading modes 'add' and 'error'
 
-class SettingDict(Storable, MutableMapping):
+class SettingDict(Storable, MutableMapping[str, AppxfSetting]):
     ''' Maintain a dictionary of settings
 
     While normal dictionary behavior is supported, be aware that writing to

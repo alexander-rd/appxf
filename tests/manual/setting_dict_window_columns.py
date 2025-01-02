@@ -1,6 +1,6 @@
 from helper import ManualTestHelper
 from kiss_cf.setting import AppxfBool, SettingDict
-from kiss_cf.gui import setting_gui
+from kiss_cf.gui import setting_dict
 
 tester = ManualTestHelper('''
 Resizing: should affect columns evenly.
@@ -26,7 +26,7 @@ gui_property = {
 #for key in prop_dict.keys():
 #    print(f'{key}: {prop_dict[key]}')
 
-tester.run_toplevel(setting_gui.SettingDictWindow,
+tester.run_toplevel(setting_dict.SettingDictWindow,
                     'Edit Window Title',
                     prop_dict,
                     gui_property)
