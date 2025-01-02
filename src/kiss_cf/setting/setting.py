@@ -404,7 +404,8 @@ class AppxfSettingExtension(Generic[_BaseSettingT, _BaseTypeT], AppxfSetting[_Ba
         # also apply initial value to the base_setting - this needs to be
         # self.value since original value may be tranlated by the extension to
         # something else like SettingSelect does it
-        self.base_setting.value = self.value
+        if value is not None:
+            self.base_setting.value = self.value
 
     # This realization only applies to instances. The class registration for
     # AppxfExtensions will not rely on get_default().
