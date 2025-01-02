@@ -18,5 +18,5 @@ prop_dict = {
     'Already having content': AppxfString('some content')
 }
 
-tester.run_frame(setting_dict.SettingDictColumnFrame,
+tester._run_frame(setting_dict.SettingDictColumnFrame,
                  prop_dict, columns=2)

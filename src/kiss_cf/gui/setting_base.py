@@ -37,9 +37,10 @@ class SettingFrameDefault(GridFrame):
 
         self.setting = setting
 
-        self.label = tkinter.Label(self, justify='right')
-        self.label.config(text=setting.name + ':')
-        self.place(self.label, row=0, column=0)
+        if setting.name:
+            self.label = tkinter.Label(self, justify='right')
+            self.label.config(text=setting.name + ':')
+            self.place(self.label, row=0, column=0)
 
         value = str(self.setting.value)
         self.sv = tkinter.StringVar(self, value)

@@ -45,4 +45,4 @@ tester = ManualTestHelper('''
 Test case is less about
 ''')  # noqa: E501
 
-tester.run_toplevel(FrameForTesting, setting_dict)
+tester._run_toplevel(FrameForTesting, setting_dict)

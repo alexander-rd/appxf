@@ -9,4 +9,4 @@ Validation: This entry is for a boolean. Latest after loosing focus on entry, wr
 
 prop = AppxfBool(name='bool')
 
-tester.run_frame(SettingFrameDefault, prop)
+tester._run_frame(SettingFrameDefault, prop)
