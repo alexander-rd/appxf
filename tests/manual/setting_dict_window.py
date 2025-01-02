@@ -1,3 +1,5 @@
+'''Test case description - test case description could come from here'''
+
 from helper import ManualTestHelper
 from kiss_cf.setting import AppxfBool, AppxfString, AppxfEmail, SettingDict
 from kiss_cf.gui.setting_dict import SettingDictWindow

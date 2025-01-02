@@ -42,7 +42,7 @@ gui_logger = logging.getLogger('kiss_cf.gui')
 gui_logger.setLevel(logging.logging.WARNING)
 
 tester = ManualTestHelper('''
-TBD
+Test case is less about
 ''')  # noqa: E501
 
 tester.run_toplevel(FrameForTesting, setting_dict)
