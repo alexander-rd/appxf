@@ -22,10 +22,10 @@ class PublicEncryption(Storable):
         self._to_roles = to_roles
         self._keys: dict[bytes, bytes] = {}
 
-    def _get_state(self) -> dict[Any, Any]:
+    def get_state(self) -> dict[Any, Any]:
         return self._keys
 
-    def _set_state(self, data: dict[bytes, bytes]):
+    def set_state(self, data: dict[bytes, bytes]):
         self._keys = data
 
     # TODO: adapt encrypt() to rewrite public keys as integer user ID's from
