@@ -82,8 +82,8 @@ class SyncData(Storable):
             return b''
         return self.sync_pair_dict[sync_pair]['uuid']
 
-    def _get_state(self) -> object:
-        data: dict = super()._get_state()
+    def get_state(self) -> object:
+        data: dict = super().get_state()
         del data['_this_storage']
         return data
 

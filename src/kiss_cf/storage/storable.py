@@ -1,5 +1,6 @@
 ''' Class definitions for storage handling. '''
 
+from kiss_cf import Stateful
 from .ram import RamStorage
 from .storage import Storage
 
@@ -8,7 +9,7 @@ class AppxfStorableError(Exception):
     ''' General storable exception '''
 
 
-class Storable(object):
+class Storable(Stateful):
     ''' Abstract storable class
 
     A class with storable behavior defines _what_ is stored on store() via
@@ -33,24 +34,7 @@ class Storable(object):
         self._storage: Storage = storage
         super().__init__(**kwargs)
 
-    def _get_state(self) -> object:
-        ''' Get object state
-
-        The default implementation uses the classes __dict__ which contains all
-        class fields. You may update this method to adapt the behavior.
-        '''
-        data = self.__dict__.copy()
-        # strip storage and settings
-        del data['_storage']
-        return data
-
-    def _set_state(self, data: object):
-        ''' Set object state
-
-        The default implementation restores the classes __dict__ which contains
-        all class fields. You may update this method to adapt the behavior.
-        '''
-        self.__dict__.update(data)  # type: ignore # see _get_state() for consistency
+    # taking over get_state()/set_state() from Stateful
 
     def exists(self):
         ''' Storage file exists (call before load()) '''
@@ -61,8 +45,18 @@ class Storable(object):
         if not self._storage.exists():
             # Protect deriving classes treating empty data like b''.
             raise AppxfStorableError('Storage does not exist.')
-        self._set_state(self._storage.load())
+        self.set_state(self._storage.load()) # type: ignore  # see store()
 
     def store(self):
         ''' Store to provided Storage '''
-        self._storage.store(self._get_state())
+        self._storage.store(self.get_state())
+
+# 1) It makes sense that anything storable has a store()/load() and before
+#    load() an exist()
+# 2) A basic storable could provide those interfaces WITHOUT coupling to
+#    storage >> Storable would become independent of storage. But Why? The
+#    concept is Storable=What and Storage=How.
+#
+# Sticking with the name "Storable", separating from Storage does not seem
+# reasonable. Even though get_state()/set_state() already indicate something
+# that could be stored and restored.. ..but does not yet know _how_.

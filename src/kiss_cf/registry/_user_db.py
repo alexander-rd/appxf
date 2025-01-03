@@ -29,7 +29,7 @@ class UserDatabase(Storable):
         # keys.
         self._role_map: dict[str, Set] = {'admin': set(), 'user': set()}
 
-    def _get_state(self):
+    def get_state(self):
         return {'version': self._version,
                 'next_id': self._next_id,
                 'unused_id_list': self._unused_id_list,
@@ -37,7 +37,7 @@ class UserDatabase(Storable):
                 'role_map': self._role_map,
                 }
 
-    def _set_state(self, data):
+    def set_state(self, data):
         # TODO: version check
         self._version = data['version']
         self._next_id = data['next_id']
@@ -49,10 +49,10 @@ class UserDatabase(Storable):
     # public get_state/set_state to transfer an initial user_db from admin to
     # new user:
     def get_state(self) -> bytes:
-        return CompactSerializer.serialize(self._get_state())
+        return CompactSerializer.serialize(self.get_state())
 
     def set_state(self, data: bytes):
-        self._set_state(CompactSerializer.deserialize(data))
+        self.set_state(CompactSerializer.deserialize(data))
         self.store()
 
     def init_user_db(self,

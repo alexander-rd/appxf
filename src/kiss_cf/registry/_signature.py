@@ -33,8 +33,8 @@ class Signature(Storable):
         return self.pub_key
 
     # Overload _get_state() to remove security object from storage
-    def _get_state(self) -> object:
-        data = super()._get_state()
+    def get_state(self) -> object:
+        data = super().get_state()
         del data['_security']
         return data
 

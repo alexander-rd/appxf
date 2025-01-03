@@ -212,7 +212,7 @@ class SettingDict(Storable, MutableMapping[str, AppxfSetting]):
                     f'and True. Extension for False may be added.'
                 )
 
-    def _get_state(self) -> object:
+    def get_state(self) -> object:
         if self._store_setting_object:
             # not yet supported. te restricted unpickler would not be able to
             # load AppxfSetting objects. The AppxfSetting should provide a
@@ -227,7 +227,7 @@ class SettingDict(Storable, MutableMapping[str, AppxfSetting]):
                                for key in self._setting_dict}}
         return data
 
-    def _set_state(self, data: dict):  # type: ignore  # see _get_state()
+    def set_state(self, data: dict):  # type: ignore  # see _get_state()
         if self._on_load_unknown == 'ignore':
             # cycle through known options and load values
             for key in self._setting_dict:
