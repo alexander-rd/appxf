@@ -32,14 +32,8 @@ class Signature(Storable):
     def public_key(self):
         return self.pub_key
 
-    # Overload _get_state() to remove security object from storage
-    def get_state(self) -> object:
-        data = super().get_state()
-        del data['_security']
-        return data
-
-    # no need to overwrite _set_dict(). It will only update this classes state
-    # with what was written before.
+    # Set attribute mask to exclude not needed objects
+    attribute_mask = Storable.attribute_mask + ['_security']
 
     def verify(self, data: bytes):
         ''' Verify loaded signature

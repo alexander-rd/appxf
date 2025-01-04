@@ -82,13 +82,9 @@ class SyncData(Storable):
             return b''
         return self.sync_pair_dict[sync_pair]['uuid']
 
-    def get_state(self) -> object:
-        data: dict = super().get_state()
-        del data['_this_storage']
-        return data
-
-    # _set_state does not need an overload. The stored data will just not
-    # contain what was removed above.
+    # get_state()/set_state() can be taken from Storable/Stateful but
+    # attribute_mask must be extenden:
+    attribute_mask = Storable.attribute_mask + ['_this_storage']
 
 
 log = logging.getLogger(__name__)
