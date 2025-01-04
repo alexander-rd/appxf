@@ -34,11 +34,9 @@ class Storable(Stateful):
         self._storage: Storage = storage
         super().__init__(**kwargs)
 
-    # taking over get_state()/set_state() from Stateful
-    def get_state(self):
-        data = super().get_state()
-        data.pop('_storage')
-        return data
+    # taking over get_state()/set_state() from Stateful but updating the attribute_mask:
+    attribute_mask = ['_storage']
+
 
     def exists(self):
         ''' Storage file exists (call before load()) '''
@@ -54,13 +52,3 @@ class Storable(Stateful):
     def store(self):
         ''' Store to provided Storage '''
         self._storage.store(self.get_state())
-
-# 1) It makes sense that anything storable has a store()/load() and before
-#    load() an exist()
-# 2) A basic storable could provide those interfaces WITHOUT coupling to
-#    storage >> Storable would become independent of storage. But Why? The
-#    concept is Storable=What and Storage=How.
-#
-# Sticking with the name "Storable", separating from Storage does not seem
-# reasonable. Even though get_state()/set_state() already indicate something
-# that could be stored and restored.. ..but does not yet know _how_.
