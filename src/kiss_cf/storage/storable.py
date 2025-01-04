@@ -35,6 +35,10 @@ class Storable(Stateful):
         super().__init__(**kwargs)
 
     # taking over get_state()/set_state() from Stateful
+    def get_state(self):
+        data = super().get_state()
+        data.pop('_storage')
+        return data
 
     def exists(self):
         ''' Storage file exists (call before load()) '''
