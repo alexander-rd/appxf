@@ -1,44 +1,68 @@
 ''' interface contract for stateful classes '''
-
 from __future__ import annotations
-from typing import TypeAlias, Union
 from copy import deepcopy
+from typing import TypeAlias, Union
 
 
 class Stateful():
     ''' base for classes that can provide and restore their state
 
     This class is an interface contract which is mainly utilized in the
-    Storable/Storage implementation.
+    Storable/Storage implementation with it's default implementation.
+
+    Attributes:
+        attributes: list of attributes that shall be exported or imported if
+            any attribute is listed, no other attribute would be exported or
+            imported
+        attribute_mask: attributes that should not be exported or imported
     '''
 
-    # There is no particular __init__ required but the deriving class may need
-    # to update the attribute_mask:
+    # There is no particular __init__ required but the deriving class should to
+    # update the attribute_mask:
     attribute_mask: list[str] = []
-    # Or the attributes list:
+    # or the attributes list:
     attributes: list[str] = []
-    # Only one of them should be used - either the mask (take over anything,
-    # but ...) or the attributes list (taking anything included there)
+    # They are used for the default implementaiton of get_state()/set_state().
 
-    # Restrictions for this interface contract originate from the
-    # Storable/Storage behavior:
+    def get_state(self) -> object:
+        ''' get object state
+
+        See _get_state_default() for the default implementation with narrowed
+        types.
+        '''
+        return self._get_state_default()
+
+    def set_state(self, data: object):
+        ''' set object state
+
+        See _set_state_default() for the default implementation with narrowed
+        types.
+        '''
+        self._set_state_default(data)
+
+    ##########################
+    ## Default Implementation
+    #/
+    #
+    # Restrictions for this interface contract are motivated by the Storable
+    # behavior (storage module):
     #   * Pickle (CompactSerializer) is restricted to protect from unpickling
     #     arbitrary objects.
     #   * Text based serializers (like JSON) cannot store and restore arbitrary
     #     objects. They may apply further limitations.
     #
-    # Suppurted base types (medium risk for extensions but note that anything
+    # Supported base types (medium risk for extensions but note that anything
     # not being a string may need specific handling from serializers):
-    BaseType: TypeAlias = bool | int | float | bytes | str
+    DefaultBaseType: TypeAlias = bool | int | float | bytes | str
     # The type that is supported for get_state()/set_state():
     #   * Dictionaries may contain BaseType as keys and recursively any
     #     StateType
     #   * Iterables are restricted to BaseType (extensions may be feasible)
-    StateType: TypeAlias = Union[
-        BaseType | None,
-        dict[BaseType, Union[BaseType, 'StateType', None]],
-        list[BaseType | None], tuple[BaseType | None], set[BaseType | None],
-        dict[str, 'StateType'], # explicit mention to resolve pylint typehint issues
+    DefaultStateType: TypeAlias = Union[
+        DefaultBaseType | None,
+        dict[DefaultBaseType, Union[DefaultBaseType, 'DefaultStateType', None]],
+        list[DefaultBaseType | None], tuple[DefaultBaseType | None], set[DefaultBaseType | None],
+        dict[str, 'DefaultStateType'], # explicit mention to resolve pylint typehint issues
         ]
     # For testing, the type variable may be analyzed via __args__ to ensure
     # coverage for serializers.
@@ -47,12 +71,12 @@ class Stateful():
     # __dict__ of a class and applies a type guard for error handling. This
     # type guard does not verify the types within the container classes and
     # uses a simplieifed TypeAlias:
-    StateTypeForTypeChecker: TypeAlias = Union[
-        BaseType, list, tuple, set, dict
+    StateTypeDefaultForTypeCheck: TypeAlias = Union[
+        DefaultBaseType, list, tuple, set, dict
         ]
     # The error class will just be normal TypeError
     @classmethod
-    def _type_guard_default(cls, data: object) -> dict[str, StateType]:
+    def _type_guard_default(cls, data: object) -> dict[str, DefaultStateType]:
         ''' type guard for Stateful default implementation '''
         if not isinstance(data, dict):
             raise TypeError(
@@ -66,7 +90,7 @@ class Stateful():
                     f'get_state()/set_state() uses a dict[str, StateType], '
                     f'you provided a key: {key} '
                     f' of type {key.__class__.__name__}')
-            if not isinstance(value, (Stateful.StateTypeForTypeChecker)):
+            if not isinstance(value, (Stateful.StateTypeDefaultForTypeCheck)):
                 raise TypeError(
                     f'APPXF Stateful default implentation of '
                     f'get_state()/set_state() uses a dict[str, StateType], '
@@ -74,7 +98,7 @@ class Stateful():
                     f'{value.__class__.__name__}')
         return data
 
-    def get_state(self) -> Stateful.StateType:
+    def _get_state_default(self) -> Stateful.DefaultStateType:
         ''' get object state
 
         The default implementation uses the class __dict__ which contains all
@@ -95,7 +119,7 @@ class Stateful():
                 data.pop(key)
         return self._type_guard_default(data)
 
-    def set_state(self, data: StateType):
+    def _set_state_default(self, data: object):
         ''' Set object state
 
         The default implementation restores the classes __dict__ which contains
