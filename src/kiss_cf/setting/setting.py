@@ -14,6 +14,7 @@ from typing import Generic, TypeVar, Type, Any
 import re
 import configparser
 
+from kiss_cf import Stateful
 
 class AppxfSettingError(Exception):
     ''' AppxfSetting handling error '''
@@ -210,7 +211,8 @@ class _AppxfSettingMetaMerged(AppxfSettingMeta, ABCMeta):
 _BaseTypeT = TypeVar('_BaseTypeT', bound=object)
 
 
-class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
+class AppxfSetting(Generic[_BaseTypeT], Stateful,
+                   metaclass=_AppxfSettingMetaMerged):
     ''' Abstract base class for settings
 
     Use AppxfSetting.new('str') to get matching appxf settings for known
@@ -283,6 +285,17 @@ class AppxfSetting(Generic[_BaseTypeT], metaclass=_AppxfSettingMetaMerged):
         # A setting may be displayed, masked by asteriks:
         self.masked = False
         # TODO: Both settings should be part of gui_options
+
+    ###################
+    # Stateful Related
+    #
+
+    def get_state(self) -> object:
+        return self.input
+        # data = self._get_state_default()
+
+    def set_state(self, data: object):
+        self.value = data
 
     @classmethod
     def new(cls,

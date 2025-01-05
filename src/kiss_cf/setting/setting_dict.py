@@ -213,27 +213,28 @@ class SettingDict(Storable, MutableMapping[str, AppxfSetting]):
                 )
 
     def get_state(self) -> object:
-        if self._store_setting_object:
-            # not yet supported. te restricted unpickler would not be able to
-            # load AppxfSetting objects. The AppxfSetting should provide a
-            # public "get_state".
-            data = {'_version': 1,
-                    'settings': self._setting_dict}
-        else:
-            # To properly restore the "input" from AppxfSetting, we need to
-            # store those inputs and not just the values
-            data = {'_version': 1,
-                    'values': {key: self._setting_dict[key].input
-                               for key in self._setting_dict}}
+        data: dict[str, Any] = {'_version': 2}
+        for key, setting in self._setting_dict.items():
+            data[key] = setting.get_state()
         return data
 
-    def set_state(self, data: dict):  # type: ignore  # see _get_state()
+    def set_state(self, data: Mapping):
+        if not isinstance(data, Mapping) or '_version' not in data:
+            raise AppxfSettingError(
+                'Cannot determine data version, '
+                'input data is not a dict with field "_verision".')
+        if not data['_version'] == 2:
+            raise AppxfSettingError(
+                f'Cannot handle version {data["_version"]} of data, '
+                f'supported is version 2 only.')
+        # define list of settings to be handled
         if self._on_load_unknown == 'ignore':
-            # cycle through known options and load values
-            for key in self._setting_dict:
-                if key in data['values']:
-                    self[key] = data['values'][key]
+            key_list = self._setting_dict.keys()
         else:
             raise AppxfSettingError(
                 f'on_load_unknown option is not supported. '
                 f'Supported options: {self.valid_on_load_unknown}')
+        # cycle through options and set states:
+        for key in key_list:
+            if key in data:
+                self._setting_dict[key].set_state(data[key])
