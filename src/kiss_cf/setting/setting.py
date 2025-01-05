@@ -317,7 +317,7 @@ class BaseSettingOption(Stateful):
         for option in ['mutable', 'stored', 'loaded']:
             this_kwarg_key = f'{option_name}_{option}'
             if this_kwarg_key in kwarg_dict:
-                special_kwarg[option_name] = kwarg_dict[this_kwarg_key]
+                special_kwarg['option_'+option] = kwarg_dict[this_kwarg_key]
                 kwarg_dict.pop(this_kwarg_key)
         return special_kwarg
 
@@ -373,7 +373,7 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
         for key in kwargs:
             raise AppxfSettingError(
                 f'Argument [{key}] is unknown, {self.__class__.__name__} '
-                f'supports [value] and '
+                f'supports '
                 f'for options: {[field.name for field in fields(self.options)]} and '
                 f'for gui_options: {[field.name for field in fields(self.gui_options)]}')
 
@@ -404,7 +404,21 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
     ###################/
     ## Stateful Related
     def get_state(self) -> object:
-        return self.input
+        store_options = False
+        store_gui_options = False
+        if self.options.option_stored:
+            store_options = True
+        if self.gui_options.option_stored:
+            store_gui_options = True
+
+        if not store_options and not store_gui_options:
+            return self.input
+        out: dict[str, Any] = {'value': self.input}
+        if store_options:
+            out['options'] = self.options.get_state()
+        if store_gui_options:
+            out['gui_options'] = self.gui_options.get_state()
+        return out
 
     def set_state(self, data: object):
         self.value = data
@@ -512,7 +526,6 @@ class AppxfSettingExtension(Generic[_BaseSettingT, _BaseTypeT], AppxfSetting[_Ba
     def __init__(self,
                  base_setting: _BaseSettingT,
                  value: _BaseTypeT | None = None,
-                 name: str = '',
                  **kwargs):
         # base_setting has to be available during __init__ of AppxfSetting
         # since it will validate the value which should rely on the
@@ -528,7 +541,7 @@ class AppxfSettingExtension(Generic[_BaseSettingT, _BaseTypeT], AppxfSetting[_Ba
                 f'base_setting input must be an AppxfSetting instance, not '
                 f'just a type. You provided {base_setting}')
         self.base_setting = base_setting
-        super().__init__(name=name, value=value, **kwargs)
+        super().__init__(value=value, **kwargs)
         # also apply initial value to the base_setting - this needs to be
         # self.value since original value may be tranlated by the extension to
         # something else like SettingSelect does it
