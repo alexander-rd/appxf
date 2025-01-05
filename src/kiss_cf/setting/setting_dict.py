@@ -160,8 +160,8 @@ class SettingDict(Storable, MutableMapping[str, AppxfSetting]):
         # Use the AppxfSetting object if one is provided
         if isinstance(value, AppxfSetting):
             # transfer key name to setting if setting name is empty:
-            if not value.name:
-                value.name = key
+            if not value.gui_options.name:
+                value.set_option(name=key)
             self._setting_dict[key] = value
             return
 

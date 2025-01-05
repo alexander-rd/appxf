@@ -10,6 +10,7 @@ the following support for usage in applications:
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from typing import Generic, TypeVar, Type, Any
+from dataclasses import dataclass, fields, replace
 
 import re
 import configparser
@@ -45,8 +46,6 @@ class AppxfSettingConversionError(Exception):
     def __str__(self):
         return self.message
 
-
-# TODO: Update handling of GUI properties as commented in the __init__ function
 
 # ## Registry implementation
 # To simplify the usage of properties, new classes register to the base
@@ -210,6 +209,118 @@ class _AppxfSettingMetaMerged(AppxfSettingMeta, ABCMeta):
 # appropriate type hints.
 _BaseTypeT = TypeVar('_BaseTypeT', bound=object)
 
+_OptionTypeT = TypeVar('_OptionTypeT', bound='BaseSettingOption')
+
+@dataclass(eq=False, order=False, frozen=True)
+class BaseSettingOption(Stateful):
+    ''' common class for setting options/gui_options '''
+    # default settings for options - they may be:
+    #  * mutable (in GUI) or from application:
+    option_mutable: bool = False
+    #  * they may be persisted via a storage (takes effect in SettingDict)
+    option_stored: bool = False
+    #  * they may be loaded once they were stored
+    option_loaded: bool = False
+    # Note: Loading but not storing may make sense when the settings are
+    # defined by an admin, users are loading them (may even change them) but
+    # only the admin applies new default settings.
+
+    def all_default(self) -> bool:
+        ''' Identify if options have all fields with default values '''
+        all_default = True
+        for field in fields(self):
+            if getattr(self, field.name) != field.default:
+                all_default = False
+                break
+        return all_default
+
+    @classmethod
+    def new_from_kwarg(cls: Type[_OptionTypeT],
+                       option_name: str,
+                       kwarg_dict: dict[str, Any]
+                       ) -> _OptionTypeT:
+        ''' Consumes any valid argument from kwargs
+
+        Arguments are applied to this option class and returned. The arguments
+        are removed from the kwarg dictionary. Following three cases are
+        covered:
+          * the named option is one of the kwargs, like gui_options={...} or
+            gui_options=GuiOptions(...)
+          * any field in the dataclass as kwarg
+          * any default field (mutable, stored, loaded) as kwarg, like
+            gui_options_mutable or gui_options_stored
+        '''
+        named_option_kwarg = cls._get_kwarg_from_named_option(option_name, kwarg_dict)
+        normal_kwarg = cls._get_normal_kwarg(kwarg_dict)
+        special_kwarg = cls._get_special_kwarg(option_name, kwarg_dict)
+        # merge the three dictionaries and apply to constructor - last update
+        # takes precedence and reverse order as in kwarg retrieval applies.
+        special_kwarg.update(normal_kwarg)
+        special_kwarg.update(named_option_kwarg)
+        return cls(**special_kwarg)
+
+    def new_update_from_kwarg(
+            self: _OptionTypeT,
+            option_name: str,
+            kwarg_dict: dict[str, Any]
+            ) -> _OptionTypeT:
+        ''' get updated option
+
+        Arguments work the same as for new_from_kwarg().
+        '''
+        named_option_kwarg = self._get_kwarg_from_named_option(option_name, kwarg_dict)
+        normal_kwarg = self._get_normal_kwarg(kwarg_dict)
+        special_kwarg = self._get_special_kwarg(option_name, kwarg_dict)
+        # merge the three dictionaries and apply to constructor - last update
+        # takes precedence and reverse order as in kwarg retrieval applies.
+        special_kwarg.update(normal_kwarg)
+        special_kwarg.update(named_option_kwarg)
+        return replace(self, **special_kwarg)
+
+    @classmethod
+    def _get_normal_kwarg(cls,
+                          kwarg_dict: dict[str, Any]
+                          ) -> dict[str, Any]:
+        normal_kwarg = {key: value
+                        for key, value in kwarg_dict.items()
+                        if key in [field.name for field in fields(cls)]}
+        for key in normal_kwarg:
+            kwarg_dict.pop(key)
+        return normal_kwarg
+
+    @classmethod
+    def _get_kwarg_from_named_option(cls,
+                                     option_name: str,
+                                     kwarg_dict: dict[str, Any]
+                                     ) -> dict[str, Any]:
+        if option_name in kwarg_dict:
+            if isinstance(kwarg_dict[option_name], cls):
+                update_dict = {field.name: kwarg_dict[option_name][field.name]
+                          for field in fields(kwarg_dict[option_name])}
+                kwarg_dict.pop(option_name)
+            elif isinstance(kwarg_dict[option_name], dict):
+                update_dict = kwarg_dict[option_name]
+                kwarg_dict.pop(option_name)
+            else:
+                raise AppxfSettingError(
+                    f'Argument {option_name} must be {cls}, '
+                    f'you provided {kwarg_dict[option_name].__class__.__name__}')
+        else:
+            update_dict = {}
+        return update_dict
+
+    @classmethod
+    def _get_special_kwarg(cls,
+                           option_name: str,
+                           kwarg_dict: dict[str, Any]) -> dict[str, Any]:
+        special_kwarg = {}
+        for option in ['mutable', 'stored', 'loaded']:
+            this_kwarg_key = f'{option_name}_{option}'
+            if this_kwarg_key in kwarg_dict:
+                special_kwarg[option_name] = kwarg_dict[this_kwarg_key]
+                kwarg_dict.pop(this_kwarg_key)
+        return special_kwarg
+
 
 class AppxfSetting(Generic[_BaseTypeT], Stateful,
                    metaclass=_AppxfSettingMetaMerged):
@@ -235,68 +346,71 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
 
     You do not need to provide anything else, including __init__.
     '''
+
+    # AppxfSettings includes dataclass classes for setting specific options and
+    # gui_options. They are part of the class definition since a derived class
+    # may also update the contained Options or GuiOptions class. The __init__
+    # code will then adapt accordingly.
+    @dataclass(eq=False, order=False, frozen=True)
+    class Options(BaseSettingOption):
+        ''' options for settings '''
+        mutable: bool = True
+
+    @dataclass(eq=False, order=False, frozen=True)
+    class GuiOptions(BaseSettingOption):
+        ''' gui options for the setting '''
+        name: str = ''
+        height: int = 0
+        width: int = 0
+        # TODO: "masked" (for passwords) and "visibility" whether GUI option is
+        # to be displayed not yet included
+
+    def set_option(self, **kwargs):
+        ''' update options or gui_options'''
+        self.options = self.options.new_update_from_kwarg('options', kwargs)
+        self.gui_options = self.gui_options.new_update_from_kwarg('gui_options', kwargs)
+        # throw error for anything that is left over
+        for key in kwargs:
+            raise AppxfSettingError(
+                f'Argument [{key}] is unknown, {self.__class__.__name__} '
+                f'supports [value] and '
+                f'for options: {[field.name for field in fields(self.options)]} and '
+                f'for gui_options: {[field.name for field in fields(self.gui_options)]}')
+
     def __init__(self,
                  value: _BaseTypeT | None = None,
-                 name: str = '',
-                 width: int = 0,
-                 height: int = 0,
                  **kwargs):
-        super().__init__(**kwargs)
+        super().__init__()
+        # consume kwargs into options/gui_options - must apply before applying
+        # the value since options typically affect the validation:
+        #self.options: AppxfSetting.Options = self.Options.consume_kwargs('options', kwargs)
+        #self.gui_options: AppxfSetting.GuiOptions = self.GuiOptions.consume_kwargs('gui_options', kwargs)
+        self.options = self.Options.new_from_kwarg('options', kwargs)
+        self.gui_options = self.GuiOptions.new_from_kwarg('gui_options', kwargs)
+        # throw error for anything that is left over
+        for key in kwargs:
+            raise AppxfSettingError(
+                f'Argument [{key}] is unknown, {self.__class__.__name__} '
+                f'supports [value] and '
+                f'for options: {[field.name for field in fields(self.options)]} and '
+                f'for gui_options: {[field.name for field in fields(self.gui_options)]}')
+
         if value is None:
             self._input = self.get_default()
             self._value = self.get_default()
         else:
             self._set_value(value)
 
-        # A setting may be set not being mutable which blocks any changes to
-        # it.
-        self.mutable = True
-        # same applies to setting specific options and gui options. However, as
-        # long as there are no options defined, there is no editing or storing.
-        # This is why the "mutable" goes into the dict for those options.
-
-        # TODO: It does make sense in future that the option dict becomes a
-        # setting dict. This should not pose a circular dependency since the
-        # hierarchy is:
-        #   1) AppxfSetting (generic)
-        #   2) AppxfSettingDict
-        #   3) SpecificSetting with options
-        #
-        # Just the GUI part would like to apply a generic handling like placing
-        # the edit button. >> Problems for later.
-
-        if not hasattr(self, 'gui_options'):
-            self.gui_options = {}
-        if height:
-            self.gui_options['height'] = height
-        if width:
-            self.gui_options['width'] = width
-
-        if not hasattr(self, 'options'):
-            self.options = {}
-
-        # Name that may be used in the GUI while it is more typical that the
-        # setting inherits it's name from the setting_dict containing it.
-        self.name = name
-
-        # A setting may be hidded in normal GUI views unless explicitly
-        # mentioned.
-        self.default_visibility = True
-        # A setting may be displayed, masked by asteriks:
-        self.masked = False
-        # TODO: Both settings should be part of gui_options
-
-    ###################
-    # Stateful Related
-    #
-
+    ###################/
+    ## Stateful Related
     def get_state(self) -> object:
         return self.input
-        # data = self._get_state_default()
 
     def set_state(self, data: object):
         self.value = data
 
+    #######################/
+    ## Registry and Factory
     @classmethod
     def new(cls,
             setting_type: str | type,
@@ -337,8 +451,9 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
 
     @value.setter
     def value(self, value: Any):
-        if not self.mutable:
-            name = '(' + self.name + ')' if self.name else '(no name)'
+        print(f'Options for {self.__class__.__name__}: {self.options}')
+        if not self.options.mutable:
+            name = '(' + self.gui_options.name + ')' if self.gui_options.name else '(no name)'
             raise AppxfSettingError(
                 f'{self.__class__.__name__}{name} is set to be not mutable.')
         self._set_value(value)
