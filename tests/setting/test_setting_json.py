@@ -31,3 +31,26 @@ def test_json_values_only():
     '''
     print(f'Produced JSON:\n{serialized_data.decode("utf-8")}')
     assert expected_part[1:-5] == serialized_data.decode('utf-8')
+
+def test_json_value_and_options():
+    setting = SettingDict(
+    data={
+        'string': AppxfSetting.new('string', value='test'),
+        'integer': AppxfSetting.new('int', value=42, options_stored=True),
+        'select': AppxfSetting.new('select::string', value='01', select_map={'01': 'Value'},
+                                   options_stored=True,
+                                   height=10, width=60, gui_options_stored=True)
+        },
+    storage=RamStorage.get(name='setting_dict', ram_area='test'))
+    raw_data = setting.get_state()
+    serialized_data = JsonSerializer.serialize(raw_data)
+    expected_part = '''
+{
+    "_version": 2,
+    "string": "test",
+    "integer": 42,
+    "select": "01"
+}
+    '''
+    print(f'Produced JSON:\n{serialized_data.decode("utf-8")}')
+    assert expected_part[1:-5] == serialized_data.decode('utf-8')
