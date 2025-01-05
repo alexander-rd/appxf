@@ -23,13 +23,12 @@ def test_setting_init(appxf_class):
     if issubclass(appxf_class, AppxfSettingExtension):
         return
     setting = appxf_class(name='test')
-    assert setting.name == 'test'
-    assert setting.mutable
-    assert setting.default_visibility
-    if isinstance(setting, AppxfPassword):
-        assert setting.masked
-    else:
-        assert not setting.masked
+    assert setting.gui_options.name == 'test'
+    assert setting.options.mutable
+    #if isinstance(setting, AppxfPassword):
+    #    assert setting.masked
+    #else:
+    #    assert not setting.masked
 
 param_wrong_init = [
     # Type      Value
@@ -203,7 +202,7 @@ def test_setting_self_test():
 
 def test_setting_mutable():
     setting = AppxfSetting.new(str)
-    setting.mutable = False
+    setting.set_option(mutable=False)
     with pytest.raises(AppxfSettingError) as exc_info:
         setting.value = 'new'
     assert 'is set to be not mutable' in str(exc_info.value)

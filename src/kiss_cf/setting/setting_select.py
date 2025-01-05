@@ -1,7 +1,9 @@
 ''' Settings selecting a value from a predefined list '''
+from __future__ import annotations
 from typing import Any
+from dataclasses import dataclass, field
 
-from .setting import AppxfSettingExtension, _BaseTypeT, _BaseSettingT, AppxfSettingError
+from .setting import AppxfSetting, AppxfSettingExtension, _BaseTypeT, _BaseSettingT, AppxfSettingError
 
 
 # Intent is to support complex data like long text templates by selecting and
@@ -60,11 +62,14 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
     # for string based type selection or via AppxfSetting[AppxfInt]() for
     # direct type based initialization.
 
+    @dataclass(eq=False, order=False, frozen=True)
+    class Options(AppxfSetting.Options):
+        ''' options for setting select '''
+        select_map: dict[str, Any] = field(default_factory=dict)
+
     def __init__(self,
                  base_setting: _BaseSettingT,
                  value: str | None = None,
-                 options: dict[str, str] | None = None,
-                 name: str = '',
                  **kwargs):
         # Initialization sequence matters quite a bit, be careful with changes!
 
@@ -72,28 +77,25 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
         # the default value and _validated_conversion handles default version
         # first.
         super().__init__(base_setting=base_setting,
-                         name=name,
                          **kwargs)
-        # usualy, options are not mutable
-        self.options = {'mutable': False,
-                        'select_map': {}}
-        # in case of options input, handle them via add_options to reuse the
-        # validation over there
-        if options is not None:
-            for key, val in options.items():
-                self.add_option(key, val)
+
+        # If select_map was already applied during intialization, we have to
+        # pass it through add_option() to perform validations but we can just
+        # reapply them. The strange next line is just to fix the typehints.
+        self.options: AppxfSettingSelect.Options = self.options
+        for key, map_value in self.options.select_map.items():
+            self.add_option(key, map_value)
+
         # finally, set the intended value which may be one of the added options
-        # above:
+        # above which is why value was not passed to the parent __init__()
         if value is not None:
             self.value = value
-
-
 
     def _validated_conversion(self, value: str) -> tuple[bool, _BaseTypeT]:
         if value == self.base_setting.get_default():
             return True, self.base_setting.get_default()
-        if value in self.options['select_map']:
-            return True, self.options['select_map'][value]
+        if value in self.options.select_map:
+            return True, self.options.select_map[value]
         return False, self.base_setting.get_default()
 
     ###################/
@@ -104,17 +106,17 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
 
         The list is sorted alphabetically.
         '''
-        return sorted(list(self.options['select_map'].keys()))
+        return sorted(list(self.options.select_map.keys()))
 
     def get_option_value(self, option: str) -> Any:
         ''' Get the value for an option '''
-        return self.options['select_map'].get(option, self.base_setting.get_default())
+        return self.options.select_map.get(option, self.base_setting.get_default())
 
     def delete_option(self, option: str):
         ''' Delete an option from selectable items '''
         original_options = self.get_options()
-        if option in self.options['select_map']:
-            self.options['select_map'].pop(option)
+        if option in self.options.select_map:
+            self.options.select_map.pop(option)
         if option == self.input:
             index = original_options.index(option)
             new_list = self.get_options()
@@ -133,4 +135,4 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
                 f'Cannot add option [{option}] with value {value} of type '
                 f'{value.__class__.__name__} because the value is not valid.')
         # We also take the readily transformed value, not just the input
-        self.options['select_map'][option] = value
+        self.options.select_map[option] = value

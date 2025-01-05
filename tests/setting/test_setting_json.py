@@ -16,7 +16,7 @@ def test_json_values_only():
         data={
             'string': AppxfSetting.new('string', value='test'),
             'integer': AppxfSetting.new('int', value=42),
-            'select': AppxfSetting.new('select::string', value='01', options={'01': 'Value'})
+            'select': AppxfSetting.new('select::string', value='01', select_map={'01': 'Value'})
             },
         storage=RamStorage.get(name='setting_dict', ram_area='test'))
     raw_data = setting.get_state()
