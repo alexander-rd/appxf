@@ -62,7 +62,7 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
     # for string based type selection or via AppxfSetting[AppxfInt]() for
     # direct type based initialization.
 
-    @dataclass(eq=False, order=False, frozen=True)
+    @dataclass(eq=False, order=False)
     class Options(AppxfSetting.Options):
         ''' options for setting select '''
         select_map: dict[str, Any] = field(default_factory=dict)
