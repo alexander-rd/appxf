@@ -224,14 +224,6 @@ class BaseSettingOption(Stateful):
     #    state:
     _export_non_defaults: bool = False
 
-    #  * they may be persisted via a storage (takes effect in SettingDict)
-    _stored: bool = False
-    #  * they may be loaded once they were stored
-    _loaded: bool = False
-    # Note: Loading but not storing may make sense when the settings are
-    # defined by an admin, users are loading them (may even change them) but
-    # only the admin applies new default settings.
-
     def __setattr__(self, name: str, value: Any) -> None:
         if self._mutable or name in ['_mutable']:
             return super().__setattr__(name, value)
@@ -384,11 +376,28 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
     @dataclass(eq=False, order=False)
     class Options(BaseSettingOption):
         ''' options for settings '''
+        # Likewise to _mutable (base class), the settings need to mark whether
+        # the options are stored/loaded which can be set individually for
+        # options and gui_options:
+        _stored: bool = False
+        _loaded: bool = False
+        # Note: Loading but not storing may make sense when the settings are
+        # defined by an admin, users are loading them (may even change them) but
+        # only the admin applies new default settings.
+
+        # In constrast to the _mutable in the base class that determines if the
+        # options are mutable, this mutable determines if the setting value is
+        # mutable
         mutable: bool = True
+
 
     @dataclass(eq=False, order=False)
     class GuiOptions(BaseSettingOption):
         ''' gui options for the setting '''
+        # See normal Options class above:
+        _stored: bool = False
+        _loaded: bool = False
+
         name: str = ''
         height: int = 0
         width: int = 0
