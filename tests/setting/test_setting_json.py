@@ -59,8 +59,8 @@ def ttest_tmp():
     setting = AppxfSetting.new('select::string')
     print(setting.gui_options)
     setting.gui_options._mutable = True
-    setting.gui_options.height = 5
+    setting.gui_options.display_height = 5
     print(setting.gui_options)
     setting.gui_options._mutable = False
-    setting.gui_options.height = 6
+    setting.gui_options.display_height = 6
     print(setting.gui_options)

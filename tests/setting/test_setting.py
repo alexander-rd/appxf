@@ -23,7 +23,7 @@ def test_setting_init(appxf_class):
     if issubclass(appxf_class, AppxfSettingExtension):
         return
     setting = appxf_class(name='test')
-    assert setting.gui_options.name == 'test'
+    assert setting.options.name == 'test'
     assert setting.options.mutable
     #if isinstance(setting, AppxfPassword):
     #    assert setting.masked
