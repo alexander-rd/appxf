@@ -214,10 +214,16 @@ _OptionTypeT = TypeVar('_OptionTypeT', bound='BaseSettingOption')
 @dataclass(eq=False, order=False)
 class BaseSettingOption(Stateful):
     ''' common class for setting options/gui_options '''
-    # default settings for options - they may be:
-    #  * mutable (in GUI) or from application - this must be True during
-    #    construction, construction will fail otherwise (see __setattr__)
+    # default settings for options:
+    #  * options may be mutable (in GUI) or from application - this must be
+    #    True during construction, construction will fail otherwise (see
+    #    __setattr__)
     _mutable: bool = True
+    #  * only non-defaults may be exported via get_state - when restoring
+    #    options it is adviced to reset() the options before applying the
+    #    state:
+    _export_non_defaults: bool = False
+
     #  * they may be persisted via a storage (takes effect in SettingDict)
     _stored: bool = False
     #  * they may be loaded once they were stored
@@ -273,12 +279,12 @@ class BaseSettingOption(Stateful):
         '''
         named_option_kwarg = cls._get_kwarg_from_named_option(option_name, kwarg_dict)
         normal_kwarg = cls._get_normal_kwarg(kwarg_dict)
-        special_kwarg = cls._get_special_kwarg(option_name, kwarg_dict)
+        protected_kwarg = cls._get_protected_kwarg(option_name, kwarg_dict)
         # merge the three dictionaries and apply to constructor - last update
         # takes precedence and reverse order as in kwarg retrieval applies.
-        special_kwarg.update(normal_kwarg)
-        special_kwarg.update(named_option_kwarg)
-        return cls(**special_kwarg)
+        protected_kwarg.update(normal_kwarg)
+        protected_kwarg.update(named_option_kwarg)
+        return cls(**protected_kwarg)
 
     def new_update_from_kwarg(
             self: _OptionTypeT,
@@ -291,12 +297,12 @@ class BaseSettingOption(Stateful):
         '''
         named_option_kwarg = self._get_kwarg_from_named_option(option_name, kwarg_dict)
         normal_kwarg = self._get_normal_kwarg(kwarg_dict)
-        special_kwarg = self._get_special_kwarg(option_name, kwarg_dict)
+        protected_kwarg = self._get_protected_kwarg(option_name, kwarg_dict)
         # merge the three dictionaries and apply to constructor - last update
         # takes precedence and reverse order as in kwarg retrieval applies.
-        special_kwarg.update(normal_kwarg)
-        special_kwarg.update(named_option_kwarg)
-        return replace(self, **special_kwarg)
+        protected_kwarg.update(normal_kwarg)
+        protected_kwarg.update(named_option_kwarg)
+        return replace(self, **protected_kwarg)
 
     @classmethod
     def _get_normal_kwarg(cls,
@@ -331,16 +337,19 @@ class BaseSettingOption(Stateful):
         return update_dict
 
     @classmethod
-    def _get_special_kwarg(cls,
-                           option_name: str,
-                           kwarg_dict: dict[str, Any]) -> dict[str, Any]:
-        special_kwarg = {}
-        for option in ['mutable', 'stored', 'loaded']:
-            this_kwarg_key = f'{option_name}_{option}'
+    def _get_protected_kwarg(cls,
+                             option_name: str,
+                             kwarg_dict: dict[str, Any]) -> dict[str, Any]:
+        protected_kwarg = {}
+        for field in fields(cls):
+            option = field.name
+            if not option.startswith('_'):
+                continue
+            this_kwarg_key = f'{option_name}{option}'
             if this_kwarg_key in kwarg_dict:
-                special_kwarg['_'+option] = kwarg_dict[this_kwarg_key]
+                protected_kwarg[option] = kwarg_dict[this_kwarg_key]
                 kwarg_dict.pop(this_kwarg_key)
-        return special_kwarg
+        return protected_kwarg
 
 
 class AppxfSetting(Generic[_BaseTypeT], Stateful,
