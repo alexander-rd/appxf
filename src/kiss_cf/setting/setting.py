@@ -390,24 +390,15 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
         # mutable
         mutable: bool = True
 
-
-    @dataclass(eq=False, order=False)
-    class GuiOptions(BaseSettingOption):
-        ''' gui options for the setting '''
-        # See normal Options class above:
-        _stored: bool = False
-        _loaded: bool = False
-
         name: str = ''
-        height: int = 0
-        width: int = 0
+        display_height: int = 0
+        display_width: int = 0
         # TODO: "masked" (for passwords) and "visibility" whether GUI option is
         # to be displayed not yet included
 
     def set_option(self, **kwargs):
         ''' update options or gui_options'''
         self.options = self.options.new_update_from_kwarg('options', kwargs)
-        self.gui_options = self.gui_options.new_update_from_kwarg('gui_options', kwargs)
         # throw error for anything that is left over
         for key in kwargs:
             raise AppxfSettingError(
@@ -425,14 +416,12 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
         #self.options: AppxfSetting.Options = self.Options.consume_kwargs('options', kwargs)
         #self.gui_options: AppxfSetting.GuiOptions = self.GuiOptions.consume_kwargs('gui_options', kwargs)
         self.options = self.Options.new_from_kwarg('options', kwargs)
-        self.gui_options = self.GuiOptions.new_from_kwarg('gui_options', kwargs)
         # throw error for anything that is left over
         for key in kwargs:
             raise AppxfSettingError(
                 f'Argument [{key}] is unknown, {self.__class__.__name__} '
                 f'supports [value] and '
-                f'for options: {[field.name for field in fields(self.options)]} and '
-                f'for gui_options: {[field.name for field in fields(self.gui_options)]}')
+                f'for options: {[field.name for field in fields(self.options)]}.')
 
         if value is None:
             self._input = self.get_default()
@@ -443,20 +432,11 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
     ###################/
     ## Stateful Related
     def get_state(self) -> object:
-        store_options = False
-        store_gui_options = False
-        if self.options._stored:
-            store_options = True
-        if self.gui_options._stored:
-            store_gui_options = True
-
-        if not store_options and not store_gui_options:
+        if not self.options._stored:
             return self.input
         out: dict[str, Any] = {'value': self.input}
-        if store_options:
+        if self.options._stored:
             out['options'] = self.options.get_state()
-        if store_gui_options:
-            out['gui_options'] = self.gui_options.get_state()
         return out
 
     def set_state(self, data: object):
@@ -506,7 +486,7 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
     def value(self, value: Any):
         print(f'Options for {self.__class__.__name__}: {self.options}')
         if not self.options.mutable:
-            name = '(' + self.gui_options.name + ')' if self.gui_options.name else '(no name)'
+            name = '(' + self.options.name + ')' if self.options.name else '(no name)'
             raise AppxfSettingError(
                 f'{self.__class__.__name__}{name} is set to be not mutable.')
         self._set_value(value)
