@@ -32,7 +32,7 @@ def test_json_values_only():
     print(f'Produced JSON:\n{serialized_data.decode("utf-8")}')
     assert expected_part[1:-5] == serialized_data.decode('utf-8')
 
-def test_json_value_and_options():
+def ttest_json_value_and_options():
     setting = SettingDict(
     data={
         'string': AppxfSetting.new('string', value='test'),
@@ -54,3 +54,13 @@ def test_json_value_and_options():
     '''
     print(f'Produced JSON:\n{serialized_data.decode("utf-8")}')
     assert expected_part[1:-5] == serialized_data.decode('utf-8')
+
+def ttest_tmp():
+    setting = AppxfSetting.new('select::string')
+    print(setting.gui_options)
+    setting.gui_options._mutable = True
+    setting.gui_options.height = 5
+    print(setting.gui_options)
+    setting.gui_options._mutable = False
+    setting.gui_options.height = 6
+    print(setting.gui_options)

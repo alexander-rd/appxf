@@ -211,19 +211,40 @@ _BaseTypeT = TypeVar('_BaseTypeT', bound=object)
 
 _OptionTypeT = TypeVar('_OptionTypeT', bound='BaseSettingOption')
 
-@dataclass(eq=False, order=False, frozen=True)
+@dataclass(eq=False, order=False)
 class BaseSettingOption(Stateful):
     ''' common class for setting options/gui_options '''
     # default settings for options - they may be:
-    #  * mutable (in GUI) or from application:
-    option_mutable: bool = False
+    #  * mutable (in GUI) or from application - this must be True during
+    #    construction, construction will fail otherwise (see __setattr__)
+    _mutable: bool = True
     #  * they may be persisted via a storage (takes effect in SettingDict)
-    option_stored: bool = False
+    _stored: bool = False
     #  * they may be loaded once they were stored
-    option_loaded: bool = False
+    _loaded: bool = False
     # Note: Loading but not storing may make sense when the settings are
     # defined by an admin, users are loading them (may even change them) but
     # only the admin applies new default settings.
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        if self._mutable or name in ['_mutable']:
+            return super().__setattr__(name, value)
+        raise AttributeError(
+            f'Cannot change {name} to {value}, {self.__class__} is not '
+            f'mutable (_mutable=False)')
+
+    def reset(self):
+        ''' Reset options to default values '''
+        for field in fields(self):
+            if field.default_factory:
+                setattr(self, field.name, field.default_factory())
+            elif field.default_factory:
+                setattr(self, field.name, field.default)
+            else:
+                raise TypeError(
+                    f'This should not happen: neither a default value or a '
+                    f'default_factors is set for field {field.name} of '
+                    f'{self.__class__}')
 
     def all_default(self) -> bool:
         ''' Identify if options have all fields with default values '''
@@ -317,7 +338,7 @@ class BaseSettingOption(Stateful):
         for option in ['mutable', 'stored', 'loaded']:
             this_kwarg_key = f'{option_name}_{option}'
             if this_kwarg_key in kwarg_dict:
-                special_kwarg['option_'+option] = kwarg_dict[this_kwarg_key]
+                special_kwarg['_'+option] = kwarg_dict[this_kwarg_key]
                 kwarg_dict.pop(this_kwarg_key)
         return special_kwarg
 
@@ -351,12 +372,12 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
     # gui_options. They are part of the class definition since a derived class
     # may also update the contained Options or GuiOptions class. The __init__
     # code will then adapt accordingly.
-    @dataclass(eq=False, order=False, frozen=True)
+    @dataclass(eq=False, order=False)
     class Options(BaseSettingOption):
         ''' options for settings '''
         mutable: bool = True
 
-    @dataclass(eq=False, order=False, frozen=True)
+    @dataclass(eq=False, order=False)
     class GuiOptions(BaseSettingOption):
         ''' gui options for the setting '''
         name: str = ''
@@ -406,9 +427,9 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
     def get_state(self) -> object:
         store_options = False
         store_gui_options = False
-        if self.options.option_stored:
+        if self.options._stored:
             store_options = True
-        if self.gui_options.option_stored:
+        if self.gui_options._stored:
             store_gui_options = True
 
         if not store_options and not store_gui_options:
