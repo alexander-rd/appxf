@@ -162,11 +162,11 @@ class AppxfSettingMeta(type):
                     f'You need to provide a fully implemented class like '
                     f'AppxfString. {requested_type.__name__} is not '
                     f'fully implemented')
-            return requested_type(value=value, name=name)
+            return requested_type(value=value, name=name, **kwargs)
         # requested type is now either a string or a type, before handling
         # potential AppxfSettingExtensions, we look up existing types:
         if requested_type in AppxfSettingMeta.type_map:
-            return AppxfSettingMeta.type_map[requested_type](value=value, name=name)
+            return AppxfSettingMeta.type_map[requested_type](value=value, name=name, **kwargs)
         # now, we handle extensions which are separated by otherwise untypical
         # '::'
         if isinstance(requested_type, str) and '::' in requested_type:
@@ -241,6 +241,10 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
     @dataclass(eq=False, order=False)
     class Options(AppxfOptions):
         ''' options for settings '''
+        # Overwrite AppxfOptions default values
+        _export_defaults: bool = False
+        _export_protected: bool = False
+
         # Likewise to _mutable (base class), the settings need to mark whether
         # the options are stored/loaded which can be set individually for
         # options and gui_options:
@@ -349,7 +353,6 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
 
     @value.setter
     def value(self, value: Any):
-        print(f'Options for {self.__class__.__name__}: {self.options}')
         if not self.options.mutable:
             name = '(' + self.options.name + ')' if self.options.name else '(no name)'
             raise AppxfSettingError(
