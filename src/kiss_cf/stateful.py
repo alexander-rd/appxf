@@ -98,15 +98,29 @@ class Stateful():
                     f'{value.__class__.__name__}')
         return data
 
-    def _get_state_default(self) -> Stateful.DefaultStateType:
+    def _get_state_default(self,
+                           overwrite_attributes: list[str] | None = None,
+                           additional_attribute_mask: list[str] | None = None) -> Stateful.DefaultStateType:
         ''' get object state
 
         The default implementation uses the class __dict__ which contains all
         class fields. You likely have to update this method for derived classes
         since not all entries in __dict__ will be part of the classes state.
         Especially aggregated classes whould typically be stripped.
+
+        [overwrite_attributes] replaces the classes [attributes] setting while
+        [additional_attributes_mask] extends the existing class [attribute_mask].
         '''
-        if self.attributes:
+        if overwrite_attributes is None:
+            attributes = self.attributes
+        else:
+            attributes = overwrite_attributes
+        if additional_attribute_mask is None:
+            attribute_mask = self.attribute_mask
+        else:
+            attribute_mask = self.attribute_mask + additional_attribute_mask
+
+        if attributes:
             data = {key: deepcopy(value)
                     for key, value in self.__dict__.items()
                     if key in self.attributes}
@@ -114,7 +128,7 @@ class Stateful():
             data = deepcopy(self.__dict__)
         # attribute_mask always has to be applied in case of mixed usage of
         # attribute_mask and attributes:
-        for key in self.attribute_mask:
+        for key in attribute_mask:
             if key in data:
                 data.pop(key)
         return self._type_guard_default(data)

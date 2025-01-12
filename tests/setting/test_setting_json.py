@@ -12,6 +12,8 @@ from kiss_cf.setting import AppxfSetting, SettingDict
 from kiss_cf.storage import RamStorage, JsonSerializer
 
 def test_json_values_only():
+    '''JSON for options with only values included
+    (no options being set or set to stored)'''
     setting = SettingDict(
         data={
             'string': AppxfSetting.new('string', value='test'),
@@ -32,14 +34,15 @@ def test_json_values_only():
     print(f'Produced JSON:\n{serialized_data.decode("utf-8")}')
     assert expected_part[1:-5] == serialized_data.decode('utf-8')
 
-def ttest_json_value_and_options():
+def test_json_value_and_options():
+    '''JSON for options with and without options being set'''
     setting = SettingDict(
     data={
         'string': AppxfSetting.new('string', value='test'),
         'integer': AppxfSetting.new('int', value=42, options_stored=True),
         'select': AppxfSetting.new('select::string', value='01', select_map={'01': 'Value'},
                                    options_stored=True,
-                                   height=10, width=60, gui_options_stored=True)
+                                   display_height=10, display_width=60)
         },
     storage=RamStorage.get(name='setting_dict', ram_area='test'))
     raw_data = setting.get_state()
@@ -48,11 +51,26 @@ def ttest_json_value_and_options():
 {
     "_version": 2,
     "string": "test",
-    "integer": 42,
-    "select": "01"
+    "integer": {
+        "value": 42,
+        "options": {}
+    },
+    "select": {
+        "value": "01",
+        "options": {
+            "display_height": 10,
+            "display_width": 60,
+            "select_map": {
+                "01": "Value"
+            }
+        }
+    }
 }
     '''
     print(f'Produced JSON:\n{serialized_data.decode("utf-8")}')
+    #print(f'String Options:\n{str(setting.get_setting("string").options)}')
+    #print(f'Integer Options:\n{str(setting.get_setting("integer").options)}')
+    #print(f'String::Select Options:\n{str(setting.get_setting("select").options)}')
     assert expected_part[1:-5] == serialized_data.decode('utf-8')
 
 def ttest_tmp():

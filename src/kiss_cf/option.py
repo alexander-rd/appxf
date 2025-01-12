@@ -1,6 +1,6 @@
 from kiss_cf import Stateful
 
-from dataclasses import dataclass, fields, replace
+from dataclasses import dataclass, fields, replace, Field
 from typing import Any, Type, TypeVar
 
 _OptionTypeT = TypeVar('_OptionTypeT', bound='AppxfOptions')
@@ -23,8 +23,10 @@ class AppxfOptions(Stateful):
     _mutable: bool = True
     #  * only non-defaults may be exported via get_state - when restoring
     #    options it is adviced to reset() the options before applying the
-    #    state:
+    #    state
     _export_defaults: bool = True
+    #  * protected options may not be exported:
+    _export_protected: bool = False
 
     def __setattr__(self, name: str, value: Any) -> None:
         if self._mutable or name in ['_mutable']:
@@ -78,6 +80,14 @@ class AppxfOptions(Stateful):
         # takes precedence and reverse order as in kwarg retrieval applies.
         protected_kwarg.update(normal_kwarg)
         protected_kwarg.update(named_option_kwarg)
+        # need to handle a setting of _mutable after applying all other
+        # options:
+        if '_mutable' in protected_kwarg:
+            mutable = protected_kwarg['_mutable']
+            protected_kwarg.pop('_mutable')
+            options = cls(**protected_kwarg)
+            options._mutable = mutable
+            return options
         return cls(**protected_kwarg)
 
     def new_update_from_kwarg(
@@ -144,3 +154,33 @@ class AppxfOptions(Stateful):
                 protected_kwarg[option] = kwarg_dict[this_kwarg_key]
                 kwarg_dict.pop(this_kwarg_key)
         return protected_kwarg
+
+    def _get_protected_fields(self) -> list[str]:
+        return [field.name for field in fields(self)
+                if field.name.startswith('_')]
+
+    def _get_fields_with_default_values(self) -> list[str]:
+        return [field.name for field in fields(self)
+                if self._is_default(field)]
+
+    def _is_default(self, field: Field) -> bool:
+        if field.default != field.default_factory:
+            return getattr(self, field.name) == field.default
+        if field.default_factory is not None:
+            return getattr(self, field.name) == field.default_factory()
+        raise TypeError(
+            f'This should not happen: could not determine if field '
+            f'{field.name} uses default value or not '
+            f'(default: {field.default}).')
+
+
+    def get_state(self) -> object:
+        if not self._export_protected:
+            attribute_mask = self._get_protected_fields()
+        else:
+            attribute_mask = []
+        if not self._export_defaults:
+            attribute_mask += self._get_fields_with_default_values()
+
+        return self._get_state_default(
+            additional_attribute_mask=attribute_mask)

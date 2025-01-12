@@ -216,6 +216,13 @@ class SettingDict(Storable, MutableMapping[str, AppxfSetting]):
         data: dict[str, Any] = {'_version': 2}
         for key, setting in self._setting_dict.items():
             data[key] = setting.get_state()
+            # strip name if name is key
+            if (isinstance(data[key], dict) and
+                'options' in data[key] and
+                'name' in data[key]['options'] and
+                data[key]['options']['name'] == key
+                ):
+                data[key]['options'].pop('name')
         return data
 
     def set_state(self, data: Mapping):
@@ -238,3 +245,6 @@ class SettingDict(Storable, MutableMapping[str, AppxfSetting]):
         for key in key_list:
             if key in data:
                 self._setting_dict[key].set_state(data[key])
+                # restore setting name:
+                if not self._setting_dict[key].options.name:
+                    self._setting_dict[key].options.name = key
