@@ -79,30 +79,52 @@ class AppxfOptions(Stateful):
         # merge the three dictionaries and apply to constructor - last update
         # takes precedence and reverse order as in kwarg retrieval applies.
         normal_kwarg.update(named_option_kwarg)
-        # need to handle a setting of _mutable after applying all other
-        # options:
-        if 'options_mutable' in normal_kwarg:
-            mutable = normal_kwarg['options_mutable']
-            normal_kwarg.pop('options_mutable')
-            options = cls(**normal_kwarg)
-            options.options_mutable = mutable
-            return options
-        return cls(**normal_kwarg)
+        # reuse _apply_kwarg() on a default constructed options object
+        options = cls()
+        options._apply_kwarg(normal_kwarg)
+        return options
 
-    def new_update_from_kwarg(
+    def update(self, **kwarg):
+        ''' Update options '''
+        self.update_from_kwarg(kwarg_dict=kwarg)
+        self.raise_error_on_non_empty_kwarg(kwarg)
+
+    @classmethod
+    def raise_error_on_non_empty_kwarg(cls, kwarg_dict: dict[str, Any]):
+        for key in kwarg_dict:
+            raise TypeError(
+                f'Argument [{key}] is unknown, {cls} supports '
+                f'{[field.name for field in fields(cls)] + ["options"]}.')
+
+    def update_from_kwarg(
             self: _OptionTypeT,
-            kwarg_dict: dict[str, Any]
-            ) -> _OptionTypeT:
+            kwarg_dict: dict[str, Any]):
         ''' get updated option
 
         Arguments work the same as for new_from_kwarg().
         '''
         named_option_kwarg = self._get_kwarg_from_named_option(kwarg_dict)
         normal_kwarg = self._get_normal_kwarg(kwarg_dict)
-        # merge the dictionaries and apply to constructor - last update takes
-        # precedence and reverse order as in kwarg retrieval applies.
+        # merge the dictionaries - last update takes precedence and
+        # reverse order as in kwarg retrieval applies.
         normal_kwarg.update(named_option_kwarg)
-        return replace(self, **normal_kwarg)
+        self._apply_kwarg(normal_kwarg)
+
+    def _apply_kwarg(self, kwarg_dict: dict[str, Any]):
+        ''' Apply an already processed kwarg dictionary
+
+        Function is used in context of new and update.
+        '''
+        # apply new values by enforcing usage of __setitem__, but apply any
+        # change to options_mutable last:
+        for key, value in kwarg_dict.items():
+            if key == 'options_mutable':
+                continue
+            setattr(self, key, value)
+
+        if 'options_mutable' in kwarg_dict:
+            setattr(self, 'options_mutable', kwarg_dict['options_mutable'])
+
 
     @classmethod
     def _get_normal_kwarg(cls,

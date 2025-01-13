@@ -267,17 +267,6 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
         # TODO: "masked" (for passwords) and "visibility" whether GUI option is
         # to be displayed not yet included
 
-    def set_option(self, **kwargs):
-        ''' update options or gui_options'''
-        self.options = self.options.new_update_from_kwarg(kwargs)
-        # throw error for anything that is left over
-        for key in kwargs:
-            raise AppxfSettingError(
-                f'Argument [{key}] is unknown, {self.__class__.__name__} '
-                f'supports '
-                f'for options: {[field.name for field in fields(self.options)]} and '
-                f'for gui_options: {[field.name for field in fields(self.gui_options)]}')
-
     def __init__(self,
                  value: _BaseTypeT | None = None,
                  **kwargs):
@@ -288,11 +277,7 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
         #self.gui_options: AppxfSetting.GuiOptions = self.GuiOptions.consume_kwargs('gui_options', kwargs)
         self.options = self.Options.new_from_kwarg(kwargs)
         # throw error for anything that is left over
-        for key in kwargs:
-            raise AppxfSettingError(
-                f'Argument [{key}] is unknown, {self.__class__.__name__} '
-                f'supports [value] and '
-                f'for options: {[field.name for field in fields(self.options)]}.')
+        self.options.raise_error_on_non_empty_kwarg(kwargs)
 
         if value is None:
             self._input = self.get_default()
