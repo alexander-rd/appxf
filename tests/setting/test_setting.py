@@ -202,7 +202,7 @@ def test_setting_self_test():
 
 def test_setting_mutable():
     setting = AppxfSetting.new(str)
-    setting.set_option(mutable=False)
+    setting.options.mutable = False
     with pytest.raises(AppxfSettingError) as exc_info:
         setting.value = 'new'
     assert 'is set to be not mutable' in str(exc_info.value)
