@@ -31,44 +31,22 @@ class AppxfOptions(Stateful):
     attribute_mask = Stateful.attribute_mask + ['options_mutable',
                                                 'options_export_defaults']
 
-    # Overwrite __setattr__ to apply options_mutable behavior:
-    def __setattr__(self, name: str, value: Any) -> None:
-        if self.options_mutable or name in ['_mutable']:
-            return super().__setattr__(name, value)
-        raise AttributeError(
-            f'Cannot change {name} to {value}, {self.__class__} is not '
-            f'mutable (_mutable=False)')
+    ###################
+    ## User Interfaces
+    #/
 
-    def reset(self):
-        ''' Reset options to default values '''
-        for field in fields(self):
-            if field.default is not MISSING:
-                setattr(self, field.name, field.default)
-            elif field.default_factory is not MISSING:
-                setattr(self, field.name, field.default_factory())
-            else: # pragma: no cover
-                # this branch is should not be reachable since the dataclass
-                # cannot contain options without default values after
-                # AppxfOptions already defining some:
-                raise TypeError(
-                    f'This should not happen: neither a default value or a '
-                    f'default_factors is set for field {field.name} of '
-                    f'{self.__class__}')
+    # __init__ is provided by dataclass
 
     @classmethod
     def new_from_kwarg(cls: Type[_OptionTypeT],
                        kwarg_dict: dict[str, Any]
                        ) -> _OptionTypeT:
-        ''' Consumes any valid argument from kwargs
+        ''' consume any valid argument from kwargs and return options instance
 
-        Arguments are applied to this option class and returned. The arguments
-        are removed from the kwarg dictionary. Following three cases are
-        covered:
-          * the named option is one of the kwargs, like gui_options={...} or
-            gui_options=GuiOptions(...)
-          * any field in the dataclass as kwarg
-          * any default field (mutable, stored, loaded) as kwarg, like
-            gui_options_mutable or gui_options_stored
+        Arguments that are matching fields or "options" are applied to this
+        option class and a new instance is returned. The arguments are removed
+        from kwarg_dict. The "options" key supports being an options class or a
+        dictionary, like: options=AppxfOption() or options={...}.
         '''
         named_option_kwarg = cls._get_kwarg_from_named_option(kwarg_dict)
         normal_kwarg = cls._get_normal_kwarg(kwarg_dict)
@@ -81,16 +59,9 @@ class AppxfOptions(Stateful):
         return options
 
     def update(self, **kwarg):
-        ''' Update options '''
+        ''' update options '''
         self.update_from_kwarg(kwarg_dict=kwarg)
         self.raise_error_on_non_empty_kwarg(kwarg)
-
-    @classmethod
-    def raise_error_on_non_empty_kwarg(cls, kwarg_dict: dict[str, Any]):
-        for key in kwarg_dict:
-            raise AttributeError(
-                f'Argument [{key}] is unknown, {cls} supports '
-                f'{[field.name for field in fields(cls)] + ["options"]}.')
 
     def update_from_kwarg(
             self: _OptionTypeT,
@@ -105,6 +76,47 @@ class AppxfOptions(Stateful):
         # reverse order as in kwarg retrieval applies.
         normal_kwarg.update(named_option_kwarg)
         self._apply_kwarg(normal_kwarg)
+
+    def reset(self):
+        ''' reset options to default values '''
+        for field in fields(self):
+            if field.default is not MISSING:
+                setattr(self, field.name, field.default)
+            elif field.default_factory is not MISSING:
+                setattr(self, field.name, field.default_factory())
+            else: # pragma: no cover
+                # this branch is should not be reachable since the dataclass
+                # cannot contain options without default values after
+                # AppxfOptions already defining some:
+                raise TypeError(
+                    f'This should not happen: neither a default value or a '
+                    f'default_factors is set for field {field.name} of '
+                    f'{self.__class__}')
+
+
+    @classmethod
+    def raise_error_on_non_empty_kwarg(cls, kwarg_dict: dict[str, Any]):
+        ''' shortcut error handling
+
+        This function is recommended after manual calls to new_from_kwargs()
+        or update_from_kwargs()
+        '''
+        for key in kwarg_dict:
+            raise AttributeError(
+                f'Argument [{key}] is unknown, {cls} supports '
+                f'{[field.name for field in fields(cls)] + ["options"]}.')
+
+    ######################
+    ## Internal Functions and Helpers
+    #/
+
+    # Overwrite __setattr__ to apply options_mutable behavior:
+    def __setattr__(self, name: str, value: Any) -> None:
+        if self.options_mutable or name in ['_mutable']:
+            return super().__setattr__(name, value)
+        raise AttributeError(
+            f'Cannot change {name} to {value}, {self.__class__} is not '
+            f'mutable (_mutable=False)')
 
     def _apply_kwarg(self, kwarg_dict: dict[str, Any]):
         ''' Apply an already processed kwarg dictionary
@@ -177,7 +189,11 @@ class AppxfOptions(Stateful):
                 f'{field.name} uses default value or not '
                 f'(default: {field.default}).')
 
+    ############################
+    ## adjust Stateful behavior
+    #/
 
+    # get_state needs to handle the options_export_defaults option:
     def get_state(self) -> object:
         if self.options_export_defaults:
             attribute_mask = []
@@ -191,4 +207,4 @@ class AppxfOptions(Stateful):
     # restore an object from scratch that may have options_mutable set to
     # False:
     def set_state(self, data: object):
-        self.update_from_kwarg(data)
+        self.update_from_kwarg(data) # type: ignore -- see get_sate() returning a dict
