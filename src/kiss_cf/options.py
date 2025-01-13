@@ -1,6 +1,6 @@
 from kiss_cf import Stateful
 
-from dataclasses import dataclass, fields, replace, Field
+from dataclasses import dataclass, fields, Field, MISSING
 from typing import Any, Type, TypeVar
 
 _OptionTypeT = TypeVar('_OptionTypeT', bound='AppxfOptions')
@@ -19,17 +19,19 @@ class AppxfOptions(Stateful):
     # default settings for options - all use a leading "options_" to avoid
     # naming conflicts with usage in applications:
     #  * options may be mutable (in GUI) or from application - this must be
-    #    True during construction, construction will fail otherwise (see
+    #    True during construction, construction would fail otherwise (see
     #    __setattr__)
     options_mutable: bool = True
     #  * only non-defaults may be exported via get_state - when restoring
     #    options it is adviced to reset() the options before applying the
-    #    state
+    #    state. Includes default values in get_state() should match expected
+    #    behavior more closely unless users know of this option.
     options_export_defaults: bool = True
     # Above options should typically not be exported:
     attribute_mask = Stateful.attribute_mask + ['options_mutable',
                                                 'options_export_defaults']
 
+    # Overwrite __setattr__ to apply options_mutable behavior:
     def __setattr__(self, name: str, value: Any) -> None:
         if self.options_mutable or name in ['_mutable']:
             return super().__setattr__(name, value)
@@ -40,24 +42,18 @@ class AppxfOptions(Stateful):
     def reset(self):
         ''' Reset options to default values '''
         for field in fields(self):
-            if field.default_factory:
-                setattr(self, field.name, field.default_factory())
-            elif field.default_factory:
+            if field.default is not MISSING:
                 setattr(self, field.name, field.default)
-            else:
+            elif field.default_factory is not MISSING:
+                setattr(self, field.name, field.default_factory())
+            else: # pragma: no cover
+                # this branch is should not be reachable since the dataclass
+                # cannot contain options without default values after
+                # AppxfOptions already defining some:
                 raise TypeError(
                     f'This should not happen: neither a default value or a '
                     f'default_factors is set for field {field.name} of '
                     f'{self.__class__}')
-
-    def all_default(self) -> bool:
-        ''' Identify if options have all fields with default values '''
-        all_default = True
-        for field in fields(self):
-            if getattr(self, field.name) != field.default:
-                all_default = False
-                break
-        return all_default
 
     @classmethod
     def new_from_kwarg(cls: Type[_OptionTypeT],
@@ -92,7 +88,7 @@ class AppxfOptions(Stateful):
     @classmethod
     def raise_error_on_non_empty_kwarg(cls, kwarg_dict: dict[str, Any]):
         for key in kwarg_dict:
-            raise TypeError(
+            raise AttributeError(
                 f'Argument [{key}] is unknown, {cls} supports '
                 f'{[field.name for field in fields(cls)] + ["options"]}.')
 
@@ -144,15 +140,17 @@ class AppxfOptions(Stateful):
         option_name = 'options'
         if option_name in kwarg_dict:
             if isinstance(kwarg_dict[option_name], cls):
-                update_dict = {field.name: kwarg_dict[option_name][field.name]
+                update_dict = {field.name: getattr(kwarg_dict[option_name], field.name)
                           for field in fields(kwarg_dict[option_name])}
                 kwarg_dict.pop(option_name)
             elif isinstance(kwarg_dict[option_name], dict):
-                update_dict = kwarg_dict[option_name]
+                update_dict = cls._get_normal_kwarg(kwarg_dict[option_name])
+                cls.raise_error_on_non_empty_kwarg(kwarg_dict[option_name])
                 kwarg_dict.pop(option_name)
             else:
                 raise AttributeError(
-                    f'Argument {option_name} must be {cls}, '
+                    f'Argument {option_name} must be {cls} or '
+                    f'a dictionary with valid keys, '
                     f'you provided {kwarg_dict[option_name].__class__.__name__}')
         else:
             update_dict = {}
@@ -163,14 +161,21 @@ class AppxfOptions(Stateful):
                 if self._is_default(field)]
 
     def _is_default(self, field: Field) -> bool:
-        if field.default != field.default_factory:
+        if field.default is not MISSING:
+            print(f'{field.name} via normal default: {getattr(self, field.name) == field.default}')
             return getattr(self, field.name) == field.default
-        if field.default_factory is not None:
+        elif field.default_factory is not MISSING:
+            print(f'{field.name} via factory default: {getattr(self, field.name) == field.default_factory()}')
+            print(f'-- {getattr(self, field.name)} versus {field.default_factory()}')
             return getattr(self, field.name) == field.default_factory()
-        raise TypeError(
-            f'This should not happen: could not determine if field '
-            f'{field.name} uses default value or not '
-            f'(default: {field.default}).')
+        else: # pragma: no cover
+            # this branch is should not be reachable since the dataclass
+            # cannot contain options without default values after
+            # AppxfOptions already defining some:
+            raise TypeError(
+                f'This should not happen: could not determine if field '
+                f'{field.name} uses default value or not '
+                f'(default: {field.default}).')
 
 
     def get_state(self) -> object:
@@ -181,3 +186,9 @@ class AppxfOptions(Stateful):
 
         return self._get_state_default(
             additional_attribute_mask=attribute_mask)
+
+    # set_state needs special treatment since it will commonly be used to
+    # restore an object from scratch that may have options_mutable set to
+    # False:
+    def set_state(self, data: object):
+        self.update_from_kwarg(data)
