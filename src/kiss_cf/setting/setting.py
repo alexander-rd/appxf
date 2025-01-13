@@ -242,14 +242,16 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
     class Options(AppxfOptions):
         ''' options for settings '''
         # Overwrite AppxfOptions default values
-        _export_defaults: bool = False
-        _export_protected: bool = False
+        options_export_defaults: bool = False
+        # And set attribute_mask to what should (typically) not be exported:
+        attribute_mask = AppxfOptions.attribute_mask + ['options_stored',
+                                                        'options_loaded']
 
         # Likewise to _mutable (base class), the settings need to mark whether
         # the options are stored/loaded which can be set individually for
         # options and gui_options:
-        _stored: bool = False
-        _loaded: bool = False
+        options_stored: bool = False
+        options_loaded: bool = False
         # Note: Loading but not storing may make sense when the settings are
         # defined by an admin, users are loading them (may even change them) but
         # only the admin applies new default settings.
@@ -267,7 +269,7 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
 
     def set_option(self, **kwargs):
         ''' update options or gui_options'''
-        self.options = self.options.new_update_from_kwarg('options', kwargs)
+        self.options = self.options.new_update_from_kwarg(kwargs)
         # throw error for anything that is left over
         for key in kwargs:
             raise AppxfSettingError(
@@ -284,7 +286,7 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
         # the value since options typically affect the validation:
         #self.options: AppxfSetting.Options = self.Options.consume_kwargs('options', kwargs)
         #self.gui_options: AppxfSetting.GuiOptions = self.GuiOptions.consume_kwargs('gui_options', kwargs)
-        self.options = self.Options.new_from_kwarg('options', kwargs)
+        self.options = self.Options.new_from_kwarg(kwargs)
         # throw error for anything that is left over
         for key in kwargs:
             raise AppxfSettingError(
@@ -301,10 +303,10 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
     ###################/
     ## Stateful Related
     def get_state(self) -> object:
-        if not self.options._stored:
+        if not self.options.options_stored:
             return self.input
         out: dict[str, Any] = {'value': self.input}
-        if self.options._stored:
+        if self.options.options_stored:
             out['options'] = self.options.get_state()
         return out
 

@@ -16,20 +16,22 @@ class AppxfOptions(Stateful):
     _export_defaults which can be set to False to reduce the amount of
     variables being stored.
     '''
-    # default settings for options:
+    # default settings for options - all use a leading "options_" to avoid
+    # naming conflicts with usage in applications:
     #  * options may be mutable (in GUI) or from application - this must be
     #    True during construction, construction will fail otherwise (see
     #    __setattr__)
-    _mutable: bool = True
+    options_mutable: bool = True
     #  * only non-defaults may be exported via get_state - when restoring
     #    options it is adviced to reset() the options before applying the
     #    state
-    _export_defaults: bool = True
-    #  * protected options may not be exported:
-    _export_protected: bool = False
+    options_export_defaults: bool = True
+    # Above options should typically not be exported:
+    attribute_mask = Stateful.attribute_mask + ['options_mutable',
+                                                'options_export_defaults']
 
     def __setattr__(self, name: str, value: Any) -> None:
-        if self._mutable or name in ['_mutable']:
+        if self.options_mutable or name in ['_mutable']:
             return super().__setattr__(name, value)
         raise AttributeError(
             f'Cannot change {name} to {value}, {self.__class__} is not '
@@ -59,7 +61,6 @@ class AppxfOptions(Stateful):
 
     @classmethod
     def new_from_kwarg(cls: Type[_OptionTypeT],
-                       option_name: str,
                        kwarg_dict: dict[str, Any]
                        ) -> _OptionTypeT:
         ''' Consumes any valid argument from kwargs
@@ -73,40 +74,35 @@ class AppxfOptions(Stateful):
           * any default field (mutable, stored, loaded) as kwarg, like
             gui_options_mutable or gui_options_stored
         '''
-        named_option_kwarg = cls._get_kwarg_from_named_option(option_name, kwarg_dict)
+        named_option_kwarg = cls._get_kwarg_from_named_option(kwarg_dict)
         normal_kwarg = cls._get_normal_kwarg(kwarg_dict)
-        protected_kwarg = cls._get_protected_kwarg(option_name, kwarg_dict)
         # merge the three dictionaries and apply to constructor - last update
         # takes precedence and reverse order as in kwarg retrieval applies.
-        protected_kwarg.update(normal_kwarg)
-        protected_kwarg.update(named_option_kwarg)
+        normal_kwarg.update(named_option_kwarg)
         # need to handle a setting of _mutable after applying all other
         # options:
-        if '_mutable' in protected_kwarg:
-            mutable = protected_kwarg['_mutable']
-            protected_kwarg.pop('_mutable')
-            options = cls(**protected_kwarg)
-            options._mutable = mutable
+        if 'options_mutable' in normal_kwarg:
+            mutable = normal_kwarg['options_mutable']
+            normal_kwarg.pop('options_mutable')
+            options = cls(**normal_kwarg)
+            options.options_mutable = mutable
             return options
-        return cls(**protected_kwarg)
+        return cls(**normal_kwarg)
 
     def new_update_from_kwarg(
             self: _OptionTypeT,
-            option_name: str,
             kwarg_dict: dict[str, Any]
             ) -> _OptionTypeT:
         ''' get updated option
 
         Arguments work the same as for new_from_kwarg().
         '''
-        named_option_kwarg = self._get_kwarg_from_named_option(option_name, kwarg_dict)
+        named_option_kwarg = self._get_kwarg_from_named_option(kwarg_dict)
         normal_kwarg = self._get_normal_kwarg(kwarg_dict)
-        protected_kwarg = self._get_protected_kwarg(option_name, kwarg_dict)
-        # merge the three dictionaries and apply to constructor - last update
-        # takes precedence and reverse order as in kwarg retrieval applies.
-        protected_kwarg.update(normal_kwarg)
-        protected_kwarg.update(named_option_kwarg)
-        return replace(self, **protected_kwarg)
+        # merge the dictionaries and apply to constructor - last update takes
+        # precedence and reverse order as in kwarg retrieval applies.
+        normal_kwarg.update(named_option_kwarg)
+        return replace(self, **normal_kwarg)
 
     @classmethod
     def _get_normal_kwarg(cls,
@@ -121,9 +117,9 @@ class AppxfOptions(Stateful):
 
     @classmethod
     def _get_kwarg_from_named_option(cls,
-                                     option_name: str,
                                      kwarg_dict: dict[str, Any]
                                      ) -> dict[str, Any]:
+        option_name = 'options'
         if option_name in kwarg_dict:
             if isinstance(kwarg_dict[option_name], cls):
                 update_dict = {field.name: kwarg_dict[option_name][field.name]
@@ -139,25 +135,6 @@ class AppxfOptions(Stateful):
         else:
             update_dict = {}
         return update_dict
-
-    @classmethod
-    def _get_protected_kwarg(cls,
-                             option_name: str,
-                             kwarg_dict: dict[str, Any]) -> dict[str, Any]:
-        protected_kwarg = {}
-        for field in fields(cls):
-            option = field.name
-            if not option.startswith('_'):
-                continue
-            this_kwarg_key = f'{option_name}{option}'
-            if this_kwarg_key in kwarg_dict:
-                protected_kwarg[option] = kwarg_dict[this_kwarg_key]
-                kwarg_dict.pop(this_kwarg_key)
-        return protected_kwarg
-
-    def _get_protected_fields(self) -> list[str]:
-        return [field.name for field in fields(self)
-                if field.name.startswith('_')]
 
     def _get_fields_with_default_values(self) -> list[str]:
         return [field.name for field in fields(self)
@@ -175,12 +152,10 @@ class AppxfOptions(Stateful):
 
 
     def get_state(self) -> object:
-        if not self._export_protected:
-            attribute_mask = self._get_protected_fields()
-        else:
+        if self.options_export_defaults:
             attribute_mask = []
-        if not self._export_defaults:
-            attribute_mask += self._get_fields_with_default_values()
+        else:
+            attribute_mask = self._get_fields_with_default_values()
 
         return self._get_state_default(
             additional_attribute_mask=attribute_mask)

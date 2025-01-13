@@ -14,11 +14,11 @@ def test_mutable_implementation():
     options_A = AppxfOptions()
     options_B = AppxfOptions()
     # _mutable must be True
-    assert options_A._mutable
+    assert options_A.options_mutable
     # _mutable must be a instance variable
-    options_B._mutable = False
-    assert options_A._mutable
-    assert not options_B._mutable
+    options_B.options_mutable = False
+    assert options_A.options_mutable
+    assert not options_B.options_mutable
 
 def test_mutable_behavior():
     @dataclass
@@ -30,7 +30,7 @@ def test_mutable_behavior():
     options.test = 42
     assert options.test == 42
     # now, setting mutable to False, we expect an error
-    options._mutable = False
+    options.options_mutable = False
     with pytest.raises(AttributeError) as exc:
         options.test = 0
     # General error statement with option name:
@@ -45,7 +45,7 @@ def test_construct_direct():
 
 def test_construct_kwarg_simple():
     kwarg = {'test_int': 42, 'test_string': 'test'}
-    option = DefaultTestOptions.new_from_kwarg(option_name='option', kwarg_dict=kwarg)
+    option = DefaultTestOptions.new_from_kwarg(kwarg_dict=kwarg)
     assert not kwarg # kwarg should be empty after consuming kwargs in new_from_kwarg()
     assert option.test_int == 42
     assert option.test_string == 'test'
@@ -53,20 +53,20 @@ def test_construct_kwarg_simple():
 def test_construct_kwarg_protected_other():
     # checking default value before test
     option = DefaultTestOptions()
-    assert not option._export_protected
+    assert option.options_export_defaults
     # testing with direct protected name
-    kwarg = {'_export_protected': True}
-    option = DefaultTestOptions.new_from_kwarg(option_name='option', kwarg_dict=kwarg)
+    kwarg = {'options_export_defaults': False}
+    option = DefaultTestOptions.new_from_kwarg(kwarg_dict=kwarg)
     assert not kwarg # kwarg should be empty after consuming kwargs in new_from_kwarg()
-    assert option._export_protected
+    assert not option.options_export_defaults
     # testing with options prefix
-    kwarg = {'option_export_protected': True}
-    option = DefaultTestOptions.new_from_kwarg(option_name='option', kwarg_dict=kwarg)
+    kwarg = {'options_export_defaults': False}
+    option = DefaultTestOptions.new_from_kwarg(kwarg_dict=kwarg)
     assert not kwarg # kwarg should be empty after consuming kwargs in new_from_kwarg()
-    assert option._export_protected
+    assert not option.options_export_defaults
 
 def test_construct_kwarg_protected_mutable():
-    kwarg = {'option_mutable': False}
-    option = DefaultTestOptions.new_from_kwarg(option_name='option', kwarg_dict=kwarg)
+    kwarg = {'options_mutable': False}
+    option = DefaultTestOptions.new_from_kwarg(kwarg_dict=kwarg)
     assert not kwarg # kwarg should be empty after consuming kwargs in new_from_kwarg()
-    assert not option._mutable
+    assert not option.options_mutable
