@@ -7,8 +7,8 @@ from typing import TypeAlias, Union
 class Stateful():
     ''' base for classes that can provide and restore their state
 
-    This class is an interface contract which is mainly utilized in the
-    Storable/Storage implementation with it's default implementation.
+    This class is an interface contract which is utilized in implementations
+    for Options and Storable/Storage with it's default implementation.
 
     Attributes:
         attributes: list of attributes that shall be exported or imported if
@@ -98,55 +98,80 @@ class Stateful():
                     f'{value.__class__.__name__}')
         return data
 
+    def _get_default_state_attributes(self,
+                                     overwrite_attributes: list[str] | None = None,
+                                     additional_attribute_mask: list[str] | None = None):
+        ''' get states for get_state()/set_state()
+
+        This function is also used internally for _get_state_default() and
+        _set_state_default(). If you have attributes defined in class (not
+        empty) or overwrite_attributes is not None, those lists are taken as
+        the basis. If no basis can be derived from there, the list of
+        attributes is taken from the object's __dict__. From this base list,
+        any attribute from class attribute_mask or additional_mask is removed.
+        '''
+        # get defined attributes, if not overwritten:
+        attributes = self.attributes
+        if overwrite_attributes is not None:
+            attributes = overwrite_attributes
+        if not attributes:
+            attributes = list(self.__dict__.keys())
+        # get the right mask and apply:
+        if additional_attribute_mask is None:
+            additional_attribute_mask = []
+        # return attribute list
+        return [attr for attr in attributes if (
+            attr not in self.attribute_mask and
+            attr not in additional_attribute_mask
+            )]
+        # compile state from attributes with error handling and return
+
     def _get_state_default(self,
                            overwrite_attributes: list[str] | None = None,
                            additional_attribute_mask: list[str] | None = None) -> Stateful.DefaultStateType:
-        ''' get object state
+        ''' get object state - default implementation
 
-        The default implementation uses the class __dict__ which contains all
-        class fields. You likely have to update this method for derived classes
-        since not all entries in __dict__ will be part of the classes state.
-        Especially aggregated classes whould typically be stripped.
+        See _get_default_state_attributes() for the considered attributes. The
+        values are obtained via getattr(). Note that the class must take care
+        of eventually applying deepcopy().
 
         [overwrite_attributes] replaces the classes [attributes] setting while
         [additional_attributes_mask] extends the existing class [attribute_mask].
         '''
-        if overwrite_attributes is None:
-            attributes = self.attributes
-        else:
-            attributes = overwrite_attributes
-        if additional_attribute_mask is None:
-            attribute_mask = self.attribute_mask
-        else:
-            attribute_mask = self.attribute_mask + additional_attribute_mask
-
-        if attributes:
-            data = {key: deepcopy(value)
-                    for key, value in self.__dict__.items()
-                    if key in self.attributes}
-        else:
-            data = deepcopy(self.__dict__)
-        # attribute_mask always has to be applied in case of mixed usage of
-        # attribute_mask and attributes:
-        for key in attribute_mask:
-            if key in data:
-                data.pop(key)
+        attributes = self._get_default_state_attributes(
+            overwrite_attributes=overwrite_attributes,
+            additional_attribute_mask=additional_attribute_mask)
+        # compile state from attributes with error handling and return
+        data = {}
+        for key in attributes:
+            if not hasattr(self, key):
+                raise TypeError(
+                    f'Class {self.__class__} does not have attribute {key} for get_state()]')
+            data[key] = deepcopy(getattr(self, key))
         return self._type_guard_default(data)
 
-    def _set_state_default(self, data: object):
-        ''' Set object state
+    def _set_state_default(self,
+                           data: object,
+                           overwrite_attributes: list[str] | None = None,
+                           additional_attribute_mask: list[str] | None = None):
+        ''' set object state - default implementation
 
-        The default implementation restores the classes __dict__ which contains
-        all class fields. You may update this method to adapt the behavior.
+        See _get_default_state_attributes() for the considered attributes. The
+        values written via setattr(). Note that the class must take care of
+        eventually applying deepcopy().
+
+        [overwrite_attributes] replaces the classes [attributes] setting while
+        [additional_attributes_mask] extends the existing class [attribute_mask].
         '''
         data = Stateful._type_guard_default(deepcopy(data))
-        if self.attributes:
-            for key in data.keys():
-                if key not in self.attributes:
-                    data.pop(key)
-        # attribute mask always needs to apply in case of mixed usage of
-        # attribute_mask and attributes:
-        for key in self.attribute_mask:
-            if key in data:
-                data.pop(key)
-        self.__dict__.update(data)
+        attributes = self._get_default_state_attributes(
+            overwrite_attributes=overwrite_attributes,
+            additional_attribute_mask=additional_attribute_mask)
+        for attr in data:
+            if attr not in attributes:
+                raise Warning(
+                    f'Import state for {self.__class__} '
+                    f'includes attribute {attr} which is not expected - '
+                    f'expected are {attributes} - ignoring this key'
+                )
+            setattr(self, attr, data[attr])

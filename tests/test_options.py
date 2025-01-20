@@ -1,4 +1,4 @@
-''' Test base Options object
+''' options module with Options object
 '''
 from kiss_cf import AppxfOptions
 from dataclasses import dataclass, field
@@ -163,6 +163,7 @@ def test_restore_cycle():
     assert options.test_string == '10'
     assert options.test_list == ['10', '20']
     state = options.get_state()
+    print(state)
     options = DefaultTestOptions()
     options.set_state(state)
     assert options.test_int == 10
