@@ -24,21 +24,21 @@ class Stateful():
     attributes: list[str] = []
     # They are used for the default implementaiton of get_state()/set_state().
 
-    def get_state(self) -> object:
+    def get_state(self, **kwarg) -> object:
         ''' get object state
 
         See _get_state_default() for the default implementation with narrowed
         types.
         '''
-        return self._get_state_default()
+        return self._get_state_default(**kwarg)
 
-    def set_state(self, data: object):
+    def set_state(self, data: object, **kwarg):
         ''' set object state
 
         See _set_state_default() for the default implementation with narrowed
         types.
         '''
-        self._set_state_default(data)
+        self._set_state_default(data, **kwarg)
 
     ##########################
     ## Default Implementation
