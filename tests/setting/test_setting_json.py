@@ -39,11 +39,11 @@ def test_json_value_and_options():
     setting = SettingDict(
     data={
         'string': AppxfSetting.new('string', value='test'),
-        'integer': AppxfSetting.new('int', value=42, options_stored=True),
+        'integer': AppxfSetting.new('int', value=42),
         'select': AppxfSetting.new('select::string', value='01', select_map={'01': 'Value'},
-                                   options_stored=True,
                                    display_height=10, display_width=60)
         },
+    # TODO: integer and select had "options_stored" set to True
     storage=RamStorage.get(name='setting_dict', ram_area='test'))
     raw_data = setting.get_state()
     serialized_data = JsonSerializer.serialize(raw_data)

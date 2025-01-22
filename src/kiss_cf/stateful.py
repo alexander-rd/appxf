@@ -99,48 +99,44 @@ class Stateful():
         return data
 
     def _get_default_state_attributes(self,
-                                     overwrite_attributes: list[str] | None = None,
-                                     additional_attribute_mask: list[str] | None = None):
+                                      attributes: list[str] | None = None,
+                                      attribute_mask: list[str] | None = None):
         ''' get states for get_state()/set_state()
 
         This function is also used internally for _get_state_default() and
-        _set_state_default(). If you have attributes defined in class (not
-        empty) or overwrite_attributes is not None, those lists are taken as
-        the basis. If no basis can be derived from there, the list of
-        attributes is taken from the object's __dict__. From this base list,
-        any attribute from class attribute_mask or additional_mask is removed.
+        _set_state_default(). It returns the list of attributes either based on
+        attributes and attribute_mask lists from the input parameters (if not
+        None) or from the corresponding class variables (parameters are None).
         '''
         # get defined attributes, if not overwritten:
-        attributes = self.attributes
-        if overwrite_attributes is not None:
-            attributes = overwrite_attributes
-        if not attributes:
-            attributes = list(self.__dict__.keys())
+        out_attributes = self.attributes
+        if attributes is not None:
+            out_attributes = attributes
+        if not out_attributes:
+            out_attributes = list(self.__dict__.keys())
         # get the right mask and apply:
-        if additional_attribute_mask is None:
-            additional_attribute_mask = []
+        if attribute_mask is None:
+            attribute_mask = self.attribute_mask
         # return attribute list
-        return [attr for attr in attributes if (
-            attr not in self.attribute_mask and
-            attr not in additional_attribute_mask
-            )]
+        return [attr for attr in set(out_attributes) if
+                attr not in attribute_mask]
         # compile state from attributes with error handling and return
 
     def _get_state_default(self,
-                           overwrite_attributes: list[str] | None = None,
-                           additional_attribute_mask: list[str] | None = None) -> Stateful.DefaultStateType:
+                           attributes: list[str] | None = None,
+                           attribute_mask: list[str] | None = None) -> Stateful.DefaultStateType:
         ''' get object state - default implementation
 
         See _get_default_state_attributes() for the considered attributes. The
         values are obtained via getattr(). Note that the class must take care
         of eventually applying deepcopy().
 
-        [overwrite_attributes] replaces the classes [attributes] setting while
-        [additional_attributes_mask] extends the existing class [attribute_mask].
+        attributes and attribute_mask replaces the corresponding class
+        settings.
         '''
         attributes = self._get_default_state_attributes(
-            overwrite_attributes=overwrite_attributes,
-            additional_attribute_mask=additional_attribute_mask)
+            attributes=attributes,
+            attribute_mask=attribute_mask)
         # compile state from attributes with error handling and return
         data = {}
         for key in attributes:
@@ -152,21 +148,20 @@ class Stateful():
 
     def _set_state_default(self,
                            data: object,
-                           overwrite_attributes: list[str] | None = None,
-                           additional_attribute_mask: list[str] | None = None):
+                           attributes: list[str] | None = None,
+                           attribute_mask: list[str] | None = None):
         ''' set object state - default implementation
 
         See _get_default_state_attributes() for the considered attributes. The
         values written via setattr(). Note that the class must take care of
         eventually applying deepcopy().
 
-        [overwrite_attributes] replaces the classes [attributes] setting while
-        [additional_attributes_mask] extends the existing class [attribute_mask].
+        attributes and attribute_mask replaces the corresponding class
+        settings.
         '''
         data = Stateful._type_guard_default(deepcopy(data))
         attributes = self._get_default_state_attributes(
-            overwrite_attributes=overwrite_attributes,
-            additional_attribute_mask=additional_attribute_mask)
+            attributes=attributes, attribute_mask=attribute_mask)
         for attr in data:
             if attr not in attributes:
                 raise Warning(

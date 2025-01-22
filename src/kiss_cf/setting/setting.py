@@ -243,29 +243,90 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
         ''' options for settings '''
         # Overwrite AppxfOptions default values
         options_export_defaults: bool = False
-        # And set attribute_mask to what should (typically) not be exported:
-        attribute_mask = AppxfOptions.attribute_mask + ['options_stored',
-                                                        'options_loaded']
-
-        # Likewise to _mutable (base class), the settings need to mark whether
-        # the options are stored/loaded which can be set individually for
-        # options and gui_options:
-        options_stored: bool = False
-        options_loaded: bool = False
-        # Note: Loading but not storing may make sense when the settings are
-        # defined by an admin, users are loading them (may even change them) but
-        # only the admin applies new default settings.
-
-        # In constrast to the _mutable in the base class that determines if the
-        # options are mutable, this mutable determines if the setting value is
-        # mutable
+        options_mutable: bool = True # must remain true!
+        # options for settings define export groups for which the mutable
+        # behavior can be controlled separately
+        value_options_mutable: bool = False
+        display_options_mutable: bool = False
+        control_options_mutable: bool = False
+        # While the following is for the value itself:
         mutable: bool = True
+        # The export groups are defined below together with
+        # get_state()/set_state()
 
+        # TODO: the mutable settings above have not yet any blocking effect!
+
+        # name must be maintained with the setting, mainly to handle the
+        # display - it is not a display setting, however (has it's own export
+        # group)
         name: str = ''
         display_height: int = 0
         display_width: int = 0
-        # TODO: "masked" (for passwords) and "visibility" whether GUI option is
-        # to be displayed not yet included
+        display_masked: bool = False # used for passwords
+
+        # the attribute/attribute_mask concept is not taken over from
+        # AppxfOptions since a more specific concept is needed which options to
+        # export - export groups are defined to which the fields are added -
+        # any field not in an export group cannot be exported (except name)
+        value_options = []
+        display_options = ['display_height', 'display_width', 'display_masked']
+        control_options = ['options_export_defaults', 'value_options_mutable',
+                           'display_options_mutable', 'control_options_mutable',
+                           'mutable']
+        # with overwriting the get_state()/set_state(), the AppxfStateful class
+        # configuration for attribute/attribute_mask doe not need to be
+        # changed.
+        def get_state(self,
+                      value: bool = False,
+                      display: bool = False,
+                      control: bool = False,
+                      **kwarg) -> object:
+            attributes = (self.value_options if value else [] +
+                          self.display_options if display else [] +
+                          self.control_options if control else [])
+            return self._get_state_default(attributes=attributes,
+                                           attribute_mask=[])
+
+        def set_state(self,
+                      data: object,
+                      value: bool = False,
+                      display: bool = False,
+                      control: bool = False,
+                      **kwarg) -> object:
+            attributes = (self.value_options if value else [] +
+                          self.display_options if display else [] +
+                          self.control_options if control else [])
+            return self._set_state_default(data=data,
+                                           attributes=attributes,
+                                           attribute_mask=[])
+
+
+    @dataclass
+    class ExportOptions(AppxfOptions):
+        ''' Options used for get_state() and set_state() '''
+        # There is no option to control whether the value is exported.
+        #
+        # The name is typically maintained by whoever holds the setting object
+        # but could be exported if necessary:
+        name: bool = False
+        # The type of the setting is relevant in context of a configurable
+        # configuration where a JSON file defines a set of variables
+        # copmletely. This value cannot be restored via get_state() and usage
+        # is not implemented, yet.
+        type: bool = False
+        # The value options is anything that influences the input handling to
+        # the setting (validity) or the default value (which also influences
+        # validity).
+        value_options: bool = True
+        # Display options only affect how the setting would be displayed in the
+        # GUI.
+        display_options: bool = False
+        # Control options influence the setting behavior on whether the value
+        # (or options) are mutable. They may also affect other behavior of the
+        # setting which mostly applies to ExtendedSettings.
+        control_options: bool = False
+
+
 
     def __init__(self,
                  value: _BaseTypeT | None = None,
@@ -287,15 +348,31 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
 
     ###################/
     ## Stateful Related
-    def get_state(self) -> object:
-        if not self.options.options_stored:
+    def get_state(self, **kwarg) -> object:
+        options = self.ExportOptions.new_from_kwarg(kwarg)
+        self.ExportOptions.raise_error_on_non_empty_kwarg(kwarg)
+
+        # Strategy is to fill a dict from the various flags and if this dict
+        # remained empty, only the value is returned
+        out = {}
+        if options.name:
+            out['name'] = self.options.name
+        if options.type:
+            raise TypeError('Exporting the type is not yet supported')
+        if options.value_options:
+            pass
+        if options.display_options:
+            pass
+        if options.control_options:
+            pass
+        if not out:
             return self.input
-        out: dict[str, Any] = {'value': self.input}
+        out['value'] = self.input
         if self.options.options_stored:
             out['options'] = self.options.get_state()
         return out
 
-    def set_state(self, data: object):
+    def set_state(self, data: object, **kwarg):
         self.value = data
 
     #######################/

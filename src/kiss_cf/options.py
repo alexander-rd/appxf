@@ -112,7 +112,7 @@ class AppxfOptions(Stateful):
 
     # Overwrite __setattr__ to apply options_mutable behavior:
     def __setattr__(self, name: str, value: Any) -> None:
-        if self.options_mutable or name in ['_mutable']:
+        if self.options_mutable or name in ['options_mutable']:
             return super().__setattr__(name, value)
         raise AttributeError(
             f'Cannot change {name} to {value}, {self.__class__} is not '
@@ -174,11 +174,8 @@ class AppxfOptions(Stateful):
 
     def _is_default(self, field: Field) -> bool:
         if field.default is not MISSING:
-            print(f'{field.name} via normal default: {getattr(self, field.name) == field.default}')
             return getattr(self, field.name) == field.default
         elif field.default_factory is not MISSING:
-            print(f'{field.name} via factory default: {getattr(self, field.name) == field.default_factory()}')
-            print(f'-- {getattr(self, field.name)} versus {field.default_factory()}')
             return getattr(self, field.name) == field.default_factory()
         else: # pragma: no cover
             # this branch is should not be reachable since the dataclass
@@ -194,17 +191,15 @@ class AppxfOptions(Stateful):
     #/
 
     # get_state needs to handle the options_export_defaults option:
-    def get_state(self) -> object:
-        if self.options_export_defaults:
-            attribute_mask = []
-        else:
-            attribute_mask = self._get_fields_with_default_values()
+    def get_state(self, **kwarg) -> object:
+        attribute_mask = self.attribute_mask.copy()
+        if not self.options_export_defaults:
+            attribute_mask += self._get_fields_with_default_values()
 
-        return self._get_state_default(
-            additional_attribute_mask=attribute_mask)
+        return self._get_state_default(attribute_mask=attribute_mask)
 
     # set_state needs special treatment since it will commonly be used to
     # restore an object from scratch that may have options_mutable set to
     # False:
-    def set_state(self, data: object):
+    def set_state(self, data: object, **kwarg):
         self.update_from_kwarg(data) # type: ignore -- see get_sate() returning a dict

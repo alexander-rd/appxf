@@ -64,8 +64,8 @@ def test_predefined_derived():
 # manual override of attribute and attribute_mask
 def test_manual_get_state():
     obj = PredefinedAttributes(state_int=42, state_str='predefined', state_list=['predefined'])
-    state = obj.get_state(overwrite_attributes=['state_int', 'state_str', 'state_list'],
-                          additional_attribute_mask=['state_str'])
+    state = obj.get_state(attributes=['state_int', 'state_str', 'state_list'],
+                          attribute_mask=['state_str'])
     assert 'state_int' in state
     assert 'state_list' in state
     assert len(state) == 2

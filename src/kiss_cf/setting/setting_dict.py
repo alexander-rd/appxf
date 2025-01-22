@@ -212,7 +212,7 @@ class SettingDict(Storable, MutableMapping[str, AppxfSetting]):
                     f'and True. Extension for False may be added.'
                 )
 
-    def get_state(self) -> object:
+    def get_state(self, **kwarg) -> object:
         data: dict[str, Any] = {'_version': 2}
         for key, setting in self._setting_dict.items():
             data[key] = setting.get_state()
@@ -225,7 +225,7 @@ class SettingDict(Storable, MutableMapping[str, AppxfSetting]):
                 data[key]['options'].pop('name')
         return data
 
-    def set_state(self, data: Mapping):
+    def set_state(self, data: Mapping, **kwarg):
         if not isinstance(data, Mapping) or '_version' not in data:
             raise AppxfSettingError(
                 'Cannot determine data version, '
