@@ -183,12 +183,14 @@ def test_restore_cycle_masked_ones():
     assert options.options_mutable
     assert options.options_export_defaults
 
-def test_restore_cylce_while_not_mutable():
+def test_restore_cycle_while_not_mutable():
     ''' test restore while mutable is exported '''
     @dataclass
     class OptionsExportingMutable(DefaultTestOptions):
-        attribute_mask = DefaultTestOptions.attribute_mask.remove('options_mutable')
-    options = DefaultTestOptions(test_int=10, test_string='10', test_list=['10', '20'])
+        attribute_mask = [attr for attr in DefaultTestOptions.attribute_mask
+                          if attr != 'options_mutable']
+    print(OptionsExportingMutable.attribute_mask)
+    options = OptionsExportingMutable(test_int=10, test_string='10', test_list=['10', '20'])
     # initial value checks are covered in test_restore_cycle()
     options.options_mutable = False
     assert options.options_mutable == False
