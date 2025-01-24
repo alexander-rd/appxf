@@ -3,6 +3,7 @@
 Surprise: it bundles AppxfSettings to a dictionary behavior. ;)
 '''
 
+from copy import deepcopy
 from typing import Any
 from collections.abc import Mapping, MutableMapping
 from kiss_cf.storage import Storable, Storage, RamStorage
@@ -62,6 +63,9 @@ class SettingDict(Storable, MutableMapping[str, AppxfSetting]):
         # Storable will initialize with default storage
         self._on_load_unknown = 'ignore'
         self._store_setting_object = False
+
+        # Export options
+        self.export_options = AppxfSetting.ExportOptions()
 
         # TODO: add GUI element concept and derive/aggregate from there
         self.default_visibility = default_visibility
@@ -213,9 +217,16 @@ class SettingDict(Storable, MutableMapping[str, AppxfSetting]):
                 )
 
     def get_state(self, **kwarg) -> object:
+        # options are handled equivalent to settings
+        export_options = deepcopy(self.export_options)
+        export_options.update_from_kwarg(kwarg)
+        AppxfSetting.ExportOptions.raise_error_on_non_empty_kwarg(kwarg)
+
         data: dict[str, Any] = {'_version': 2}
         for key, setting in self._setting_dict.items():
-            data[key] = setting.get_state()
+            print(f'Exporting {key} with options: {export_options}')
+            data[key] = setting.get_state(options=export_options)
+            print(f'..result: {data[key]}')
             # strip name if name is key
             if (isinstance(data[key], dict) and
                 'options' in data[key] and

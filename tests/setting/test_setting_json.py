@@ -37,14 +37,17 @@ def test_json_values_only():
 def test_json_value_and_options():
     '''JSON for options with and without options being set'''
     setting = SettingDict(
-    data={
-        'string': AppxfSetting.new('string', value='test'),
-        'integer': AppxfSetting.new('int', value=42),
-        'select': AppxfSetting.new('select::string', value='01', select_map={'01': 'Value'},
-                                   display_height=10, display_width=60)
-        },
-    # TODO: integer and select had "options_stored" set to True
-    storage=RamStorage.get(name='setting_dict', ram_area='test'))
+        data={
+            'string': AppxfSetting.new('string', value='test'),
+            'integer': AppxfSetting.new('int', value=42),
+            'select': AppxfSetting.new('select::string', value='01', select_map={'01': 'Value'},
+                                    display_height=10, display_width=60)
+            },
+        # TODO: integer and select had "options_stored" set to True
+        storage=RamStorage.get(name='setting_dict', ram_area='test')
+        )
+    setting.export_options.value_options = True
+    setting.export_options.display_options = True
     raw_data = setting.get_state()
     serialized_data = JsonSerializer.serialize(raw_data)
     expected_part = '''
