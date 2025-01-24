@@ -317,7 +317,7 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
         # The value options is anything that influences the input handling to
         # the setting (validity) or the default value (which also influences
         # validity).
-        value_options: bool = True
+        value_options: bool = False
         # Display options only affect how the setting would be displayed in the
         # GUI.
         display_options: bool = False
@@ -349,27 +349,29 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
     ###################/
     ## Stateful Related
     def get_state(self, **kwarg) -> object:
-        options = self.ExportOptions.new_from_kwarg(kwarg)
+        export_options = self.ExportOptions.new_from_kwarg(kwarg)
         self.ExportOptions.raise_error_on_non_empty_kwarg(kwarg)
 
         # Strategy is to fill a dict from the various flags and if this dict
         # remained empty, only the value is returned
-        out = {}
-        if options.name:
-            out['name'] = self.options.name
-        if options.type:
+        option_list = []
+        if export_options.name:
+            option_list += ['name']
+        if export_options.type:
             raise TypeError('Exporting the type is not yet supported')
-        if options.value_options:
-            pass
-        if options.display_options:
-            pass
-        if options.control_options:
-            pass
-        if not out:
+        if export_options.value_options:
+            option_list += self.options.value_options
+        if export_options.display_options:
+            option_list += self.options.display_options
+        if export_options.control_options:
+            option_list += self.options.control_options
+        if not option_list:
+            print(f'returning input: {self.input}')
             return self.input
-        out['value'] = self.input
-        if self.options.options_stored:
-            out['options'] = self.options.get_state()
+        print(f'returning with option_list: {option_list}')
+        out = {'value': self.input}
+        out.update({key: getattr(self.options, key)
+                    for key in option_list})
         return out
 
     def set_state(self, data: object, **kwarg):

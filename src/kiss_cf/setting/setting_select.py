@@ -66,6 +66,7 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
     class Options(AppxfSetting.Options):
         ''' options for setting select '''
         select_map: dict[str, Any] = field(default_factory=dict)
+        value_options = AppxfSetting.Options.value_options + ['select_map']
 
     def __init__(self,
                  base_setting: _BaseSettingT,
