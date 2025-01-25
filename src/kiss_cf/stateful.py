@@ -17,7 +17,7 @@ class Stateful():
         attribute_mask: attributes that should not be exported or imported
     '''
 
-    # There is no particular __init__ required but the deriving class should to
+    # There is no particular __init__ required but the deriving class should
     # update the attribute_mask:
     attribute_mask: list[str] = []
     # or the attributes list:
@@ -107,13 +107,19 @@ class Stateful():
         _set_state_default(). It returns the list of attributes either based on
         attributes and attribute_mask lists from the input parameters (if not
         None) or from the corresponding class variables (parameters are None).
+        In case attributes input parameter is None and the class attributes
+        list is empty, the keys in __dict__ will be used.
         '''
         # get defined attributes, if not overwritten:
-        out_attributes = self.attributes
         if attributes is not None:
             out_attributes = attributes
-        if not out_attributes:
+        elif self.attributes:
+            out_attributes = self.attributes
+        else:
+            # input parameter is None and class attributes is empty -> get
+            # attributes from __dict__:
             out_attributes = list(self.__dict__.keys())
+
         # get the right mask and apply:
         if attribute_mask is None:
             attribute_mask = self.attribute_mask
@@ -134,9 +140,11 @@ class Stateful():
         attributes and attribute_mask replaces the corresponding class
         settings.
         '''
+        print(f'get_state_default with input: {attributes} and {attribute_mask}')
         attributes = self._get_default_state_attributes(
             attributes=attributes,
             attribute_mask=attribute_mask)
+        print(f'get_state_default with attributes: {attributes}')
         # compile state from attributes with error handling and return
         data = {}
         for key in attributes:

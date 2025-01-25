@@ -277,15 +277,22 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
         # configuration for attribute/attribute_mask doe not need to be
         # changed.
         def get_state(self,
+                      name: bool = False,
                       value: bool = False,
                       display: bool = False,
                       control: bool = False,
+                      defaults: bool = True,
                       **kwarg) -> object:
-            attributes = (self.value_options if value else [] +
-                          self.display_options if display else [] +
-                          self.control_options if control else [])
-            return self._get_state_default(attributes=attributes,
-                                           attribute_mask=[])
+            print(f'OptionsExport: {name} / {value}/{display}/{control} / {defaults}')
+            attributes = ((self.value_options if value else []) +
+                          (self.display_options if display else []) +
+                          (self.control_options if control else []))
+            if name:
+                attributes += ['name']
+            return super().get_state(
+                attributes=attributes,
+                attribute_mask=[],
+                export_defaults=defaults)
 
         def set_state(self,
                       data: object,
@@ -325,8 +332,8 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
         # (or options) are mutable. They may also affect other behavior of the
         # setting which mostly applies to ExtendedSettings.
         control_options: bool = False
-
-
+        # Exporting default values (like in AppxfOptions)
+        export_defaults = False
 
     def __init__(self,
                  value: _BaseTypeT | None = None,
@@ -359,19 +366,17 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
             option_list += ['name']
         if export_options.type:
             raise TypeError('Exporting the type is not yet supported')
-        if export_options.value_options:
-            option_list += self.options.value_options
-        if export_options.display_options:
-            option_list += self.options.display_options
-        if export_options.control_options:
-            option_list += self.options.control_options
-        if not option_list:
+        options: dict = self.options.get_state(
+            value = export_options.value_options,
+            display = export_options.display_options,
+            control = export_options.control_options,
+            defaults=export_options.export_defaults) # type: ignore
+        if not options:
             print(f'returning input: {self.input}')
             return self.input
         print(f'returning with option_list: {option_list}')
         out = {'value': self.input}
-        out.update({key: getattr(self.options, key)
-                    for key in option_list})
+        out.update(options)
         return out
 
     def set_state(self, data: object, **kwarg):
