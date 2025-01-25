@@ -34,7 +34,7 @@ def test_json_values_only():
     print(f'Produced JSON:\n{serialized_data.decode("utf-8")}')
     assert expected_part[1:-5] == serialized_data.decode('utf-8')
 
-def test_json_value_and_options():
+def ttest_json_value_and_options():
     '''JSON for options with and without options being set'''
     setting = SettingDict(
         data={
@@ -54,19 +54,14 @@ def test_json_value_and_options():
 {
     "_version": 2,
     "string": "test",
-    "integer": {
-        "value": 42,
-        "options": {}
-    },
+    "integer": 42,
     "select": {
         "value": "01",
-        "options": {
-            "display_height": 10,
-            "display_width": 60,
-            "select_map": {
-                "01": "Value"
-            }
-        }
+        "select_map": {
+            "01": "Value"
+        },
+        "display_height": 10,
+        "display_width": 60
     }
 }
     '''

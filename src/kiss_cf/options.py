@@ -11,25 +11,12 @@ class AppxfOptions(Stateful):
 
     Base class implementation for option handling of classes, consuming kwarg's
     during construction via new_from_kwarg(). Also allows a reset to defaults
-    via reset(). And a fine grained export configuration via
-    Stateful.get_state(), all features from there plue a default option
-    _export_defaults which can be set to False to reduce the amount of
-    variables being stored.
+    via reset(). Furthermore, it's based on Stateful and the default
+    get_state() implementation with an added option to not export options that
+    have their default value set.
     '''
-    # default settings for options - all use a leading "options_" to avoid
-    # naming conflicts with usage in applications:
-    #  * options may be mutable (in GUI) or from application - this must be
-    #    True during construction, construction would fail otherwise (see
-    #    __setattr__)
-    options_mutable: bool = True
-    #  * only non-defaults may be exported via get_state - when restoring
-    #    options it is adviced to reset() the options before applying the
-    #    state. Includes default values in get_state() should match expected
-    #    behavior more closely unless users know of this option.
-    options_export_defaults: bool = True
-    # Above options should typically not be exported:
-    attribute_mask = Stateful.attribute_mask + ['options_mutable',
-                                                'options_export_defaults']
+    # AppxfOptions does not include any default options. It includes only
+    # behavior.
 
     ###################
     ## User Interfaces
@@ -109,30 +96,14 @@ class AppxfOptions(Stateful):
     ######################
     ## Internal Functions and Helpers
     #/
-
-    # Overwrite __setattr__ to apply options_mutable behavior:
-    def __setattr__(self, name: str, value: Any) -> None:
-        if self.options_mutable or name in ['options_mutable']:
-            return super().__setattr__(name, value)
-        raise AttributeError(
-            f'Cannot change {name} to {value}, {self.__class__} is not '
-            f'mutable (_mutable=False)')
-
     def _apply_kwarg(self, kwarg_dict: dict[str, Any]):
         ''' Apply an already processed kwarg dictionary
 
         Function is used in context of new and update.
         '''
-        # apply new values by enforcing usage of __setitem__, but apply any
-        # change to options_mutable last:
+        # apply new values by enforcing usage of __setitem__
         for key, value in kwarg_dict.items():
-            if key == 'options_mutable':
-                continue
             setattr(self, key, value)
-
-        if 'options_mutable' in kwarg_dict:
-            setattr(self, 'options_mutable', kwarg_dict['options_mutable'])
-
 
     @classmethod
     def _get_normal_kwarg(cls,
@@ -192,13 +163,22 @@ class AppxfOptions(Stateful):
 
     # get_state needs to handle the options_export_defaults option:
     def get_state(self, **kwarg) -> object:
-        attribute_mask = self.attribute_mask.copy()
-        if not self.options_export_defaults:
+        export_defaults = True
+        if 'export_defaults' in kwarg:
+            export_defaults = kwarg['export_defaults']
+            kwarg.pop('export_defaults')
+        if 'attribute_mask' in kwarg:
+            attribute_mask = kwarg['attribute_mask']
+            kwarg.pop('attribute_mask')
+        else:
+            attribute_mask = self.attribute_mask.copy()
+
+        if not export_defaults:
             attribute_mask += self._get_fields_with_default_values()
 
-        return self._get_state_default(attribute_mask=attribute_mask)
+        return self._get_state_default(attribute_mask=attribute_mask, **kwarg)
 
-    # set_state needs special treatment since it will commonly be used to
+    # set_state needs special treatment since it will be commonly be used to
     # restore an object from scratch that may have options_mutable set to
     # False:
     def set_state(self, data: object, **kwarg):
