@@ -2,7 +2,7 @@
 
 Surprise: it bundles AppxfSettings to a dictionary behavior. ;)
 '''
-
+from collections import OrderedDict
 from copy import deepcopy
 from typing import Any
 from collections.abc import Mapping, MutableMapping
@@ -48,7 +48,7 @@ class SettingDict(Storable, MutableMapping[str, AppxfSetting]):
         need to provide the AppxfSetting object.
         '''
         # Define SettingDict specific details
-        self._setting_dict: dict[Any, AppxfSetting] = {}
+        self._setting_dict: OrderedDict[Any, AppxfSetting] = OrderedDict()
         # Initialize dict details
         if storage is None:
             storage = RamStorage()
