@@ -1,7 +1,8 @@
-from kiss_cf import Stateful
-
+from collections import OrderedDict
 from dataclasses import dataclass, fields, Field, MISSING
 from typing import Any, Type, TypeVar
+
+from kiss_cf import Stateful
 
 _OptionTypeT = TypeVar('_OptionTypeT', bound='AppxfOptions')
 
@@ -164,6 +165,8 @@ class AppxfOptions(Stateful):
     # get_state needs to handle the options_export_defaults option:
     def get_state(self, **kwarg) -> object:
         export_defaults = True
+        # TODO: there is no handling or forwarding of "attributes"? It would be
+        # input from AppxfSetting.Options.get_state()
         if 'export_defaults' in kwarg:
             export_defaults = kwarg['export_defaults']
             kwarg.pop('export_defaults')

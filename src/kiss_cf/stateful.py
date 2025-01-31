@@ -1,7 +1,9 @@
 ''' interface contract for stateful classes '''
 from __future__ import annotations
+from collections import OrderedDict
 from copy import deepcopy
 from typing import TypeAlias, Union
+
 
 
 class Stateful():
@@ -100,7 +102,8 @@ class Stateful():
 
     def _get_default_state_attributes(self,
                                       attributes: list[str] | None = None,
-                                      attribute_mask: list[str] | None = None):
+                                      attribute_mask: list[str] | None = None
+                                      ) -> list[str]:
         ''' get states for get_state()/set_state()
 
         This function is also used internally for _get_state_default() and
@@ -124,13 +127,14 @@ class Stateful():
         if attribute_mask is None:
             attribute_mask = self.attribute_mask
         # return attribute list
-        return [attr for attr in set(out_attributes) if
+        return [attr for attr in list(dict.fromkeys(out_attributes)) if
                 attr not in attribute_mask]
         # compile state from attributes with error handling and return
 
     def _get_state_default(self,
                            attributes: list[str] | None = None,
-                           attribute_mask: list[str] | None = None) -> Stateful.DefaultStateType:
+                           attribute_mask: list[str] | None = None
+                           ) -> OrderedDict[str, Stateful.DefaultStateType]:
         ''' get object state - default implementation
 
         See _get_default_state_attributes() for the considered attributes. The
@@ -146,7 +150,7 @@ class Stateful():
             attribute_mask=attribute_mask)
         print(f'get_state_default with attributes: {attributes}')
         # compile state from attributes with error handling and return
-        data = {}
+        data = OrderedDict()
         for key in attributes:
             if not hasattr(self, key):
                 raise TypeError(

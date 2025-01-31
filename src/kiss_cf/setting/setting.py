@@ -9,6 +9,7 @@ the following support for usage in applications:
 '''
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
+from collections import OrderedDict
 from typing import Generic, TypeVar, Type, Any
 from dataclasses import dataclass, fields
 
@@ -366,7 +367,7 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
             option_list += ['name']
         if export_options.type:
             raise TypeError('Exporting the type is not yet supported')
-        options: dict = self.options.get_state(
+        options: OrderedDict = self.options.get_state(
             value = export_options.value_options,
             display = export_options.display_options,
             control = export_options.control_options,
@@ -375,7 +376,7 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
             print(f'returning input: {self.input}')
             return self.input
         print(f'returning with option_list: {option_list}')
-        out = {'value': self.input}
+        out = OrderedDict({'value': self.input})
         out.update(options)
         return out
 
