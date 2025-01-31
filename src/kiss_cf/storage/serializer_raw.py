@@ -1,7 +1,7 @@
 ''' Provide a dummy serialization
 '''
 
-from .serializer import Serializer, KissSerializerError
+from .serializer import Serializer
 
 
 class RawSerializer(Serializer):
@@ -10,7 +10,7 @@ class RawSerializer(Serializer):
     @classmethod
     def serialize(cls, data: object) -> bytes:
         if not isinstance(data, bytes):
-            raise KissSerializerError('Input data must already be bytes')
+            raise TypeError('Input data must already be bytes')
         return data
 
     @classmethod

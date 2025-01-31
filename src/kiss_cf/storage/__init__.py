@@ -9,7 +9,7 @@
 # flake8: noqa F401
 
 # Abstract/General Classes
-from .serializer import Serializer, KissSerializerError
+from .serializer import Serializer
 from .storable import Storable, AppxfStorableError
 from .storage import Storage
 from .storage import AppxfStorageError, AppxfStorageWarning

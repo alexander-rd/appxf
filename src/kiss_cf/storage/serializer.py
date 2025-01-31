@@ -3,10 +3,6 @@
 from abc import ABC, abstractmethod
 
 
-class KissSerializerError(Exception):
-    ''' Error in serialization/deserialization '''
-
-
 class Serializer(ABC):
     ''' Provide serialize and deserialize functionality '''
 

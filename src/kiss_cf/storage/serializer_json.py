@@ -1,86 +1,148 @@
-from collections.abc import Iterator
-from typing import Any
 import base64
 import json
+import re
 
-from .serializer import Serializer, KissSerializerError
+from collections import OrderedDict
 
-# TODO: testing may show problems with int/float. As soon as this happens, this
-# implementation should start being based on properties.
+from .serializer import Serializer
 
-# Following restrictions in contrast to CompactSerializer:
-#   * tuple is not (yet) supported, it would deserialize into a list
-#   * set is generally not JSON serializable
-supported_types = {
-    int, float, str, bytes,
-    list, dict,
-    bool, type(None)}
-# Additional restrictions, not by the supported types:
-#   * non-string
-
-
-class _RestrictedJsonEncoder(json.JSONEncoder):
-    def _type_check(self, o: Any):
-        if type(o) not in supported_types:
-            raise KissSerializerError(
-                f'Cannot serialize {type(o)}, '
-                f'supported are: {supported_types}')
-        # Ensure that all keys of a dict are strings. Decoding would not work
-        # properly, otherwise
-        if isinstance(o, dict):
-            if not all(isinstance(key, str) for key in o.keys()):
-                raise KissSerializerError(
-                    f'Cannot serialize: keys must be str but are {list(o.keys())}. '
-                    f'Deserializing would not work as expected.')
-
-    def default(self, o: Any) -> Any:
-        if isinstance(o, bytes):
-            return {'__bytes__': base64.b64encode(o).decode('utf-8')}
-        self._type_check(o)
-        return super().default(o)
-
-    def encode(self, o: Any) -> str:
-        self._type_check(o)
-        return super().encode(o)
-
-    def iterencode(self, o: Any, _one_shot: bool = False) -> Iterator[str]:
-        self._type_check(o)
-        return super().iterencode(o, _one_shot)
+# Alternatives
+#
+# There is jsonpickler to support basically any type. However, like with the
+# CompactSerializer and pickle, the supported types must be constrained to
+# remain secure. Also, what is the point in a human readable JSON that starts
+# storing arbitrary complex objects and containing extra notations? "keep it
+# simple" concerning the maintained data structures in user application was
+# guiding the design. Let's see when we need to face pandas or numpy.
+#
+# Other libraries where checked but none of them supported arbitrary key types
+# where I wanted to have bytes as a valid key type. There is also a PR for json
+# to enable key conversion https://github.com/python/cpython/pull/117392. But
+# this is not in, yet. This was the main reason to TRANSFORM THE OBJECTS before
+# encoding and after decoding LEADING TO A FULL COPY of the object.
+#
+# For the above reasons, the JsonSerializer is not an efficient implementation.
 
 
 class JsonSerializer(Serializer):
     ''' Store class dictionary as human readable JSON
 
-    Comments from DictStorable apply likewise to JsonDictStorable.
-
-    Additionally, JSON needs to serialize all data types. The data types are
-    taken from the current values of the dictionaries. You have to:
-      * always initialize all fields with a rigth data type
-      * keep the data types consistent at all times
+    JsonSerializer always uses OrderedDict when decoding. Encoding to JSON and
+    decoding again will alter a dict into an OrderedDict (which is a derivative
+    of dict).
     '''
-    @classmethod
-    def _decode_custom(cls, data: dict[str, Any]) -> Any:
-        if '__bytes__' in data:
-            return base64.b64decode(data['__bytes__'])
-        return data
+    # Since OrderedDict is always used for decoding, dict and OrderedDict are
+    # not distinguished when encoding.
 
     @classmethod
     def serialize(cls, data: object) -> bytes:
-        try:
-            json_out = json.dumps(data,
-                                  cls=_RestrictedJsonEncoder,
-                                  indent=4, separators=(',', ': '))
-        except TypeError as error:
-            message = str(error) + (
-                ' - JsonSerializer from kiss_cf includes some conversions '
-                'before storing as JSON. The one mentioned is not '
-                'supported.')
-            raise TypeError(message)
-
+        json_out = json.dumps(cls.encode_transform(data),
+                              indent=4, separators=(',', ': '))
+        # postprocessing to remove newlines for custom type JSON objects like
+        # "__bytes__":
+        json_out = re.sub(r'\{\s*(\S+):\s*(\S+)\s*\}', r'{\1: \2}', json_out)
+        # and for two-element arrays that are used for dictionaries with
+        # non-trivial key types:
+        json_out = re.sub(r'\[\s*(\S+),\s*(\S+)\s*\]', r'[\1, \2]', json_out)
         return bytes(json_out, encoding='utf-8')
 
     @classmethod
     def deserialize(cls, data: bytes):
-        return json.loads(
-            data.decode('utf-8'),
-            object_hook=cls._decode_custom)
+        return cls.decode_transform(
+            json.loads(
+                data.decode('utf-8'),
+                object_pairs_hook=OrderedDict
+                ))
+
+    SimpleTypes = (bool, int, float, str, type(None))
+
+    @classmethod
+    def encode_transform(cls,
+                         obj: object,
+                         log_tree: list | None = None) -> object:
+        ''' Transform object for JSON encoding
+
+        This function will alter the dictionary to consist only of OrderedDict,
+        list and JSON supported base types.
+        '''
+        if log_tree is None:
+            log_tree = ['root']
+
+        if isinstance(obj, dict):
+            if all(isinstance(key, cls.SimpleTypes) for key in obj.keys()):
+                return {
+                    key: cls.encode_transform(value, log_tree + [key])
+                    for key, value in obj.items()}
+            dict_type = '__dict__'
+            return {dict_type: [
+                [cls.encode_transform(key, log_tree+[key]),
+                 cls.encode_transform(value, log_tree+[f'value for {key}'])]
+                for key, value in obj.items()]}
+
+
+        if isinstance(obj, (list, tuple, set)):
+            encoded_list = [
+                cls.encode_transform(element, log_tree + [str(element)])
+                for element in obj]
+            if type(obj) == list:
+                return encoded_list
+            if type(obj) == set:
+                return {'__set__': encoded_list}
+            if type(obj) == tuple:
+                return {'__tuple__': encoded_list}
+        if isinstance(obj, bytes):
+            return {'__bytes__': cls._encode_bytes(obj)}
+        if isinstance(obj, cls.SimpleTypes):
+            return obj
+        raise TypeError(f'Cannot serialize type {type(obj)} trace: {log_tree}.')
+
+    @classmethod
+    def decode_transform(cls,
+                         obj: object,
+                         log_tree: list | None = None) -> object:
+        ''' Transform object after JSON decoding
+
+        Reverts the transformations of encode_transform.
+        '''
+        if log_tree is None:
+            log_tree = ['root']
+
+        if (isinstance(obj, dict) and len(obj) == 1):
+            key, value = next(iter(obj.items()))
+            if key == '__bytes__':
+                return cls._decode_bytes(value)
+            if key == '__tuple__':
+                return tuple(cls.decode_transform(value, log_tree + ['tuple']))
+            if key == '__set__':
+                return set(cls.decode_transform(value, log_tree + ['set']))
+            #if key == '__OrderedDict__':
+            #    # nothing to do, the JSON object within was already decoded as OrderedDict:
+            #    return value
+            if key == '__dict__':
+                # this was a dict with non trivial key types that come as list
+                # of two-element lists:
+                decode_dict = OrderedDict(
+                    (cls.decode_transform(dict_element[0], log_tree+[key]),
+                     cls.decode_transform(dict_element[1], log_tree+[f'value for key'])
+                     )
+                    for dict_element in value)
+                return decode_dict
+
+        if isinstance(obj, dict):
+            for key, value in obj.items():
+                obj[key] = cls.decode_transform(value, log_tree + [key])
+            return obj
+        if isinstance(obj, list):
+            return [cls.decode_transform(element, log_tree + [str(element)]) for element in obj]
+        if isinstance(obj, cls.SimpleTypes):
+            return obj
+        # the following error should never be reached since a decoded JSON will
+        # only containt he above checked types
+        raise TypeError(f'Cannot decode object {obj} of type {obj}, trace: {log_tree}') # pragma: no cover
+
+    @classmethod
+    def _encode_bytes(cls, obj: bytes) -> str:
+        return base64.b64encode(obj).decode('utf-8')
+    @classmethod
+    def _decode_bytes(cls, obj: str) -> bytes:
+        return base64.b64decode(obj)

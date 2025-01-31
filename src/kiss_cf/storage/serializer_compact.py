@@ -9,14 +9,14 @@ https://docs.python.org/3/library/pickle.html#restricting-globals.
 '''
 
 import pickle
-import builtins
 import io
+from collections import OrderedDict
 
-from .serializer import Serializer, KissSerializerError
+from .serializer import Serializer
 
 supported_types = {
     int, float, str, bytes,
-    list, tuple, dict, set,
+    list, tuple, set, dict, OrderedDict, type(OrderedDict),
     bool, type(None)}
 
 
@@ -24,10 +24,10 @@ class _RestrictedUnpickler(pickle.Unpickler):
     '''Class to disable unwanted symbols.'''
     def find_class(self, module, name):
         # Only allow safe classes from builtins.
-        if module == "builtins" and name in []:
-            return getattr(builtins, name)
+        if module == 'collections' and name == 'OrderedDict':
+            return OrderedDict
         # Forbid everything else.
-        raise KissSerializerError(
+        raise TypeError(
             f'Cannot deserialize "{module}.{name}". To protect from code '
             f'injection, serialization/deserialization was limited in kiss_cf')
 
@@ -36,7 +36,7 @@ class _RestrictedPickler(pickle.Pickler):
     def persistent_id(self, obj):
         # Catch types that are not supported
         if type(obj) not in supported_types:
-            raise KissSerializerError(f'Cannot serialize {type(obj)}')
+            raise TypeError(f'Cannot serialize {obj} of type {type(obj)}')
         # Just return none since nothing special is required
         return None
 
