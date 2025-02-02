@@ -1,12 +1,12 @@
 ''' options module with Options object
 '''
-from kiss_cf import AppxfOptions
+from kiss_cf import Options
 from dataclasses import dataclass, field
 
 import pytest
 
 @dataclass
-class DefaultTestOptions(AppxfOptions):
+class DefaultTestOptions(Options):
     test_int: int = 0
     test_string: str = ''
     test_list: list[str] = field(default_factory=lambda: list(['test']))

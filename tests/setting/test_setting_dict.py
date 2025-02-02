@@ -26,12 +26,12 @@ init_values = [
     ('t2',  int,                                        'int',      0,              '0'),
     ('t3',  float,                                      'float',    0.0,            '0.0'),
     ('t4',  bool,                                       'bool',     False,          '0'),
-    # AppxfSetting class based input
+    # Setting class based input
     ('PC1', SettingString,                                 'string',   '',             ''),
     ('PC2', SettingInt,                                    'int',      0,              '0'),
     ('PC3', SettingFloat,                                  'float',    0.0,            '0.0'),
     ('PC4', SettingBool,                                   'bool',     False,          '0'),
-    # AppxfSetting object based input
+    # Setting object based input
     ('p1',  Setting.new(str, 'test'),              'string',   'test',         'test'),
     ('p2',  Setting.new(int,42),                   'int',      42,             '42'),
     ('p3',  Setting.new(float,1.123),              'float',    1.123,          '1.123'),
@@ -54,7 +54,7 @@ def _get_setting_reference(t):
         # type based input
         return Setting.new(t[2])
     if isinstance(t[1], Setting):
-        # Direct AppxfSetting based input
+        # Direct Setting based input
         return t[1]
     return Setting.new(t[2], value=t[1])
 
@@ -185,14 +185,14 @@ def test_setting_dict_delete_non_existing():
     with pytest.raises(KeyError):
         del setting_dict['test']
 
-# REQ: When changing the underlying AppxfSetting directly, the value returned by
+# REQ: When changing the underlying Setting directly, the value returned by
 # SettingDict must appear updated accordingly.
 #
 # Origin: The initial implementation used UserDict with a duplicate storage
 # for values in the UserDict.data. This implementation did not satisfy the
 # requirement.
 #
-# Rationale: The GUI implementation has a GUI for just a AppxfSetting on top of
+# Rationale: The GUI implementation has a GUI for just a Setting on top of
 # which the GUI for SettingDict is build.
 def test_setting_dict_update_on_setting():
     setting_dict = SettingDict()
@@ -208,7 +208,6 @@ def test_setting_dict_update_on_setting():
 # #################/
 # Storable Behavior
 # ////////////////
-
 
 def test_setting_dict_store_load_cycle():
     # we use an integer here since it differs in "input" and stored "value".

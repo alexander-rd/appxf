@@ -19,7 +19,7 @@ class DummyClassErrorOnStrCreation():
 @pytest.mark.parametrize(
     'appxf_class', setting_module._SettingMeta.implementations)
 def test_setting_init(appxf_class):
-    # skip any AppxfExtension
+    # skip any SettingExtension
     if issubclass(appxf_class, SettingExtension):
         return
     setting = appxf_class(name='test')

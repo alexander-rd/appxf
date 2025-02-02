@@ -5,7 +5,6 @@ from copy import deepcopy
 from typing import TypeAlias, Union
 
 
-
 class Stateful():
     ''' base for classes that can provide and restore their state
 

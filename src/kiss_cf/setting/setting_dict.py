@@ -1,6 +1,6 @@
-''' AppxfSettingDict
+''' SettingDict
 
-Surprise: it bundles AppxfSettings to a dictionary behavior. ;)
+Surprise: it bundles Settings to a dictionary behavior. ;)
 '''
 from collections import OrderedDict
 from copy import deepcopy
@@ -29,7 +29,7 @@ class SettingDict(Storable, MutableMapping[str, Setting]):
                  storage: Storage | None = None,
                  default_visibility: bool = True,
                  **kwargs):
-        ''' AppxfSettings collected as dicitonary
+        ''' Settings collected as dicitonary
 
         Recommended initialization is by a dictionary like {key: setting}.
         Supported are also the other two ways to initialize a dictionary:
@@ -40,12 +40,12 @@ class SettingDict(Storable, MutableMapping[str, Setting]):
         and value like ('str', 'appxf') or ('email',) which only specifies the
         type and uses the default value. Other options are:
           * A value of a supported type. Example: 42 as integer. It would use
-            AppxfInt.
-          * An AppxfSetting class like AppxfInt. The value would be initialized
+            SettingInt.
+          * An Setting class like SettingInt. The value would be initialized
             with the default value.
-          * An AppxfSetting object. The value would be taken over.
-        Note: If you need to pass additional arguments to an AppxfSetting, you
-        need to provide the AppxfSetting object.
+          * A Setting object. The value would be taken over.
+        Note: If you need to pass additional arguments to a Setting, you
+        need to provide the Setting object.
         '''
         # Define SettingDict specific details
         self._setting_dict: OrderedDict[Any, Setting] = OrderedDict()
@@ -84,7 +84,7 @@ class SettingDict(Storable, MutableMapping[str, Setting]):
             raise AppxfSettingError(
                 f'Key {key} does not exist. Consider SettingDict.add() '
                 f'for adding new settings.')
-        # Value already exists. Try to set new value into AppxfSetting, if this
+        # Value already exists. Try to set new value into Setting, if this
         # is OK, take value from there:
         self._setting_dict[key].value = value
 
@@ -99,7 +99,7 @@ class SettingDict(Storable, MutableMapping[str, Setting]):
           propety_dict['new property'] = 42
         This has two reasons:
           1) Adding a new value may not include the otherwise normal validity
-             check. Example: AppxfEmail is initialized with an empty string
+             check. Example: SettingEmail is initialized with an empty string
              (invalid empty Email address)
           2) Protect from unintentional usage
         '''
@@ -139,8 +139,7 @@ class SettingDict(Storable, MutableMapping[str, Setting]):
             self._new_item(key, value)
 
     def _new_item(self, key, value):
-        # Generate a AppxfSetting object if only the class or a type is
-        # provided:
+        # Generate a Setting object if only the class or a type is provided:
         if isinstance(value, type):
             if issubclass(value, Setting):
                 value = value()
@@ -161,7 +160,7 @@ class SettingDict(Storable, MutableMapping[str, Setting]):
                     f'initial value. The input tuple had length '
                     f'{len(value)}.')
 
-        # Use the AppxfSetting object if one is provided
+        # Use the Setting object if one is provided
         if isinstance(value, Setting):
             # transfer key name to setting if setting name is empty:
             if not value.options.name:
@@ -169,15 +168,15 @@ class SettingDict(Storable, MutableMapping[str, Setting]):
             self._setting_dict[key] = value
             return
 
-        # No type or AppxfSetting is provided, we try to determine the
-        # AppxfSetting from the type of the value:
+        # No type or Setting is provided, we try to determine the Setting from
+        # the type of the value:
         setting_type = type(value)
         setting = Setting.new(setting_type, value=value)
         # Fall back again to the code from above
         self._new_item(key, setting)
 
     def get_setting(self, key) -> Setting:
-        ''' Access AppxfSetting object '''
+        ''' Access Setting object '''
         return self._setting_dict[key]
 
     # ## Storage Behavior
