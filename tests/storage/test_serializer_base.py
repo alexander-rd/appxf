@@ -15,6 +15,21 @@ from collections import OrderedDict
 class DummyClassNotSerializable:
     ''' Just a custom classs that will not be serializeable '''
 
+all_type_list = [True, 'some', None, 1.25, b'a',
+                 {'stop': True}, ['list_in_list'], ('tuple',), {'set',}]
+all_type_tuple = (True, 'some', None, 1.25, b'a',
+                  {'stop': True}, ['list_in_list'], ('tuple',), {'set',})
+all_type_set = {True, 'some', None, 1.25, b'a'}
+all_type_dict = {
+    True: True, 42:42, 3.14: 3.14, 'string': 'string',
+    'none': None,
+    b'a': b'b',
+    'list': all_type_list + [all_type_tuple, all_type_set],
+    'tuple': all_type_tuple,
+    'more_tuple': (all_type_list, all_type_set),
+    'set': all_type_set,
+    'dict': {'stop': True}}
+
 samples = [
     # strings with some special words and characters:
     'test', '', 'True', 'true', 'False', 'false',
@@ -33,16 +48,11 @@ samples = [
     [1, 2, 3], {'A': 1, 'B': 2}, OrderedDict({'A': 3, 'B': 4}),
 
     # arbitrary elements types in containers:
-    [True, 42, 1.25, 'some', None, b'a'],
-    (True, 42, 1.25, 'some', None, b'a'),
+    [True, 42, 1.25, 'some', None, b'a', all_type_list, all_type_tuple, all_type_set, all_type_dict],
+    (True, 42, 1.25, 'some', None, b'a', all_type_list, all_type_tuple, all_type_set, all_type_dict),
     {True, 42, 1.25, 'some', None, b'a'},
     # arbitrary key and value types in dict:
-    {True: True, 42:42, 3.14: 3.14, 'string': 'string', 'none': None, b'a': b'b'},
-    # recursion of dict in dict:
-    {'dict': {True: True, 42: 42, 3.14: 3.14, 'a':'a', b'b': b'C', 'none': None},
-     'list': [True, 'some', None, 1.25, b'a'],
-     'tuple': (True, 'some', None, 1.25, b'a'),
-     'set': set([True, 'some', None, 1.25, b'a'])},
+    all_type_dict,
     # nested empty things:
     [{}, [], (), set(), [(set())], {'list-nest': [[[]]], 'tuple nest': (((()),),)}],
 ]
@@ -100,6 +110,9 @@ def test_stateful_interface_contract():
         # catch unions
         if type_origin is UnionType or type_origin is Union:
             for that_type in type_args:
+                # skip if type is already tested
+                if that_type in tree:
+                    continue
                 verify_type_tested(that_type, test_samples,
                                    tree + [that_type])
             return
@@ -118,9 +131,9 @@ def test_stateful_interface_contract():
         # fail if not empty
         assert included, (
             f'Type is not (fully) covered by samples. '
-            f'Type tree: {tree_to_str(tree)}, '
-            f'Current base type: {type_base} '
-            f'with args {type_args}')
+            f'Type tree: {tree_to_str(tree)}\n'
+            f'Current base type: {type_base}\n'
+            f'samples: {test_samples}\n')
 
         # we are done if this_type was a basic type
         if type_origin is None:
@@ -172,3 +185,4 @@ def test_stateful_interface_contract():
     # we cycle through the DefaultState type:
     for this_type in get_args(Stateful.DefaultStateType):
         verify_type_tested(this_type, samples)
+    #verify_type_tested(Stateful.DefaultStateType, samples)
