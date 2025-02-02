@@ -380,7 +380,11 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
         return out
 
     def set_state(self, data: object, **kwarg):
-        self.value = data
+        if isinstance(data, dict):
+            self.options.update_from_kwarg(kwarg_dict=data)
+            self.value = data['value']
+        else:
+            self.value = data
 
     #######################/
     ## Registry and Factory
@@ -520,12 +524,15 @@ class AppxfSettingExtension(Generic[_BaseSettingT, _BaseTypeT], AppxfSetting[_Ba
     def get_supported_types(cls) -> list[type | str]:
         return []
 
+    # TODO: the below should become obsolete, setting_select already overwrites
+    # it again since updating the getter removes the setter anyways. This may
+    # go along with a complete removal of a generic "SeeingExtension" class.
     @AppxfSetting.value.setter
     def value(self, value: Any):
         # first step is like in base implementation - whatever the extension does
         AppxfSetting.value.fset(self, value)  # type: ignore
         # but the result is also applied to the base_setting
-        self.base_setting.value = self.value
+        self.base_setting.value = self._value
 
 
 class AppxfString(AppxfSetting[str]):

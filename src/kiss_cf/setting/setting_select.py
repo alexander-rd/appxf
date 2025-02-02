@@ -79,7 +79,7 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
         mutable_items: bool = True
         #  * the value after seletion can be customized and the customized
         #    value is stored additionally to the list of select items:
-        custom_value: bool = True
+        custom_value: bool = False
         control_options = AppxfSetting.Options.control_options + ['mutable_items', 'custom_value']
         # TODO: in contrast to the TWO options above, a fine grained options
         # would distinguish "being able to edit existing template items"
@@ -109,6 +109,25 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
         # above which is why value was not passed to the parent __init__()
         if value is not None:
             self.value = value
+        else:
+            self.value = self.base_setting.get_default()
+
+    @property
+    def value(self) -> _BaseTypeT:
+        # return value depends on custom_value setting in options
+        if self.options.custom_value:
+            return self.base_setting.value
+        # Any value writing will also update the base_setting's value. Only if
+        # the base_value is updated directly, the above can make a difference.
+        return self._value
+
+    @value.setter
+    def value(self, value: Any):
+        # first step is like in setting implementation
+        AppxfSetting.value.fset(self, value)  # type: ignore
+        # but the result is also applied to the base_setting
+        self.base_setting.value = self._value
+
 
     def _validated_conversion(self, value: str) -> tuple[bool, _BaseTypeT]:
         if value == self.base_setting.get_default():
@@ -130,10 +149,11 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
         return out
 
     def set_state(self, data: object, **kwarg):
-        # catch base setting and apply:
+        super().set_state(data, **kwarg)
+        # catch base setting and apply - it must be applied afterwards since
+        # obtained value will be writtens
         if isinstance(data, dict) and 'base_setting' in data:
             self.base_setting.set_state(data['base_setting'], **kwarg)
-        return super().set_state(data, **kwarg)
 
     ###################/
     ## Option Handling
