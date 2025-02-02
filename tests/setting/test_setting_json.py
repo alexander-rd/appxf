@@ -34,14 +34,14 @@ def test_json_values_only():
     print(f'Produced JSON:\n{serialized_data.decode("utf-8")}')
     assert expected_part[1:-5] == serialized_data.decode('utf-8')
 
-def test_json_value_and_options():
+def test_json_value_and_display_options():
     '''JSON for options with and without options being set'''
     setting = SettingDict(
         data={
             'string': AppxfSetting.new('string', value='test'),
             'integer': AppxfSetting.new('int', value=42),
             'select': AppxfSetting.new('select::string', value='01', select_map={'01': 'Value'},
-                                    display_height=10, display_width=60)
+                                       display_width = 42)
             },
         # TODO: integer and select had "options_stored" set to True
         storage=RamStorage.get(name='setting_dict', ram_area='test')
@@ -58,20 +58,44 @@ def test_json_value_and_options():
     "select": {
         "value": "01",
         "select_map": {"01": "Value"},
-        "display_height": 10,
-        "display_width": 60
+        "display_width": 42
     }
 }
     '''
     print(f'Produced JSON:\n{serialized_data.decode("utf-8")}')
     assert expected_part[1:-5] == serialized_data.decode('utf-8')
 
-def ttest_tmp():
-    setting = AppxfSetting.new('select::string')
-    print(setting.gui_options)
-    setting.gui_options._mutable = True
-    setting.gui_options.display_height = 5
-    print(setting.gui_options)
-    setting.gui_options._mutable = False
-    setting.gui_options.display_height = 6
-    print(setting.gui_options)
+def test_json_full_export():
+    '''JSON for options with and without options being set'''
+    setting = SettingDict(
+        data={
+            'select': AppxfSetting.new('select::string', value='01', select_map={'01': 'Value'})
+            },
+        # TODO: integer and select had "options_stored" set to True
+        storage=RamStorage.get(name='setting_dict', ram_area='test')
+        )
+    setting.export_options.control_options = True
+    setting.export_options.value_options = True
+    setting.export_options.display_options = True
+    setting.export_options.export_defaults = True
+    raw_data = setting.get_state()
+    serialized_data = JsonSerializer.serialize(raw_data)
+    expected_part = '''
+{
+    "_version": 2,
+    "select": {
+        "value": "01",
+        "select_map": {"01": "Value"},
+        "display_width": 60,
+        "mutable": true,
+        "value_options_mutable": false,
+        "display_options_mutable": false,
+        "control_options_mutable": false,
+        "mutable_items": true,
+        "custom_value": true
+    }
+}
+    '''
+    print(f'Produced JSON:\n{serialized_data.decode("utf-8")}')
+    assert expected_part[1:-5] == serialized_data.decode('utf-8')
+

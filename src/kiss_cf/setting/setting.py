@@ -243,7 +243,6 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
     class Options(AppxfOptions):
         ''' options for settings '''
         # Overwrite AppxfOptions default values
-        options_export_defaults: bool = False
         options_mutable: bool = True # must remain true!
         # options for settings define export groups for which the mutable
         # behavior can be controlled separately
@@ -252,6 +251,7 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
         control_options_mutable: bool = False
         # While the following is for the value itself:
         mutable: bool = True
+
         # The export groups are defined below together with
         # get_state()/set_state()
 
@@ -261,19 +261,17 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
         # display - it is not a display setting, however (has it's own export
         # group)
         name: str = ''
-        display_height: int = 0
         display_width: int = 0
-        display_masked: bool = False # used for passwords
 
         # the attribute/attribute_mask concept is not taken over from
         # AppxfOptions since a more specific concept is needed which options to
         # export - export groups are defined to which the fields are added -
         # any field not in an export group cannot be exported (except name)
         value_options = []
-        display_options = ['display_height', 'display_width', 'display_masked']
-        control_options = ['options_export_defaults', 'value_options_mutable',
+        display_options = ['display_width']
+        control_options = ['mutable', 'value_options_mutable',
                            'display_options_mutable', 'control_options_mutable',
-                           'mutable']
+                           ]
         # with overwriting the get_state()/set_state(), the AppxfStateful class
         # configuration for attribute/attribute_mask doe not need to be
         # changed.
@@ -334,7 +332,7 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
         # setting which mostly applies to ExtendedSettings.
         control_options: bool = False
         # Exporting default values (like in AppxfOptions)
-        export_defaults = False
+        export_defaults: bool = False
 
     def __init__(self,
                  value: _BaseTypeT | None = None,
@@ -359,6 +357,7 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
     def get_state(self, **kwarg) -> object:
         export_options = self.ExportOptions.new_from_kwarg(kwarg)
         self.ExportOptions.raise_error_on_non_empty_kwarg(kwarg)
+        print(f'Setting::get_state() ExportOptions: {str(export_options)}')
 
         # Strategy is to fill a dict from the various flags and if this dict
         # remained empty, only the value is returned
@@ -368,9 +367,9 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
         if export_options.type:
             raise TypeError('Exporting the type is not yet supported')
         options: OrderedDict = self.options.get_state(
-            value = export_options.value_options,
-            display = export_options.display_options,
-            control = export_options.control_options,
+            value=export_options.value_options,
+            display=export_options.display_options,
+            control=export_options.control_options,
             defaults=export_options.export_defaults) # type: ignore
         if not options:
             print(f'returning input: {self.input}')
