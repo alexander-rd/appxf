@@ -18,7 +18,7 @@ def test_json_values_only():
         data={
             'string': AppxfSetting.new('string', value='test'),
             'integer': AppxfSetting.new('int', value=42),
-            'select': AppxfSetting.new('select::string', value='01', select_map={'01': 'Value'})
+            'select': AppxfSetting.new('select::string', value='01', select_map={'01': 'Value'}, custom_value=False)
             },
         storage=RamStorage.get(name='setting_dict', ram_area='test'))
     raw_data = setting.get_state()
@@ -40,8 +40,8 @@ def test_json_value_and_display_options():
         data={
             'string': AppxfSetting.new('string', value='test'),
             'integer': AppxfSetting.new('int', value=42),
-            'select': AppxfSetting.new('select::string', value='01', select_map={'01': 'Value'},
-                                       display_width = 42)
+            'select': AppxfSetting.new('select::string', value='01', select_map={'01': 'test_value'},
+                                       custom_value=False, display_width = 42)
             },
         # TODO: integer and select had "options_stored" set to True
         storage=RamStorage.get(name='setting_dict', ram_area='test')
@@ -57,7 +57,7 @@ def test_json_value_and_display_options():
     "integer": 42,
     "select": {
         "value": "01",
-        "select_map": {"01": "Value"},
+        "select_map": {"01": "test_value"},
         "display_width": 42
     }
 }
@@ -92,7 +92,15 @@ def test_json_full_export():
         "display_options_mutable": false,
         "control_options_mutable": false,
         "mutable_items": true,
-        "custom_value": true
+        "custom_value": true,
+        "base_setting": {
+            "value": "Value",
+            "display_width": 0,
+            "mutable": true,
+            "value_options_mutable": false,
+            "display_options_mutable": false,
+            "control_options_mutable": false
+        }
     }
 }
     '''
