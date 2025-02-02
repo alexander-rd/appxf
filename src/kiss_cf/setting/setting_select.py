@@ -117,6 +117,24 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
             return True, self.options.select_map[value]
         return False, self.base_setting.get_default()
 
+    def get_state(self, **kwarg) -> object:
+        # we export as defined in setting
+        out = super().get_state(**kwarg)
+        # but we may need to add the base_setting if the base setting is maintained
+        if self.options.custom_value:
+            if isinstance(out, dict):
+                out['base_setting'] = self.base_setting.get_state(**kwarg)
+            else:
+                out = {'value': out,
+                       'base_setting': self.base_setting.get_state(**kwarg)}
+        return out
+
+    def set_state(self, data: object, **kwarg):
+        # catch base setting and apply:
+        if isinstance(data, dict) and 'base_setting' in data:
+            self.base_setting.set_state(data['base_setting'], **kwarg)
+        return super().set_state(data, **kwarg)
+
     ###################/
     ## Option Handling
     #/
