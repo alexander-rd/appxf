@@ -65,8 +65,26 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
     @dataclass(eq=False, order=False)
     class Options(AppxfSetting.Options):
         ''' options for setting select '''
+        # update value options
         select_map: dict[str, Any] = field(default_factory=dict)
         value_options = AppxfSetting.Options.value_options + ['select_map']
+
+        # update display options:
+        #  * setting select will use larger entries by default:
+        display_width: int = 60
+        # display_options = AppxfSetting.Options.display_options + ['display_height']
+
+        # update control options:
+        #  * items can be added or removed to/from the select list:
+        mutable_items: bool = True
+        #  * the value after seletion can be customized and the customized
+        #    value is stored additionally to the list of select items:
+        custom_value: bool = True
+        control_options = AppxfSetting.Options.control_options + ['mutable_items', 'custom_value']
+        # TODO: in contrast to the TWO options above, a fine grained options
+        # would distinguish "being able to edit existing template items"
+        # (without the ability to change the item names) and the full
+        # capability to also add/remove and rename items in the select list.
 
     def __init__(self,
                  base_setting: _BaseSettingT,
