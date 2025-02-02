@@ -165,8 +165,7 @@ class AppxfOptions(Stateful):
     # get_state needs to handle the options_export_defaults option:
     def get_state(self, **kwarg) -> object:
         export_defaults = True
-        # TODO: there is no handling or forwarding of "attributes"? It would be
-        # input from AppxfSetting.Options.get_state()
+
         if 'export_defaults' in kwarg:
             export_defaults = kwarg['export_defaults']
             kwarg.pop('export_defaults')
@@ -179,6 +178,7 @@ class AppxfOptions(Stateful):
         if not export_defaults:
             attribute_mask += self._get_fields_with_default_values()
 
+        # note: attributes option is just forwarded as part of ***kwarg
         return self._get_state_default(attribute_mask=attribute_mask, **kwarg)
 
     # set_state needs special treatment since it will be commonly be used to

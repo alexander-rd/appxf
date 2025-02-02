@@ -7,7 +7,7 @@ from copy import deepcopy
 from typing import Any
 from collections.abc import Mapping, MutableMapping
 from kiss_cf.storage import Storable, Storage, RamStorage
-from .setting import AppxfSetting, AppxfSettingError
+from .setting import Setting, AppxfSettingError
 
 # TODO: support tuples with additional named value options
 
@@ -16,7 +16,7 @@ from .setting import AppxfSetting, AppxfSettingError
 
 # TODO: Loading modes 'add' and 'error'
 
-class SettingDict(Storable, MutableMapping[str, AppxfSetting]):
+class SettingDict(Storable, MutableMapping[str, Setting]):
     ''' Maintain a dictionary of settings
 
     While normal dictionary behavior is supported, be aware that writing to
@@ -48,7 +48,7 @@ class SettingDict(Storable, MutableMapping[str, AppxfSetting]):
         need to provide the AppxfSetting object.
         '''
         # Define SettingDict specific details
-        self._setting_dict: OrderedDict[Any, AppxfSetting] = OrderedDict()
+        self._setting_dict: OrderedDict[Any, Setting] = OrderedDict()
         # Initialize dict details
         if storage is None:
             storage = RamStorage()
@@ -65,7 +65,7 @@ class SettingDict(Storable, MutableMapping[str, AppxfSetting]):
         self._store_setting_object = False
 
         # Export options
-        self.export_options = AppxfSetting.ExportOptions()
+        self.export_options = Setting.ExportOptions()
 
         # TODO: add GUI element concept and derive/aggregate from there
         self.default_visibility = default_visibility
@@ -142,17 +142,17 @@ class SettingDict(Storable, MutableMapping[str, AppxfSetting]):
         # Generate a AppxfSetting object if only the class or a type is
         # provided:
         if isinstance(value, type):
-            if issubclass(value, AppxfSetting):
+            if issubclass(value, Setting):
                 value = value()
             else:
-                value = AppxfSetting.new(value)
+                value = Setting.new(value)
         # If input is a tuple of two, first should be the type and second the
         # value:
         if isinstance(value, tuple):
             if len(value) == 1:
-                value = AppxfSetting.new(value[0])
+                value = Setting.new(value[0])
             elif len(value) == 2:
-                value = AppxfSetting.new(value[0], value=value[1])
+                value = Setting.new(value[0], value=value[1])
             else:
                 raise AppxfSettingError(
                     f'SettingDict can only store AppxfSetting object which '
@@ -162,7 +162,7 @@ class SettingDict(Storable, MutableMapping[str, AppxfSetting]):
                     f'{len(value)}.')
 
         # Use the AppxfSetting object if one is provided
-        if isinstance(value, AppxfSetting):
+        if isinstance(value, Setting):
             # transfer key name to setting if setting name is empty:
             if not value.options.name:
                 value.options.name = key
@@ -172,11 +172,11 @@ class SettingDict(Storable, MutableMapping[str, AppxfSetting]):
         # No type or AppxfSetting is provided, we try to determine the
         # AppxfSetting from the type of the value:
         setting_type = type(value)
-        setting = AppxfSetting.new(setting_type, value=value)
+        setting = Setting.new(setting_type, value=value)
         # Fall back again to the code from above
         self._new_item(key, setting)
 
-    def get_setting(self, key) -> AppxfSetting:
+    def get_setting(self, key) -> Setting:
         ''' Access AppxfSetting object '''
         return self._setting_dict[key]
 
@@ -220,7 +220,7 @@ class SettingDict(Storable, MutableMapping[str, AppxfSetting]):
         # options are handled equivalent to settings
         export_options = deepcopy(self.export_options)
         export_options.update_from_kwarg(kwarg)
-        AppxfSetting.ExportOptions.raise_error_on_non_empty_kwarg(kwarg)
+        Setting.ExportOptions.raise_error_on_non_empty_kwarg(kwarg)
 
         data: dict[str, Any] = {'_version': 2}
         for key, setting in self._setting_dict.items():

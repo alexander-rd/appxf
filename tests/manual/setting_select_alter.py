@@ -15,12 +15,12 @@ not in scope of this test.
 import tkinter
 
 from helper import ManualTestHelper
-from kiss_cf.setting import AppxfSetting
+from kiss_cf.setting import Setting
 from kiss_cf.gui import FrameWindow, SettingSelectFrameDetail
 
 tester = ManualTestHelper(__doc__)
 
-setting = AppxfSetting.new('select::string',
+setting = Setting.new('select::string',
     options={'01 One': 'Template text 01 to be adapted.',
              '02 Two': 'Template text 02 to be adapted.',
              '42 Fourty Two': 'Template text 42 to be adapted.',

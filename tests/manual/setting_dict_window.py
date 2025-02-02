@@ -1,7 +1,7 @@
 '''Test case description - test case description could come from here'''
 
 from helper import ManualTestHelper
-from kiss_cf.setting import AppxfBool, AppxfString, AppxfEmail, SettingDict
+from kiss_cf.setting import SettingBool, SettingString, SettingEmail, SettingDict
 from kiss_cf.gui.setting_dict import SettingDictWindow
 from appxf import logging
 
@@ -16,9 +16,9 @@ Columns: Placing options on top of this widget will test alignement of entry fie
 
 #  - Label length: the dict uses very short and very long names on purpose:
 setting_dict = SettingDict({
-    'String': AppxfString(),
-    'Email of the master of disaster': AppxfEmail(),
-    'Boolean Value': AppxfBool(),
+    'String': SettingString(),
+    'Email of the master of disaster': SettingEmail(),
+    'Boolean Value': SettingBool(),
     })
 
 tester._run_toplevel(SettingDictWindow,

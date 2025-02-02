@@ -8,7 +8,7 @@ Tests to ensure that the implementation adheres to the following concept goals:
     * extended settings including base settings (with options)
     * setting being able to restore it's setting type
 '''
-from kiss_cf.setting import AppxfSetting, SettingDict
+from kiss_cf.setting import Setting, SettingDict
 from kiss_cf.storage import RamStorage, JsonSerializer
 
 def test_json_values_only():
@@ -16,9 +16,9 @@ def test_json_values_only():
     (no options being set or set to stored)'''
     setting = SettingDict(
         data={
-            'string': AppxfSetting.new('string', value='test'),
-            'integer': AppxfSetting.new('int', value=42),
-            'select': AppxfSetting.new('select::string', value='01', select_map={'01': 'Value'})
+            'string': Setting.new('string', value='test'),
+            'integer': Setting.new('int', value=42),
+            'select': Setting.new('select::string', value='01', select_map={'01': 'Value'})
             },
         storage=RamStorage.get(name='setting_dict', ram_area='test'))
     raw_data = setting.get_state()
@@ -38,9 +38,9 @@ def test_json_value_and_display_options():
     '''JSON for options with and without options being set'''
     setting = SettingDict(
         data={
-            'string': AppxfSetting.new('string', value='test'),
-            'integer': AppxfSetting.new('int', value=42),
-            'select': AppxfSetting.new('select::string', value='01', select_map={'01': 'test_value'},
+            'string': Setting.new('string', value='test'),
+            'integer': Setting.new('int', value=42),
+            'select': Setting.new('select::string', value='01', select_map={'01': 'test_value'},
                                        display_width = 42)
             },
         # TODO: integer and select had "options_stored" set to True
@@ -69,7 +69,7 @@ def test_json_full_export():
     '''JSON for options with and without options being set'''
     setting = SettingDict(
         data={
-            'select': AppxfSetting.new('select::string', value='01', select_map={'01': 'Value'},
+            'select': Setting.new('select::string', value='01', select_map={'01': 'Value'},
                                        custom_value=True)
             },
         # TODO: integer and select had "options_stored" set to True

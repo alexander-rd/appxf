@@ -1,5 +1,5 @@
 from helper import ManualTestHelper
-from kiss_cf.setting import AppxfBool, SettingDict
+from kiss_cf.setting import SettingBool, SettingDict
 from kiss_cf.gui import setting_dict
 
 tester = ManualTestHelper('''
@@ -8,7 +8,7 @@ Validation: Entry types are shown. Latest after loosing focus on entry, wrong va
 Columns: Placing options on top of this widget will test alignement of entry fields. Here, all properties are independent and entry fields start directly after the label.
 ''')  # noqa: E501
 
-prop_dict = SettingDict({option: AppxfBool() for option in [
+prop_dict = SettingDict({option: SettingBool() for option in [
     'One', 'Two', 'Three', 'Four',
     'Five', 'Six', 'Seven', 'Eight',
     'Nine', 'Ten']
