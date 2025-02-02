@@ -4,7 +4,7 @@ from tkinter import ttk
 from copy import deepcopy
 
 from appxf import logging
-from kiss_cf.setting import AppxfSetting, AppxfSettingSelect
+from kiss_cf.setting import Setting, SettingSelect
 
 from .common import ButtonFrame, FrameWindow
 from .setting_base import SettingFrameBase, SettingFrameDefault
@@ -19,7 +19,7 @@ class _DropdownOnly(SettingFrameBase):
     log = logging.getLogger(__name__ + '.SettingSelectDropdown')
 
     def __init__(self, parent,
-                 setting: AppxfSettingSelect,
+                 setting: SettingSelect,
                  tooltip: bool = True,
                  **kwargs):
         '''Frame holding a single property.'''
@@ -112,7 +112,7 @@ class _DropdownWithButtons(SettingFrameBase):
           dropdown)
     '''
     def __init__(self, parent,
-                 setting: AppxfSettingSelect):
+                 setting: SettingSelect):
         super().__init__(parent)
         self.setting = setting
 
@@ -163,7 +163,7 @@ class SettingSelectFrameDetail(SettingFrameBase):
     log = logging.getLogger(__name__ + '.SettingSelectEdit')
 
     def __init__(self, parent,
-                 setting: AppxfSettingSelect,
+                 setting: SettingSelect,
                  **kwargs):
         super().__init__(parent, **kwargs)
         # Data is maintained in the setting (SettingSelect) and a setting used
@@ -206,7 +206,7 @@ class SettingSelectFrameDetail(SettingFrameBase):
             self.log.warning(f'Current value for setting [{self.setting.name}] is not valid')
             return
 
-        new_option_setting = AppxfSetting.new(str, value=self.setting.input, name='Option Name')
+        new_option_setting = Setting.new(str, value=self.setting.input, name='Option Name')
         popup = FrameWindow(parent=self,
                             title='Save setting as ...',
                             closing = ['Cancel', 'OK'])
@@ -236,7 +236,7 @@ class SettingSelectFrameDetail(SettingFrameBase):
 class SettingSelectWindow(FrameWindow):
     log = logging.getLogger(__name__ + '.SettingSelectEditWindow')
 
-    def __init__(self, parent, setting: AppxfSettingSelect, **kwargs):
+    def __init__(self, parent, setting: SettingSelect, **kwargs):
         super().__init__(parent,
                          title=f'Editing {setting.name}',
                          buttons=['Cancel', 'OK'],
@@ -265,7 +265,7 @@ class SettingSelectFrame(_DropdownOnly):
     log = logging.getLogger(__name__ + '.SettingSelectFrame')
 
     def __init__(self, parent,
-                 setting: AppxfSettingSelect,
+                 setting: SettingSelect,
                  **kwargs):
         '''Frame holding a single property.'''
         super().__init__(parent, setting=setting, **kwargs)

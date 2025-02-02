@@ -1,9 +1,9 @@
 
 import pytest
 
-from kiss_cf.setting import SettingDict, AppxfSetting
+from kiss_cf.setting import SettingDict, Setting
 from kiss_cf.setting import AppxfSettingConversionError, AppxfSettingError
-from kiss_cf.setting import AppxfString, AppxfInt, AppxfFloat, AppxfBool
+from kiss_cf.setting import SettingString, SettingInt, SettingFloat, SettingBool
 
 from kiss_cf.storage import RamStorage
 
@@ -27,15 +27,15 @@ init_values = [
     ('t3',  float,                                      'float',    0.0,            '0.0'),
     ('t4',  bool,                                       'bool',     False,          '0'),
     # AppxfSetting class based input
-    ('PC1', AppxfString,                                 'string',   '',             ''),
-    ('PC2', AppxfInt,                                    'int',      0,              '0'),
-    ('PC3', AppxfFloat,                                  'float',    0.0,            '0.0'),
-    ('PC4', AppxfBool,                                   'bool',     False,          '0'),
+    ('PC1', SettingString,                                 'string',   '',             ''),
+    ('PC2', SettingInt,                                    'int',      0,              '0'),
+    ('PC3', SettingFloat,                                  'float',    0.0,            '0.0'),
+    ('PC4', SettingBool,                                   'bool',     False,          '0'),
     # AppxfSetting object based input
-    ('p1',  AppxfSetting.new(str, 'test'),              'string',   'test',         'test'),
-    ('p2',  AppxfSetting.new(int,42),                   'int',      42,             '42'),
-    ('p3',  AppxfSetting.new(float,1.123),              'float',    1.123,          '1.123'),
-    ('p4',  AppxfSetting.new(bool,True),                'bool',     True,           '1'),
+    ('p1',  Setting.new(str, 'test'),              'string',   'test',         'test'),
+    ('p2',  Setting.new(int,42),                   'int',      42,             '42'),
+    ('p3',  Setting.new(float,1.123),              'float',    1.123,          '1.123'),
+    ('p4',  Setting.new(bool,True),                'bool',     True,           '1'),
     # Tuple based input
     ('T1',   ('pass', '123abc'),                        'pass',     '123abc',       '123abc'),
     ('T2',   ('email', 'some@one.com'),                 'email',    '',             ''),
@@ -46,17 +46,17 @@ def _get_setting_reference(t):
     if isinstance(t[1], tuple):
         # tuple based init with type+value
         if len(t[1]) == 2:
-            return AppxfSetting.new(t[2], value=t[1][1])
+            return Setting.new(t[2], value=t[1][1])
         # tuple based init with type, only
         else:
-            return AppxfSetting.new(t[2])
+            return Setting.new(t[2])
     if isinstance(t[1], type):
         # type based input
-        return AppxfSetting.new(t[2])
-    if isinstance(t[1], AppxfSetting):
+        return Setting.new(t[2])
+    if isinstance(t[1], Setting):
         # Direct AppxfSetting based input
         return t[1]
-    return AppxfSetting.new(t[2], value=t[1])
+    return Setting.new(t[2], value=t[1])
 
 def verify_setting_dict(setting_dict: SettingDict, t_list: list[tuple]):
     for t in t_list:

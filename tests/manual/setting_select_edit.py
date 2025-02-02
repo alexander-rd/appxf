@@ -1,6 +1,6 @@
 from helper import ManualTestHelper
 from kiss_cf.gui.setting_dict import SettingDictSingleFrame
-from kiss_cf.setting import AppxfSetting, SettingDict
+from kiss_cf.setting import Setting, SettingDict
 
 # Scope: SettingSelect edit options functionality
 
@@ -8,7 +8,7 @@ tester = ManualTestHelper('''
 TBD
 ''')  # noqa: E501
 
-settingOne = AppxfSetting.new('select::string',
+settingOne = Setting.new('select::string',
     options={'Long Broken Text': '''Lorem ipsum dolor sit amet,
 
 consetetur sadipscing elitr, sed diam nonumy eirmod tempor
@@ -39,7 +39,7 @@ settingOne.options['mutable'] = True
 settingOne.base_setting.gui_options['height'] = 20
 settingOne.base_setting.gui_options['width'] = 60
 
-settingTwo = AppxfSetting.new('select::int',
+settingTwo = Setting.new('select::int',
     options={'1 Eins': 1, '2 Zwei': 2, '3 Drei': 3},
     name='Integers')
 settingTwo.options['mutable'] = True

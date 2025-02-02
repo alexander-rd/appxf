@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 from dataclasses import dataclass, field
 
-from .setting import AppxfSetting, AppxfSettingExtension, _BaseTypeT, _BaseSettingT, AppxfSettingError
+from .setting import Setting, SettingExtension, _BaseTypeT, _BaseSettingT, AppxfSettingError
 
 
 # Intent is to support complex data like long text templates by selecting and
@@ -49,7 +49,7 @@ from .setting import AppxfSetting, AppxfSettingExtension, _BaseTypeT, _BaseSetti
 # reasonable, but only (2) has valid use cases.
 
 
-class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
+class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
     ''' Setting restricted to a named, predefined set
 
     You typically provide the available options during construction, like:
@@ -63,11 +63,11 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
     # direct type based initialization.
 
     @dataclass(eq=False, order=False)
-    class Options(AppxfSetting.Options):
+    class Options(Setting.Options):
         ''' options for setting select '''
         # update value options
         select_map: dict[str, Any] = field(default_factory=dict)
-        value_options = AppxfSetting.Options.value_options + ['select_map']
+        value_options = Setting.Options.value_options + ['select_map']
 
         # update display options:
         #  * setting select will use larger entries by default:
@@ -80,7 +80,7 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
         #  * the value after seletion can be customized and the customized
         #    value is stored additionally to the list of select items:
         custom_value: bool = False
-        control_options = AppxfSetting.Options.control_options + ['mutable_items', 'custom_value']
+        control_options = Setting.Options.control_options + ['mutable_items', 'custom_value']
         # TODO: in contrast to the TWO options above, a fine grained options
         # would distinguish "being able to edit existing template items"
         # (without the ability to change the item names) and the full
@@ -101,7 +101,7 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
         # If select_map was already applied during intialization, we have to
         # pass it through add_option() to perform validations but we can just
         # reapply them. The strange next line is just to fix the typehints.
-        self.options: AppxfSettingSelect.Options = self.options
+        self.options: SettingSelect.Options = self.options
         for key, map_value in self.options.select_map.items():
             self.add_option(key, map_value)
 
@@ -124,7 +124,7 @@ class AppxfSettingSelect(AppxfSettingExtension[_BaseSettingT, _BaseTypeT]):
     @value.setter
     def value(self, value: Any):
         # first step is like in setting implementation
-        AppxfSetting.value.fset(self, value)  # type: ignore
+        Setting.value.fset(self, value)  # type: ignore
         # but the result is also applied to the base_setting
         self.base_setting.value = self._value
 

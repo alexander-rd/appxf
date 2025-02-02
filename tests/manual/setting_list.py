@@ -2,21 +2,21 @@ import tkinter
 
 from appxf import logging
 from helper import ManualTestHelper
-from kiss_cf.setting import AppxfSetting
+from kiss_cf.setting import Setting
 from kiss_cf.gui import FrameWindow, SettingDictColumnFrame
 
 # Use Case: Create a bunch of settings let the user edit and handle results
 # upon button press.
 
 setting_dict = {
-    'String': AppxfSetting.new(str),
-    'Email': AppxfSetting.new('email'),
-    'StringSelect': AppxfSetting.new(
+    'String': Setting.new(str),
+    'Email': Setting.new('email'),
+    'StringSelect': Setting.new(
         'select::string',
         options={'01 One': 'Text One', '02 Two': 'Text Two'},
         ),
-    'BooleanTrue': AppxfSetting.new(bool, value=True),
-    'BooleanFalse': AppxfSetting.new(bool, value=False),
+    'BooleanTrue': Setting.new(bool, value=True),
+    'BooleanFalse': Setting.new(bool, value=False),
 }
 
 # This test case put's everything into it's own frame. The tester will need to

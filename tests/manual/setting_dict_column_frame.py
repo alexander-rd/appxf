@@ -1,5 +1,5 @@
 from helper import ManualTestHelper
-from kiss_cf.setting import AppxfBool, AppxfString, AppxfEmail
+from kiss_cf.setting import SettingBool, SettingString, SettingEmail
 from kiss_cf.gui import setting_dict
 
 tester = ManualTestHelper('''
@@ -12,10 +12,10 @@ Columns: Placing options on top of this widget will test alignement of entry fie
 
 #  - Label length: the dict uses very short and very long names on purpose:
 prop_dict = {
-    'String': AppxfString(),
-    'Email of the master of disaster': AppxfEmail(),
-    'Boolean Value': AppxfBool(),
-    'Already having content': AppxfString('some content')
+    'String': SettingString(),
+    'Email of the master of disaster': SettingEmail(),
+    'Boolean Value': SettingBool(),
+    'Already having content': SettingString('some content')
 }
 
 tester._run_frame(setting_dict.SettingDictColumnFrame,

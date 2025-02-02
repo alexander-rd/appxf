@@ -1,10 +1,10 @@
 
 import pytest
 
-from kiss_cf.setting import AppxfSetting, AppxfSettingExtension
+from kiss_cf.setting import Setting, SettingExtension
 from kiss_cf.setting import AppxfSettingError, AppxfSettingConversionError
-from kiss_cf.setting import AppxfString, AppxfEmail, AppxfPassword
-from kiss_cf.setting import AppxfBool, AppxfInt, AppxfFloat
+from kiss_cf.setting import SettingString, SettingEmail, SettingPassword
+from kiss_cf.setting import SettingBool, SettingInt, SettingFloat
 
 from kiss_cf.setting import setting as setting_module
 # pylint: disable=protected-access
@@ -17,10 +17,10 @@ class DummyClassErrorOnStrCreation():
         raise TypeError('some failure')
 
 @pytest.mark.parametrize(
-    'appxf_class', setting_module.AppxfSettingMeta.implementations)
+    'appxf_class', setting_module._SettingMeta.implementations)
 def test_setting_init(appxf_class):
     # skip any AppxfExtension
-    if issubclass(appxf_class, AppxfSettingExtension):
+    if issubclass(appxf_class, SettingExtension):
         return
     setting = appxf_class(name='test')
     assert setting.options.name == 'test'
@@ -42,7 +42,7 @@ param_wrong_init = [
 def test_setting_wrong_init(setting_type, value):
     # Utilizing AppxfSetting.new() still uses the corresponding __init__
     with pytest.raises(AppxfSettingConversionError) as exc_info:
-        AppxfSetting.new(setting_type, value)
+        Setting.new(setting_type, value)
     # general error statement
     assert 'Cannot set' in str(exc_info.value)
     # value type should be included:
@@ -50,7 +50,7 @@ def test_setting_wrong_init(setting_type, value):
     print(exc_info.value)
     # TODO: check more error message content?
 
-def verify_conversion_error(exc_info, setting: AppxfSetting, input: object):
+def verify_conversion_error(exc_info, setting: Setting, input: object):
     # General formulation
     assert 'Cannot set' in str(exc_info.value)
     # Input value
@@ -108,7 +108,7 @@ param_conversion = [
 @pytest.mark.parametrize(
     'setting_type, input, valid, value, string', param_conversion)
 def test_setting_conversions(setting_type, input, valid, value, string):
-    setting = AppxfSetting.new(setting_type)
+    setting = Setting.new(setting_type)
     message = (
         f'Failed for type [{setting_type}] with input [{input}] '
         f'(expected valid: {valid}) '
@@ -119,7 +119,7 @@ def test_setting_conversions(setting_type, input, valid, value, string):
             setting.value = input
         verify_conversion_error(exc_info, setting, input)
         # Value and input still accoring to default:
-        setting_ref = AppxfSetting.new(setting_type)
+        setting_ref = Setting.new(setting_type)
         assert setting.value == setting_ref.value
         assert setting.input == setting_ref.input
         return
@@ -136,13 +136,13 @@ def test_setting_init_with_value(setting_type, input, valid, value, string):
         f'(expected valid: {valid}) '
         f'and resulting in value [{value}] and string [{string}]')
     if not valid:
-        setting_ref = AppxfSetting.new(setting_type)
+        setting_ref = Setting.new(setting_type)
         with pytest.raises(AppxfSettingConversionError) as exc_info:
-            setting = AppxfSetting.new(setting_type, value=input)
+            setting = Setting.new(setting_type, value=input)
         verify_conversion_error(exc_info, setting_ref, input)
         return
     else:
-        setting = AppxfSetting.new(setting_type, value=input)
+        setting = Setting.new(setting_type, value=input)
         assert setting.input == input, 'Input after setting does not match. ' + message
         assert setting.value == value, 'Value after setting does not match. ' + message
         assert setting.to_string() == string, 'String after setting does not match. ' + message
@@ -155,15 +155,15 @@ def test_setting_init_with_value_pre_lookup(setting_type, input, valid, value, s
         f'Failed for type [{setting_type}] with input [{input}] '
         f'(expected valid: {valid}) '
         f'and resulting in value [{value}] and string [{string}]')
-    setting_type = setting_module.AppxfSettingMeta.type_map[setting_type]
+    setting_type = setting_module._SettingMeta.type_map[setting_type]
     if not valid:
-        setting_ref = AppxfSetting.new(setting_type)
+        setting_ref = Setting.new(setting_type)
         with pytest.raises(AppxfSettingConversionError) as exc_info:
-            setting = AppxfSetting.new(setting_type, value=input)
+            setting = Setting.new(setting_type, value=input)
         verify_conversion_error(exc_info, setting_ref, input)
         return
     else:
-        setting = AppxfSetting.new(setting_type, value=input)
+        setting = Setting.new(setting_type, value=input)
         assert setting.input == input, 'Input after setting does not match. ' + message
         assert setting.value == value, 'Value after setting does not match. ' + message
         assert setting.to_string() == string, 'String after setting does not match. ' + message
@@ -171,37 +171,37 @@ def test_setting_init_with_value_pre_lookup(setting_type, input, valid, value, s
 def test_setting_self_test():
     # conversions covering all registered types:
     tested_types = set([t[0] for t in param_conversion])
-    uncovered_type = [setting_type for setting_type in setting_module.AppxfSettingMeta.type_map.keys()
+    uncovered_type = [setting_type for setting_type in setting_module._SettingMeta.type_map.keys()
                       if setting_type not in tested_types]
     assert not uncovered_type, (
         f'Following registered types are not covered in '
         f'test_setting_conversions: {uncovered_type}')
     # valid conversions covering all implementations
-    implementation_list = [setting_type for setting_type in setting_module.AppxfSettingMeta.implementations
-                           if not issubclass(setting_type, AppxfSettingExtension)]
+    implementation_list = [setting_type for setting_type in setting_module._SettingMeta.implementations
+                           if not issubclass(setting_type, SettingExtension)]
     uncovered_valid = (
         set(implementation_list) -
-        set([setting_module.AppxfSettingMeta.type_map[t[0]]
+        set([setting_module._SettingMeta.type_map[t[0]]
              for t in param_conversion
              if t[2]
         ]))
     uncovered_invalid = (
         set(implementation_list) -
-        set([setting_module.AppxfSettingMeta.type_map[t[0]]
+        set([setting_module._SettingMeta.type_map[t[0]]
              for t in param_conversion
              if not t[2]
         ]))
-    # Invalid AppxfString is covered differently
-    uncovered_invalid -= set(['AppxfString'])
+    # Invalid SettingString is covered differently
+    uncovered_invalid -= set(['SettingString'])
     assert not uncovered_valid, (
-        f'Following AppxfSetting implementations do not have a valid test '
+        f'Following Setting implementations do not have a valid test '
         f'case in test_setting_conversions: {uncovered_valid}')
     assert not uncovered_invalid, (
-        f'Following AppxfSetting implementations do not have an invalid test '
+        f'Following Setting implementations do not have an invalid test '
         f'case in test_setting_conversions: {uncovered_invalid}')
 
 def test_setting_mutable():
-    setting = AppxfSetting.new(str)
+    setting = Setting.new(str)
     setting.options.mutable = False
     with pytest.raises(AppxfSettingError) as exc_info:
         setting.value = 'new'
@@ -213,7 +213,7 @@ def test_setting_mutable():
 
 def test_setting_register_type_twice():
     with pytest.raises(AppxfSettingError) as exc_info:
-        class DummyAppxfString(AppxfSetting):
+        class DummyAppxfString(Setting):
             @classmethod
             def get_supported_types(cls) -> list[type | str]:
                 return ['email']
@@ -222,11 +222,11 @@ def test_setting_register_type_twice():
                 return ''
     assert 'is already registered' in str(exc_info.value)
     assert 'DummyAppxfString' in str(exc_info.value)
-    assert 'AppxfEmail' in str(exc_info.value)
+    assert 'SettingEmail' in str(exc_info.value)
 
 def test_setting_register_class_twice():
     with pytest.raises(AppxfSettingError) as exc_info:
-        class AppxfEmail(AppxfSetting):
+        class SettingEmail(Setting):
             @classmethod
             def get_supported_types(cls) -> list[type | str]:
                 return ['moreEmail']
@@ -234,11 +234,11 @@ def test_setting_register_class_twice():
             def get_default(cls) -> str:
                 return ''
     assert 'is already registered' in str(exc_info.value)
-    assert 'AppxfEmail' in str(exc_info.value)
+    assert 'SettingEmail' in str(exc_info.value)
 
 def test_setting_register_no_supported_type():
     with pytest.raises(AppxfSettingError) as exc_info:
-        class DummyAppxfString(AppxfSetting):
+        class DummyAppxfString(Setting):
             @classmethod
             def get_supported_types(cls) -> list[type | str]:
                 return []
@@ -249,7 +249,7 @@ def test_setting_register_no_supported_type():
 
 def test_setting_register_incopmlete_class():
     with pytest.raises(AppxfSettingError) as exc_info:
-        class DummyAppxfString(AppxfSetting):
+        class DummyAppxfString(Setting):
             @classmethod
             def get_supported_types(cls) -> list[type | str]:
                 return ['myEmail']
@@ -258,11 +258,11 @@ def test_setting_register_incopmlete_class():
 
 def test_setting_init_with_base_class():
     with pytest.raises(AppxfSettingError) as exc_info:
-        AppxfSetting.new(AppxfSetting)
+        Setting.new(Setting)
     assert 'You need to provide a fully implemented class' in str(exc_info.value)
-    assert 'AppxfSetting is not' in str(exc_info.value)
+    assert 'Setting is not' in str(exc_info.value)
 
 def test_setting_init_with_unknown_type():
     with pytest.raises(AppxfSettingError) as exc_info:
-        AppxfSetting.new('non_existing_type')
+        Setting.new('non_existing_type')
     assert 'Setting type [non_existing_type] is unknown.' in str(exc_info.value)

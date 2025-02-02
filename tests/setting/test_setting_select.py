@@ -1,16 +1,16 @@
 import pytest
 
-from kiss_cf.setting import AppxfSetting, AppxfSettingSelect
+from kiss_cf.setting import Setting, SettingSelect
 
 def test_init_default():
-    setting = AppxfSettingSelect(AppxfSetting.new(str))
+    setting = SettingSelect(Setting.new(str))
     assert setting.options.mutable_items
     assert not setting.options.custom_value
     assert setting.get_options() == []
 
 def test_init_with_items():
-    setting = AppxfSettingSelect(
-        AppxfSetting.new(str),
+    setting = SettingSelect(
+        Setting.new(str),
         value='A',
         select_map={'A': 'One', 'C': 'Three', 'B': 'Two'})
     # obtions are always sorted alphabetically:
@@ -18,8 +18,8 @@ def test_init_with_items():
     assert setting.value == 'One'
 
 def test_add_delete_cycle():
-    setting = AppxfSettingSelect(
-        AppxfSetting.new(str),
+    setting = SettingSelect(
+        Setting.new(str),
         value='B',
         select_map={'A': 'One', 'B': 'Two', 'D': 'Four'})
     assert setting.get_options() == ['A', 'B', 'D']
@@ -43,8 +43,8 @@ def test_add_delete_cycle():
     assert setting.value == 'One'
 
 def test_allowed_values_for_default():
-    setting = AppxfSettingSelect(
-        AppxfSetting.new(str),
+    setting = SettingSelect(
+        Setting.new(str),
         select_map={'A': 'One', 'B': 'Two'})
     # initial value
     assert setting.value == ''
@@ -64,8 +64,8 @@ def test_allowed_values_for_default():
     assert setting.value == 'Two'
 
 def test_allowed_values_custom_value():
-    setting = AppxfSettingSelect(
-            AppxfSetting.new(str, name='base'),
+    setting = SettingSelect(
+            Setting.new(str, name='base'),
             name='select',
             select_map={'A': 'One', 'B': 'Two'},
             custom_value=True)
@@ -80,13 +80,13 @@ def test_allowed_values_custom_value():
 
 
 def test_get_set_cycle():
-    setting = AppxfSettingSelect(
-        AppxfSetting.new(str),
+    setting = SettingSelect(
+        Setting.new(str),
         name='select',
         select_map={'A': 'One', 'B': 'Two'})
     setting.value = 'A'
     data = setting.get_state(value_options=True)
-    restored_setting = AppxfSettingSelect(AppxfSetting.new(str))
+    restored_setting = SettingSelect(Setting.new(str))
     restored_setting.set_state(data)
     # to ensure the restored select_map is copied over, the following test is
     # added. But option handling automatically removes stuff from data such
@@ -104,15 +104,15 @@ def test_get_set_cycle():
 # of taking only a reference to the select_map and not taking a deepcopy.
 
 def test_get_set_with_custom_value():
-    setting = AppxfSettingSelect(
-        AppxfSetting.new(str, name='base'),
+    setting = SettingSelect(
+        Setting.new(str, name='base'),
         name='select',
         select_map={'A': 'One', 'B': 'Two'},
         custom_value=True)
     setting.base_setting.value = 'something'
     assert setting.value == 'something'
     data = setting.get_state(value_options=True)
-    restored_setting = AppxfSettingSelect(AppxfSetting.new(str), custom_value=True)
+    restored_setting = SettingSelect(Setting.new(str), custom_value=True)
     restored_setting.set_state(data)
     assert restored_setting.get_options() == ['A', 'B']
     assert restored_setting.value == 'something'

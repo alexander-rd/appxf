@@ -1,4 +1,4 @@
-''' Abstract AppxfSetting and Appxf* implementations
+''' Abstract Setting and Setting* implementations
 
 Settings hold simple data types like strings, booleans or integers. They add
 the following support for usage in applications:
@@ -25,11 +25,11 @@ class AppxfSettingError(Exception):
 class AppxfSettingConversionError(Exception):
     ''' AppxfSetting conversion error
 
-    It is used when the AppxfSetting is not able to validate an input or
-    convert it to the base type.'''
-    def __init__(self, setting_class: type[AppxfSetting[Any]], value, **kwargs):
+    It is used when the Setting is not able to validate an input or convert it
+    to the base type.'''
+    def __init__(self, setting_class: type[Setting[Any]], value, **kwargs):
         super().__init__(**kwargs)
-        # The following try/except is required since AppxfString accepts any
+        # The following try/except is required since SettingString accepts any
         # input converting it with str(). If that fails, the value can also not
         # be displayed.
         try:
@@ -50,55 +50,55 @@ class AppxfSettingConversionError(Exception):
 
 # ## Registry implementation
 # To simplify the usage of properties, new classes register to the base
-# implementation of AppxfSetting such that, for example,
-# AppxfSetting.new('email') returns a AppxfEmail object.
+# implementation of Setting such that, for example, Setting.new('email')
+# returns a SettingEmail object.
 
 # TODO: refactoring according to ticket #16: substitute meta_class by
 # __init_subclass__
 
-class AppxfSettingMeta(type):
-    ''' Meta class collecting AppxfSetting implementations '''
-    # Mapping of types or string references to derived AppxfSetting classes. This
-    # map is used when generating a new AppxfSetting without the need to import all
-    # classes seperately. Note, however, that custom AppxfSetting implementations
+class _SettingMeta(type):
+    ''' Meta class collecting Setting implementations '''
+    # Mapping of types or string references to derived Setting classes. This
+    # map is used when generating a new Setting without the need to import all
+    # classes seperately. Note, however, that custom Setting implementations
     # still need to be loaded to get registered.
-    type_map: dict[type | str | AppxfSetting[Any], type[AppxfSetting[Any]]] = {}
+    type_map: dict[type | str | Setting[Any], type[Setting[Any]]] = {}
     # Settings also support setting extensions that are based on "normal" types
-    # but extentding their behavior. The first example was AppxfSettingSelect
+    # but extentding their behavior. The first example was SettingSelect
     # which defines a set of named values to select from. The base setting is
     # preserved, but limited to the named options.
-    extension_map: dict[str, type[AppxfSettingExtension]] = {}
+    extension_map: dict[str, type[SettingExtension]] = {}
 
-    # List of known AppxfSetting implementations, mainly intended for logging.
+    # List of known Setting implementations, mainly intended for logging.
     implementation_names: list[str] = []
-    implementations: list[type[AppxfSetting[Any]]] = []
+    implementations: list[type[Setting[Any]]] = []
 
     @classmethod
-    def _register_setting_class(mcs, cls_register: type[AppxfSetting[Any]]):
-        ''' Handle the registration of a new AppxfSetting '''
+    def _register_setting_class(mcs, cls_register: type[Setting[Any]]):
+        ''' Handle the registration of a new Setting '''
         # check class
         if cls_register.__name__ in mcs.implementation_names:
             raise AppxfSettingError(
-                f'AppxfSetting {cls_register.__name__} is already registered.')
+                f'Setting {cls_register.__name__} is already registered.')
         # check completeness of implementation:
         if cls_register.__abstractmethods__:
             raise AppxfSettingError(
-                f'AppxfSetting {cls_register.__name__} still has abstract methods: '
+                f'Setting {cls_register.__name__} still has abstract methods: '
                 f'{cls_register.__abstractmethods__} that need implementation.')
-        # I cannot use issubclass to differentiate an AppxfExtension from an
-        # AppxfSetting since the classes are not yet known. We rely on the
-        # attribute to be existent or not.
+        # I cannot use issubclass to differentiate an SettingExtension from an
+        # Setting since the classes are not yet known. We rely on the attribute
+        # to be existent or not.
         if getattr(cls_register, 'setting_extension', False):
             mcs._add_extension(cls_register=cls_register) # type: ignore
         else:
             mcs._add_setting(cls_register=cls_register)
 
     @classmethod
-    def _add_setting(mcs, cls_register: type[AppxfSetting[Any]]):
+    def _add_setting(mcs, cls_register: type[Setting[Any]]):
         # check supported types output
         if not cls_register.get_supported_types():
             raise AppxfSettingError(
-                f'AppxfSetting {cls_register.__name__} does not return any '
+                f'Setting {cls_register.__name__} does not return any '
                 f'supported type. Consider returning at least some '
                 f'[''your special type''] from get_supported_types().')
         # verify that no supported type already being registered
@@ -106,7 +106,7 @@ class AppxfSettingMeta(type):
             if setting_type in mcs.type_map:
                 other_cls = mcs.type_map[setting_type].__name__
                 raise AppxfSettingError(
-                    f'AppxfSetting {cls_register.__name__} supported type '
+                    f'Setting {cls_register.__name__} supported type '
                     f'{setting_type} is already registered for {other_cls}.'
                     )
         # Adding stuff only after ALL checks
@@ -120,8 +120,8 @@ class AppxfSettingMeta(type):
              })
 
     @classmethod
-    def _add_extension(mcs, cls_register: type[AppxfSettingExtension[Any, Any]]):
-        '''Adding an extending AppxfSetting
+    def _add_extension(mcs, cls_register: type[SettingExtension[Any, Any]]):
+        '''Adding an extending Setting
 
         The existance of setting_extension is already checked when calling.
         '''
@@ -139,35 +139,35 @@ class AppxfSettingMeta(type):
     def __new__(mcs, clsname, bases, attrs):
         newclass = super().__new__(mcs, clsname, bases, attrs)
         # Register only non abstract classes:
-        if clsname != 'AppxfSetting' and clsname != 'AppxfSettingExtension':
+        if clsname != 'Setting' and clsname != 'SettingExtension':
             mcs._register_setting_class(newclass)
         # TODO: the check above should go against __abstractmethods__ and not
         # against plain names.
         return newclass
 
     @classmethod
-    def get_appxf_setting(
+    def get_setting(
         cls,
         requested_type: str | type,
         value: Any,
         name: str,
-        **kwargs) -> AppxfSetting[Any]:
-        ''' Get AppxfSetting type from string or base type
+        **kwargs) -> Setting[Any]:
+        ''' Get Setting type from string or base type
 
-        The type may also be an AppxfSetting directly
+        The type may also be an Setting directly
         '''
-        # Handle unfinished implementations of AppxfSettings:
-        if isinstance(requested_type, type) and issubclass(requested_type, AppxfSetting):
+        # Handle unfinished implementations of Settings:
+        if isinstance(requested_type, type) and issubclass(requested_type, Setting):
             if requested_type.__abstractmethods__:
                 raise AppxfSettingError(
                     f'You need to provide a fully implemented class like '
-                    f'AppxfString. {requested_type.__name__} is not '
+                    f'SettingString. {requested_type.__name__} is not '
                     f'fully implemented')
             return requested_type(value=value, name=name, **kwargs)
         # requested type is now either a string or a type, before handling
-        # potential AppxfSettingExtensions, we look up existing types:
-        if requested_type in AppxfSettingMeta.type_map:
-            return AppxfSettingMeta.type_map[requested_type](value=value, name=name, **kwargs)
+        # potential SettingExtensions, we look up existing types:
+        if requested_type in _SettingMeta.type_map:
+            return _SettingMeta.type_map[requested_type](value=value, name=name, **kwargs)
         # now, we handle extensions which are separated by otherwise untypical
         # '::'
         if isinstance(requested_type, str) and '::' in requested_type:
@@ -194,30 +194,30 @@ class AppxfSettingMeta(type):
                                   **extension_options)
         raise AppxfSettingError(
             f'Setting type [{requested_type}] is unknown. Did you import the '
-            f'AppxfSetting implementations you wanted to use? Supported are: '
-            f'{AppxfSettingMeta.type_map.keys()}'
+            f'Setting implementations you wanted to use? Supported are: '
+            f'{_SettingMeta.type_map.keys()}'
         )
 
 
 # The custom metaclass from registration and the ABC metaclass for abstract
 # classes need to be merged. Note that the order actually matters. The
-# __abstractmethods__ must be present when executing the AppxfSettingMeta.
-class _AppxfSettingMetaMerged(AppxfSettingMeta, ABCMeta):
+# __abstractmethods__ must be present when executing the _SettingMeta.
+class _SettingMetaMerged(_SettingMeta, ABCMeta):
     pass
 
 
-# AppxfSetting uses the ValueType below in it's implementation to allow
-# appropriate type hints.
+# Setting uses the ValueType below in it's implementation to allow appropriate
+# type hints.
 _BaseTypeT = TypeVar('_BaseTypeT', bound=object)
 
-class AppxfSetting(Generic[_BaseTypeT], Stateful,
-                   metaclass=_AppxfSettingMetaMerged):
+class Setting(Generic[_BaseTypeT], Stateful,
+              metaclass=_SettingMetaMerged):
     ''' Abstract base class for settings
 
-    Use AppxfSetting.new('str') to get matching appxf settings for known
-    types. You may list types by AppxfSetting.get_registered_types().
+    Use Setting.new('str') to get matching appxf settings for known types. You
+    may list types by Setting.get_registered_types().
 
-    Derive from AppxfSetting to add custom types. You have to add:
+    Derive from Setting to add custom types. You have to add:
       get_default() classmethod -- providing default values on construction of
         new values and defines the base type.
       get_supported_types() classmethod -- providing a list of the types that
@@ -235,14 +235,14 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
     You do not need to provide anything else, including __init__.
     '''
 
-    # AppxfSettings includes dataclass classes for setting specific options and
+    # Settings includes dataclass classes for setting specific options and
     # gui_options. They are part of the class definition since a derived class
     # may also update the contained Options or GuiOptions class. The __init__
     # code will then adapt accordingly.
     @dataclass(eq=False, order=False)
     class Options(AppxfOptions):
         ''' options for settings '''
-        # Overwrite AppxfOptions default values
+        # Overwrite default values
         options_mutable: bool = True # must remain true!
         # options for settings define export groups for which the mutable
         # behavior can be controlled separately
@@ -263,16 +263,16 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
         name: str = ''
         display_width: int = 0
 
-        # the attribute/attribute_mask concept is not taken over from
-        # AppxfOptions since a more specific concept is needed which options to
-        # export - export groups are defined to which the fields are added -
-        # any field not in an export group cannot be exported (except name)
+        # the attribute/attribute_mask concept is not taken over from Options
+        # since a more specific concept is needed which options to export -
+        # export groups are defined to which the fields are added - any field
+        # not in an export group cannot be exported (except name)
         value_options = []
         display_options = ['display_width']
         control_options = ['mutable', 'value_options_mutable',
                            'display_options_mutable', 'control_options_mutable',
                            ]
-        # with overwriting the get_state()/set_state(), the AppxfStateful class
+        # with overwriting the get_state()/set_state(), the Stateful class
         # configuration for attribute/attribute_mask doe not need to be
         # changed.
         def get_state(self,
@@ -331,7 +331,7 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
         # (or options) are mutable. They may also affect other behavior of the
         # setting which mostly applies to ExtendedSettings.
         control_options: bool = False
-        # Exporting default values (like in AppxfOptions)
+        # Exporting default values (like in Options)
         export_defaults: bool = False
 
     def __init__(self,
@@ -340,8 +340,6 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
         super().__init__()
         # consume kwargs into options/gui_options - must apply before applying
         # the value since options typically affect the validation:
-        #self.options: AppxfSetting.Options = self.Options.consume_kwargs('options', kwargs)
-        #self.gui_options: AppxfSetting.GuiOptions = self.GuiOptions.consume_kwargs('gui_options', kwargs)
         self.options = self.Options.new_from_kwarg(kwargs)
         # throw error for anything that is left over
         self.options.raise_error_on_non_empty_kwarg(kwargs)
@@ -394,10 +392,10 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
             value: _BaseTypeT | None = None,
             name: str = '',
             **kwargs
-            ) -> AppxfSetting:
-        ''' Get specific AppxfSetting implementation by type '''
+            ) -> Setting:
+        ''' Get specific Setting implementation by type '''
         # Behavior is more appropriate in the meta class:
-        return AppxfSettingMeta.get_appxf_setting(setting_type, value, name, **kwargs)
+        return _SettingMeta.get_setting(setting_type, value, name, **kwargs)
 
     # Default value that must be defined by the implementing class
     @classmethod
@@ -411,9 +409,9 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
     def get_supported_types(cls) -> list[type | str]:
         ''' Provide list of suported types
 
-        List typically includes strings and if the AppxfSetting is intended for
-        a specific base class like string, bool or integer, it includes also
-        the base type directly.
+        List typically includes strings and if the Setting is intended for a
+        specific base class like string, bool or integer, it includes also the
+        base type directly.
         '''
 
     @property
@@ -423,7 +421,7 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
 
     @property
     def value(self) -> _BaseTypeT:
-        ''' Stored value of the AppxfSetting (converted to python builtin type) '''
+        ''' Stored value of the Setting (converted to python builtin type) '''
         return self._value
 
     @value.setter
@@ -443,7 +441,7 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
         self._value = _value
 
     def validate(self, value: Any) -> bool:
-        ''' Validate a string to match the AppxfSetting type '''
+        ''' Validate a string to match the Setting type '''
         # There was a different implementation before with simplified
         # validation check if the base type is already matched, now we just
         # rely on the _validated_convertion.
@@ -454,7 +452,7 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
     # settings)
 
     def _validated_conversion(self, value: Any) -> tuple[bool, _BaseTypeT]:
-        ''' Validate a string to match the AppxfSetting's expectations
+        ''' Validate a string to match the Setting's expectations
 
         Shall also provide the conversion to it's base type.
 
@@ -472,24 +470,23 @@ class AppxfSetting(Generic[_BaseTypeT], Stateful,
         return str(self._value)
 
 
-# Fancy: an AppxfSetting can also be extended with additional behavior. An
-# AppxfExtension needs to remain generic with respect to the original base type
-# (like int or str) but also with respect to the specific AppxfSetting it
-# extends. To remain an AppxfSetting, it also needs to derive from
-# AppxfSetting.
-_BaseSettingT = TypeVar('_BaseSettingT', bound=AppxfSetting)
+# Fancy: a Setting can also be extended with additional behavior. A
+# SettingExtension needs to remain generic with respect to the original base
+# type (like int or str) but also with respect to the specific Setting it
+# extends. To remain a Setting, it also needs to derive from Setting.
+_BaseSettingT = TypeVar('_BaseSettingT', bound=Setting)
 
-# TODO: refactoring according to ticket #17: aggregate AppxfSetting instead of
+# TODO: refactoring according to ticket #17: aggregate Setting instead of
 # deriving from it.
 
-class AppxfSettingExtension(Generic[_BaseSettingT, _BaseTypeT], AppxfSetting[_BaseTypeT]):
+class SettingExtension(Generic[_BaseSettingT, _BaseTypeT], Setting[_BaseTypeT]):
     setting_extension = ''
 
     def __init__(self,
                  base_setting: _BaseSettingT,
                  value: _BaseTypeT | None = None,
                  **kwargs):
-        # base_setting has to be available during __init__ of AppxfSetting
+        # base_setting has to be available during __init__ of Setting
         # since it will validate the value which should rely on the
         # base_setting. ++ base_setting also has to be an instance:
         #   * to consistently store base setting options
@@ -500,7 +497,7 @@ class AppxfSettingExtension(Generic[_BaseSettingT, _BaseTypeT], AppxfSetting[_Ba
         #   * to allow extensions of extensions (no use case, yet)
         if isinstance(base_setting, type):
             raise AppxfSettingError(
-                f'base_setting input must be an AppxfSetting instance, not '
+                f'base_setting input must be a Setting instance, not '
                 f'just a type. You provided {base_setting}')
         self.base_setting = base_setting
         super().__init__(value=value, **kwargs)
@@ -511,7 +508,7 @@ class AppxfSettingExtension(Generic[_BaseSettingT, _BaseTypeT], AppxfSetting[_Ba
             self.base_setting.value = self.value
 
     # This realization only applies to instances. The class registration for
-    # AppxfExtensions will not rely on get_default().
+    # SettingExtensions will not rely on get_default().
     def get_default(self) -> _BaseTypeT:
         return self.base_setting.get_default()
     # To still provide an implementaiton of the classmethod, we provide a dummy
@@ -527,16 +524,16 @@ class AppxfSettingExtension(Generic[_BaseSettingT, _BaseTypeT], AppxfSetting[_Ba
     # TODO: the below should become obsolete, setting_select already overwrites
     # it again since updating the getter removes the setter anyways. This may
     # go along with a complete removal of a generic "SeeingExtension" class.
-    @AppxfSetting.value.setter
+    @Setting.value.setter
     def value(self, value: Any):
         # first step is like in base implementation - whatever the extension does
-        AppxfSetting.value.fset(self, value)  # type: ignore
+        Setting.value.fset(self, value)  # type: ignore
         # but the result is also applied to the base_setting
         self.base_setting.value = self._value
 
 
-class AppxfString(AppxfSetting[str]):
-    ''' AppxfSetting for basic strings '''
+class SettingString(Setting[str]):
+    ''' Setting for basic strings '''
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
         return [str, 'str', 'string']
@@ -550,9 +547,9 @@ class AppxfString(AppxfSetting[str]):
             return False, self.get_default()
         return True, value
 
-class AppxfEmail(AppxfString):
-    ''' AppxfSetting for Emails'''
-    # get_default() and to_string() are derived from AppxfString
+class SettingEmail(SettingString):
+    ''' Setting for Emails'''
+    # get_default() and to_string() are derived from SettingString
 
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
@@ -576,8 +573,8 @@ class AppxfEmail(AppxfString):
         return True, value
 
 
-class AppxfPassword(AppxfString):
-    ''' AppxfSetting for passwords
+class SettingPassword(SettingString):
+    ''' Setting for passwords
 
     Default minimum password length is 6.
     '''
@@ -647,8 +644,8 @@ def validated_conversion_configparser(
     return True, value # type: ignore
 
 
-class AppxfBool(AppxfSetting[bool]):
-    ''' AppxfSetting for booleans '''
+class SettingBool(Setting[bool]):
+    ''' Setting for booleans '''
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
         return [bool, 'bool', 'boolean']
@@ -671,8 +668,8 @@ class AppxfBool(AppxfSetting[bool]):
         return '1' if self._value else '0'
 
 
-class AppxfInt(AppxfSetting[int]):
-    ''' AppxfSetting for Integers '''
+class SettingInt(Setting[int]):
+    ''' Setting for Integers '''
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
         return [int, 'int', 'integer']
@@ -690,8 +687,8 @@ class AppxfInt(AppxfSetting[int]):
         return False, self.get_default()
 
 
-class AppxfFloat(AppxfSetting[float]):
-    ''' AppxfSetting for Float '''
+class SettingFloat(Setting[float]):
+    ''' Setting for Float '''
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
         return [float, 'float']

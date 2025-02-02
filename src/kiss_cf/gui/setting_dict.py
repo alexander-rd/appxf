@@ -8,7 +8,7 @@ import tkinter
 import math
 
 from appxf import logging
-from kiss_cf.setting import AppxfBool, AppxfSetting, SettingDict, AppxfSettingSelect
+from kiss_cf.setting import SettingBool, Setting, SettingDict, SettingSelect
 
 from .common import AppxfGuiError, FrameWindow, GridFrame
 from .setting_base import SettingFrameBase, SettingFrameBool, SettingFrameDefault
@@ -18,18 +18,18 @@ from .setting_select import SettingSelectFrame
 # Should the labels be aligned or should the space rather be used for entries.
 # What's the default setting and how to adjust?
 
-SettingInput: TypeAlias = (AppxfSetting | SettingDict |
-                           dict[str, Any] | Iterable[AppxfSetting])
+SettingInput: TypeAlias = (Setting | SettingDict |
+                           dict[str, Any] | Iterable[Setting])
 
 def get_single_setting_frame(parent: tkinter.BaseWidget,
-                             setting: AppxfSetting,
+                             setting: Setting,
                              **kwargs) -> SettingFrameBase:
-    if isinstance(setting, AppxfSettingSelect):
+    if isinstance(setting, SettingSelect):
         return SettingSelectFrame(
             parent=parent,
             setting=setting,
             **kwargs)
-    if isinstance(setting, AppxfBool):
+    if isinstance(setting, SettingBool):
         return SettingFrameBool(
             parent=parent,
             setting=setting,
@@ -58,7 +58,7 @@ def input_type_to_setting_dict(setting: SettingInput) -> SettingDict:
             this_setting.name: this_setting for this_setting in setting
             })
 
-    if isinstance(setting, AppxfSetting):
+    if isinstance(setting, Setting):
         return SettingDict(data={setting.name: setting})
 
     raise AppxfGuiError(f'Input type unknown: {setting.__class__.__name__}')
@@ -103,7 +103,7 @@ class SettingDictSingleFrame(SettingFrameBase):
                 setting.get_setting(key),
                 element_gui_options.get(key, {}))
 
-    def _place_setting_frame(self, setting: AppxfSetting, gui_options):
+    def _place_setting_frame(self, setting: Setting, gui_options):
         if 'frame_type' in gui_options:
             setting_frame = gui_options['frame_type'](
                 self, setting, gui_options)
@@ -252,7 +252,7 @@ class SettingDictWindow(FrameWindow):
 
     def __init__(self, parent,
                  title: str,
-                 setting: AppxfSetting | SettingDict,
+                 setting: Setting | SettingDict,
                  kiss_options: dict | None = None,
                  **kwargs):
         '''
@@ -268,7 +268,7 @@ class SettingDictWindow(FrameWindow):
         # Whole class operated on SettingDict and a single setting is just cast
         # up to a SettingDict to handle it (required to obtain store/load
         # behavior for backup&restore upon cancel)
-        if isinstance(setting, AppxfSetting):
+        if isinstance(setting, Setting):
             self.property_dict = SettingDict(data={setting.name: setting})
         elif isinstance(setting, SettingDict):
             self.property_dict = setting

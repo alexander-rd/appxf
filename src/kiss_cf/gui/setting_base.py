@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 import tkinter
 
 from appxf import logging
-from kiss_cf.setting import AppxfSetting
+from kiss_cf.setting import Setting
 
 from .common import GridFrame, GridSetting
 
@@ -27,7 +27,7 @@ class SettingFrameDefault(SettingFrameBase):
     log = logging.getLogger(__name__ + '.PropertyWidget')
 
     def __init__(self, parent,
-                 setting: AppxfSetting,
+                 setting: Setting,
                  **kwargs):
         super().__init__(parent, **kwargs)
 
@@ -111,7 +111,7 @@ class SettingFrameBool(SettingFrameBase):
     log = logging.getLogger(__name__ + '.BoolCheckBoxWidget')
 
     def __init__(self, parent,
-                 setting: AppxfSetting,
+                 setting: Setting,
                  **kwargs):
         super().__init__(parent, **kwargs)
 
