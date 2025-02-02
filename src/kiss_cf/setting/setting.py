@@ -16,7 +16,7 @@ from dataclasses import dataclass, fields
 import re
 import configparser
 
-from kiss_cf import Stateful, AppxfOptions
+from kiss_cf import Stateful, Options
 
 class AppxfSettingError(Exception):
     ''' AppxfSetting handling error '''
@@ -240,7 +240,7 @@ class Setting(Generic[_BaseTypeT], Stateful,
     # may also update the contained Options or GuiOptions class. The __init__
     # code will then adapt accordingly.
     @dataclass(eq=False, order=False)
-    class Options(AppxfOptions):
+    class Options(Options):
         ''' options for settings '''
         # Overwrite default values
         options_mutable: bool = True # must remain true!
@@ -308,7 +308,7 @@ class Setting(Generic[_BaseTypeT], Stateful,
 
 
     @dataclass
-    class ExportOptions(AppxfOptions):
+    class ExportOptions(Options):
         ''' Options used for get_state() and set_state() '''
         # There is no option to control whether the value is exported.
         #

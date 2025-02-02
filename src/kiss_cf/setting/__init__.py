@@ -9,15 +9,15 @@ activity of the application.
 
 All above use cases have user interaction in common, demanding for a string
 conversion and ensuring validity of input. The following classes assist here:
-  AppxfSetting - the abstract base class from which new specific settings can be
+  Setting - the abstract base class from which new specific settings can be
       derived.
-  Appxf* -- Specific implementations ranging from AppxfString over AppxfInteger down
-      to AppxfEmail and AppxfPassword.
+  Setting* -- Specific implementations ranging from SettingString over
+      SettingInteger down to SettingEmail and SettingPassword.
 
 Most of the use cases have in common that the settings need to be persisted and
 the following classes are the entry points:
   SettingDict -- It behaves like a dict, providing all values but can
-      access any Appxf* setting with validation and string conversion that is
+      access any Setting* setting with validation and string conversion that is
       modelled behind.
   Config -- It collects several SettingDict objects as sections with some
       additional conveniance.

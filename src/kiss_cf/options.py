@@ -4,10 +4,10 @@ from typing import Any, Type, TypeVar
 
 from kiss_cf import Stateful
 
-_OptionTypeT = TypeVar('_OptionTypeT', bound='AppxfOptions')
+_OptionTypeT = TypeVar('_OptionTypeT', bound='Options')
 
 @dataclass(eq=False, order=False)
-class AppxfOptions(Stateful):
+class Options(Stateful):
     ''' maintain options for classes to aggregate from
 
     Base class implementation for option handling of classes, consuming kwarg's
@@ -16,7 +16,7 @@ class AppxfOptions(Stateful):
     get_state() implementation with an added option to not export options that
     have their default value set.
     '''
-    # AppxfOptions does not include any default options. It includes only
+    # Options does not include any default options. It includes only
     # behavior.
 
     ###################
@@ -34,7 +34,7 @@ class AppxfOptions(Stateful):
         Arguments that are matching fields or "options" are applied to this
         option class and a new instance is returned. The arguments are removed
         from kwarg_dict. The "options" key supports being an options class or a
-        dictionary, like: options=AppxfOption() or options={...}.
+        dictionary, like: options=Options() or options={...}.
         '''
         named_option_kwarg = cls._get_kwarg_from_named_option(kwarg_dict)
         normal_kwarg = cls._get_normal_kwarg(kwarg_dict)
@@ -74,8 +74,8 @@ class AppxfOptions(Stateful):
                 setattr(self, field.name, field.default_factory())
             else: # pragma: no cover
                 # this branch is should not be reachable since the dataclass
-                # cannot contain options without default values after
-                # AppxfOptions already defining some:
+                # cannot contain options without default values after Options
+                # already defining some:
                 raise TypeError(
                     f'This should not happen: neither a default value or a '
                     f'default_factors is set for field {field.name} of '
@@ -150,9 +150,9 @@ class AppxfOptions(Stateful):
         elif field.default_factory is not MISSING:
             return getattr(self, field.name) == field.default_factory()
         else: # pragma: no cover
-            # this branch is should not be reachable since the dataclass
-            # cannot contain options without default values after
-            # AppxfOptions already defining some:
+            # this branch is should not be reachable since the dataclass cannot
+            # contain options without default values after Options already
+            # defining some:
             raise TypeError(
                 f'This should not happen: could not determine if field '
                 f'{field.name} uses default value or not '
