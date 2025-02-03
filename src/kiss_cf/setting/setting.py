@@ -282,7 +282,6 @@ class Setting(Generic[_BaseTypeT], Stateful,
                       control: bool = False,
                       defaults: bool = True,
                       **kwarg) -> object:
-            print(f'OptionsExport: {name} / {value}/{display}/{control} / {defaults}')
             attributes = ((self.value_options if value else []) +
                           (self.display_options if display else []) +
                           (self.control_options if control else []))
@@ -305,6 +304,11 @@ class Setting(Generic[_BaseTypeT], Stateful,
             return self._set_state_default(data=data,
                                            attributes=attributes,
                                            attribute_mask=[])
+
+    # TODO: I should define Options and ExportOptions outside of the class
+    # scope and only reference them in here to be available also within class
+    # scope. Additionally, the Options.get_state() should use directly the
+    # ExportOptions to avoid the clutter in definition and usage.
 
 
     @dataclass
