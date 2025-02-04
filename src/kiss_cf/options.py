@@ -1,6 +1,7 @@
 ''' Implementation of Options class '''
 
 from __future__ import annotations
+from collections import OrderedDict
 from dataclasses import dataclass, fields, Field, MISSING
 from typing import Any, TypeVar, Type
 
@@ -185,7 +186,7 @@ class Options(Stateful):
 
     # get_state needs to handle the export_defaults parameter which runs via
     # the attribute_mask:
-    def get_state(self, **kwarg) -> dict[str, Any]:
+    def get_state(self, **kwarg) -> OrderedDict[str, Any]:
         export_defaults = True
 
         if 'export_defaults' in kwarg:
