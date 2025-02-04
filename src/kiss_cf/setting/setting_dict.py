@@ -16,6 +16,7 @@ from .setting import Setting, AppxfSettingError
 
 # TODO: Loading modes 'add' and 'error'
 
+
 class SettingDict(Storable, MutableMapping[str, Setting]):
     ''' Maintain a dictionary of settings
 
@@ -52,7 +53,8 @@ class SettingDict(Storable, MutableMapping[str, Setting]):
         # Initialize dict details
         if storage is None:
             storage = RamStorage()
-        # **kwargs cannot be forwarded. All are resolved into dictionary construction.
+        # **kwargs cannot be forwarded. All are resolved into dictionary
+        # construction.
         super().__init__(storage=storage)
 
         # Cunsume data and kwargs manually:
@@ -192,7 +194,6 @@ class SettingDict(Storable, MutableMapping[str, Setting]):
         if storage is not None:
             self._storage = storage
 
-
         if (isinstance(on_load_unknown, str) and
                 on_load_unknown in self.valid_on_load_unknown):
             self._on_load_unknown = 'ignore'
@@ -211,8 +212,8 @@ class SettingDict(Storable, MutableMapping[str, Setting]):
                 self._store_setting_object = False
             else:
                 raise AppxfSettingError(
-                    f'store_setting_object supports None (no change) '
-                    f'and True. Extension for False may be added.'
+                    'store_setting_object supports None (no change) '
+                    'and True. Extension for False may be added.'
                 )
 
     def get_state(self, **kwarg) -> object:
@@ -223,15 +224,14 @@ class SettingDict(Storable, MutableMapping[str, Setting]):
 
         data: dict[str, Any] = {'_version': 2}
         for key, setting in self._setting_dict.items():
-            print(f'Exporting {key} with options: {export_options}')
             data[key] = setting.get_state(options=export_options)
-            print(f'..result: {data[key]}')
             # strip name if name is key
-            if (isinstance(data[key], dict) and
+            if (
+                isinstance(data[key], dict) and
                 'options' in data[key] and
                 'name' in data[key]['options'] and
                 data[key]['options']['name'] == key
-                ):
+            ):
                 data[key]['options'].pop('name')
         return data
 

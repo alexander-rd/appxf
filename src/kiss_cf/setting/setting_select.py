@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import Any
 from dataclasses import dataclass, field
 
-from .setting import Setting, SettingExtension, _BaseTypeT, _BaseSettingT, AppxfSettingError
+from .setting import Setting, SettingExtension
+from .setting import _BaseTypeT, _BaseSettingT, AppxfSettingError
 
 
 # Intent is to support complex data like long text templates by selecting and
@@ -72,7 +73,6 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
         # update display options:
         #  * setting select will use larger entries by default:
         display_width: int = 60
-        # display_options = AppxfSetting.Options.display_options + ['display_height']
 
         # update control options:
         #  * items can be added or removed to/from the select list:
@@ -80,7 +80,8 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
         #  * the value after seletion can be customized and the customized
         #    value is stored additionally to the list of select items:
         custom_value: bool = False
-        control_options = Setting.Options.control_options + ['mutable_items', 'custom_value']
+        control_options = (Setting.Options.control_options +
+                           ['mutable_items', 'custom_value'])
         # TODO: in contrast to the TWO options above, a fine grained options
         # would distinguish "being able to edit existing template items"
         # (without the ability to change the item names) and the full
@@ -128,7 +129,6 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
         # but the result is also applied to the base_setting
         self.base_setting.value = self._value
 
-
     def _validated_conversion(self, value: str) -> tuple[bool, _BaseTypeT]:
         if value == self.base_setting.get_default():
             return True, self.base_setting.get_default()
@@ -139,7 +139,8 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
     def get_state(self, **kwarg) -> object:
         # we export as defined in setting
         out = super().get_state(**kwarg)
-        # but we may need to add the base_setting if the base setting is maintained
+        # but we may need to add the base_setting if the base setting is
+        # maintained
         if self.options.custom_value:
             if isinstance(out, dict):
                 out['base_setting'] = self.base_setting.get_state(**kwarg)
@@ -155,9 +156,9 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
         if isinstance(data, dict) and 'base_setting' in data:
             self.base_setting.set_state(data['base_setting'], **kwarg)
 
-    ###################/
-    ## Option Handling
-    #/
+    # #################/
+    # Option Handling
+    # /
     def get_options(self) -> list[str]:
         ''' Get list of selectable options
 
@@ -167,7 +168,8 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
 
     def get_option_value(self, option: str) -> Any:
         ''' Get the value for an option '''
-        return self.options.select_map.get(option, self.base_setting.get_default())
+        return self.options.select_map.get(option,
+                                           self.base_setting.get_default())
 
     def delete_option(self, option: str):
         ''' Delete an option from selectable items '''
