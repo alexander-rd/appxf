@@ -206,6 +206,99 @@ class _SettingMetaMerged(_SettingMeta, ABCMeta):
     pass
 
 
+@dataclass
+class SettingExportOptions(Options):
+    ''' Options used for get_state() and set_state() '''
+    # There is no option to control whether the value is exported.
+    #
+    # The name is typically maintained by whoever holds the setting object
+    # but could be exported if necessary:
+    name: bool = False
+    # The type of the setting is relevant in context of a configurable
+    # configuration where a JSON file defines a set of variables
+    # copmletely. This value cannot be restored via get_state() and usage
+    # is not implemented, yet.
+    type: bool = False
+    # The value options is anything that influences the input handling to
+    # the setting (validity) or the default value (which also influences
+    # validity).
+    value_options: bool = False
+    # Display options only affect how the setting would be displayed in the
+    # GUI.
+    display_options: bool = False
+    # Control options influence the setting behavior on whether the value
+    # (or options) are mutable. They may also affect other behavior of the
+    # setting which mostly applies to ExtendedSettings.
+    control_options: bool = False
+    # Exporting default values (like in Options)
+    export_defaults: bool = False
+
+# Settings includes dataclass classes for setting specific options and
+# gui_options. They are part of the class definition since a derived class
+# may also update the contained Options or GuiOptions class. The __init__
+# code will then adapt accordingly.
+@dataclass(eq=False, order=False)
+class SettingOptions(Options):
+    ''' options for settings '''
+    # Overwrite default values
+    options_mutable: bool = True # must remain true!
+    # options for settings define export groups for which the mutable
+    # behavior can be controlled separately
+    value_options_mutable: bool = False
+    display_options_mutable: bool = False
+    control_options_mutable: bool = False
+    # While the following is for the value itself:
+    mutable: bool = True
+
+    # The export groups are defined below together with
+    # get_state()/set_state()
+
+    # TODO: the mutable settings above have not yet any blocking effect!
+
+    # name must be maintained with the setting, mainly to handle the
+    # display - it is not a display setting, however (has it's own export
+    # group)
+    name: str = ''
+    display_width: int = 0
+
+    # the attribute/attribute_mask concept is not taken over from Options
+    # since a more specific concept is needed which options to export -
+    # export groups are defined to which the fields are added - any field
+    # not in an export group cannot be exported (except name)
+    value_options = []
+    display_options = ['display_width']
+    control_options = ['mutable', 'value_options_mutable',
+                        'display_options_mutable', 'control_options_mutable',
+                        ]
+    # with overwriting the get_state()/set_state(), the Stateful class
+    # configuration for attribute/attribute_mask doe not need to be
+    # changed.
+    def get_state(self,
+                  options: SettingExportOptions = SettingExportOptions(),
+                  **kwargs) -> OrderedDict[str, Any]:
+        attributes = ((self.value_options if options.value_options else []) +
+                      (self.display_options if options.display_options else []) +
+                      (self.control_options if options.control_options else []))
+        if options.name:
+            attributes += ['name']
+        return super().get_state(
+            attributes=attributes,
+            attribute_mask=[],
+            export_defaults=options.export_defaults,
+            **kwargs)
+
+    def set_state(self,
+                  data: object,
+                  options: SettingExportOptions = SettingExportOptions(),
+                  **kwargs):
+        attributes = (self.value_options if options.value_options else [] +
+                      self.display_options if options.display_options else [] +
+                      self.control_options if options.control_options else [])
+        return self._set_state_default(data=data,
+                                       attributes=attributes,
+                                       attribute_mask=[],
+                                       **kwargs)
+
 # Setting uses the ValueType below in it's implementation to allow appropriate
 # type hints.
 _BaseTypeT = TypeVar('_BaseTypeT', bound=object)
@@ -234,109 +327,10 @@ class Setting(Generic[_BaseTypeT], Stateful,
 
     You do not need to provide anything else, including __init__.
     '''
-
-    # Settings includes dataclass classes for setting specific options and
-    # gui_options. They are part of the class definition since a derived class
-    # may also update the contained Options or GuiOptions class. The __init__
-    # code will then adapt accordingly.
-    @dataclass(eq=False, order=False)
-    class Options(Options):
-        ''' options for settings '''
-        # Overwrite default values
-        options_mutable: bool = True # must remain true!
-        # options for settings define export groups for which the mutable
-        # behavior can be controlled separately
-        value_options_mutable: bool = False
-        display_options_mutable: bool = False
-        control_options_mutable: bool = False
-        # While the following is for the value itself:
-        mutable: bool = True
-
-        # The export groups are defined below together with
-        # get_state()/set_state()
-
-        # TODO: the mutable settings above have not yet any blocking effect!
-
-        # name must be maintained with the setting, mainly to handle the
-        # display - it is not a display setting, however (has it's own export
-        # group)
-        name: str = ''
-        display_width: int = 0
-
-        # the attribute/attribute_mask concept is not taken over from Options
-        # since a more specific concept is needed which options to export -
-        # export groups are defined to which the fields are added - any field
-        # not in an export group cannot be exported (except name)
-        value_options = []
-        display_options = ['display_width']
-        control_options = ['mutable', 'value_options_mutable',
-                           'display_options_mutable', 'control_options_mutable',
-                           ]
-        # with overwriting the get_state()/set_state(), the Stateful class
-        # configuration for attribute/attribute_mask doe not need to be
-        # changed.
-        def get_state(self,
-                      name: bool = False,
-                      value: bool = False,
-                      display: bool = False,
-                      control: bool = False,
-                      defaults: bool = True,
-                      **kwarg) -> object:
-            attributes = ((self.value_options if value else []) +
-                          (self.display_options if display else []) +
-                          (self.control_options if control else []))
-            if name:
-                attributes += ['name']
-            return super().get_state(
-                attributes=attributes,
-                attribute_mask=[],
-                export_defaults=defaults)
-
-        def set_state(self,
-                      data: object,
-                      value: bool = False,
-                      display: bool = False,
-                      control: bool = False,
-                      **kwarg) -> object:
-            attributes = (self.value_options if value else [] +
-                          self.display_options if display else [] +
-                          self.control_options if control else [])
-            return self._set_state_default(data=data,
-                                           attributes=attributes,
-                                           attribute_mask=[])
-
-    # TODO: I should define Options and ExportOptions outside of the class
-    # scope and only reference them in here to be available also within class
-    # scope. Additionally, the Options.get_state() should use directly the
-    # ExportOptions to avoid the clutter in definition and usage.
-
-
-    @dataclass
-    class ExportOptions(Options):
-        ''' Options used for get_state() and set_state() '''
-        # There is no option to control whether the value is exported.
-        #
-        # The name is typically maintained by whoever holds the setting object
-        # but could be exported if necessary:
-        name: bool = False
-        # The type of the setting is relevant in context of a configurable
-        # configuration where a JSON file defines a set of variables
-        # copmletely. This value cannot be restored via get_state() and usage
-        # is not implemented, yet.
-        type: bool = False
-        # The value options is anything that influences the input handling to
-        # the setting (validity) or the default value (which also influences
-        # validity).
-        value_options: bool = False
-        # Display options only affect how the setting would be displayed in the
-        # GUI.
-        display_options: bool = False
-        # Control options influence the setting behavior on whether the value
-        # (or options) are mutable. They may also affect other behavior of the
-        # setting which mostly applies to ExtendedSettings.
-        control_options: bool = False
-        # Exporting default values (like in Options)
-        export_defaults: bool = False
+    # Bring ExportOptions and Options directly in scope of the setting class
+    # such that those options are always available.
+    ExportOptions = SettingExportOptions
+    Options = SettingOptions
 
     def __init__(self,
                  value: _BaseTypeT | None = None,
@@ -368,11 +362,7 @@ class Setting(Generic[_BaseTypeT], Stateful,
             option_list += ['name']
         if export_options.type:
             raise TypeError('Exporting the type is not yet supported')
-        options: OrderedDict = self.options.get_state(
-            value=export_options.value_options,
-            display=export_options.display_options,
-            control=export_options.control_options,
-            defaults=export_options.export_defaults) # type: ignore
+        options: OrderedDict = self.options.get_state(options=export_options)
         if not options:
             print(f'returning input: {self.input}')
             return self.input
