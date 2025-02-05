@@ -5,9 +5,8 @@ from typing import Any
 from dataclasses import dataclass, field
 from copy import deepcopy
 
-from .setting import Setting, SettingExtension
-from .setting import _BaseTypeT, _BaseSettingT, AppxfSettingError
-
+from .setting import Setting, _BaseTypeT, AppxfSettingError
+from .setting_extension import SettingExtension, _BaseSettingT
 
 # Intent is to support data like long text templates by selecting and
 # referencing it by a title.
