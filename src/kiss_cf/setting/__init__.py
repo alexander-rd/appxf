@@ -26,7 +26,7 @@ the following classes are the entry points:
 # flake8: noqa F401
 
 from .setting import Setting, AppxfSettingError, AppxfSettingConversionError
-from .base_types import SettingString, SettingEmail, SettingPassword
+from .base_types import SettingString, SettingText, SettingEmail, SettingPassword
 from .base_types import SettingBool, SettingInt, SettingFloat
 
 from .setting_extension import SettingExtension

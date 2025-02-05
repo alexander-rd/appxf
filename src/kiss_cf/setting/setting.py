@@ -122,7 +122,7 @@ class _SettingMeta(type):
              })
 
     @classmethod
-    def _add_extension(mcs, cls_register: type[SettingExtension[Any, Any]]):
+    def _add_extension(mcs, cls_register: type['SettingExtension[Any, Any]']):
         '''Adding an extending Setting
 
         The existance of setting_extension is already checked when calling.
@@ -219,64 +219,58 @@ class _SettingMetaMerged(_SettingMeta, ABCMeta):
 @dataclass
 class SettingExportOptions(Options):
     ''' Options used for get_state() and set_state() '''
-    # There is no option to control whether the value is exported.
+    # There will never be an option to control whether the value is exported.
+    # There is no use case.
     #
     # The name is typically maintained by whoever holds the setting object
     # but could be exported if necessary:
     name: bool = False
     # The type of the setting is relevant in context of a configurable
-    # configuration where a JSON file defines a set of variables
-    # copmletely. This value cannot be restored via get_state() and usage
-    # is not implemented, yet.
+    # configuration where a JSON file defines a set of variables copmletely.
+    # This value cannot be restored via set_state() and usage is not
+    # implemented, yet.
     type: bool = False
-    # The value options is anything that influences the input handling to
-    # the setting (validity) or the default value (which also influences
-    # validity).
+    # Value options are anything that influences the input handling (validity)
+    # or the default value (which also influences validity).
     value_options: bool = False
-    # Display options only affect how the setting would be displayed in the
-    # GUI.
+    # Display options affect how the setting would be _displayed_ in the GUI.
+    # See control options that also affect the _behavior_ in the GUI.
     display_options: bool = False
-    # Control options influence the setting behavior on whether the value (or
-    # options) are mutable. The mutable parts are typically reflected in
-    # available GUI elements. They may also affect other behavior of the
-    # setting which mostly applies to ExtendedSettings.
+    # Control options influence the setting behavior, typically in the GUI. For
+    # example, whether the value or value options are mutable from the GUI.
+    # They may also affect other behavior of the setting. SettingSelect was the
+    # first class using those options types more extensively.
     control_options: bool = False
     # Exporting default values (like in Options)
     export_defaults: bool = False
 
 
-# Settings includes dataclass classes for setting specific options and
-# gui_options. They are part of the class definition since a derived class
-# may also update the contained Options or GuiOptions class. The __init__
-# code will then adapt accordingly.
 @dataclass(eq=False, order=False)
 class SettingOptions(Options):
     ''' options for settings '''
-    # Overwrite default values
-    options_mutable: bool = True  # must remain true!
-    # options for settings define export groups for which the mutable
-    # behavior can be controlled separately
+    # See ExportOptions for the defined export groups. Whether such options are
+    # mutable is controlled by the same grouping:
     value_options_mutable: bool = False
     display_options_mutable: bool = False
     control_options_mutable: bool = False
     # While the following is for the value itself:
     mutable: bool = True
 
-    # The export groups are defined below together with
-    # get_state()/set_state()
-
     # TODO: the mutable settings above have not yet any blocking effect!
 
-    # name must be maintained with the setting, mainly to handle the
-    # display - it is not a display setting, however (has it's own export
-    # group)
+    # name must be maintained for each setting (in its options), mainly to
+    # handle the display - it is not a display setting, however (has it's own
+    # export group)
     name: str = ''
+
+    # the only display option that applies to all settings because all settings
+    # support string input
     display_width: int = 0
 
-    # the attribute/attribute_mask concept is not taken over from Options
-    # since a more specific concept is needed which options to export -
-    # export groups are defined to which the fields are added - any field
-    # not in an export group cannot be exported (except name)
+    # the attribute/attribute_mask concept is NOT taken over from Options since
+    # a more specific concept is needed (see ExportOptions) - export groups are
+    # defined to which the option fields must be added - any field not in an
+    # export group cannot be exported (except name)
     value_options = []
     display_options = ['display_width']
     control_options = ['mutable', 'value_options_mutable',
@@ -284,8 +278,8 @@ class SettingOptions(Options):
                        ]
 
     # with overwriting the get_state()/set_state(), the Stateful class
-    # configuration for attribute/attribute_mask doe not need to be
-    # changed.
+    # configuration for attribute/attribute_mask does not need to be changed
+
     def get_state(self,
                   options: SettingExportOptions = SettingExportOptions(),
                   **kwargs) -> OrderedDict[str, Any]:
@@ -315,7 +309,7 @@ class SettingOptions(Options):
 
 
 # Setting uses the ValueType below in it's implementation to allow appropriate
-# type hints.
+# type hints for get_default() and value.
 _BaseTypeT = TypeVar('_BaseTypeT', bound=object)
 
 
@@ -343,8 +337,9 @@ class Setting(Generic[_BaseTypeT], Stateful,
 
     You do not need to provide anything else, including __init__.
     '''
-    # Bring ExportOptions and Options directly in scope of the setting class
-    # such that those options are always available.
+    # Bring ExportOptions and Options directly in scope of the Setting class
+    # such that they are always available with the Setting class (no extra
+    # import).
     ExportOptions = SettingExportOptions
     Options = SettingOptions
 

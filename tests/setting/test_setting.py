@@ -3,7 +3,7 @@ import pytest
 
 from kiss_cf.setting import Setting, SettingExtension
 from kiss_cf.setting import AppxfSettingError, AppxfSettingConversionError
-from kiss_cf.setting import SettingString, SettingEmail, SettingPassword
+from kiss_cf.setting import SettingString, SettingText, SettingEmail, SettingPassword
 from kiss_cf.setting import SettingBool, SettingInt, SettingFloat
 
 from kiss_cf.setting import setting as setting_module
@@ -63,7 +63,9 @@ def verify_conversion_error(exc_info, setting: Setting, input: object):
 param_conversion = [
     # Type      Input           Valid   Value           String
     ('str',     'hello',        True,   'hello',        'hello'),
-    (str,       '!"§$%&/()=?\n',True,   '!"§$%&/()=?\n','!"§$%&/()=?\n'),
+    (str,       '!"§$%&/()=?'  ,True,   '!"§$%&/()=?'   ,'!"§$%&/()=?'),
+    (str,       '\n',           False,  '',             ''),
+    ('text',    '!"§$%&/()=?\n',True,   '!"§$%&/()=?\n','!"§$%&/()=?\n'),
     (str,       42,             False,  '',             ''),
     ('string',  '42',           True,   '42',           '42'),
     ('email',   'some@thing.it',True,   'some@thing.it','some@thing.it'),
@@ -192,7 +194,7 @@ def test_setting_self_test():
              if not t[2]
         ]))
     # Invalid SettingString is covered differently
-    uncovered_invalid -= set(['SettingString'])
+    uncovered_invalid -= set([SettingText])
     assert not uncovered_valid, (
         f'Following Setting implementations do not have a valid test '
         f'case in test_setting_conversions: {uncovered_valid}')

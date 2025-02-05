@@ -204,8 +204,7 @@ class Options(Stateful):
         # note: attributes option is just forwarded as part of ***kwarg
         return self._get_state_default(attribute_mask=attribute_mask, **kwarg)
 
-    # set_state needs special treatment since it will be commonly be used to
-    # restore an object from scratch that may have options_mutable set to
-    # False:
+    # handle set_state() input like direct updates to ensure same behavior it
+    # this may be updated in future:
     def set_state(self, data: dict[str, Any], **kwarg):
         self.update_from_kwarg(data)
