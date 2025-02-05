@@ -2,6 +2,7 @@
 '''
 from __future__ import annotations
 from typing import Type, Any
+from dataclasses import dataclass
 
 import re
 import configparser
@@ -10,7 +11,11 @@ from .setting import Setting, _BaseTypeT
 
 
 class SettingString(Setting[str]):
-    ''' Setting for basic strings '''
+    ''' Setting for basic strings
+
+    No newline characters supported. The GUI elements would not support a multi
+    line entry field. If required, use 'text' instead.
+    '''
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
         return [str, 'str', 'string']
@@ -18,6 +23,31 @@ class SettingString(Setting[str]):
     @classmethod
     def get_default(cls):
         return ''
+
+    def _validated_conversion(self, value: Any) -> tuple[bool, str]:
+        if not issubclass(type(value), str):
+            return False, self.get_default()
+        if '\r' in value or '\n' in value:
+            return False, self.get_default()
+        return True, value
+
+class SettingText(SettingString):
+    ''' Setting for long texts
+
+    Just a string that has a display_height option and allows newline
+    characters.
+    '''
+    @dataclass
+    class Options(Setting.Options):
+        ''' Options for SettingText'''
+        display_height: int = 5
+        display_options = Setting.Options.display_options + ['display_height']
+
+    @classmethod
+    def get_supported_types(cls) -> list[type | str]:
+        return ['text']
+
+    # get_default() from string remains
 
     def _validated_conversion(self, value: Any) -> tuple[bool, str]:
         if not issubclass(type(value), str):
@@ -56,19 +86,20 @@ class SettingPassword(SettingString):
 
     Default minimum password length is 6.
     '''
+    @dataclass
+    class Options(Setting.Options):
+        ''' Options for SettingText'''
+        min_length: int = 6
+        value_options = Setting.Options.value_options + ['min_length']
+
+        display_masked: bool = True
+        display_options = Setting.Options.display_options + ['display_masked']
+    options: Options
+
+
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
         return ['pass', 'password']
-
-    def __init__(self,
-                 min_length: int | None = None,
-                 **kwargs):
-        # min_length must be set before super super().__init__() since it uses
-        # the validation before setting the value.
-        self.min_length = 6 if min_length is None else min_length
-        super().__init__(**kwargs)
-
-        self.masked = True
 
     def _validated_conversion(self, value: Any) -> tuple[bool, str]:
         if value == self.get_default():
@@ -76,7 +107,7 @@ class SettingPassword(SettingString):
         if not super()._validated_conversion(value)[0]:
             return False, self.get_default()
         # only length check:
-        if self.min_length > 0 and len(value) < self.min_length:
+        if self.options.min_length > 0 and len(value) < self.options.min_length:
             return False, self.get_default()
             # TODO: Error message handling should be better. The specific
             # validate should tell what exactly failed.
