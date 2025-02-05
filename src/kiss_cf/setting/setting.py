@@ -265,7 +265,7 @@ class SettingOptions(Options):
 
     # the only display option that applies to all settings because all settings
     # support string input
-    display_width: int = 0
+    display_width: int = 15
 
     # the attribute/attribute_mask concept is NOT taken over from Options since
     # a more specific concept is needed (see ExportOptions) - export groups are
