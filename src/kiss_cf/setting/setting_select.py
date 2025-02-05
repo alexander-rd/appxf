@@ -1,53 +1,51 @@
-''' Settings selecting a value from a predefined list '''
+''' Implementation of SettingSelect, selecting a value from a predefined list
+'''
 from __future__ import annotations
 from typing import Any
 from dataclasses import dataclass, field
+from copy import deepcopy
 
 from .setting import Setting, SettingExtension
 from .setting import _BaseTypeT, _BaseSettingT, AppxfSettingError
 
 
-# Intent is to support complex data like long text templates by selecting and
+# Intent is to support data like long text templates by selecting and
 # referencing it by a title.
 #
 # The following differences apply to standard settings:
 #   * Input is a string from a predefined list (drop down, no reason for other
 #     types since it's purpose is "name for the setting value")
-#   * It will be uncommon or not even possible to set the value directly
+#   * SettingSelect internally maintains an additional Setting object as base
+#     setting. It can be configured to (1) store this value upon get_state()
+#     as well as (2) returning it as it's value.
 #
-# A further extention is a configurable and storable selection. For standard
-# settings, the application only knows the type of the setting. Select settings
-# will have a changeable list of options which can be stored along or separate
-# to the setting.
+# SettingSelect can also be configured to have a changable selection list.
 
-# TODO: should the custom type be the "storable" selection or at least
-# something that supports the serialization?
-
-# Simple Use Case: Text Inspection.
+# Simple Use Case: Text Templates.
 #
-# The tool provides a set of Email texts that can be displayed by a list
-# select. The select would be too long to reference the whole text such that
-# only a title appears in the list.
+# An application provides template texts for Emails that can be displayed and
+# choosen from a SettingSelect. The select would be too long to reference the
+# whole text such that only a title appears in the list.
 
 # Storable Use Case: Storable Email Templates
 #
-# The tool user can store Email text templates into the configuration for
-# reuse.
+# An application would allow to compose and store new text templates for Emails
+# (see simple use case).
 
 # Storable Focus Use Case: Translations
 #
 # The transtlation keywords (list selection keys) are fixed but the user can
-# edit the translations (the values behind an AppxfStringSelection). The tool
-# would use use the AppxfStringSelect conversions.
+# edit the translations (the values SettingSelect list items).
 
 # Given from the above examples, there is different behavior that may or may
 # not be possible:
-#   1) Adding or removing new selectable items
+#   1) Adding or removing new selectable items >> mutable_items
 #   2) Changing the value behind a selectable item
+#   3)
 #
 # If neither (1) or (2) is possible, the selection list is known at
-# construction time and no storage is necessary. Only (1) possible is not
-# reasonable, but only (2) has valid use cases.
+# construction time and no storage of the selection list is necessary. Only (1)
+# possible is not reasonable, but only (2) has valid use cases.
 
 
 class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
@@ -66,30 +64,37 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
     @dataclass(eq=False, order=False)
     class Options(Setting.Options):
         ''' options for setting select '''
-        # update value options
-        select_map: dict[str, Any] = field(default_factory=dict)
-        value_options = Setting.Options.value_options + ['select_map']
+        # update value options - None
+        #
+        # select_map and base_setting are potential value_options. But this
+        # depends on the control options mutable_items, mutable_list and
+        # custom_value.
 
         # update display options:
         #  * setting select will use larger entries by default:
         display_width: int = 60
 
         # update control options:
-        #  * items can be added or removed to/from the select list:
+        #  * the values behind existing items can be changed:
         mutable_items: bool = True
-        #  * the value after seletion can be customized and the customized
-        #    value is stored additionally to the list of select items:
-        custom_value: bool = False
+        #  * items can be added to or removed from the selection list:
+        mutable_list: bool = True
+        #  * the value after selection from the list can be customized. The
+        #    returned value of SettingSelect becomes this costomized value and
+        #    the customized value is included in get_state():
+        custom_value: bool = True
+        # The default behavior has everything enabled. There was no clear
+        # candidate for "the most common usage" such that the main argument to
+        # enable all behavior is "people dont read the documentation" to know
+        # what is possible. Once they see behavior they don't want, they should
+        # be able to find the option to disable.
         control_options = (Setting.Options.control_options +
-                           ['mutable_items', 'custom_value'])
-        # TODO: in contrast to the TWO options above, a fine grained options
-        # would distinguish "being able to edit existing template items"
-        # (without the ability to change the item names) and the full
-        # capability to also add/remove and rename items in the select list.
+                           ['mutable_items', 'mutable_list', 'custom_value'])
 
     def __init__(self,
                  base_setting: _BaseSettingT,
                  value: str | None = None,
+                 select_map: dict[str, Any] | None = None,
                  **kwargs):
         # Initialization sequence matters quite a bit, be careful with changes!
 
@@ -103,8 +108,10 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
         # pass it through add_option() to perform validations but we can just
         # reapply them. The strange next line is just to fix the typehints.
         self.options: SettingSelect.Options = self.options
-        for key, map_value in self.options.select_map.items():
-            self.add_option(key, map_value)
+        self.select_map: dict[str, Any] = {}
+        if select_map is not None:
+            for key, map_value in select_map.items():
+                self.add_select_item(key, map_value)
 
         # finally, set the intended value which may be one of the added options
         # above which is why value was not passed to the parent __init__()
@@ -126,21 +133,32 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
     def value(self, value: Any):
         # first step is like in setting implementation
         Setting.value.fset(self, value)  # type: ignore
-        # but the result is also applied to the base_setting
+        # but the resulting value from the select_map is also applied to the
+        # base_setting
         self.base_setting.value = self._value
 
     def _validated_conversion(self, value: str) -> tuple[bool, _BaseTypeT]:
         if value == self.base_setting.get_default():
             return True, self.base_setting.get_default()
-        if value in self.options.select_map:
-            return True, self.options.select_map[value]
+        if value in self.select_map:
+            return True, self.select_map[value]
         return False, self.base_setting.get_default()
 
     def get_state(self, **kwarg) -> object:
         # we export as defined in setting
         out = super().get_state(**kwarg)
-        # but we may need to add the base_setting if the base setting is
-        # maintained
+        # we have to export the select_map if either mutable_list or
+        # mutable_items is True. Those options make the select_map part of the
+        # user controlled values.
+        if (self.options.mutable_list or self.options.mutable_items):
+            if isinstance(out, dict):
+                out['select_map'] = deepcopy(self.select_map)
+            else:
+                out = {'value': out,
+                       'select_map': deepcopy(self.select_map)}
+        # Like above, if custom_value is true, this base setting must be stored
+        # as well. Currently, we store it with the same ExportOptions as the
+        # SettingSelect, allowing no more fine grained control.
         if self.options.custom_value:
             if isinstance(out, dict):
                 out['base_setting'] = self.base_setting.get_state(**kwarg)
@@ -150,35 +168,40 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
         return out
 
     def set_state(self, data: object, **kwarg):
+        # select_map must be restored before loading the other values since
+        # setting the value will perform a validation against the select_map:
+        if isinstance(data, dict) and 'select_map' in data:
+            self.select_map = deepcopy(data['select_map'])
         super().set_state(data, **kwarg)
-        # catch base setting and apply - it must be applied afterwards since
-        # obtained value will be writtens
+        # catch base setting and apply - it must be applied afterwards since a
+        # value for SettingSelect from above would also write the value of
+        # base_setting.
         if isinstance(data, dict) and 'base_setting' in data:
             self.base_setting.set_state(data['base_setting'], **kwarg)
 
     # #################/
     # Option Handling
     # /
-    def get_options(self) -> list[str]:
+    def get_select_keys(self) -> list[str]:
         ''' Get list of selectable options
 
         The list is sorted alphabetically.
         '''
-        return sorted(list(self.options.select_map.keys()))
+        return sorted(list(self.select_map.keys()))
 
-    def get_option_value(self, option: str) -> Any:
-        ''' Get the value for an option '''
-        return self.options.select_map.get(option,
-                                           self.base_setting.get_default())
+    def get_select_value(self, option: str) -> Any:
+        ''' Get the value for a selectable item '''
+        return self.select_map.get(option,
+                                   self.base_setting.get_default())
 
-    def delete_option(self, option: str):
-        ''' Delete an option from selectable items '''
-        original_options = self.get_options()
-        if option in self.options.select_map:
-            self.options.select_map.pop(option)
+    def delete_select_key(self, option: str):
+        ''' Delete a selectable item by its key name '''
+        original_options = self.get_select_keys()
+        if option in self.select_map:
+            self.select_map.pop(option)
         if option == self.input:
             index = original_options.index(option)
-            new_list = self.get_options()
+            new_list = self.get_select_keys()
             if not new_list:
                 self.value = ''
             elif index < len(new_list):
@@ -186,12 +209,12 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
             else:
                 self.value = new_list[-1]
 
-    def add_option(self, option: str, value: Any):
-        ''' Add an option to the selectable items '''
+    def add_select_item(self, option: str, value: Any):
+        ''' Add a new item to the select list by key and value '''
         # We try to set the value and take error message from there:
         if not self.base_setting.validate(value):
             raise AppxfSettingError(
                 f'Cannot add option [{option}] with value {value} of type '
                 f'{value.__class__.__name__} because the value is not valid.')
         # We also take the readily transformed value, not just the input
-        self.options.select_map[option] = value
+        self.select_map[option] = value

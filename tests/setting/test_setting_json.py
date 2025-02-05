@@ -18,7 +18,10 @@ def test_json_values_only():
         data={
             'string': Setting.new('string', value='test'),
             'integer': Setting.new('int', value=42),
-            'select': Setting.new('select::string', value='01', select_map={'01': 'Value'})
+            'select': Setting.new('select::string', value='01',
+                                  select_map={'01': 'Value'},
+                                  custom_value=False,
+                                  mutable_items=False, mutable_list=False)
             },
         storage=RamStorage.get(name='setting_dict', ram_area='test'))
     raw_data = setting.get_state()
@@ -41,7 +44,7 @@ def test_json_value_and_display_options():
             'string': Setting.new('string', value='test'),
             'integer': Setting.new('int', value=42),
             'select': Setting.new('select::string', value='01', select_map={'01': 'test_value'},
-                                       display_width = 42)
+                                  display_width = 42, custom_value=False,)
             },
         # TODO: integer and select had "options_stored" set to True
         storage=RamStorage.get(name='setting_dict', ram_area='test')
@@ -57,8 +60,8 @@ def test_json_value_and_display_options():
     "integer": 42,
     "select": {
         "value": "01",
-        "select_map": {"01": "test_value"},
-        "display_width": 42
+        "display_width": 42,
+        "select_map": {"01": "test_value"}
     }
 }
     '''
@@ -70,7 +73,7 @@ def test_json_full_export():
     setting = SettingDict(
         data={
             'select': Setting.new('select::string', value='01', select_map={'01': 'Value'},
-                                       custom_value=True)
+                                  custom_value=True)
             },
         # TODO: integer and select had "options_stored" set to True
         storage=RamStorage.get(name='setting_dict', ram_area='test')
@@ -86,14 +89,15 @@ def test_json_full_export():
     "_version": 2,
     "select": {
         "value": "01",
-        "select_map": {"01": "Value"},
         "display_width": 60,
         "mutable": true,
         "value_options_mutable": false,
         "display_options_mutable": false,
         "control_options_mutable": false,
         "mutable_items": true,
+        "mutable_list": true,
         "custom_value": true,
+        "select_map": {"01": "Value"},
         "base_setting": {
             "value": "Value",
             "display_width": 0,

@@ -45,7 +45,7 @@ class _DropdownOnly(SettingFrameBase):
 
     def _place_combobox(self):
         self.entry = ttk.Combobox(self, textvariable=self.sv, width=self.entry_width)
-        self.entry['values'] = self.setting.get_options()
+        self.entry['values'] = self.setting.get_select_keys()
         self.entry.grid(row=0, column=1, padx=5, pady=5, sticky='NEW')
         if self.tooltip:
             self.entry.bind('<Enter>', lambda event: self.show_tooltip())
@@ -71,7 +71,7 @@ class _DropdownOnly(SettingFrameBase):
         #self.entry.destroy()
         self.sv.set(self.setting.input)
         #self._place_combobox()
-        self.entry['values'] = self.setting.get_options()
+        self.entry['values'] = self.setting.get_select_keys()
         super().update()
 
     def show_tooltip(self):
@@ -194,7 +194,7 @@ class SettingSelectFrameDetail(SettingFrameBase):
     def _handle_delete_option(self):
         self.log.debug(f'Deleting Option [{self.setting.input}] from setting [{self.setting.name}]')
         # Delete current selection from the options
-        self.setting.delete_option(self.setting.input)
+        self.setting.delete_select_key(self.setting.input)
         # Apply SettingSelect state to the entry variable
         self.setting.base_setting.value = self.setting.value
         # Update all frames
@@ -218,7 +218,7 @@ class SettingSelectFrameDetail(SettingFrameBase):
         if popup.last_event == '<<Cancel>>':
             return
         new_option = new_option_setting.value
-        self.setting.add_option(option=new_option,
+        self.setting.add_select_item(option=new_option,
                                 value=self.setting.base_setting.input)
         self.setting.value = new_option
         # Update all frames
