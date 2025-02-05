@@ -31,6 +31,7 @@ class SettingString(Setting[str]):
             return False, self.get_default()
         return True, value
 
+
 class SettingText(SettingString):
     ''' Setting for long texts
 
@@ -96,7 +97,6 @@ class SettingPassword(SettingString):
         display_options = Setting.Options.display_options + ['display_masked']
     options: Options
 
-
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
         return ['pass', 'password']
@@ -107,7 +107,10 @@ class SettingPassword(SettingString):
         if not super()._validated_conversion(value)[0]:
             return False, self.get_default()
         # only length check:
-        if self.options.min_length > 0 and len(value) < self.options.min_length:
+        if (
+            self.options.min_length > 0 and
+            len(value) < self.options.min_length
+        ):
             return False, self.get_default()
             # TODO: Error message handling should be better. The specific
             # validate should tell what exactly failed.

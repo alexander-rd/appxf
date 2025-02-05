@@ -2,7 +2,7 @@
 '''
 from __future__ import annotations
 from typing import Any
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from copy import deepcopy
 
 from .setting import Setting, _BaseTypeT, AppxfSettingError
