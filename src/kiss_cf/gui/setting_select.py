@@ -30,7 +30,7 @@ class _DropdownOnly(SettingFrameBase):
         self.columnconfigure(1, weight=1)
 
         self.label = tkinter.Label(self, justify='right')
-        self.label.config(text=setting.name + ':')
+        self.label.config(text=setting.options.name + ':')
         self.label.grid(row=0, column=0, padx=5, pady=5, sticky='NE')
 
         value = str(self.setting.input)
@@ -38,7 +38,7 @@ class _DropdownOnly(SettingFrameBase):
         self.sv.trace_add(
             'write', lambda var, index, mode: self.value_update())
 
-        self.entry_width = setting.gui_options.get('width', 15)
+        self.entry_width = getattr(setting.options, 'display_width', 15)
         self._place_combobox()
 
         self.tipwindow = None
@@ -238,7 +238,7 @@ class SettingSelectWindow(FrameWindow):
 
     def __init__(self, parent, setting: SettingSelect, **kwargs):
         super().__init__(parent,
-                         title=f'Editing {setting.name}',
+                         title=f'Editing {setting.options.name}',
                          buttons=['Cancel', 'OK'],
                          closing='Cancel',
                          **kwargs)
@@ -271,8 +271,10 @@ class SettingSelectFrame(_DropdownOnly):
         super().__init__(parent, setting=setting, **kwargs)
         self.setting = setting
 
+        # TODO: there is behavior missing to support 'mutable_items'
+
         # add edit button if options are mutable
-        if setting.options.get('mutable', False):
+        if (getattr(setting.options, 'mutable_list', False)):
             self.edit_button = tkinter.Button(
                 self, text='Edit',
                 padx=0, pady=0, relief='flat',

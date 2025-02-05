@@ -55,11 +55,11 @@ def input_type_to_setting_dict(setting: SettingInput) -> SettingDict:
     # iterables of settings are also handled like SettingDict
     if isinstance(setting, Iterable) and not isinstance(setting, Mapping):
         return SettingDict(data={
-            this_setting.name: this_setting for this_setting in setting
+            this_setting.options.name: this_setting for this_setting in setting
             })
 
     if isinstance(setting, Setting):
-        return SettingDict(data={setting.name: setting})
+        return SettingDict(data={setting.options.name: setting})
 
     raise AppxfGuiError(f'Input type unknown: {setting.__class__.__name__}')
 
@@ -83,7 +83,7 @@ class SettingDictSingleFrame(SettingFrameBase):
         # strip properties from the dict that are not mutable:
         self.setting_dict = {key: setting.get_setting(key)
                              for key in setting.keys()
-                             if setting.get_setting(key).mutable}
+                             if setting.get_setting(key).options.mutable}
 
         # TODO: the above should be applied according to default_visibility.
         # Not mutable should still be displayed but grayed out or not editable.
@@ -269,7 +269,7 @@ class SettingDictWindow(FrameWindow):
         # up to a SettingDict to handle it (required to obtain store/load
         # behavior for backup&restore upon cancel)
         if isinstance(setting, Setting):
-            self.property_dict = SettingDict(data={setting.name: setting})
+            self.property_dict = SettingDict(data={setting.options.name: setting})
         elif isinstance(setting, SettingDict):
             self.property_dict = setting
         else:

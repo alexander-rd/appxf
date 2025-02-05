@@ -35,9 +35,9 @@ class SettingFrameDefault(SettingFrameBase):
 
         self.setting = setting
 
-        if setting.name:
+        if setting.options.name:
             self.label = tkinter.Label(self, justify='right')
-            self.label.config(text=setting.name + ':')
+            self.label.config(text=setting.options.name + ':')
             self.place(self.label, row=0, column=0)
 
         value = str(self.setting.value)
@@ -45,8 +45,8 @@ class SettingFrameDefault(SettingFrameBase):
         self.sv.trace_add(
             'write', lambda var, index, mode: self.value_update())
 
-        entry_width = setting.gui_options.get('width', 15)
-        entry_height = setting.gui_options.get('height', 1)
+        entry_width = getattr(setting.options, 'display_width', 15)
+        entry_height = getattr(setting.options, 'display_height', 1)
         if entry_height > 1:
             self.entry = tkinter.Text(self, width=entry_width, height=entry_height)
             self.entry.insert('1.0', self.setting.value)
@@ -68,7 +68,7 @@ class SettingFrameDefault(SettingFrameBase):
         # contained and no padding applied)
 
         # add scrollbar for long texts
-        scrollbar = setting.gui_options.get('scrollbar', bool(entry_height >= 3))
+        scrollbar = getattr(setting.options, 'scrollbar', bool(entry_height >= 3))
         if scrollbar and isinstance(self.entry, tkinter.Text):
             self.scrollbar = tkinter.Scrollbar(self, orient=tkinter.VERTICAL,
                                                command=self.entry.yview) # type: ignore (entry is Text)
@@ -121,7 +121,7 @@ class SettingFrameBool(SettingFrameBase):
         self.setting = setting
 
         self.label = tkinter.Label(self, justify='right')
-        self.label.config(text=setting.name + ':')
+        self.label.config(text=setting.options.name + ':')
         self.place(self.label, row=0, column=0)
 
         self.iv = tkinter.IntVar(self, value=self.setting.value)
