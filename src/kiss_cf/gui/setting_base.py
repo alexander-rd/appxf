@@ -72,7 +72,7 @@ class SettingFrameDefault(SettingFrameBase):
         self.place(self.entry, row=0, column=1,
                    setting=GridSetting(padx=x_padding, pady=5,
                                        sticky=entry_sticky))
-        # TODO: to apply place() properly without the nonsense setting, the
+        # TODO #22: to apply place() properly without the nonsense setting, the
         # scollable Text must be distinguished from a non-scollable text. The
         # scrollable Text would become it's own widget (a frame with both
         # contained and no padding applied)
