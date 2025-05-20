@@ -40,11 +40,11 @@ from .setting_extension import SettingExtension, _BaseSettingT
 # not be possible:
 #   1) Adding or removing new selectable items >> mutable_items
 #   2) Changing the value behind a selectable item
-#   3)
 #
 # If neither (1) or (2) is possible, the selection list is known at
 # construction time and no storage of the selection list is necessary. Only (1)
-# possible is not reasonable, but only (2) has valid use cases.
+# possible is not reasonable, but only (2) has valid use cases (see
+# translations use case).
 
 
 class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
@@ -98,19 +98,20 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
         # Initialization sequence matters quite a bit, be careful with changes!
 
         # SettingExtension places base_setting attribute before trying to set
-        # the default value and _validated_conversion handles default version
+        # the default value and _validated_conversion handles the base setting
         # first.
         super().__init__(base_setting=base_setting,
                          **kwargs)
 
         # If select_map was already applied during intialization, we have to
         # pass it through add_option() to perform validations but we can just
-        # reapply them. The strange next line is just to fix the typehints.
+        # re-apply them. The strange next line is just to fix the type hints.
         self.options: SettingSelect.Options = self.options
         self.select_map: dict[str, Any] = {}
         if select_map is not None:
             for key, map_value in select_map.items():
-                self.add_select_item(key, map_value)
+                self.add_select_item(key, map_value,
+                                     ignore_mutable_options=True)
 
         # finally, set the intended value which may be one of the added options
         # above which is why value was not passed to the parent __init__()
@@ -195,6 +196,16 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
 
     def delete_select_key(self, option: str):
         ''' Delete a selectable item by its key name '''
+        if option not in self.select_map:
+            raise AppxfSettingError(
+                f'Cannot delete item "{option}" '
+                f'since it does not exist for '
+                f'"{self.options.name}".')
+        if not self.options.mutable_list:
+            raise AppxfSettingError(
+                f'Cannot delete item "{option}" '
+                f'since mutable_list is False for '
+                f'"{self.options.name}".')
         original_options = self.get_select_keys()
         if option in self.select_map:
             self.select_map.pop(option)
@@ -208,8 +219,23 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
             else:
                 self.value = new_list[-1]
 
-    def add_select_item(self, option: str, value: Any):
+    def add_select_item(self, option: str, value: Any,
+                        ignore_mutable_options: bool = False):
         ''' Add a new item to the select list by key and value '''
+        if option not in self.select_map:
+            if not self.options.mutable_list and not ignore_mutable_options:
+                raise AppxfSettingError(
+                    f'Cannot add the new item "{option}" '
+                    f'since mutable_list is False for '
+                    f'"{self.options.name}".')
+            # no check for mutable_item since a complete new one is added
+        else:
+            # no check for mutable_list since an existing one is being altered:
+            if not self.options.mutable_items and not ignore_mutable_options:
+                raise AppxfSettingError(
+                    f'Cannot change item "{option}" since '
+                    f'mutable_items is False for '
+                    f'"{self.options.name}".')
         # We try to set the value and take error message from there:
         if not self.base_setting.validate(value):
             raise AppxfSettingError(

@@ -100,7 +100,7 @@ def test_json_full_export():
         "select_map": {"01": "Value"},
         "base_setting": {
             "value": "Value",
-            "display_width": 0,
+            "display_width": 15,
             "mutable": true,
             "value_options_mutable": false,
             "display_options_mutable": false,

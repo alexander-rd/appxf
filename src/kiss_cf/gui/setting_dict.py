@@ -110,7 +110,9 @@ class SettingDictSingleFrame(SettingFrameBase):
         setting_frame = get_single_setting_frame(self, setting, **gui_options)
         self.place(setting_frame, row=len(self.frame_list), column=0)
         # apply row weight from underlying frame:
-        self.rowconfigure(len(self.frame_list), weight=setting_frame.get_total_row_weight())
+        self.rowconfigure(
+            len(self.frame_list),
+            weight=setting_frame.get_total_row_weight())
 
         self.frame_list.append(setting_frame)
 
@@ -212,7 +214,8 @@ class SettingDictColumnFrame(SettingFrameBase):
         # fill property dictionaries
         prop_dict_list = [SettingDict() for i in range(columns)]
         for i, key in enumerate(key_list):
-            prop_dict_list[key_to_sub_dict[i]].add({key: setting.get_setting(key)})
+            prop_dict_list[key_to_sub_dict[i]].add(
+                {key: setting.get_setting(key)})
 
         # build up frames
         self.frame_list: list[SettingDictSingleFrame] = []
@@ -269,13 +272,15 @@ class SettingDictWindow(FrameWindow):
         # up to a SettingDict to handle it (required to obtain store/load
         # behavior for backup&restore upon cancel)
         if isinstance(setting, Setting):
-            self.property_dict = SettingDict(data={setting.options.name: setting})
+            self.property_dict = SettingDict(
+                data={setting.options.name: setting})
         elif isinstance(setting, SettingDict):
             self.property_dict = setting
         else:
             raise AppxfGuiError(f'Setting must be AppxfSetting or SettingDict '
                                 f'but is {type(setting)}')
-        # Ensure values are stored. If congiuration fails, values will be reloaded.
+        # Ensure values are stored. If congiuration fails, values will be
+        # reloaded.
         self.property_dict.store()
 
         columns = kiss_options.get('columns', 1)
@@ -284,7 +289,8 @@ class SettingDictWindow(FrameWindow):
                 self, self.property_dict, row_spread=True, **kiss_options)
         else:
             self.dict_frame = SettingDictColumnFrame(
-                self, self.property_dict, columns, kiss_options, row_spread=True)
+                self, self.property_dict,
+                columns, kiss_options, row_spread=True)
         self.place_frame(self.dict_frame)
         self.update()
         self.dict_frame.adjust_left_columnwidth()

@@ -5,6 +5,7 @@ import tkinter
 # configured in conftest. To enable reuse and the import the root path of the
 # module is added to the system path:
 import os
+import re
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__),'../../'))
 from conftest import pytest_runtest_setup
@@ -35,6 +36,10 @@ class ManualTestHelper(tkinter.Tk):
         self.title('Test Control')
 
         self.explanation = explanation.strip() if explanation else ''
+        # remove single newlines (wither a full paragraph \n\n or no paragraph
+        # at all). The regexp is for \n neither preceeded (?<!\n) nor followed
+        # (?!\n) by a newline:
+        self.explanation =  re.sub(r'(?<!\n)\n(?!\n)', '', self.explanation)
 
         explanation_label = tkinter.Label(
             self, text=self.explanation,
