@@ -8,8 +8,8 @@ tester = ManualTestHelper('''
 TBD
 ''')  # noqa: E501
 
-settingOne = Setting.new('select::string',
-    options={'Long Broken Text': '''Lorem ipsum dolor sit amet,
+settingOne = Setting.new('select::text',
+    select_map={'Long Broken Text': '''Lorem ipsum dolor sit amet,
 
 consetetur sadipscing elitr, sed diam nonumy eirmod tempor
 invidunt ut labore et dolore magna aliquyam erat, sed diam
@@ -35,14 +35,12 @@ magna aliquam erat volutpat.''',
              'Long Single Line': 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.',
              'Short': 'String',
              }, name='SelectString')
-settingOne.options['mutable'] = True
-settingOne.base_setting.gui_options['height'] = 20
-settingOne.base_setting.gui_options['width'] = 60
+settingOne.base_setting.options.diplay_height = 20
+settingOne.base_setting.options.display_width = 60
 
 settingTwo = Setting.new('select::int',
-    options={'1 Eins': 1, '2 Zwei': 2, '3 Drei': 3},
+    select_map={'1 Eins': 1, '2 Zwei': 2, '3 Drei': 3},
     name='Integers')
-settingTwo.options['mutable'] = True
 
 setting = SettingDict(data={'SelectString': settingOne, 'Integer': settingTwo})
 

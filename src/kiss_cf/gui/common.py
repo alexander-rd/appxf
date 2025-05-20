@@ -16,6 +16,7 @@ from appxf import logging
 class AppxfGuiError(Exception):
     ''' Error thrown in context of GUI handling '''
 
+
 class GridSetting(NamedTuple):
     sticky: str | None = None
     padx: int | None = None
@@ -70,7 +71,8 @@ class GridFrame(tkinter.Frame):
     frame_setting = GridSetting(
         sticky='EWNS', padx=0, pady=0, row_weight=1, column_weight=1)
 
-    classes_horizontal_stretch_setting = [tkinter.Entry, ttk.Entry, ttk.Combobox]
+    classes_horizontal_stretch_setting = [
+        tkinter.Entry, ttk.Entry, ttk.Combobox]
     item_horizontal_stretch_setting = GridSetting(
         sticky='EW', padx=5, pady=5, row_weight=0, column_weight=1)
 
@@ -96,8 +98,6 @@ class GridFrame(tkinter.Frame):
         self.column_spread: bool = column_spread
         self.row_weights: dict[int, int] = {}
         self.column_weights: dict[int, int] = {}
-        # debugging:
-        #self.configure(borderwidth=1, relief=tkinter.SOLID)
 
     # Consistent would be to stick with widget.grid() for placement but the
     # tkinter grid geometry does not include hooks that can be adjusted in this
@@ -107,7 +107,7 @@ class GridFrame(tkinter.Frame):
               widget: tkinter.Widget | GridFrame,
               row: int,
               column: int,
-              setting: GridSetting | None  = None):
+              setting: GridSetting | None = None):
         ''' Place Widgets/Frames into this Frame, using default settings
 
         You can always manually place via grid or use rowconfigure and
@@ -123,17 +123,19 @@ class GridFrame(tkinter.Frame):
                 default_setting = default_setting._replace(
                     row_weight=widget.get_total_row_weight(),
                     column_weight=widget.get_total_column_weight())
-                #default_setting.row_weight = widget.get_total_row_weight() # type: ignore
-                #default_setting.column_weight = widget.get_total_column_weight() # type: ignore
-        elif isinstance(widget, tuple(self.classes_horizontal_stretch_setting)):
+        elif isinstance(
+            widget, tuple(self.classes_horizontal_stretch_setting)):
             default_setting = self.item_horizontal_stretch_setting
-        elif isinstance(widget, tuple(self.classes_full_stretch_setting)):
+        elif isinstance(
+            widget, tuple(self.classes_full_stretch_setting)):
             default_setting = self.item_full_stretch_setting
-        elif isinstance(widget, tuple(self.classes_right_aligned_setting)):
+        elif isinstance(
+            widget, tuple(self.classes_right_aligned_setting)):
             default_setting = self.item_right_aligned_setting
         else:
             default_setting = self.item_centered_setting
-        self.log.debug(f'Placing frame {type(widget)} with setting: {default_setting}')
+        self.log.debug(
+            f'Placing frame {type(widget)} with setting: {default_setting}')
         # TODO: this handling (overwriting) just to get the type warnings that
         # would pop up below right is not sppropriate.
         widget.grid(row=row, column=column,
@@ -173,18 +175,26 @@ class GridFrame(tkinter.Frame):
 
     def get_total_rows(self) -> int:
         ''' Get total number of rows placed in this GridFrame '''
-        return max([widget.grid_info()['row'] for widget in self.grid_slaves()])
+        return max([
+            widget.grid_info()['row']
+            for widget in self.grid_slaves()])
 
     def get_total_columns(self) -> int:
         ''' Get total number of columns placed in this GridFrame '''
-        return max([widget.grid_info()['column'] for widget in self.grid_slaves()])
+        return max([
+            widget.grid_info()['column']
+            for widget in self.grid_slaves()])
 
     def get_total_row_weight(self):
         ''' Get sum of row weights currently configured '''
-        grid_rows = [widget.grid_info()['row'] for widget in self.grid_slaves()]
+        grid_rows = [
+            widget.grid_info()['row']
+            for widget in self.grid_slaves()]
         if grid_rows:
             max_row_number = max(grid_rows)
-            row_weights = [self.rowconfigure(row).get('weight', 0) for row in range(max_row_number+1)]
+            row_weights = [
+                self.rowconfigure(row).get('weight', 0)
+                for row in range(max_row_number+1)]
         else:
             # If a frame contains nothing, it's typically added to fill up
             # space inbetween content.
@@ -193,10 +203,14 @@ class GridFrame(tkinter.Frame):
 
     def get_total_column_weight(self):
         ''' Get sum of column weights currently configured '''
-        grid_columns = [widget.grid_info()['column'] for widget in self.grid_slaves()]
+        grid_columns = [
+            widget.grid_info()['column']
+            for widget in self.grid_slaves()]
         if grid_columns:
             max_column_number = max(grid_columns)
-            column_weights = [self.columnconfigure(row).get('weight', 0) for row in range(max_column_number+1)]
+            column_weights = [
+                self.columnconfigure(row).get('weight', 0)
+                for row in range(max_column_number+1)]
         else:
             # If a frame contains nothing, it's typically added to fill up
             # space inbetween content.
@@ -247,7 +261,8 @@ class ButtonFrame(GridFrame):
                 this_widget = tkinter.Button(
                     self,
                     text=button,
-                    command=functools.partial(self.handle_button_press, button))
+                    command=functools.partial(
+                        self.handle_button_press, button))
             else:
                 this_widget = GridFrame(self)
             self.place(widget=this_widget, row=0, column=button_number)
@@ -310,13 +325,16 @@ class FrameWindow(tkinter.Toplevel):
         # add "Enter" handles
         if key_enter_as_button:
             self.bind('<Return>',
-                      self.button_frame.handle_button_press(key_enter_as_button))
+                      self.button_frame.handle_button_press(
+                          key_enter_as_button))
             self.bind('<KP_Enter>',
-                      self.button_frame.handle_button_press(key_enter_as_button))
+                      self.button_frame.handle_button_press(
+                          key_enter_as_button))
 
         # Buttons to close the window:
         for button in closing:
-            self.button_frame.bind(f'<<{button}>>', lambda event: self.destroy(), add=True)
+            self.button_frame.bind(
+                f'<<{button}>>', lambda event: self.destroy(), add=True)
         # Closing via window manager:
         self.protocol('WM_DELETE_WINDOW',
                       lambda: self.button_frame.handle_button_press(
@@ -343,7 +361,7 @@ class FrameWindow(tkinter.Toplevel):
 
     # any bind on this window shall be intended for the underlying button frame
     def bind(self,
-             sequence: str | None =None,
+             sequence: str | None = None,
              func: Callable[[tkinter.Event], object] | None = None,
              add: bool | None = None):
         self.button_frame.bind(sequence=sequence, func=func, add=add)

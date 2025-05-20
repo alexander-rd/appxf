@@ -7,15 +7,15 @@ from kiss_cf.gui import SettingSelectFrame
 tester = ManualTestHelper('''
 Frame shall only show the label and the dropdown. The edit button must not be
 presented. The dropdown must be empty at startup (nothing selected) and contain
-two options.
+three options.
 Hovering: must show the long selected value.
 Resizing: should only affect the right entry part. Check resizing of the tooltip
 based on the "Long Single Line", the tooltip width shall be the width of the
-frame.
+frame up to a certain maximum.
 ''')  # noqa: E501
 
-setting = Setting.new('select::string',
-    options={'Long Broken Text': '''Lorem ipsum dolor sit amet,
+setting = Setting.new('select::text',
+    select_map={'Long Broken Text': '''Lorem ipsum dolor sit amet,
 
 consetetur sadipscing elitr, sed diam nonumy eirmod tempor
 invidunt ut labore et dolore magna aliquyam erat, sed diam
@@ -68,7 +68,7 @@ clita ea et gubergren, kasd magna no rebum. sanctus sea sed takimata ut vero
 voluptua.''',
              'Long Single Line': 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.',
              'Short': 'Short String',
-             }, name='Dropdown')
+             }, name='Dropdown',
+    mutable_items=False, mutable_list=False)
 
-tester._run_frame(SettingSelectFrame,
-                 setting)
+tester._run_frame(SettingSelectFrame, setting)

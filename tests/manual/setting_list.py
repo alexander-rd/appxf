@@ -13,7 +13,7 @@ setting_dict = {
     'Email': Setting.new('email'),
     'StringSelect': Setting.new(
         'select::string',
-        options={'01 One': 'Text One', '02 Two': 'Text Two'},
+        select_map={'01 One': 'Text One', '02 Two': 'Text Two'},
         ),
     'BooleanTrue': Setting.new(bool, value=True),
     'BooleanFalse': Setting.new(bool, value=False),
