@@ -9,8 +9,8 @@ import os
 from kiss_cf.security import Security
 
 # Indirectly used environments still need to be importet
-from tests.fixtures.application_mock import ApplicationMock
-from tests.fixtures.application import app_unlocked_user, app_fresh_user, app_initialized_user, app_registered_unlocked_user_admin_pair, app_unlocked_user_admin_pair
+from tests._fixtures.application_mock import ApplicationMock
+from tests._fixtures.application import app_unlocked_user, app_fresh_user, app_initialized_user, app_registered_unlocked_user_admin_pair, app_unlocked_user_admin_pair
 
 
 # TODO UPGRADE: Is the "user" in interface name "is_user_unlocked" necessary?

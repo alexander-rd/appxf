@@ -1,7 +1,7 @@
 import tkinter
 
 from appxf import logging
-from helper import ManualTestHelper
+from tests._fixtures.guitest_helper import ManualTestHelper
 from kiss_cf.setting import Setting
 from kiss_cf.gui import FrameWindow, SettingDictColumnFrame
 

@@ -1,6 +1,6 @@
 '''Test case description - test case description could come from here'''
 
-from helper import ManualTestHelper
+from tests._fixtures.guitest_helper import ManualTestHelper
 from kiss_cf.setting import SettingBool, SettingString, SettingEmail, SettingDict
 from kiss_cf.gui.setting_dict import SettingDictWindow
 from appxf import logging

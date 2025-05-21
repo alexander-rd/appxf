@@ -9,7 +9,7 @@ import os.path
 
 # Fixtures upon which the ones we require are depenent on must be included as
 # well. Otherwise, we will get a "fixture not found".
-from tests.fixtures import appxf_objects
+from tests._fixtures import appxf_objects
 scenarios('test_bdd_sync.feature')
 
 # TODO: should be rewritten to use the application.py fixture

@@ -7,7 +7,7 @@ from kiss_cf.storage import Storage, LocalStorage
 from kiss_cf.security import SecurePrivateStorage
 
 from tests.storage.test_storage_base import BaseStorageTest
-from tests.fixtures import appxf_objects
+from tests._fixtures import appxf_objects
 
 # Test manual decryption to ensure that details are stored with encryption.
 # Manual decryption should define the algorithms that were used as a regression

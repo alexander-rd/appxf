@@ -1,4 +1,4 @@
-from helper import ManualTestHelper
+from tests._fixtures.guitest_helper import ManualTestHelper
 from kiss_cf.setting import SettingBool
 from kiss_cf.gui import SettingFrameDefault
 

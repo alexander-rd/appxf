@@ -4,7 +4,7 @@ from unittest.mock import patch
 from kiss_cf.storage import Storage
 from kiss_cf.registry import Registry
 
-from tests.fixtures import appxf_objects
+from tests._fixtures import appxf_objects
 
 #! TODO: those getters should be moved into appxf_objects as functions and not
 #  as fixtures

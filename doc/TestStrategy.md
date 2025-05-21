@@ -1,43 +1,91 @@
-# KISS_CF Test Strategy
+# APPXF Test Strategy
 
-Goals
------
-KISS Cross Functionals need to consider the types of source code within the library:
- * __Any implementation__ should have 100% function coverage. However, python coverage does only support line and branch coverage. Putting this goal in numbers results in: __*80% line coverage*__.
- * __basic functionality__ should be fully tested with __*100% branch coverage*__.
- * __convenience functionality__ should cover all use cases and most but not all error cases.
- * __GUI implementation__ may be tested only manually (no automated testing is yet available)
+The test strategy considers the following two test levels:
+ * __Unit Tests__ cover individual modules and *should cover 100%* (lines and
+   branches) while *80% branch coverage is acceptable for initial versions*.
+   While focusing on individual modules, tests may or may not cut free
+   interfaces to other modules. No excuses -- all GUI elements must also be
+   covered.
+ * __Feature Tests__ are driven by the APPXF supported __*use cases*__ and to
+   be monitored __*performance targets*__. Feature tests shall use the APPXF
+   implementation as-is wherever possible. Use cases like login/registration
+   typically involve many modules like GUI elements, storage and settings. Even
+   though such test cases intend to ensure proper interaction between the basic
+   modules, the term *integration test* will not be used since there is no
+   integration: APPXF is *one* package. If basic use cases are already covered
+   well by the unit tests, they will not be repeated as feature tests unless
+   the following is validated: (1) the documented usage of the interface or (2)
+   performance characteristics or (3) the implementation of simpler test steps
+   for reuse.
 
- In addition to the basic test coverage, the testing must consider future interface changes, meaning: __the testing include backwards compatibility__.
+The following details must be considered:
+ * __Backwards Compatibility__ shall be ensured by either unit tests or feature
+   tests (not yet available).
+ * Test execution must be __automated__. For manual test cases, this implies:
+   results are checked-in, compared against changes and their execution is
+   validated in an automated test case. Test coverage from (valid) manual test
+   executions will be merged with the automated ones.
 
-Basic Functionality
--------------------
-Basic functionality is tested via unit testing in <code>tests/test_\<module\>.py</code> or <code>tests/\<module\>/test_\<sub-module\>.py</code>. Unit testing may be anything done by pytest and does not require cutting all interfaces free. It may use the ApplicationMock (see below) as well as behavior driven testing.
 
-Convinience Functionality
--------------------------
+Test Methods
+============
 
-Convinience functions shall be tested by behavior driven tests in context of the __ApplicationMock__ (see below). The implementation shall consider:
-    * Reuse of actions and checks across features
-    * Allowing to build up complex actions from simpler actions
-Additionally, especially during build-up of new features, the testing can happen in an isolated fashion where only basic use cases are covered.
+All methods, mentioned below may be combined!
 
-GUI
----
-GUI implementations shall come along with test applications, showing the GUI to allow "playing around. The concept is not conclusive, yet but may consider:
-  * A separate GUI to play around
-  * A GUI that is using a __test application fixture__ in the background.
+Pytest
+------
 
-\# TODO: Mention a specific example of such a GUI test.
+The default approach is straight-forward pytest test cases. Pytest is preferred
+(not mandated) for automated unit tests since BDD test would add the complexity
+of two-files, a more abstract implementation and the abstraction of the Gherkin
+language.
+
+Behavior Driven Tests (bdd)
+---------------------------
+
+They are included in a pytest run and just use the capabilities of python-bdd
+with Gherkin syntax. They are preferred for use case based feature testing and
+the added complexity in comparison to plain pytest is reasonable since the
+feature files shall represent functional requirements.
+
+GUI (manual tests)
+------------------
+
+__This is work in progress.__ Most of the required helpers are not yet existing!
+
+The idea comprises steps in the automation via TOX:
+ * updating the manual test case database (validity of test cases based on code
+   changes and scanning for existing manual test cases)
+ * a test case that is FAILING if any planned test case has no valid test
+   execution
+ * merging the coverage of valid manual test case executions with the oder unit
+   tests or feature tests
+
+and scripting (or an application) assisting with:
+ * triggering the steps mentioned above in TOX
+ * listing invalid test cases
+ * triggering test case execution including adding to database
+
+During manual test case execution:
+ * the tester has one window with the test descriptions (things to check) and
+   commenting results with OK/FAILED
+ * the tester gets the window or frame in a second window to play around
+ * the test execution may include additional checks after test execution
+
+\# TODO: General TODO of implementation and mentioning a specific example of
+such a GUI test. Further details likely require a separate markdown page. See
+ticket #25
 
 ApplicationMock
 ---------------
-The __ApplicationMock__ in <code>tests/fixtures/application_mock.py</code> mimics an application sufficiently complex for advanced test cases. The fixtures in <code>tests/fixtures/application.py</code> may combine several ApplicationMock instances. They are prepared and used as follows:
+The __ApplicationMock__ in <code>tests/_fixtures/application_mock.py</code> mimics an application sufficiently complex for advanced test cases. The fixtures in <code>tests/fixtures/application.py</code> may combine several ApplicationMock instances. They are prepared and used as follows:
   1. The file structure is prepared once for the kiss_cf library version at location: <code>.testing/app_\<context\>_\<kiss_cf version\></code>.
   1. The prepared folder is copied for the specific test case. The dictionary of the fixture contains entries like <code>app_user</code> which return an ApplicationMock object. This ApplicationMock includes all objects and required paths in context of the ApplicationMock.
 
 Backwards Compatibility
 -----------------------
+
+__This is work in progress.__ Most of the required helpers are not yet existing!
 
 Testing of backwards compatibility shall be based on the __ApplicationMock__ fixtures with the following procedure:
   * At a release, the kiss_cf-version specific prepared file structures <code>.testing/app_*</code> are checked-in while the release version of the main branch is increased.
@@ -47,3 +95,34 @@ Testing of backwards compatibility shall be based on the __ApplicationMock__ fix
 
 \# TODO: It may be necessary to also use this approach for non BDD tests.
 
+
+Additional Guidelines
+=====================
+
+Folder Structure
+----------------
+Unit tests are all in <code>tests</code> and in subfolders according to the modules in <code>src</code>. Different test files exist (see test methods):
+ * normal unit tests should use the naming of the <code>src</code> file with
+   the prefix <code>test_</code>.
+ * manual test cases for GUI elements also use the naming of the
+   <code>src</code> file with the prefix <code>guitest_</code> but need to add
+   further details into the file name since each file represents one test case.
+ * behavior driven tests (bdd) need to use the prefix <code>test_bdd</code> and
+   come along with a second <code>*.feature</code> file.
+
+Feature tests are all stored in <code>feature_tests</code> while following the same folder and file name conventions.
+
+ Examples:
+ * <code>tests/test_buffer.py</code>
+ * <code>tests/storage/test_ram.py</code>
+ * <code>tests/gui/guitest_setting_dict_column_frame.py</code>
+ * <code>tests_features/sync/test_bdd_sync.py</code> and
+   <code>tests_features/sync/test_bdd_sync.feature</code>
+
+__Rationale:__ Feature tests and unit tests are separated because coverage is
+evaluated separately. Since tox is not able to use an input like
+<code>tests/feature_*</code> for pytest, the tests are separated on the topmost
+level. The prefix <code>test_bdd</code> is mandated to remain consistent if
+behavior tests are combined with normal unit tests for the same module.
+
+\# TODO: file guideline should include the fixtures folder.
