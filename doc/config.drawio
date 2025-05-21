@@ -1,6 +1,6 @@
-<mxfile host="Electron" modified="2023-12-20T23:44:00.742Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.1.11 Chrome/114.0.5735.289 Electron/25.9.8 Safari/537.36" etag="_vFZSVefWDBnWHwHb9tb" version="22.1.11" type="device">
+<mxfile host="Electron" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/27.0.5 Chrome/134.0.6998.205 Electron/35.3.0 Safari/537.36" version="27.0.5">
   <diagram name="Page-1" id="b520641d-4fe3-3701-9064-5fc419738815">
-    <mxGraphModel dx="1364" dy="843" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="none" math="0" shadow="0">
+    <mxGraphModel dx="1356" dy="968" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="none" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -10,13 +10,13 @@
         <mxCell id="lqmB8BgXq8_Tp8ZVzu6Q-3" value="Collected at initialization" style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="lqmB8BgXq8_Tp8ZVzu6Q-2" vertex="1">
           <mxGeometry y="26" width="160" height="34" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-29" value="Shared &lt;b&gt;storage&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="lqmB8BgXq8_Tp8ZVzu6Q-2">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-29" value="Shared &lt;b&gt;storage&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="lqmB8BgXq8_Tp8ZVzu6Q-2" vertex="1">
           <mxGeometry y="60" width="160" height="30" as="geometry" />
         </mxCell>
         <mxCell id="_NjSEAIl9JJGJZizzpSm-1" value="Some fields might be fixed after initial setting or require re-registration. Examples: Email and Role permission." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="lqmB8BgXq8_Tp8ZVzu6Q-2" vertex="1">
           <mxGeometry y="90" width="160" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-19" value="Manageable by admin (they should restrain themselves from changin" style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="lqmB8BgXq8_Tp8ZVzu6Q-2">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-19" value="Manageable by admin (they should restrain themselves from changin" style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="lqmB8BgXq8_Tp8ZVzu6Q-2" vertex="1">
           <mxGeometry y="160" width="160" height="60" as="geometry" />
         </mxCell>
         <mxCell id="_NjSEAIl9JJGJZizzpSm-10" value="Some field might be changed by user but should be reflected on admin side." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="lqmB8BgXq8_Tp8ZVzu6Q-2" vertex="1">
@@ -25,13 +25,13 @@
         <mxCell id="_NjSEAIl9JJGJZizzpSm-2" value="&amp;lt;ANY ACCESS&amp;gt;" style="swimlane;html=1;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#e0e0e0;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;swimlaneFillColor=#ffffff;align=center;rounded=1;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" vertex="1">
           <mxGeometry x="400" y="20" width="180" height="130" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-1" value="Examples: FTP or Email credentials." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="_NjSEAIl9JJGJZizzpSm-2">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-1" value="Examples: FTP or Email credentials." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="_NjSEAIl9JJGJZizzpSm-2" vertex="1">
           <mxGeometry y="26" width="180" height="34" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-28" value="Shared &lt;b&gt;storage&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="_NjSEAIl9JJGJZizzpSm-2">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-28" value="Shared &lt;b&gt;storage&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="_NjSEAIl9JJGJZizzpSm-2" vertex="1">
           <mxGeometry y="60" width="180" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-2" value="Maintained by role (admin), used by roles but not visible." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="_NjSEAIl9JJGJZizzpSm-2">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-2" value="Maintained by role (admin), used by roles but not visible." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="_NjSEAIl9JJGJZizzpSm-2" vertex="1">
           <mxGeometry y="90" width="180" height="40" as="geometry" />
         </mxCell>
         <mxCell id="_NjSEAIl9JJGJZizzpSm-8" value="&lt;span style=&quot;background-color: initial;&quot;&gt;If users add template entries - those templates might be &quot;private&quot; or &quot;shared (within role)&quot;. &quot;global&quot; might not have such an option. This still fits the config pattern but &lt;b&gt;the user adds options and decides on visibility&lt;/b&gt;.&lt;br&gt;&lt;br&gt;If maintained in a separate config section, this might be very fine.&lt;br&gt;&lt;br&gt;&lt;/span&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=11;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
@@ -40,94 +40,94 @@
         <mxCell id="_NjSEAIl9JJGJZizzpSm-9" value="Roles (admin) must be able to update configuration for all users." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;fillColor=#ffe6cc;strokeColor=#d79b00;size=11;" parent="1" vertex="1">
           <mxGeometry x="780" y="40" width="190" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-3" value="Users might update configuration (as a role)" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;fillColor=#ffe6cc;strokeColor=#d79b00;size=11;" vertex="1" parent="1">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-3" value="Users might update configuration (as a role)" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;fillColor=#ffe6cc;strokeColor=#d79b00;size=11;" parent="1" vertex="1">
           <mxGeometry x="780" y="90" width="190" height="38" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-4" value="Users (as a role) might have read access." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;fillColor=#ffe6cc;strokeColor=#d79b00;size=11;" vertex="1" parent="1">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-4" value="Users (as a role) might have read access." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;fillColor=#ffe6cc;strokeColor=#d79b00;size=11;" parent="1" vertex="1">
           <mxGeometry x="780" y="138" width="190" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-5" value="Options should take over section&amp;nbsp; access settings but need overwriting." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;fillColor=#ffe6cc;strokeColor=#d79b00;size=11;" vertex="1" parent="1">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-5" value="Options should take over section&amp;nbsp; access settings but need overwriting." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;fillColor=#ffe6cc;strokeColor=#d79b00;size=11;" parent="1" vertex="1">
           <mxGeometry x="1030" y="138" width="190" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-6" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="WfFBRD25KZCrFt_MD5P0-3" target="WfFBRD25KZCrFt_MD5P0-5">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-6" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="WfFBRD25KZCrFt_MD5P0-3" target="WfFBRD25KZCrFt_MD5P0-5" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="650" y="180" as="sourcePoint" />
             <mxPoint x="700" y="130" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-7" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" source="WfFBRD25KZCrFt_MD5P0-4" target="WfFBRD25KZCrFt_MD5P0-5">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-7" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="WfFBRD25KZCrFt_MD5P0-4" target="WfFBRD25KZCrFt_MD5P0-5" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="980" y="138" as="sourcePoint" />
             <mxPoint x="1040" y="149" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-8" value="&amp;lt;FEATURE_LOCAL&amp;gt;" style="swimlane;html=1;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#e0e0e0;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;swimlaneFillColor=#ffffff;align=center;rounded=1;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12" vertex="1" parent="1">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-8" value="&amp;lt;FEATURE_LOCAL&amp;gt;" style="swimlane;html=1;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#e0e0e0;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;swimlaneFillColor=#ffffff;align=center;rounded=1;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" vertex="1">
           <mxGeometry x="400" y="180.5" width="180" height="160" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-9" value="Examples: Convinience options for list maintenance like defaults." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="WfFBRD25KZCrFt_MD5P0-8">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-9" value="Examples: Convenience options for list maintenance like defaults." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="WfFBRD25KZCrFt_MD5P0-8" vertex="1">
           <mxGeometry y="26" width="180" height="54" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-11" value="Local &lt;b&gt;storage&lt;/b&gt;." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="WfFBRD25KZCrFt_MD5P0-8">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-11" value="Local &lt;b&gt;storage&lt;/b&gt;." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="WfFBRD25KZCrFt_MD5P0-8" vertex="1">
           <mxGeometry y="80" width="180" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-10" value="Typically only visible/editable to specific roles." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="WfFBRD25KZCrFt_MD5P0-8">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-10" value="Typically only visible/editable to specific roles." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="WfFBRD25KZCrFt_MD5P0-8" vertex="1">
           <mxGeometry y="110" width="180" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-12" value="&amp;lt;FEATURE_SHARED&amp;gt;" style="swimlane;html=1;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#e0e0e0;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;swimlaneFillColor=#ffffff;align=center;rounded=1;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12" vertex="1" parent="1">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-12" value="&amp;lt;FEATURE_SHARED&amp;gt;" style="swimlane;html=1;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#e0e0e0;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;swimlaneFillColor=#ffffff;align=center;rounded=1;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" vertex="1">
           <mxGeometry x="400" y="380" width="180" height="170" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-13" value="Examples: Email templates or Email history of list maintenance (not certain if this will be config)." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="WfFBRD25KZCrFt_MD5P0-12">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-13" value="Examples: Email templates or Email history of list maintenance (not certain if this will be config)." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="WfFBRD25KZCrFt_MD5P0-12" vertex="1">
           <mxGeometry y="26" width="180" height="64" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-14" value="Shared &lt;b&gt;storage&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="WfFBRD25KZCrFt_MD5P0-12">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-14" value="Shared &lt;b&gt;storage&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="WfFBRD25KZCrFt_MD5P0-12" vertex="1">
           <mxGeometry y="90" width="180" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-15" value="Managed by specific roles. Typically not visible to others." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="WfFBRD25KZCrFt_MD5P0-12">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-15" value="Managed by specific roles. Typically not visible to others." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="WfFBRD25KZCrFt_MD5P0-12" vertex="1">
           <mxGeometry y="120" width="180" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-16" value="&lt;span style=&quot;background-color: initial;&quot;&gt;This is unique to user settings. Like a special &quot;can be edited only if it was never set (section was never stored)&quot;.&lt;br&gt;&lt;/span&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-16" value="&lt;span style=&quot;background-color: initial;&quot;&gt;This is unique to user settings. Like a special &quot;can be edited only if it was never set (section was never stored)&quot;.&lt;br&gt;&lt;/span&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=11;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
           <mxGeometry x="210" y="80" width="130" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-17" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" edge="1" parent="1" source="WfFBRD25KZCrFt_MD5P0-16" target="_NjSEAIl9JJGJZizzpSm-1">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-17" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" parent="1" source="WfFBRD25KZCrFt_MD5P0-16" target="_NjSEAIl9JJGJZizzpSm-1" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="650" y="180" as="sourcePoint" />
             <mxPoint x="700" y="130" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-18" value="&lt;span style=&quot;background-color: initial;&quot;&gt;While user cannot change. Admin still can.&lt;br&gt;&lt;/span&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-18" value="&lt;span style=&quot;background-color: initial;&quot;&gt;While user cannot change. Admin still can.&lt;br&gt;&lt;/span&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=11;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
           <mxGeometry x="210" y="190" width="130" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-20" value="USER" style="swimlane;html=1;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#e0e0e0;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;swimlaneFillColor=#ffffff;align=center;rounded=1;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12" vertex="1" parent="1">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-20" value="USER" style="swimlane;html=1;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#e0e0e0;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;swimlaneFillColor=#ffffff;align=center;rounded=1;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" vertex="1">
           <mxGeometry x="20" y="340.5" width="160" height="270" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-21" value="Created after login/initialization." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="WfFBRD25KZCrFt_MD5P0-20">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-21" value="Created after login/initialization." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="WfFBRD25KZCrFt_MD5P0-20" vertex="1">
           <mxGeometry y="26" width="160" height="34" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-30" value="Shared &lt;b&gt;storage&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="WfFBRD25KZCrFt_MD5P0-20">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-30" value="Shared &lt;b&gt;storage&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="WfFBRD25KZCrFt_MD5P0-20" vertex="1">
           <mxGeometry y="60" width="160" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-22" value="Managed by user. Admin can read and could (but should not) change." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="WfFBRD25KZCrFt_MD5P0-20">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-22" value="Managed by user. Admin can read and could (but should not) change." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="WfFBRD25KZCrFt_MD5P0-20" vertex="1">
           <mxGeometry y="90" width="160" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-23" value="Manageable by admin (they should restrain themselves from changin" style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="WfFBRD25KZCrFt_MD5P0-20">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-23" value="Manageable by admin (they should restrain themselves from changin" style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="WfFBRD25KZCrFt_MD5P0-20" vertex="1">
           <mxGeometry y="150" width="160" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-24" value="Some field might be changed by user but should be reflected on admin side." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="WfFBRD25KZCrFt_MD5P0-20">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-24" value="Some field might be changed by user but should be reflected on admin side." style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="WfFBRD25KZCrFt_MD5P0-20" vertex="1">
           <mxGeometry y="210" width="160" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-25" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" edge="1" parent="1" source="WfFBRD25KZCrFt_MD5P0-18" target="_NjSEAIl9JJGJZizzpSm-1">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-25" value="" style="endArrow=none;dashed=1;html=1;rounded=0;" parent="1" source="WfFBRD25KZCrFt_MD5P0-18" target="_NjSEAIl9JJGJZizzpSm-1" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="220" y="128" as="sourcePoint" />
             <mxPoint x="190" y="127" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-26" value="&lt;span style=&quot;background-color: initial;&quot;&gt;If roles are part of user (registry config):&lt;br&gt;1) they should only be visible if true (not showing all roles)&lt;br&gt;&lt;/span&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-26" value="&lt;span style=&quot;background-color: initial;&quot;&gt;If roles are part of user (registry config):&lt;br&gt;1) they should only be visible if true (not showing all roles)&lt;br&gt;&lt;/span&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=11;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
           <mxGeometry x="200" y="260.5" width="130" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-27" value="&lt;span style=&quot;background-color: initial;&quot;&gt;&lt;b&gt;Summary&lt;/b&gt;&lt;br&gt;&lt;br&gt;Visibility: by static setting, by role, by value (True/False)&lt;br&gt;&lt;br&gt;Mandatory roles: user, admin&lt;br&gt;&lt;/span&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=11;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-27" value="&lt;span style=&quot;background-color: initial;&quot;&gt;&lt;b&gt;Summary&lt;/b&gt;&lt;br&gt;&lt;br&gt;Visibility: by static setting, by role, by value (True/False)&lt;br&gt;&lt;br&gt;Mandatory roles: user, admin&lt;br&gt;&lt;/span&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=11;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
           <mxGeometry x="210" y="520" width="160" height="120" as="geometry" />
         </mxCell>
-        <mxCell id="WfFBRD25KZCrFt_MD5P0-31" value="&lt;span style=&quot;background-color: initial;&quot;&gt;Tool updates might alter configuration settings. Following procedure ensures sanity:&lt;br&gt;1) Admin prepares new tool version and ensures config data.&lt;br&gt;2) Deploy releases tool version and writes new config files.&lt;br&gt;--------&lt;br&gt;3) Tool will always handle tool updates first and block execution if tool update is vailable.&lt;br&gt;&amp;gt;&amp;gt; This ensures new configs are not used with old tool versions.&lt;br&gt;4) Tool updates are always checked before uploading data.&lt;br&gt;&amp;gt;&amp;gt; This ensures old tool versions are not writing data anymore.&lt;br&gt;5) There is always a full sync on all remote storage after a tool update. Probably happens every tool start.&lt;br&gt;&lt;/span&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=11;fillColor=#d80073;strokeColor=#A50040;fontColor=#ffffff;" vertex="1" parent="1">
+        <mxCell id="WfFBRD25KZCrFt_MD5P0-31" value="&lt;span style=&quot;background-color: initial;&quot;&gt;Tool updates might alter configuration settings. Following procedure ensures sanity:&lt;br&gt;1) Admin prepares new tool version and ensures config data.&lt;br&gt;2) Deploy releases tool version and writes new config files.&lt;br&gt;--------&lt;br&gt;3) Tool will always handle tool updates first and block execution if tool update is vailable.&lt;br&gt;&amp;gt;&amp;gt; This ensures new configs are not used with old tool versions.&lt;br&gt;4) Tool updates are always checked before uploading data.&lt;br&gt;&amp;gt;&amp;gt; This ensures old tool versions are not writing data anymore.&lt;br&gt;5) There is always a full sync on all remote storage after a tool update. Probably happens every tool start.&lt;br&gt;&lt;/span&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=11;fillColor=#d80073;strokeColor=#A50040;fontColor=#ffffff;" parent="1" vertex="1">
           <mxGeometry x="690" y="530" width="370" height="180" as="geometry" />
         </mxCell>
       </root>

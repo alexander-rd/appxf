@@ -1,8 +1,8 @@
 import pytest
 
-from tests.fixtures.application_mock import ApplicationMock
-from tests.fixtures import appxf_objects
-from tests.fixtures.application import app_unlocked_user_admin_pair
+from tests._fixtures.application_mock import ApplicationMock
+from tests._fixtures import appxf_objects
+from tests._fixtures.application import app_unlocked_user_admin_pair
 
 # TODO: CURRENT REFACTORING: move unlocked user/admin pair from registry test
 #       to appxf_objects to use in here.

@@ -8,7 +8,7 @@ from kiss_cf.security import SecurePrivateStorage
 from kiss_cf.registry import SecureSharedStorage
 
 from tests.storage.test_storage_base import BaseStorageTest
-from tests.fixtures import appxf_objects
+from tests._fixtures import appxf_objects
 
 # TODO: test signature and decryption manually to ensure formats and proper
 # encryption. This will be a lot of duplicate code but the only way to test

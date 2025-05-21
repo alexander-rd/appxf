@@ -8,8 +8,8 @@ import shutil
 import pytest
 import toml
 from kiss_cf.storage import Storage
-from tests.fixtures import appxf_objects
-from tests.fixtures.application_mock import ApplicationMock
+from tests._fixtures import appxf_objects
+from tests._fixtures.application_mock import ApplicationMock
 
 # get current kiss_cf version
 toml_data = toml.load(open('pyproject.toml'))

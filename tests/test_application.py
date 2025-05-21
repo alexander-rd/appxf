@@ -1,7 +1,7 @@
 import pytest
 import tkinter
 
-from tests import fake_tkinter
+from tests._fixtures import fake_tkinter
 fake_tkinter.activate()
 
 # Used to test logging:

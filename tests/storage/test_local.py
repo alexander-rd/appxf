@@ -6,7 +6,7 @@ import pytest
 from kiss_cf.storage import LocalStorage, Storage
 
 from tests.storage.test_storage_base import BaseStorageTest
-from tests.fixtures import appxf_objects
+from tests._fixtures import appxf_objects
 
 # TODO: test for right place of meta storage
 

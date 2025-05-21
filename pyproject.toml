@@ -34,14 +34,14 @@ legacy_tox_ini = """
       -r{toxinidir}/requirements.txt
       -r{toxinidir}/requirements_test.txt
 
-    commands = pytest -rA tests/fixtures/application.py::test_cleanup
+    commands = pytest -rA tests/_fixtures/application.py::test_cleanup
                coverage erase
-               coverage run --source=kiss_cf --context=UNIT --branch -m pytest -rA --ignore=./tests/bdd --ignore=./tests/application
+               coverage run --source=kiss_cf --context=UNIT --branch -m pytest -rA ./tests
                coverage report --contexts=UNIT
                coverage html --contexts=UNIT -d cov_html_UNIT
-               coverage run -a --source=kiss_cf --context=APP --branch -m pytest -rA ./tests/application ./tests/bdd
-               coverage report --contexts=APP
-               coverage html --contexts=APP -d cov_html_APP
+               coverage run -a --source=kiss_cf --context=FEATURE --branch -m pytest -rA ./tests_features
+               coverage report --contexts=FEATURE
+               coverage html --contexts=FEATURE -d cov_html_FEATURE
                coverage report
                coverage html -d cov_html
 """
