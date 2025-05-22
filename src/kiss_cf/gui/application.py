@@ -49,6 +49,7 @@ class KissApplication(tkinter.Tk):
       * main frame which can show whatever frame you registered:
         [.register_frame()] and [.show_frame()]
       * a lower logging display [TODO]
+      * handle login, registry and sync if defined [TODO]
 
     Typical code would look like
 

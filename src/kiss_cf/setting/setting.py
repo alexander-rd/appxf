@@ -367,10 +367,7 @@ class Setting(Generic[_BaseTypeT], Stateful,
         self.ExportOptions.raise_error_on_non_empty_kwarg(kwarg)
 
         # Strategy is to fill a dict from the various flags and if this dict
-        # remained empty, only the value is returned
-        option_list = []
-        if export_options.name:
-            option_list += ['name']
+        # remains empty, only the value is returned
         if export_options.type:
             raise TypeError('Exporting the type is not yet supported')
         options: OrderedDict = self.options.get_state(options=export_options)
