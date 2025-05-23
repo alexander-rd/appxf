@@ -42,7 +42,7 @@ settingTwo = Setting.new('select::int',
     select_map={'1 Eins': 1, '2 Zwei': 2, '3 Drei': 3},
     name='Integers')
 
-setting = SettingDict(data={'SelectString': settingOne, 'Integer': settingTwo})
+setting = SettingDict(setting_dict={'SelectString': settingOne, 'Integer': settingTwo})
 
 tester._run_frame(SettingDictSingleFrame,
                  setting)

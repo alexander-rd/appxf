@@ -17,7 +17,7 @@ from .setting import Setting, AppxfSettingError
 # TODO: Loading modes 'add' and 'error'
 
 
-class SettingDict(Storable, MutableMapping[str, Setting]):
+class SettingDict(Setting, Storable, MutableMapping[str, Setting]):
     ''' Maintain a dictionary of settings
 
     While normal dictionary behavior is supported, be aware that writing to
@@ -25,10 +25,15 @@ class SettingDict(Storable, MutableMapping[str, Setting]):
     not valid for a setting.
     '''
 
+    # TODO: add Options and add a replacement for "default_visibility" (viewed
+    # in context of a configuration) - must also scan for usage of this option
+    # since it's meaning may change. Note that if "default visibility" only
+    # having a meaning withing context of Config, it does not belong into the
+    # SettingDict options. But it may be similar to a setting name.
+
     def __init__(self,
-                 data: Mapping[str, Any] | None = None,
+                 setting_dict: Mapping[str, Any] | None = None,
                  storage: Storage | None = None,
-                 default_visibility: bool = True,
                  **kwargs):
         ''' Settings collected as dicitonary
 
@@ -48,29 +53,22 @@ class SettingDict(Storable, MutableMapping[str, Setting]):
         Note: If you need to pass additional arguments to a Setting, you
         need to provide the Setting object.
         '''
-        # Define SettingDict specific details
-        self._setting_dict: OrderedDict[Any, Setting] = OrderedDict()
-        # Initialize dict details
+        # Cover None arguments
         if storage is None:
             storage = RamStorage()
-        # **kwargs cannot be forwarded. All are resolved into dictionary
-        # construction.
-        super().__init__(storage=storage)
+        # initialize parents
+        super().__init__(storage=storage, **kwargs)
 
-        # Cunsume data and kwargs manually:
-        if data is not None:
-            self.add(data)
-        if kwargs:
-            self.add(**kwargs)
+        # initialize own data structures
+        self._setting_dict: OrderedDict[Any, Setting] = OrderedDict()
+        self.export_options = Setting.ExportOptions()
         # Storable will initialize with default storage
         self._on_load_unknown = 'ignore'
         self._store_setting_object = False
 
-        # Export options
-        self.export_options = Setting.ExportOptions()
-
-        # TODO: add GUI element concept and derive/aggregate from there
-        self.default_visibility = default_visibility
+        # Cunsume data and kwargs manually:
+        if setting_dict is not None:
+            self.add(setting_dict)
 
     def __len__(self):
         return self._setting_dict.__len__()
@@ -93,7 +91,7 @@ class SettingDict(Storable, MutableMapping[str, Setting]):
     def __delitem__(self, key):
         del self._setting_dict[key]
 
-    def add(self, data: Mapping[str, Any] | None = None, **kwargs):
+    def add(self, setting_dict: Mapping[str, Any] | None = None, **kwargs):
         ''' Add new settings to the setting dictionary
 
         New settings cannot be written in the same way new elements would be
@@ -105,15 +103,15 @@ class SettingDict(Storable, MutableMapping[str, Setting]):
              (invalid empty Email address)
           2) Protect from unintentional usage
         '''
-        if data is not None:
-            if (hasattr(data, 'keys') and hasattr(data, '__getitem__')):
+        if setting_dict is not None:
+            if (hasattr(setting_dict, 'keys') and hasattr(setting_dict, '__getitem__')):
                 # We have a mapping object and can cycle:
-                for key in data.keys():
-                    self._new_item(key, data[key])
-            elif hasattr(data, '__iter__'):
+                for key in setting_dict.keys():
+                    self._new_item(key, setting_dict[key])
+            elif hasattr(setting_dict, '__iter__'):
                 # The outer is already an iterable, lets iterate the inner and
                 # expect a key and a value:
-                for element in data:
+                for element in setting_dict:
                     if not hasattr(element, '__iter__'):
                         raise AppxfSettingError(
                             'No second level iterable. SettingDict can '
@@ -134,7 +132,7 @@ class SettingDict(Storable, MutableMapping[str, Setting]):
                     # we just ignore anything else
             else:
                 raise AppxfSettingError(
-                    f'Invalid initialization input of type {type(data)}. '
+                    f'Invalid initialization input of type {type(setting_dict)}. '
                     f'Initialize with a dictionary of key/value '
                     f'specifications.')
         for key, value in kwargs.items():
@@ -258,3 +256,13 @@ class SettingDict(Storable, MutableMapping[str, Setting]):
                 # restore setting name:
                 if not self._setting_dict[key].options.name:
                     self._setting_dict[key].options.name = key
+
+    # ## Setting behavior
+
+    @classmethod
+    def get_default(cls) -> Any:
+        return {}
+
+    @classmethod
+    def get_supported_types(cls) -> list[type | str]:
+        return {'dictionary', 'dict', MutableMapping}
