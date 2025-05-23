@@ -148,16 +148,10 @@ class _SettingMeta(type):
         return newclass
 
     @classmethod
-    def get_setting(
+    def get_setting_type(
             cls,
             requested_type: str | type,
-            value: Any,
-            name: str,
-            **kwargs) -> Setting[Any]:
-        ''' Get Setting type from string or base type
-
-        The type may also be an Setting directly
-        '''
+            ) -> tuple[type[Setting[Any]], type[Setting[Any]] | None]:
         # Handle unfinished implementations of Settings:
         if (
             isinstance(requested_type, type) and
@@ -168,14 +162,22 @@ class _SettingMeta(type):
                     f'You need to provide a fully implemented class like '
                     f'SettingString. {requested_type.__name__} is not '
                     f'fully implemented')
-            return requested_type(value=value, name=name, **kwargs)
+            return requested_type, None
         # requested type is now either a string or a type, before handling
         # potential SettingExtensions, we look up existing types:
         if requested_type in _SettingMeta.type_map:
-            return _SettingMeta.type_map[requested_type](
-                value=value, name=name, **kwargs)
-        # now, we handle extensions which are separated by otherwise untypical
-        # '::'
+            return _SettingMeta.type_map[requested_type], None
+        # if requested type is a class, we actually have to scan the known
+        # types if any of them is a valid parent class
+        if isinstance(requested_type, type):
+            for key, setting in _SettingMeta.type_map.items():
+                if not isinstance(key, type):
+                    continue
+                if issubclass(requested_type, key):
+                    return setting, None
+
+        # now, we handle extensions which are separated by
+        # otherwise untypical '::'
         if isinstance(requested_type, str) and '::' in requested_type:
             type_split = requested_type.split('::')
             # get extension type
@@ -190,6 +192,33 @@ class _SettingMeta(type):
                     f'Base type [{type_split[1]}] is unknown. '
                     f'Known are: {list(cls.type_map.keys())}')
             base_setting_type = cls.type_map[type_split[1]]
+            return extension_type, base_setting_type
+
+        raise AppxfSettingError(
+            f'Setting type [{requested_type}] is unknown. Did you import the '
+            f'Setting implementations you wanted to use? Supported are: '
+            f'{_SettingMeta.type_map.keys()}'
+        )
+
+    @classmethod
+    def get_setting(
+            cls,
+            requested_type: str | type,
+            value: Any,
+            name: str,
+            **kwargs) -> Setting[Any]:
+        ''' Get Setting type from string or base type
+
+        The type may also be an Setting directly
+        '''
+        setting_type, base_setting_type = cls.get_setting_type(requested_type=requested_type)
+
+        if base_setting_type is None:
+            # this is a normal setting
+            return setting_type(value=value, name=name, **kwargs)
+        else:
+            # this is a setting extension and we need to prepare the kwarg
+            # options for extended settings and the settings.
             extension_options = {
                 key: val for key, val in kwargs.items()
                 if key != 'base_setting_options'}
@@ -199,15 +228,10 @@ class _SettingMeta(type):
             base_setting = base_setting_type(**base_options)
             if value is None:
                 value = base_setting.get_default()
-            return extension_type(name=name, value=value,
-                                  base_setting=base_setting,
-                                  **extension_options)
-        raise AppxfSettingError(
-            f'Setting type [{requested_type}] is unknown. Did you import the '
-            f'Setting implementations you wanted to use? Supported are: '
-            f'{_SettingMeta.type_map.keys()}'
-        )
-
+            return setting_type(
+                name=name, value=value,
+                base_setting=base_setting,
+                **extension_options)
 
 # The custom metaclass from registration and the ABC metaclass for abstract
 # classes need to be merged. Note that the order actually matters. The
