@@ -346,12 +346,15 @@ class Setting(Generic[_BaseTypeT], Stateful,
     def __init__(self,
                  value: _BaseTypeT | None = None,
                  **kwargs):
-        super().__init__()
+        super().__init__(**kwargs)
         # consume kwargs into options/gui_options - must apply before applying
         # the value since options typically affect the validation:
         self.options = self.Options.new_from_kwarg(kwargs)
-        # throw error for anything that is left over
-        self.options.raise_error_on_non_empty_kwarg(kwargs)
+        # throw error for anything that is left over - cannot do this anymore
+        # after SettingDict now also being a Setting: MRO cooperative
+        # inheritance may have kwargs that are meant for another class in the
+        # hierachy.
+        # self.options.raise_error_on_non_empty_kwarg(kwargs)
 
         if value is None:
             self._input = self.get_default()

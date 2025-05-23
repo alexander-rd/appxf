@@ -18,6 +18,11 @@ class Stateful():
         attribute_mask: attributes that should not be exported or imported
     '''
 
+    # init with kwargs is required to allow coorperative inheritance via
+    # super().__init__(**kwargs).
+    def __init__(self, **kwargs):
+        pass
+
     # There is no particular __init__ required but the deriving class should
     # update the attribute_mask:
     attribute_mask: list[str] = []

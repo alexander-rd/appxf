@@ -85,14 +85,6 @@ def test_setting_dict_init_by_dict():
     setting_dict = SettingDict(dict_input)
     verify_setting_dict(setting_dict, init_values)
 
-# key value pairs
-def test_setting_dict_init_key_value_call():
-    # Like dict, but resolving the dict via **
-    dict_input = {t[0]: t[1]
-                  for t in init_values}
-    setting_dict = SettingDict(**dict_input)
-    verify_setting_dict(setting_dict, init_values)
-
 # init by list
 def test_setting_dict_init_by_list_list():
     # Like dict, but resolving the dict via **
@@ -118,7 +110,7 @@ def test_setting_dict_init_by_list_fail2():
 def test_setting_dict_init_by_list_fail2():
     # iterable with a iterable subelement that does not contain key+value
     with pytest.raises(AppxfSettingError) as exc_info:
-        SettingDict(data = 42)
+        SettingDict(setting_dict = 42)
     assert f'Invalid initialization input of type {type(42)}.' in str(exc_info.value)
 
 # inconsistent type/value combinations
@@ -238,10 +230,10 @@ def test_setting_dict_store_load_cycle():
     assert setting_dict_reload.get_setting('input_check').value == 1
     assert setting_dict_reload.get_setting('input_check').input == '1'
 
-def test_setting_dict_store_loadpyte_invalid_init():
+def test_setting_dict_store_load_invalid_init():
     storage = RamStorage()
     setting_dict = SettingDict(
-        entry=('email',),
+        setting_dict={'entry': ('email',)},
         storage=storage
         )
     setting_dict.store()
