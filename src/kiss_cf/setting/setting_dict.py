@@ -266,3 +266,18 @@ class SettingDict(Setting, Storable, MutableMapping[str, Setting]):
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
         return {'dictionary', 'dict', MutableMapping}
+
+    def _validated_conversion(self, value: Any) -> tuple[bool, Any]:
+        # Empty string as default input
+        if value == '':
+            return True, {}
+        # Empty mapping being the default value
+        if isinstance(value, MutableMapping) and not value:
+            return True, {}
+        return False, {}
+
+    def to_string(self) -> str:
+        # Return empty string in case SettingDict does not contain settings:
+        if not self._setting_dict:
+            return ''
+        return str(self._setting_dict)

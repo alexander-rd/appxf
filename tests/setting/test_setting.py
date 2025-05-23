@@ -1,6 +1,8 @@
 
 import pytest
 
+from collections.abc import MutableMapping
+
 from kiss_cf.setting import Setting, SettingExtension
 from kiss_cf.setting import AppxfSettingError, AppxfSettingConversionError
 from kiss_cf.setting import SettingString, SettingText, SettingEmail, SettingPassword
@@ -106,6 +108,16 @@ param_conversion = [
     (float,     'True',         False,  0,              '0.0'),
     (float,     'a',            False,  0,              '0.0'),
     (float,     b'',           False,  0,              '0.0'),
+
+    # Type      Input           Valid   Value           String
+    ('dictionary', {},          True,   {},             ''),
+    (MutableMapping, '',        True,   {},             ''),
+    # dict is not explicitly declared as supported but given MutableMapping
+    # being supported, dict should be supported as well. This is also the
+    #"invalid" test case.
+    (dict,      'any',          False,  {},             ''),
+    # TOOD: proper value testing:
+    ('dict',     'any',         False,  {},             ''),
 ]
 @pytest.mark.parametrize(
     'setting_type, input, valid, value, string', param_conversion)
@@ -157,7 +169,8 @@ def test_setting_init_with_value_pre_lookup(setting_type, input, valid, value, s
         f'Failed for type [{setting_type}] with input [{input}] '
         f'(expected valid: {valid}) '
         f'and resulting in value [{value}] and string [{string}]')
-    setting_type = setting_module._SettingMeta.type_map[setting_type]
+    #setting_type = setting_module._SettingMeta.type_map[setting_type]
+    setting_type, dump = setting_module._SettingMeta.get_setting_type(setting_type)
     if not valid:
         setting_ref = Setting.new(setting_type)
         with pytest.raises(AppxfSettingConversionError) as exc_info:
@@ -185,16 +198,17 @@ def test_setting_self_test():
         set(implementation_list) -
         set([setting_module._SettingMeta.type_map[t[0]]
              for t in param_conversion
-             if t[2]
+             if t[2] and t[0] in setting_module._SettingMeta.type_map.keys()
         ]))
     uncovered_invalid = (
         set(implementation_list) -
         set([setting_module._SettingMeta.type_map[t[0]]
              for t in param_conversion
-             if not t[2]
+             if not t[2] and t[0] in setting_module._SettingMeta.type_map.keys()
         ]))
     # Invalid SettingString is covered differently
     uncovered_invalid -= set([SettingText])
+    print(f'tested: {tested_types}\nuncovered_type: {uncovered_type}\nuncovered valid: {uncovered_valid}\nuncovered invalid: {uncovered_invalid}\nimplementations: {implementation_list}')
     assert not uncovered_valid, (
         f'Following Setting implementations do not have a valid test '
         f'case in test_setting_conversions: {uncovered_valid}')
