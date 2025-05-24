@@ -51,15 +51,15 @@ def input_type_to_setting_dict(setting: SettingInput) -> SettingDict:
         # Typing is ignored below since an Iterable[AppxfSetting] could
         # theoretically be a Mapping[AppxfSetting, Unknown] which would also
         # end up here. This is invalid input and not cought here.
-        return SettingDict(setting_dict=setting) # type: ignore
+        return SettingDict(settings=setting) # type: ignore
     # iterables of settings are also handled like SettingDict
     if isinstance(setting, Iterable) and not isinstance(setting, Mapping):
-        return SettingDict(setting_dict={
+        return SettingDict(settings={
             this_setting.options.name: this_setting for this_setting in setting
             })
 
     if isinstance(setting, Setting):
-        return SettingDict(setting_dict={setting.options.name: setting})
+        return SettingDict(settings={setting.options.name: setting})
 
     raise AppxfGuiError(f'Input type unknown: {setting.__class__.__name__}')
 
@@ -273,7 +273,7 @@ class SettingDictWindow(FrameWindow):
         # behavior for backup&restore upon cancel)
         if isinstance(setting, Setting):
             self.property_dict = SettingDict(
-                setting_dict={setting.options.name: setting})
+                settings={setting.options.name: setting})
         elif isinstance(setting, SettingDict):
             self.property_dict = setting
         else:

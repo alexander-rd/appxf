@@ -111,13 +111,24 @@ param_conversion = [
 
     # Type      Input           Valid   Value           String
     ('dictionary', {},          True,   {},             ''),
+    ('dictionary', 'any',       False,  {},             ''),
     (MutableMapping, '',        True,   {},             ''),
     # dict is not explicitly declared as supported but given MutableMapping
-    # being supported, dict should be supported as well. This is also the
-    #"invalid" test case.
-    (dict,      'any',          False,  {},             ''),
-    # TOOD: proper value testing:
-    ('dict',     'any',         False,  {},             ''),
+    # being supported, dict should be supported as well.
+    (dict,      {},             True,   {},             ''),
+    # Adding another invalid use case (wrong key type):
+    ('dict',    {42: 'bla'},    False,  {},             ''),
+    # setting_dict shall accept structures:
+    #('dict', {'int': 42, 'string': 'bla'}, True,
+    #         {'int': 42, 'string': 'bla'},
+    #         "{'int': 42, 'string': 'bla'}"
+    #         ),
+    # setting_dict shall accept JSON style:
+    #('dict', "{'int': 42, 'string': 'bla'}", True,
+    #         {'int': 42, 'string': 'bla'},
+    #         "{'int': 42, 'string': 'bla'}"
+    #         ),
+    # More test cases are covered in test_setting_dict
 ]
 @pytest.mark.parametrize(
     'setting_type, input, valid, value, string', param_conversion)

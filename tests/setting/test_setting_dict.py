@@ -110,7 +110,7 @@ def test_setting_dict_init_by_list_fail2():
 def test_setting_dict_init_by_list_fail2():
     # iterable with a iterable subelement that does not contain key+value
     with pytest.raises(AppxfSettingError) as exc_info:
-        SettingDict(setting_dict = 42)
+        SettingDict(settings = 42)
     assert f'Invalid initialization input of type {type(42)}.' in str(exc_info.value)
 
 # inconsistent type/value combinations
@@ -233,7 +233,7 @@ def test_setting_dict_store_load_cycle():
 def test_setting_dict_store_load_invalid_init():
     storage = RamStorage()
     setting_dict = SettingDict(
-        setting_dict={'entry': ('email',)},
+        settings={'entry': ('email',)},
         storage=storage
         )
     setting_dict.store()

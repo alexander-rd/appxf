@@ -15,7 +15,7 @@ def test_json_values_only():
     '''JSON for options with only values included
     (no options being set or set to stored)'''
     setting = SettingDict(
-        setting_dict={
+        settings={
             'string': Setting.new('string', value='test'),
             'integer': Setting.new('int', value=42),
             'select': Setting.new('select::string', value='01',
@@ -40,7 +40,7 @@ def test_json_values_only():
 def test_json_value_and_display_options():
     '''JSON for options with and without options being set'''
     setting = SettingDict(
-        setting_dict={
+        settings={
             'string': Setting.new('string', value='test'),
             'integer': Setting.new('int', value=42),
             'select': Setting.new('select::string', value='01', select_map={'01': 'test_value'},
@@ -71,7 +71,7 @@ def test_json_value_and_display_options():
 def test_json_full_export():
     '''JSON for options with and without options being set'''
     setting = SettingDict(
-        setting_dict={
+        settings={
             'select': Setting.new('select::string', value='01', select_map={'01': 'Value'},
                                   custom_value=True)
             },
