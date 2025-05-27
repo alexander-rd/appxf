@@ -77,7 +77,8 @@ class Config():
 
     def add_section(self,
                     section: str,
-                    storage_factory: Storage.Factory | None = None
+                    storage_factory: Storage.Factory | None = None,
+                    settings = None
                     ) -> SettingDict:
         '''Add section if not yet existing.  '''
         # ensure section does not yet exist:
@@ -92,7 +93,8 @@ class Config():
         else:
             storage = RamStorage()
         # construct section
-        self._sections[section] = SettingDict(storage=storage)
+        self._sections[section] = SettingDict(
+            storage=storage, settings=settings)
         self.log.info(f'added section: {section}')
         return self._sections[section]
 

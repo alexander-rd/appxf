@@ -214,8 +214,7 @@ class SettingDictColumnFrame(SettingFrameBase):
         # fill property dictionaries
         prop_dict_list = [SettingDict() for i in range(columns)]
         for i, key in enumerate(key_list):
-            prop_dict_list[key_to_sub_dict[i]].add(
-                {key: setting.get_setting(key)})
+            prop_dict_list[key_to_sub_dict[i]][key] = setting.get_setting(key)
 
         # build up frames
         self.frame_list: list[SettingDictSingleFrame] = []
