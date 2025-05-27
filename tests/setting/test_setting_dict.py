@@ -86,28 +86,30 @@ def test_setting_dict_init_by_dict():
     verify_setting_dict(setting_dict, init_values)
 
 # init by list
-def test_setting_dict_init_by_list_list():
+def test_setting_dict_init_by_tuple_tuple():
     # Like dict, but resolving the dict via **
-    dict_input = [(t[0], t[1])
-                  for t in init_values]
+    dict_input = tuple(
+        (t[0], t[1])
+        for t in init_values)
     setting_dict = SettingDict(settings=dict_input)
     verify_setting_dict(setting_dict, init_values)
 
-def test_setting_dict_init_by_list_fail1():
+def test_setting_dict_init_by_tuple_fail1():
     # iterable without iterable subelement
     with pytest.raises(AppxfSettingError) as exc_info:
-        SettingDict([42, 12])
-    assert 'No second level iterable.' in str(exc_info.value)
-    assert 'SettingDict can be initialized by iterables of iterables where the inner iterables' in str(exc_info.value)
+        SettingDict(settings=(42, 12))
+    assert 'No second level tuple' in str(exc_info.value)
+    assert str(42) in str(exc_info.value)
 
-def test_setting_dict_init_by_list_fail2():
+def test_setting_dict_init_by_tuple_fail2():
     # iterable with a iterable subelement that does not contain key+value
     with pytest.raises(AppxfSettingError) as exc_info:
-        SettingDict([('key', 12), ('key2',)])
-    assert 'No key and/or value provided.' in str(exc_info.value)
+        SettingDict(settings=(('key', 12), ('key2',)))
+    assert 'No second level tuple' in str(exc_info.value)
+    assert "('key2',)" in str(exc_info.value)
 
 # general unknown init type
-def test_setting_dict_init_by_list_fail3():
+def test_setting_dict_init_by_tuple_fail3():
     # iterable with a iterable subelement that does not contain key+value
     with pytest.raises(AppxfSettingError) as exc_info:
         SettingDict(settings = 42)
