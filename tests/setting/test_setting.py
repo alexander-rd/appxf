@@ -118,11 +118,12 @@ param_conversion = [
     (dict,      {},             True,   {},             ''),
     # Adding another invalid use case (wrong key type):
     ('dict',    {42: 'bla'},    False,  {},             ''),
-    # setting_dict shall accept structures:
-    #('dict', {'int': 42, 'string': 'bla'}, True,
-    #         {'int': 42, 'string': 'bla'},
-    #         "{'int': 42, 'string': 'bla'}"
-    #         ),
+    # setting_dict shall accept structures (bool is choosen as one with integer
+    # input to include correctness checks of mandatory conversions)
+    ('dict', {'A': SettingBool(1), 'B': SettingString('bla')}, True,
+             {'A': True, 'B': 'bla'},
+             "{'A': True, 'B': 'bla'}"
+             ),
     # setting_dict shall accept JSON style:
     #('dict', "{'int': 42, 'string': 'bla'}", True,
     #         {'int': 42, 'string': 'bla'},
@@ -140,7 +141,7 @@ def test_setting_conversions(setting_type, input, valid, value, string):
         f'and resulting in value [{value}] and string [{string}]')
     assert setting.validate(input) == valid, 'Validity not as expected. ' + message
     if not valid:
-        with pytest.raises(AppxfSettingConversionError) as exc_info:
+        with pytest.raises((AppxfSettingConversionError, AppxfSettingError)) as exc_info:
             setting.value = input
         verify_conversion_error(exc_info, setting, input)
         # Value and input still accoring to default:
@@ -162,7 +163,7 @@ def test_setting_init_with_value(setting_type, input, valid, value, string):
         f'and resulting in value [{value}] and string [{string}]')
     if not valid:
         setting_ref = Setting.new(setting_type)
-        with pytest.raises(AppxfSettingConversionError) as exc_info:
+        with pytest.raises((AppxfSettingConversionError, AppxfSettingError)) as exc_info:
             setting = Setting.new(setting_type, value=input)
         verify_conversion_error(exc_info, setting_ref, input)
         return
@@ -184,7 +185,7 @@ def test_setting_init_with_value_pre_lookup(setting_type, input, valid, value, s
     setting_type, dump = setting_module._SettingMeta.get_setting_type(setting_type)
     if not valid:
         setting_ref = Setting.new(setting_type)
-        with pytest.raises(AppxfSettingConversionError) as exc_info:
+        with pytest.raises((AppxfSettingConversionError, AppxfSettingError)) as exc_info:
             setting = Setting.new(setting_type, value=input)
         verify_conversion_error(exc_info, setting_ref, input)
         return

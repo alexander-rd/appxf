@@ -4,8 +4,8 @@ Surprise: it bundles Settings to a dictionary behavior. ;)
 '''
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Any
-from collections.abc import Mapping, MutableMapping
+from typing import Any, Callable
+from collections.abc import Mapping, MutableMapping, Iterable
 from kiss_cf.storage import Storable, Storage, RamStorage
 from .setting import Setting, AppxfSettingError
 
@@ -50,8 +50,21 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         setting options upon initialization of the SettingDict. Otherwise, you
         would need setting_dict.get_setting(key).options.<...>.
 
-        See documentation of add() for any further support of setting_dict
-        input.
+        Initializing supports maps {key: setting} and lists of tuples [(key,
+        setting)] as well as assignments setting_dict[key] = setting with
+        setting being one of:
+         * Setting object being valid for new and existing keys (would replace
+           existing keys)
+         * Setting class being valid only for new keys. Default value applies.
+         * Any iterable (type, value) being valid only for new keys. They will
+           receive a Setting.new(type, value). Value can be left empty like
+           (type,) such that the default value for the type applies.
+         * Any python type (except Setting, Iterables or dict) being valid only
+           for new keys. Default values from Setting.new(type) applies.
+         * Any plain value (not a pythong type) being valid for new and
+           existing keys. For existing keys the value will be applied like:
+           setting.value = value. For new keys, Setting.new(value) will be
+           used.
         '''
         # Cover None arguments
         if storage is None:
@@ -60,6 +73,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         # rely on it. Since SettingDict is also a Setting, it must be stored as
         # _value:
         self._value: OrderedDict[Any, Setting] = OrderedDict()
+        self._input: Any = OrderedDict()
         self.export_options = Setting.ExportOptions()
         # initialize parents
         super().__init__(storage=storage, **kwargs)
@@ -68,9 +82,108 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         self._on_load_unknown = 'ignore'
         self._store_setting_object = False
 
-        # Cunsume data and kwargs manually:
+        # Consume settings input
         if settings is not None:
-            self.add(settings)
+            self._handle_settings(
+                settings,
+                lambda self, key, value: self._set_item(
+                    key, value,
+                    f'Cannot set value {settings} of type '
+                    f'{settings.__class__} for SettingDict. '),
+                variant='set')
+
+    # Two function definitions to support type hinting. Only one type would
+    # have been preferred - also for the _handle_setting() interface but this
+    # would have required output arguments for _set_item() without any need in
+    # scope of _set_item().
+    ElementSetFcn = Callable[['SettingDict', str, Any], None]
+    ElementValidateFcn = Callable[['SettingDict', str, Any], tuple[bool, str]]
+    # The function _handle_settings is rather abstract due to the two different
+    # use cases "set" a value and "validate" a value. Consistency of those
+    # operations on the outer level was prioritized over a simple
+    # implementation to exclude that a valid settings container cannot be set
+    # or vice versa. The inconsistency still exists since _set_item() is still
+    # a separate implementation from _validate_item().
+    #
+    # TODO: reconsider the function interfaces. The validate() return message
+    # may not be used. The set_item use case may also return the message. And
+    # if empty string '' it could also imply a validation being OK. >> Merging
+    # the ElementSetFcf and ElementValidateFcn functions as a secondary effect.
+    def _handle_settings(
+        self, settings: Any,
+        element_handler: ElementSetFcn | ElementValidateFcn,
+        variant: str,
+        ) -> tuple[bool, str]:
+        ''' handle top level of the various input options
+
+        This function resolves the outer Mapping or Iterable and is used for
+        __init__, writing to setting_dict.value and validate(). Because of
+        validate() it must return a boolean and cannot throw errors directly.
+        But it returns the detailed error message as string.
+
+        Variant is either "set" or "validate".
+        '''
+        # handle empty input
+        if (settings == '' or
+            ((isinstance(settings, Mapping) or isinstance(settings, Iterable)
+              ) and not settings
+             )
+            ):
+            if variant == 'set':
+                self._input = settings
+                self._value = OrderedDict()
+            return True, ''
+        if isinstance(settings, Mapping):
+            for key, value in settings.items():
+                if variant == 'set':
+                    element_handler(self, key, value)
+                else:
+                    out, message = element_handler(self, key, value)
+                    if not out:
+                        return False, message
+            return True, ''
+        if not hasattr(settings, '__iter__') or isinstance(settings, str):
+            message = (
+                f'Cannot set value for SettingDict. '
+                f'See documentation of __init__ for expected input. '
+                f'You provided {settings} of type {settings.__class__}.')
+            if variant == 'set':
+                raise AppxfSettingError(message)
+            else:
+                return False, message
+        # left is only and iterable settings:
+        for element in settings:
+            if not hasattr(element, '__iter__'):
+                message = (
+                    'No second level iterable. SettingDict can '
+                    'be initialized by iterables of iterables where '
+                    'the inner iterables must be the key followed by'
+                    'the value.')
+                if variant == 'set':
+                    raise AppxfSettingError(message)
+                else:
+                    return False, message
+            inner_iter = iter(element)
+            key = next(inner_iter, None)
+            value = next(inner_iter, None)
+            if key is None or value is None:
+                message = (
+                    'No key and/or value provided. '
+                    'SettingDict can '
+                    'be initialized by iterables of iterables where '
+                    'the inner iterables must be the key followed by'
+                    'the value.')
+                if variant == 'set':
+                    raise AppxfSettingError(message)
+                else:
+                    return False, message
+            if variant == 'set':
+                element_handler(self, key, value)
+            else:
+                out, message = element_handler(self, key, value)
+                if not out:
+                    return False, message
+        return True, ''
 
     def __len__(self):
         return self._value.__len__()
@@ -81,145 +194,95 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
     def __getitem__(self, key: str):
         return self._value[key].value
 
-    # TODO: allow new element creation when value is an AppxfSetting
-    def __setitem__(self, key, value) -> None:
+    def _get_setting_for_new_key(self, value) -> Setting:
+        # setting classes are applies with default values (if the key does not
+        # yet exist)
+        if isinstance(value, type) and issubclass(value, Setting):
+            return value()
+        # If input is an iterable, first should be the type and second the
+        # value while this is only allowed for new keys:
+        if isinstance(value, tuple):
+            if not value or len(value) > 2:
+                raise AppxfSettingError(
+                    f'SettingDict items that are tuples must contain a '
+                    f'Setting type as the first element. And, optionally '
+                    f'a value as the second type. You provided {value}.')
+            if len(value) > 0:
+                tmp_type = value[0]
+            if len(value) > 1:
+                tmp_value = value[1]
+            else:
+                tmp_value = None
+
+            if tmp_value is None:
+                return Setting.new(tmp_type)
+            else:
+                return Setting.new(tmp_type, value=tmp_value)
+        # Generate a Setting object if only the class or a type is provided.
+        # Again, only if the key does not yet exist.
+        if isinstance(value, type):
+            return Setting.new(value)
+        # What is left is not a type and not a setting object or class. This
+        # value will be applied. If not existing, we try to derive the setting
+        # type from the value type:
+        return Setting.new(type(value), value)
+
+    def _set_key_appxf_setting(self, key: str, value: Setting):
+        # Function isolated because of this additional step: transfering key name
+        # to setting if setting name is empty
+        if not value.options.name:
+            value.options.name = key
+        self._value[key] = value
+        self._input[key] = value
+    # TODO: at the end: check if the function above is called more than once.
+    # If not, remove this abstraction.
+
+    def _set_item(self, key, value, pre_message):
+        ''' Setting expects certain error message behavior
+
+        To satisfy this also for .value assigbments and for __init__(), this
+        function is abstracted to incorporate information of the whole setting
+        structure in error messages.
+
+        Intend of this function is otherwise identical to __setitem__().
+        '''
         # reject keys that are not strings
         if not isinstance(key, str):
-            raise AppxfSettingError(
-                f'SettingDict only accepts strings as keys. You provided: {key}')
-        # instead of relying on KeyError, we provide a more helpful error
-        # message to use add() for new keys. This is made required to
-        # have the underlying Setting generated more explicitly.
-        if not self.__contains__(key):
-            raise AppxfSettingError(
-                f'Key {key} does not exist. Consider SettingDict.add() '
-                f'for adding new settings.')
+            raise AppxfSettingError(pre_message + (
+                f'Only string keys are supported. '
+                f'You provided: {key}'))
+        # values that are Settings are always accepted
+        if isinstance(value, Setting):
+            self._set_key_appxf_setting(key, value)
+            return
+        if key not in self._value:
+            self._value[key] = self._get_setting_for_new_key(value)
+            self._input[key] = value
+        else:
+            # a few specific error messages:
+            if isinstance(value, type) and issubclass(value, Setting):
+                raise AppxfSettingError(pre_message + (
+                    f'SettingDict does not support overwriting the existing '
+                    f'key {key} with Setting class'
+                    f'{value.__class__.__name__}.'))
+            if isinstance(value, Iterable) and not isinstance(value, str):
+                raise AppxfSettingError(pre_message + (
+                    f'SettingDict does not support overwriting the existing '
+                    f'key {key} with some iterable (type, value). You '
+                    f'provided: {value}.'))
+            if isinstance(value, type):
+                raise AppxfSettingError(pre_message + (
+                    f'SettingDict does not support overwriting the existing '
+                    f'key {key} with a new Setting from type. You '
+                    f'provided: {value.__class__.__name__}.'))
+            self._value[key].value = value
+            self._input[key] = value
 
-        # furhter errot handling per maintained setting's value
-        # assignment:
-        self._value[key].value = value
+    def __setitem__(self, key, value) -> None:
+        self._set_item(key, value, '')
 
     def __delitem__(self, key):
         del self._value[key]
-
-    def add(self, setting_dict: Mapping[str, Any] | None = None, **kwargs):
-        ''' Add new settings to the setting dictionary
-
-        New settings cannot be written in the same way new elements would be
-        written to a normal dictionaries:
-          propety_dict['new property'] = 42
-        This has two reasons:
-          1) Adding a new value may not include the otherwise normal validity
-             check. Example: SettingEmail is initialized with an empty string
-             (invalid empty Email address)
-          2) Protect from unintentional usage
-
-        The following other variants for
-        setting are also supported:
-         * A value of a type supported by AppxfSetting. Example: 42 as integer
-           would use SettingInt.
-         * A Setting class like SettingInt. The value would be initialized with
-           the default value.
-
-        You can use any iterable of tuples like [(key, value)] to initialize.
-        The tuple may be like ('str', 'appxf') to specify type and value or
-        just ('email',) to specify the type while the default value applies.
-
-        The dictionary initialization supports the following for "setting"
-        '''
-        # TODO: the above documentation is not correct anymore (direct
-        # assignment now possible)
-        #
-        # TODO: there is an inconsistency which interface variant supports what:
-        # setting as            {key: setting}      [(key, setting)]
-        # AppxfSetting          Yes+                No
-        # direct value (42)     Yes                 No
-
-        # why does {key: value} support value as AppxfSetting and direct
-        # value but NOT simplified type declaration.
-        #
-        # TODO: is "add" the appropriate interface? Shouldn't we rather
-        # overwrite "update"? If so, shouldn't we allow setting new values via
-        # setting_dict[key] = AppxfSetting? This would be without any conflict
-        # and would allow an update of SettingDict from another SettingDict. >>
-        # Test case for update()
-        if setting_dict is not None:
-            if (hasattr(setting_dict, 'keys') and hasattr(setting_dict, '__getitem__')):
-                # We have a mapping object and can cycle:
-                for key in setting_dict.keys():
-                    self._new_item(key, setting_dict[key])
-            elif hasattr(setting_dict, '__iter__'):
-                # The outer is already an iterable, lets iterate the inner and
-                # expect a key and a value:
-                for element in setting_dict:
-                    if not hasattr(element, '__iter__'):
-                        raise AppxfSettingError(
-                            'No second level iterable. SettingDict can '
-                            'be initialized by iterables of iterables where '
-                            'the inner iterables must be the key followed by'
-                            'the value.')
-                    inner_iter = iter(element)
-                    key = next(inner_iter, None)
-                    value = next(inner_iter, None)
-                    if key is None or value is None:
-                        raise AppxfSettingError(
-                            'No key and/or value provided. '
-                            'SettingDict can '
-                            'be initialized by iterables of iterables where '
-                            'the inner iterables must be the key followed by'
-                            'the value.')
-                    self._new_item(key, value)
-                    # we just ignore anything else
-            else:
-                raise AppxfSettingError(
-                    f'Invalid initialization input of type {type(setting_dict)}. '
-                    f'Initialize with a dictionary of key/value '
-                    f'specifications.')
-        # TODO: below and above: is forwarding to NEW item good? It's add() but
-        # if item is already present, it should not overwrite the setting.
-        for key, value in kwargs.items():
-            self._new_item(key, value)
-
-    def _new_item(self, key: str, value):
-        # reject keys that are not strings
-        if not isinstance(key, str):
-            raise AppxfSettingError(
-                f'SettingDict only accepts strings as keys. You provided: {key}')
-        # Generate a Setting object if only the class or a type is provided:
-        if isinstance(value, type):
-            if issubclass(value, Setting):
-                value = value()
-            else:
-                value = Setting.new(value)
-        # If input is a tuple of two, first should be the type and second the
-        # value:
-        if isinstance(value, tuple):
-            if len(value) == 1:
-                value = Setting.new(value[0])
-            elif len(value) == 2:
-                value = Setting.new(value[0], value=value[1])
-            else:
-                raise AppxfSettingError(
-                    f'SettingDict can only store AppxfSetting object which '
-                    f'do not model complex data types like tuples. Tuples are '
-                    f'interpreted as [0] providing the type and [1] the '
-                    f'initial value. The input tuple had length '
-                    f'{len(value)}.')
-
-        # Use the Setting object if one is provided
-        if isinstance(value, Setting):
-            # transfer key name to setting if setting name is empty:
-            if not value.options.name:
-                value.options.name = key
-            self._value[key] = value
-            return
-
-        # No type or Setting is provided, we try to determine the Setting from
-        # the type of the value:
-        setting_type = type(value)
-        setting = Setting.new(setting_type, value=value)
-        # Fall back again to the code from above
-        self._new_item(key, setting)
 
     def get_setting(self, key) -> Setting:
         ''' Access Setting object '''
@@ -313,51 +376,69 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
     def get_supported_types(cls) -> list[type | str]:
         return {'dictionary', 'dict', MutableMapping}
 
-    @Setting.value.getter
+    @property
     def value(self) -> dict[str, Any]:
         return {key: self._value[key].value for key in self._value.keys()}
 
-    #@value.setter
-    #def value(self, value: Any):
-    #    valid, _value = self._validated_conversion(value)
-    #    self._value = _value
+    @value.setter
+    def value(self, settings: Any):
+        self._handle_settings(
+            settings,
+            lambda self, key, value: self._set_item(
+                key, value,
+                f'Cannot set value {settings} of type '
+                f'{settings.__class__} for SettingDict. '),
+            'set')
+    # TODO: check - it should be better to override _set_value() instead. This
+    # would keep the setter functionality of protecting from changes while not
+    # being mutable.
 
     def _validated_conversion(self, value: Any) -> tuple[bool, Any]:
-        # Empty string as default input
-        if value == '':
-            return True, {}
-        # Empty mapping being the default value
-        if isinstance(value, MutableMapping) and not value:
-            return True, {}
-        # Input is a dictionary:
-        if isinstance(value, Mapping):
-            # I could rely on a add() which already applies all, but this must
-            # consider:
-            #  1) the already existing values
-            #  2) must not yet apply the new values
-            # Doubts: this may be a lot of operations (especially in deep nesting)
-            # and I may need to reconsider the use cases (GUI validation and direct setting)
+        # SettingDict cannot provide this function. The returned "value" must
+        # retain the original setting objects because others like GUI elements
+        # may reference them. But the new values cannot be "prepared" in the
+        # existing Setting objects since there is no strategy implemented for
+        # reverting this. >> Instead of making the Setting implementation more
+        # flexible, dependent functions are overridden in the SettingDict
+        # implementation.
+        raise AppxfSettingError(
+            'SettingDict does not support normal Setting behavior and this '
+            'error should NOT have hapened. SettingDict implementation should '
+            'have substituted corresponding behavior.')
 
-            #for key, this_value in value.items():
-            #    if not isinstance(key, str):
-            #        raise AppxfSettingError(
-            #            f'SettingDict.value assignments must be dictionaries '
-            #            f'with string keys, you provied as one of the '
-            #            f'keys: {key}')
-            tmp = deepcopy(self)
+    def _validate_item(self, key, value) -> tuple[bool, str]:
+        if not isinstance(key, str):
+            return False, (
+                f'SettingDict keys must be strings. '
+                f'You provided {key} of class '
+                f'{key.__class__.__name__}')
+        # Settings are always OK
+        if isinstance(value, Setting):
+            return True, ''
+        if key not in self._value:
+            # TODO: check if initialization would succeed?
             try:
-                print(f'--SPECIAL: trying')
-                for key, this_value in value.items():
-                    tmp[key] = this_value
-                    print(f'--SPECIAL: {key} set')
-                print(f'--SPECIAL: OK with {tmp.get_state()}')
-                return True, tmp.get_state()
+                SettingDict(settings = {key: value})
             except Exception as e:
-                # nothing special is cought here, the result will just be invalid
-                print(str(e))
-                return False, {}
-            # TODO: review the above assignment again
-        return False, {}
+                print(e)
+                return False, 'TBD error message'
+                # TODO: clarify this open error message
+
+        # key is existing and input is not a Setting (replaces). Only a value
+        # for setting is left:
+        return self._value[key].validate(value), ''
+
+    def validate(self, settings: Any) -> bool:
+        # the same procedure as for setting a value is applied to resolve the
+        # outer structure, only the element-wise validation is re-implemented:
+        out, message = self._handle_settings(
+            settings,
+            lambda self, key, value: self._validate_item(key, value),
+            'validate')
+        if not out:
+            # TODO: proper logging
+            print(message)
+        return out
 
     def to_string(self) -> str:
         # Return empty string in case SettingDict does not contain settings:

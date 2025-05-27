@@ -55,14 +55,20 @@ class ApplicationMock:
         self.user_config = Config(default_storage=self.storagef_shared_config)
         # add USER config with some basic user data: email and name
         self.user_config.add_section(
-            'USER', storage_factory=self.storagef_user_config).add(
-                email=('email',),
-                name=(str,))
+            'USER', storage_factory=self.storagef_user_config,
+            settings = {
+                'email': ('email',),
+                'name': (str,),
+                })
+
 
         # add credentials options for shared storage (no values!)
-        self.user_config.add_section('SHARED_STORAGE').add(CredentialLocationMock.config_properties)
+        self.user_config.add_section(
+            'SHARED_STORAGE',
+            settings = CredentialLocationMock.config_properties)
         # add some arbitraty configuration
-        self.user_config.add_section('TEST').add(test=(int,))
+        self.user_config.add_section(
+            'TEST', settings = {'test': (int,)})
 
         # REGISTRY: local storage (security applied within Regisrty)
         self.path_registry = os.path.join(self._app_path, 'data/registry')

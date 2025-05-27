@@ -16,9 +16,12 @@ def test_config_fill_section():
     config = Config()
     # just a view varianty of propert init. Full testing in scope of
     # KissPropertyDict.
-    config.add_section('TEST').add(email=('email',),
-                                   string=(str, 'hello'),
-                                   integer=42)
+    config.add_section(
+        'TEST', settings = {
+            'email': ('email',),
+            'string': (str, 'hello'),
+            'integer': 42
+            })
     # Check sections and values
     assert config.sections == ['TEST']
     section = config.section('TEST')
@@ -38,15 +41,15 @@ def test_config_empty_section():
 
 def test_config_store_load():
     config = Config(default_storage_factory=RamStorage.get_factory())
-    config.add_section('TESTA').add(test='A')
-    config.add_section('TESTB').add(test='B')
-    config.add_section('TESTC').add(test='C')
+    config.add_section('TESTA', settings = {'test': 'A'})
+    config.add_section('TESTB', settings = {'test': 'B'})
+    config.add_section('TESTC', settings = {'test': 'C'})
     config.store()
     # new config and load
     config_restore = Config(default_storage_factory=RamStorage.get_factory())
-    config_restore.add_section('TESTA').add(test=(str,))
+    config_restore.add_section('TESTA', settings = {'test': (str,)})
     config_restore.add_section('TESTB') # no added options will NOT load it
-    config_restore.add_section('TESTC').add(test=(str,))
+    config_restore.add_section('TESTC', settings = {'test': (str,)})
     config_restore.load()
     assert config_restore.section('TESTA')['test'] == 'A'
     assert list(config_restore.section('TESTB').keys()) == []
@@ -57,13 +60,15 @@ def test_config_store_load_custom_storage():
     factory_a = RamStorage.get_factory(ram_area='mock_A')
     factory_b = RamStorage.get_factory(ram_area='mock_B')
     config = Config(default_storage_factory=factory_a)
-    config.add_section('TESTA').add(test='A')
-    config.add_section('TESTB', storage_factory=factory_b).add(test='B')
+    config.add_section('TESTA')
+    config.section('TESTA')['test'] = 'A'
+    config.add_section('TESTB', storage_factory=factory_b)
+    config.section('TESTB')['test'] = 'B'
     config.store()
     # new config and load - but this time, B does use default storage master A
     config_restore = Config(default_storage_factory=factory_a)
-    config_restore.add_section('TESTA').add(test=(str,))
-    config_restore.add_section('TESTB').add(test=(str,))
+    config_restore.add_section('TESTA')['test'] = (str,)
+    config_restore.add_section('TESTB')['test'] = (str,)
     config_restore.section('TESTA').load()
     assert config_restore.section('TESTA')['test'] == 'A'
     with pytest.raises(AppxfStorableError) as exc_info:

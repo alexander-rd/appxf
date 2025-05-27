@@ -379,12 +379,14 @@ class Setting(Generic[_BaseTypeT], Stateful,
         # inheritance may have kwargs that are meant for another class in the
         # hierachy.
         # self.options.raise_error_on_non_empty_kwarg(kwargs)
+        #
+        # TODO: double-check the change from above (disabling the error) ^^
 
         if value is None:
             self._input = self.get_default()
             self._value = self.get_default()
         else:
-            self._set_value(value)
+            self.value = value
 
     # ##################
     # Stateful Related

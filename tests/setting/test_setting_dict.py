@@ -74,7 +74,7 @@ def verify_setting_dict(setting_dict: SettingDict, t_list: list[tuple]):
 def test_setting_dict_init_and_fill():
     setting_dict = SettingDict()
     for t in init_values:
-        setting_dict.add({t[0]: t[1]})
+        setting_dict[t[0]] = t[1]
     verify_setting_dict(setting_dict, init_values)
 
 # init by dict
@@ -90,7 +90,7 @@ def test_setting_dict_init_by_list_list():
     # Like dict, but resolving the dict via **
     dict_input = [(t[0], t[1])
                   for t in init_values]
-    setting_dict = SettingDict(dict_input)
+    setting_dict = SettingDict(settings=dict_input)
     verify_setting_dict(setting_dict, init_values)
 
 def test_setting_dict_init_by_list_fail1():
@@ -107,11 +107,12 @@ def test_setting_dict_init_by_list_fail2():
     assert 'No key and/or value provided.' in str(exc_info.value)
 
 # general unknown init type
-def test_setting_dict_init_by_list_fail2():
+def test_setting_dict_init_by_list_fail3():
     # iterable with a iterable subelement that does not contain key+value
     with pytest.raises(AppxfSettingError) as exc_info:
         SettingDict(settings = 42)
-    assert f'Invalid initialization input of type {type(42)}.' in str(exc_info.value)
+    assert f'SettingDict' in str(exc_info.value)
+    assert f'42 of type {int}' in str(exc_info.value)
 
 # inconsistent type/value combinations
 def test_setting_dict_fails_init():
@@ -124,13 +125,13 @@ def test_setting_dict_tuple_init_fails1():
     with pytest.raises(AppxfSettingError) as exc_info:
         SettingDict({'test': tuple()})
     assert 'SettingDict' in str(exc_info.value)
-    assert 'The input tuple had length 0' in str(exc_info.value)
+    assert '()' in str(exc_info.value)
 
 def test_setting_dict_tuple_init_fails2():
     with pytest.raises(AppxfSettingError) as exc_info:
         SettingDict({'test': (1,2,3,4)})
     assert 'SettingDict' in str(exc_info.value)
-    assert 'The input tuple had length 4' in str(exc_info.value)
+    assert '(1, 2, 3, 4)' in str(exc_info.value)
 
 # ####################/
 # Value Manipulations
@@ -151,11 +152,12 @@ def test_setting_dict_set_invalid_value():
     with pytest.raises(AppxfSettingConversionError):
         setting_dict['test'] = 'fail'
 
-def test_setting_dict_set_nonexisting():
-    setting_dict = SettingDict()
-    with pytest.raises(AppxfSettingError) as exc_info:
-        setting_dict['test'] = 'test'
-    assert 'Key test does not exist' in str(exc_info.value)
+# setting nonexisting is now expected to work:
+#def test_setting_dict_set_nonexisting():
+#    setting_dict = SettingDict()
+#    with pytest.raises(AppxfSettingError) as exc_info:
+#        setting_dict['test'] = 'test'
+#    assert 'Key test does not exist' in str(exc_info.value)
 
 def test_setting_dict_get_nonexisting():
     setting_dict = SettingDict()
@@ -168,9 +170,10 @@ def test_setting_dict_set_invalid_after_delete():
         'test': ('email', 'my@email.com')
         })
     del setting_dict['test']
-    setting_dict.add(test='fail')
+    setting_dict['test'] = 'fail'
     assert setting_dict['test'] == 'fail'
     assert setting_dict.get_setting('test').value == 'fail'
+    assert setting_dict.get_setting('test').__class__ == SettingString
 
 def test_setting_dict_delete_non_existing():
     setting_dict = SettingDict()
@@ -188,7 +191,7 @@ def test_setting_dict_delete_non_existing():
 # which the GUI for SettingDict is build.
 def test_setting_dict_update_on_setting():
     setting_dict = SettingDict()
-    setting_dict.add({'test': (str, 'seomething')})
+    setting_dict['test'] = (str, 'seomething')
     setting = setting_dict.get_setting('test')
     setting.value = 'new'
     assert setting.input == 'new'
