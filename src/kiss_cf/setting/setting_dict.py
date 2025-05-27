@@ -5,11 +5,9 @@ Surprise: it bundles Settings to a dictionary behavior. ;)
 from collections import OrderedDict
 from copy import deepcopy
 from typing import Any, Callable
-from collections.abc import Mapping, MutableMapping, Iterable
+from collections.abc import Mapping, MutableMapping
 from kiss_cf.storage import Storable, Storage, RamStorage
 from .setting import Setting, AppxfSettingError
-
-# TODO: support tuples with additional named value options
 
 # TODO: Storing the AppxfSetting objects. This would be required for a
 # "configurable config".
@@ -40,7 +38,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
     # SettingDict options. But it may be similar to a setting name.
 
     def __init__(self,
-                 settings: Mapping[str, Any] | None = None,
+                 settings: Mapping[str, Any] | tuple[tuple[str, Any]] | None = None,
                  storage: Storage | None = None,
                  **kwargs):
         ''' Settings collected as dicitonary
@@ -56,10 +54,10 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
          * Setting object being valid for new and existing keys (would replace
            existing keys)
          * Setting class being valid only for new keys. Default value applies.
-         * Any iterable (type, value) being valid only for new keys. They will
+         * Any tuple (type, value) being valid only for new keys. They will
            receive a Setting.new(type, value). Value can be left empty like
            (type,) such that the default value for the type applies.
-         * Any python type (except Setting, Iterables or dict) being valid only
+         * Any python type (except Setting, tuple or dict) being valid only
            for new keys. Default values from Setting.new(type) applies.
          * Any plain value (not a pythong type) being valid for new and
            existing keys. For existing keys the value will be applied like:
@@ -116,7 +114,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         ) -> tuple[bool, str]:
         ''' handle top level of the various input options
 
-        This function resolves the outer Mapping or Iterable and is used for
+        This function resolves the outer Mapping or Tuple and is used for
         __init__, writing to setting_dict.value and validate(). Because of
         validate() it must return a boolean and cannot throw errors directly.
         But it returns the detailed error message as string.
@@ -125,7 +123,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         '''
         # handle empty input
         if (settings == '' or
-            ((isinstance(settings, Mapping) or isinstance(settings, Iterable)
+            ((isinstance(settings, Mapping) or isinstance(settings, tuple)
               ) and not settings
              )
             ):
@@ -142,7 +140,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                     if not out:
                         return False, message
             return True, ''
-        if not hasattr(settings, '__iter__') or isinstance(settings, str):
+        if not isinstance(settings, tuple):
             message = (
                 f'Cannot set value for SettingDict. '
                 f'See documentation of __init__ for expected input. '
@@ -151,32 +149,22 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                 raise AppxfSettingError(message)
             else:
                 return False, message
-        # left is only and iterable settings:
+        # left is only a tuple settings:
         for element in settings:
-            if not hasattr(element, '__iter__'):
+            if not isinstance(element, tuple) or len(element) != 2:
                 message = (
-                    'No second level iterable. SettingDict can '
-                    'be initialized by iterables of iterables where '
-                    'the inner iterables must be the key followed by'
-                    'the value.')
+                    f'No second level tuple. SettingDict can '
+                    f'be initialized a tuple of tuples where '
+                    f'the inner tuple must be the key followed by'
+                    f'the value: (key, value). '
+                    f'You provided an item: {element}')
                 if variant == 'set':
                     raise AppxfSettingError(message)
                 else:
                     return False, message
-            inner_iter = iter(element)
-            key = next(inner_iter, None)
-            value = next(inner_iter, None)
-            if key is None or value is None:
-                message = (
-                    'No key and/or value provided. '
-                    'SettingDict can '
-                    'be initialized by iterables of iterables where '
-                    'the inner iterables must be the key followed by'
-                    'the value.')
-                if variant == 'set':
-                    raise AppxfSettingError(message)
-                else:
-                    return False, message
+            key = element[0]
+            value = element[1]
+
             if variant == 'set':
                 element_handler(self, key, value)
             else:
@@ -199,8 +187,8 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         # yet exist)
         if isinstance(value, type) and issubclass(value, Setting):
             return value()
-        # If input is an iterable, first should be the type and second the
-        # value while this is only allowed for new keys:
+        # If input is an tuple, first should be the type and the second,
+        # optional element, the value.
         if isinstance(value, tuple):
             if not value or len(value) > 2:
                 raise AppxfSettingError(
@@ -227,16 +215,6 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         # type from the value type:
         return Setting.new(type(value), value)
 
-    def _set_key_appxf_setting(self, key: str, value: Setting):
-        # Function isolated because of this additional step: transfering key name
-        # to setting if setting name is empty
-        if not value.options.name:
-            value.options.name = key
-        self._value[key] = value
-        self._input[key] = value
-    # TODO: at the end: check if the function above is called more than once.
-    # If not, remove this abstraction.
-
     def _set_item(self, key, value, pre_message):
         ''' Setting expects certain error message behavior
 
@@ -253,7 +231,11 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                 f'You provided: {key}'))
         # values that are Settings are always accepted
         if isinstance(value, Setting):
-            self._set_key_appxf_setting(key, value)
+            # transfering key name to setting if setting name is empty
+            if not value.options.name:
+                value.options.name = key
+            self._value[key] = value
+            self._input[key] = value
             return
         if key not in self._value:
             self._value[key] = self._get_setting_for_new_key(value)
@@ -265,10 +247,10 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                     f'SettingDict does not support overwriting the existing '
                     f'key {key} with Setting class'
                     f'{value.__class__.__name__}.'))
-            if isinstance(value, Iterable) and not isinstance(value, str):
+            if isinstance(value, tuple):
                 raise AppxfSettingError(pre_message + (
                     f'SettingDict does not support overwriting the existing '
-                    f'key {key} with some iterable (type, value). You '
+                    f'key {key} with some tuple (type, value). You '
                     f'provided: {value}.'))
             if isinstance(value, type):
                 raise AppxfSettingError(pre_message + (
