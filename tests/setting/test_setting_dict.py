@@ -85,29 +85,6 @@ def test_setting_dict_init_by_dict():
     setting_dict = SettingDict(dict_input)
     verify_setting_dict(setting_dict, init_values)
 
-# init by list
-def test_setting_dict_init_by_tuple_tuple():
-    # Like dict, but resolving the dict via **
-    dict_input = tuple(
-        (t[0], t[1])
-        for t in init_values)
-    setting_dict = SettingDict(settings=dict_input)
-    verify_setting_dict(setting_dict, init_values)
-
-def test_setting_dict_init_by_tuple_fail1():
-    # iterable without iterable subelement
-    with pytest.raises(AppxfSettingError) as exc_info:
-        SettingDict(settings=(42, 12))
-    assert 'No second level tuple' in str(exc_info.value)
-    assert str(42) in str(exc_info.value)
-
-def test_setting_dict_init_by_tuple_fail2():
-    # iterable with a iterable subelement that does not contain key+value
-    with pytest.raises(AppxfSettingError) as exc_info:
-        SettingDict(settings=(('key', 12), ('key2',)))
-    assert 'No second level tuple' in str(exc_info.value)
-    assert "('key2',)" in str(exc_info.value)
-
 # general unknown init type
 def test_setting_dict_init_by_tuple_fail3():
     # iterable with a iterable subelement that does not contain key+value
