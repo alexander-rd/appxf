@@ -156,39 +156,6 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
     def __getitem__(self, key: str):
         return self._value[key].value
 
-    def _get_setting_for_new_key(self, value) -> Setting:
-        # setting classes are applies with default values (if the key does not
-        # yet exist)
-        if isinstance(value, type) and issubclass(value, Setting):
-            return value()
-        # If input is an tuple, first should be the type and the second,
-        # optional element, the value.
-        if isinstance(value, tuple):
-            if not value or len(value) > 2:
-                raise AppxfSettingError(
-                    f'SettingDict items that are tuples must contain a '
-                    f'Setting type as the first element. And, optionally '
-                    f'a value as the second type. You provided {value}.')
-            if len(value) > 0:
-                tmp_type = value[0]
-            if len(value) > 1:
-                tmp_value = value[1]
-            else:
-                tmp_value = None
-
-            if tmp_value is None:
-                return Setting.new(tmp_type)
-            else:
-                return Setting.new(tmp_type, value=tmp_value)
-        # Generate a Setting object if only the class or a type is provided.
-        # Again, only if the key does not yet exist.
-        if isinstance(value, type):
-            return Setting.new(value)
-        # What is left is not a type and not a setting object or class. This
-        # value will be applied. If not existing, we try to derive the setting
-        # type from the value type:
-        return Setting.new(type(value), value)
-
     def _set_item(self, key, value, pre_message):
         ''' Setting expects certain error message behavior
 
@@ -211,28 +178,47 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
             self._value[key] = value
             self._input[key] = value
             return
-        if key not in self._value:
-            self._value[key] = self._get_setting_for_new_key(value)
+        # setting classes are applies with default values
+        if isinstance(value, type) and issubclass(value, Setting):
             self._input[key] = value
-        else:
-            # a few specific error messages:
-            if isinstance(value, type) and issubclass(value, Setting):
-                raise AppxfSettingError(pre_message + (
-                    f'SettingDict does not support overwriting the existing '
-                    f'key {key} with Setting class'
-                    f'{value.__class__.__name__}.'))
-            if isinstance(value, tuple):
-                raise AppxfSettingError(pre_message + (
-                    f'SettingDict does not support overwriting the existing '
-                    f'key {key} with some tuple (type, value). You '
-                    f'provided: {value}.'))
-            if isinstance(value, type):
-                raise AppxfSettingError(pre_message + (
-                    f'SettingDict does not support overwriting the existing '
-                    f'key {key} with a new Setting from type. You '
-                    f'provided: {value.__class__.__name__}.'))
+            self._value[key] = value()
+            return
+        # If input is a tuple, first should be the type and the second,
+        # optional element, the value.
+        if isinstance(value, tuple):
+            if not value or len(value) > 2:
+                raise AppxfSettingError(
+                    f'SettingDict items that are tuples must contain a '
+                    f'Setting type as the first element. And, optionally '
+                    f'a value as the second type. You provided {value}.')
+            if len(value) > 0:
+                tmp_type = value[0]
+            if len(value) > 1:
+                tmp_value = value[1]
+            else:
+                tmp_value = None
+
+            self._input[key] = value
+            if tmp_value is None:
+                self._value[key] = Setting.new(tmp_type)
+            else:
+                self._value[key] = Setting.new(tmp_type, value=tmp_value)
+            return
+        # Generate a Setting object if only the class or a type is provided.
+        # Again, only if the key does not yet exist.
+        if isinstance(value, type):
+            self._input[key] = value
+            self._value[key] = Setting.new(value)
+            return
+        # What is left is not a type and not a setting object or class. This
+        # value will be applied. If not existing, we try to derive the setting
+        # type from the value type:
+        if key in self._value:
             self._value[key].value = value
             self._input[key] = value
+        else:
+            self._input[key] = value
+            self._value[key] = Setting.new(type(value), value)
 
     def __setitem__(self, key, value) -> None:
         self._set_item(key, value, '')
