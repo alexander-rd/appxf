@@ -48,9 +48,8 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         setting options upon initialization of the SettingDict. Otherwise, you
         would need setting_dict.get_setting(key).options.<...>.
 
-        Initializing supports maps {key: setting} and lists of tuples [(key,
-        setting)] as well as assignments setting_dict[key] = setting with
-        setting being one of:
+        Initializing supports maps {key: setting} as well as assignments
+        setting_dict[key] = setting with setting being one of:
          * Setting object being valid for new and existing keys (would replace
            existing keys)
          * Setting class being valid only for new keys. Default value applies.
@@ -114,18 +113,16 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         ) -> tuple[bool, str]:
         ''' handle top level of the various input options
 
-        This function resolves the outer Mapping or Tuple and is used for
-        __init__, writing to setting_dict.value and validate(). Because of
-        validate() it must return a boolean and cannot throw errors directly.
-        But it returns the detailed error message as string.
+        This function resolves the outer Mapping and is used for __init__,
+        writing to setting_dict.value and validate(). Because of validate() it
+        must return a boolean and cannot throw errors directly. But it returns
+        the detailed error message as string.
 
         Variant is either "set" or "validate".
         '''
         # handle empty input
         if (settings == '' or
-            ((isinstance(settings, Mapping) or isinstance(settings, tuple)
-              ) and not settings
-             )
+            (isinstance(settings, Mapping) and not settings)
             ):
             if variant == 'set':
                 self._input = settings
@@ -140,38 +137,15 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                     if not out:
                         return False, message
             return True, ''
-        if not isinstance(settings, tuple):
-            message = (
-                f'Cannot set value for SettingDict. '
-                f'See documentation of __init__ for expected input. '
-                f'You provided {settings} of type {settings.__class__}.')
-            if variant == 'set':
-                raise AppxfSettingError(message)
-            else:
-                return False, message
-        # left is only a tuple settings:
-        for element in settings:
-            if not isinstance(element, tuple) or len(element) != 2:
-                message = (
-                    f'No second level tuple. SettingDict can '
-                    f'be initialized a tuple of tuples where '
-                    f'the inner tuple must be the key followed by'
-                    f'the value: (key, value). '
-                    f'You provided an item: {element}')
-                if variant == 'set':
-                    raise AppxfSettingError(message)
-                else:
-                    return False, message
-            key = element[0]
-            value = element[1]
-
-            if variant == 'set':
-                element_handler(self, key, value)
-            else:
-                out, message = element_handler(self, key, value)
-                if not out:
-                    return False, message
-        return True, ''
+        # error, otherwise
+        message = (
+            f'Cannot set value for SettingDict. '
+            f'See documentation of __init__ for expected input. '
+            f'You provided {settings} of type {settings.__class__}.')
+        if variant == 'set':
+            raise AppxfSettingError(message)
+        else:
+            return False, message
 
     def __len__(self):
         return self._value.__len__()
