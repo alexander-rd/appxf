@@ -22,10 +22,10 @@ init_values = [
     ('v3',  1.123,                                      'float',    1.123,          '1.123'),
     ('v4',  True,                                       'bool',     True,           '1'),
     # Type based input (resulting in default values)
-    ('t1',  str,                                        'string',   '',             ''),
-    ('t2',  int,                                        'int',      0,              '0'),
-    ('t3',  float,                                      'float',    0.0,            '0.0'),
-    ('t4',  bool,                                       'bool',     False,          '0'),
+#    ('t1',  str,                                        'string',   '',             ''),
+#    ('t2',  int,                                        'int',      0,              '0'),
+#    ('t3',  float,                                      'float',    0.0,            '0.0'),
+#    ('t4',  bool,                                       'bool',     False,          '0'),
     # Setting class based input
     ('PC1', SettingString,                                 'string',   '',             ''),
     ('PC2', SettingInt,                                    'int',      0,              '0'),
