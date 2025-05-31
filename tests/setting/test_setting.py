@@ -112,27 +112,15 @@ param_conversion = [
     # Type      Input           Valid   Value           String
     ('dictionary', {},          True,   {},             ''),
     ('dictionary', 'any',       False,  {},             ''),
-    (MutableMapping, '',        True,   {},             ''),
+    (MutableMapping, {},        True,   {},             ''),
+    ('dict',    {},             True,   {},             ''),
     # dict is not explicitly declared as supported but given MutableMapping
     # being supported, dict should be supported as well.
     (dict,      {},             True,   {},             ''),
-    # Adding another invalid use case (wrong key type):
-    ('dict',    {42: 'bla'},    False,  {},             ''),
-    # setting_dict shall accept structures (bool is choosen as one with integer
-    # input to include correctness checks of mandatory conversions)
-    #('dict', {'A': SettingBool(1), 'B': SettingString('bla')}, True,
-    #         {'A': True, 'B': 'bla'},
-    #         "{'A': True, 'B': 'bla'}"
-    #         ),
-    # setting_dict shall accept JSON style:
-    #('dict', "{'int': 42, 'string': 'bla'}", True,
-    #         {'int': 42, 'string': 'bla'},
-    #         "{'int': 42, 'string': 'bla'}"
-    #         ),
-    # More test cases are covered in test_setting_dict
-# TODO: cannot test proper values for SettingDict since .value returns a dict
-# with Setting objects which I cannot check in a consistent manner with this
-# table setup. >> must be done in test_setting_dict
+    # Since SettingDict has some pecularities on it's behavior (no maintenance
+    # of input and more flexibility upon init), only very basic testing is
+    # covered here. The table concept from above does not match the SettingDict
+    # extensions. Detailed test cases are covered in test_setting_dict.
 ]
 @pytest.mark.parametrize(
     'setting_type, input, valid, value, string', param_conversion)
