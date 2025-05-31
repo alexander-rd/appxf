@@ -27,9 +27,11 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
     would accept an AppxfSetting to replace or add a new setting to a
     SettingDict.
 
-    SettingDict is also implemented as an AppxfSetting with behavior for .value
-    to support nested data structures and corporate with Setting extensions.
-    However, .value is not a user interface. Use with care!
+    SettingDict is also implemented as an AppxfSetting. The value property
+    returns a copy of the dict {key: setting} and accepts the same with setting
+    bein Setting objects. The input property returns also this dictionary.
+    However, those two interfaces are not designed as user interfaces - use
+    with care!
     '''
     # TODO: add Options and add a replacement for "default_visibility" (viewed
     # in context of a configuration) - must also scan for usage of this option
@@ -72,7 +74,6 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         # rely on it. Since SettingDict is also a Setting, it must be stored as
         # _value:
         self._value: OrderedDict[Any, Setting] = OrderedDict()
-        self._input: Any = OrderedDict()
         self.export_options = Setting.ExportOptions()
         # initialize parents
         super().__init__(storage=storage, **kwargs)
@@ -89,8 +90,6 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
             (isinstance(settings, Mapping) and not settings)
             ):
             self._value = OrderedDict()
-            # the following line just satisfies the test_setting cases:
-            self._input = settings
             return
         if isinstance(settings, Mapping):
             for key, value in settings.items():
@@ -135,11 +134,9 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
             if not value.options.name:
                 value.options.name = key
             self._value[key] = value
-            self._input[key] = value
             return
         # setting classes are applies with default values
         if isinstance(value, type) and issubclass(value, Setting):
-            self._input[key] = value
             self._value[key] = value()
             return
         # If input is a tuple, first should be the type and the second,
@@ -157,7 +154,6 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
             else:
                 tmp_value = None
 
-            self._input[key] = value
             if tmp_value is None:
                 self._value[key] = Setting.new(tmp_type)
             else:
@@ -168,7 +164,6 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         # value:
         if key in self._value:
             self._value[key].value = value
-            self._input[key] = value
         # Or, the new Setting object is created:
         else:
             self._value[key] = Setting.new(type(value),value=value)
@@ -276,6 +271,14 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
 
     @Setting.value.getter
     def value(self) -> dict[str, Any]:
+        return {key: self._value[key] for key in self._value.keys()}
+
+    # Input returns the same as value. Rationale: the actual input is in the
+    # Setting objects and there is no apparent benefit to maintain anything on
+    # top of this. Note that the Setting base class still maintains a _input
+    # property which remains unused with this implementation.
+    @Setting.input.getter
+    def input(self) -> dict[str, Any]:
         return {key: self._value[key] for key in self._value.keys()}
 
     def _validated_conversion(self, value: Any) -> tuple[bool, Any]:
