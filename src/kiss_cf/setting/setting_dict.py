@@ -7,7 +7,7 @@ from copy import deepcopy
 from typing import Any, Callable
 from collections.abc import Mapping, MutableMapping
 from kiss_cf.storage import Storable, Storage, RamStorage
-from .setting import Setting, AppxfSettingError
+from .setting import Setting, AppxfSettingError, AppxfSettingConversionError
 
 # TODO: Storing the AppxfSetting objects. This would be required for a
 # "configurable config".
@@ -28,10 +28,10 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
     SettingDict.
 
     SettingDict is also implemented as an AppxfSetting. The value property
-    returns a copy of the dict {key: setting} and accepts the same with setting
-    bein Setting objects. The input property returns also this dictionary.
-    However, those two interfaces are not designed as user interfaces - use
-    with care!
+    returns values of maintained settings as a dict (likewise for the .input
+    interface). Value accepts anything __init__ accepts and nonexisting keys
+    would be removed. Note that this interface is not designed for a normal
+    user interface - it works but it is not efficient.
     '''
     # TODO: add Options and add a replacement for "default_visibility" (viewed
     # in context of a configuration) - must also scan for usage of this option
@@ -114,6 +114,24 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
     def __getitem__(self, key: str):
         return self._value[key].value
 
+    def _resolve_tuple(self, t: tuple) -> Setting:
+        if not t or len(t) > 2:
+            raise AppxfSettingError(
+                f'SettingDict items that are tuples must contain a '
+                f'Setting type as the first element. And, optionally '
+                f'a value as the second type. You provided {t}.')
+        if len(t) > 0:
+            tmp_type = t[0]
+        if len(t) > 1:
+            tmp_value = t[1]
+        else:
+            tmp_value = None
+
+        if tmp_value is None:
+            return Setting.new(tmp_type)
+        else:
+            return Setting.new(tmp_type, value=tmp_value)
+
     def _set_item(self, key, value, pre_message):
         ''' Setting expects certain error message behavior
 
@@ -142,22 +160,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         # If input is a tuple, first should be the type and the second,
         # optional element, the value.
         if isinstance(value, tuple):
-            if not value or len(value) > 2:
-                raise AppxfSettingError(
-                    f'SettingDict items that are tuples must contain a '
-                    f'Setting type as the first element. And, optionally '
-                    f'a value as the second type. You provided {value}.')
-            if len(value) > 0:
-                tmp_type = value[0]
-            if len(value) > 1:
-                tmp_value = value[1]
-            else:
-                tmp_value = None
-
-            if tmp_value is None:
-                self._value[key] = Setting.new(tmp_type)
-            else:
-                self._value[key] = Setting.new(tmp_type, value=tmp_value)
+            self._value[key] = self._resolve_tuple(value)
             return
         # What is left is not a tuple (type, value) nor a Setting class/object.
         # The key must exist and the value is applied to the existing Setting's
@@ -271,7 +274,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
 
     @Setting.value.getter
     def value(self) -> dict[str, Any]:
-        return {key: self._value[key] for key in self._value.keys()}
+        return {key: self._value[key].value for key in self._value.keys()}
 
     # Input returns the same as value. Rationale: the actual input is in the
     # Setting objects and there is no apparent benefit to maintain anything on
@@ -279,28 +282,78 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
     # property which remains unused with this implementation.
     @Setting.input.getter
     def input(self) -> dict[str, Any]:
-        return {key: self._value[key] for key in self._value.keys()}
+        return {key: self._value[key].input for key in self._value.keys()}
 
     def _validated_conversion(self, value: Any) -> tuple[bool, Any]:
-        # SettingDict works with dict[str, Setting] on the .value interface
-        # which will also be the basis for validation. Note that __init__ still
-        # allows a more flexible usage that is consistent with A[key] = value
-        # handling.
-        if isinstance(value, str) and not value:
-            # empty string is OK for a default initialization with {}
-            return True, {}
+        # This function will only validate. In contrast to normal settings, the
+        # prepared (converted) value that can be returned will remain unused
+        # and, instead, a detailed error is returned. For actual setting a new
+        # value, _set_value() will be overwritten as well which will use the
+        # returned detailed error.
         if not isinstance(value, Mapping):
-            return False, {}
-        out_value = OrderedDict()
+            return False, AppxfSettingError(
+                f'Value provided is not a Mapping.')
         for key, setting in value.items():
             if not isinstance(key, str):
-                return False, {}
-            if not isinstance(setting, Setting):
-                return False, {}
-            out_value[key] = setting
-        # Note that out_value creates a new dict from the input but does NOT
-        # copy the settings.
-        return True, out_value
+                return False, AppxfSettingError(
+                    f'Only string keys are supported. '
+                    f'You provided: {key}')
+            if isinstance(setting, Setting):
+                continue
+            if isinstance(setting, type) and issubclass(setting, Setting):
+                continue
+            if isinstance(setting, tuple) or key not in self._value:
+                try:
+                    SettingDict(settings={key: setting})
+                except (AppxfSettingError, AppxfSettingConversionError) as err:
+                    return False, err
+                continue
+            # Above are all options that would create a NEW key (including the
+            # general case of the key not being existent). What remains is key
+            # is existing and setting being a value.
+            if not self._value[key].validate(setting):
+                # setting is not valid but the detailed error message shall be
+                # returned
+                try:
+                    self._value[key]
+                except (AppxfSettingError, AppxfSettingConversionError) as err:
+                    return False, err
+                else:
+                    raise AppxfSettingError(
+                        f'Value for {key} was invalid but did not throw an '
+                        f'error when trying to set. This should not happen')
+        return True, None
+
+    def _set_value(self, value: Any):
+        valid, err = self._validated_conversion(value)
+        if not valid:
+            print(err)
+            raise AppxfSettingError(
+                f'Cannot set value of type {type(value)} '
+                f'for SettingDict: {value}. See subsequent error message.'
+                ) from err
+        new_value = OrderedDict()
+        # validation already confirmed the input being a mapping
+        for key, setting in value.items():
+            if isinstance(setting, Setting):
+                new_value[key] = setting
+                continue
+            if isinstance(setting, type) and issubclass(setting, Setting):
+                new_value[key] = setting()
+                continue
+            if isinstance(setting, tuple):
+                new_value[key] = self._resolve_tuple(setting)
+                continue
+            if key in self._value:
+                new_value[key] = self._value[key]
+                new_value[key].value = value
+                continue
+            # situation left: key does NOT yet exist and setting would not
+            # automatically generate a new one (plain value). We reuse existing
+            # implementation even if this is less computational efficient.
+            tmp_setting_dict = SettingDict(settings={key: setting})
+            new_value[key] = SettingDict.get_setting(key)
+        self._value = new_value
 
     def to_string(self) -> str:
         # Return empty string in case SettingDict does not contain settings:

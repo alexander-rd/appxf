@@ -60,12 +60,10 @@ def verify_setting_dict(setting_dict: SettingDict, t_list: list[tuple]):
         assert type(setting_dict.get_setting(t[0])) == type(setting_ref)
         assert setting_dict.get_setting(t[0]).value == setting_ref.value
         assert setting_dict.get_setting(t[0]).to_string() == setting_ref.to_string()
-        # same setting based tests based on value retrieval:
-        assert type(setting_dict.value[t[0]]) == type(setting_ref)
-        assert setting_dict.value[t[0]].value == setting_ref.value
-        assert setting_dict.value[t[0]].to_string() == setting_ref.to_string()
-    # check that value retrieval is same as input retrieval
-    assert setting_dict.value == setting_dict.input
+        # checking input/value interfaces:
+        assert setting_dict.value[t[0]] == setting_ref.value
+        assert setting_dict.input[t[0]] == setting_ref.input
+
 
 # #############/
 # Init Variants
@@ -145,54 +143,47 @@ def test_setting_dict_overwriting_by_setting_object():
     setting_dict = SettingDict({
         'test': ('bool', False)})
     assert setting_dict['test'] == False
-    assert type(setting_dict.value['test']) == SettingBool
+    assert type(setting_dict.get_setting('test')) == SettingBool
     # overwrite by Email
     setting_dict['test'] = Setting.new('string', 'some')
     assert setting_dict['test'] == 'some'
-    assert type(setting_dict.value['test']) == SettingString
+    assert type(setting_dict.get_setting('test')) == SettingString
 
 def test_setting_dict_overwriting_by_setting_class():
     setting_dict = SettingDict({
         'test': ('bool', False)})
     assert setting_dict['test'] == False
-    assert type(setting_dict.value['test']) == SettingBool
+    assert type(setting_dict.get_setting('test')) == SettingBool
     # overwrite by Email
     setting_dict['test'] = SettingInt
     assert setting_dict['test'] == SettingInt.get_default()
-    assert type(setting_dict.value['test']) == SettingInt
+    assert type(setting_dict.get_setting('test')) == SettingInt
 
 def test_setting_dict_overwriting_by_tuple():
     setting_dict = SettingDict({
         'test': ('bool', False)})
     assert setting_dict['test'] == False
-    assert type(setting_dict.value['test']) == SettingBool
+    assert type(setting_dict.get_setting('test')) == SettingBool
     # overwrite by Email
     setting_dict['test'] = ('string', 'some')
     assert setting_dict['test'] == 'some'
-    assert type(setting_dict.value['test']) == SettingString
+    assert type(setting_dict.get_setting('test')) == SettingString
 
 def test_setting_dict_keeps_setting_object():
     setting_dict = SettingDict({
         'test': (str, 'init')})
     assert setting_dict['test'] == 'init'
-    init_object = setting_dict.value['test']
+    init_object = setting_dict.get_setting('test')
     # set new value
     setting_dict['test'] = 'new'
     assert setting_dict['test'] == 'new'
-    new_object = setting_dict.value['test']
+    new_object = setting_dict.get_setting('test')
     assert new_object is init_object
     # set overwriting variant
     setting_dict['test'] = (str, 'overwriting')
     assert setting_dict['test'] == 'overwriting'
-    new_object = setting_dict.value['test']
+    new_object = setting_dict.get_setting('test')
     assert new_object is not init_object
-
-# setting nonexisting is now expected to work:
-#def test_setting_dict_set_nonexisting():
-#    setting_dict = SettingDict()
-#    with pytest.raises(AppxfSettingError) as exc_info:
-#        setting_dict['test'] = 'test'
-#    assert 'Key test does not exist' in str(exc_info.value)
 
 def test_setting_dict_get_nonexisting():
     setting_dict = SettingDict()
@@ -214,6 +205,23 @@ def test_setting_dict_delete_non_existing():
     setting_dict = SettingDict()
     with pytest.raises(KeyError):
         del setting_dict['test']
+
+def test_setting_dict_nested():
+    setting_dict = SettingDict(settings={
+        'int': (int, '42'),
+        'nested': {'int': (int, '13')}
+    })
+    assert setting_dict['int'] == 42
+    assert setting_dict['nested'] == {'int': 13}
+    assert setting_dict['nested']['int'] == 13
+    # verify same based on value
+    assert setting_dict.value['int'] == 42
+    assert setting_dict.value['nested'] == {'int': 13}
+    assert setting_dict.value['nested']['int'] == 13
+    # and verify the input which are corresponding strings:
+    assert setting_dict.input['int'] == '42'
+    assert setting_dict.input['nested'] == {'int': '13'}
+    assert setting_dict.input['nested']['int'] == '13'
 
 # REQ: When changing the underlying Setting directly, the value returned by
 # SettingDict must appear updated accordingly.
