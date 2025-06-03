@@ -315,7 +315,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                 # setting is not valid but the detailed error message shall be
                 # returned
                 try:
-                    self._value[key]
+                    self._value[key].value = setting
                 except (AppxfSettingError, AppxfSettingConversionError) as err:
                     return False, err
                 else:
