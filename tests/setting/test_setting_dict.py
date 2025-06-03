@@ -77,6 +77,14 @@ def test_setting_dict_init_by_dict():
     setting_dict = SettingDict(dict_input)
     verify_setting_dict(setting_dict, init_values)
 
+# empty init, set by value
+def test_setting_dict_init_by_value():
+    setting_dict = SettingDict()
+    setting_dict.value = {
+        t[0]: t[1]
+        for t in init_values}
+    verify_setting_dict(setting_dict, init_values)
+
 # general unknown init type
 def test_setting_dict_init_fail_by_no_dict():
     # iterable with a iterable subelement that does not contain key+value
@@ -121,6 +129,14 @@ def test_setting_dict_set_valid_value():
         'test': ('email', 'my@email.com')
         })
     setting_dict['test'] = 'new@email.com'
+    assert setting_dict['test'] == 'new@email.com'
+    assert setting_dict.get_setting('test').value == 'new@email.com'
+
+def test_setting_dict_set_via_value():
+    setting_dict = SettingDict({
+        'test': ('email', 'my@email.com')
+        })
+    setting_dict.value = {'test': 'new@email.com'}
     assert setting_dict['test'] == 'new@email.com'
     assert setting_dict.get_setting('test').value == 'new@email.com'
 
@@ -218,7 +234,7 @@ def test_setting_dict_nested():
 
 # REQ: When updating SettingDict via .value with some invalid values, the
 # values shall not be applied in case the error is cought.
-def test_setting_dict_invalid_not_applied_1():
+def test_setting_dict_invalid_not_applied():
     setting_dict = SettingDict(settings={
         'A': ('email', 'a@something.de'),
         'B': ('email', 'b@something.de'),
