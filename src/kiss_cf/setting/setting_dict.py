@@ -318,10 +318,13 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                     self._value[key].value = setting
                 except (AppxfSettingError, AppxfSettingConversionError) as err:
                     return False, err
-                else:
+                else: # pragma: no cover  # Rationale: the above else path is
+                      # defensive code. See "this should not happen" in error
+                      # message.
                     raise AppxfSettingError(
                         f'Value for {key} was invalid but did not throw an '
                         f'error when trying to set. This should not happen')
+
         return True, None
 
     def _set_value(self, value: Any):
@@ -346,13 +349,13 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                 continue
             if key in self._value:
                 new_value[key] = self._value[key]
-                new_value[key].value = value
+                new_value[key].value = setting
                 continue
             # situation left: key does NOT yet exist and setting would not
             # automatically generate a new one (plain value). We reuse existing
             # implementation even if this is less computational efficient.
             tmp_setting_dict = SettingDict(settings={key: setting})
-            new_value[key] = SettingDict.get_setting(key)
+            new_value[key] = tmp_setting_dict.get_setting(key)
         self._value = new_value
 
     def to_string(self) -> str:
