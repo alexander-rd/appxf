@@ -7,13 +7,6 @@ from kiss_cf.setting import SettingString, SettingInt, SettingFloat, SettingBool
 
 from kiss_cf.storage import RamStorage
 
-sample_input = {
-    'string': 'test',
-    'int': 42,
-    'float': 1.1234,
-    'bool': True,
-    }
-
 init_values = [
     # Key   Value                       Type        Value_Out       String_Out
     # Value based input
@@ -222,6 +215,38 @@ def test_setting_dict_nested():
     assert setting_dict.input['int'] == '42'
     assert setting_dict.input['nested'] == {'int': '13'}
     assert setting_dict.input['nested']['int'] == '13'
+
+# REQ: When updating SettingDict via .value with some invalid values, the
+# values shall not be applied in case the error is cought.
+def test_setting_dict_invalid_not_applied_1():
+    setting_dict = SettingDict(settings={
+        'A': ('email', 'a@something.de'),
+        'B': ('email', 'b@something.de'),
+        'C': ('email', 'c@something.de'),
+    })
+    # some checks of the initialization
+    assert 'a@' in setting_dict['A']
+    assert 'b@' in setting_dict['B']
+    assert 'c@' in setting_dict['C']
+    for key in setting_dict:
+        assert type(setting_dict.get_setting(key)) == type(Setting.new('email'))
+    # cycle through keys and try to apply a wrong value to each of those keys.
+    # Only checking one position would not be sufficient in case SettingDict
+    # already fails with the first assignment. No assumptions on order of
+    # execution are made.
+    for change_key in setting_dict:
+        change_dict = setting_dict.value
+        change_dict[change_key] = 'wrong-email'
+        with pytest.raises(AppxfSettingError) as exc_info:
+            setting_dict.value = change_dict
+        assert 'wrong-email' in str(exc_info.value)
+        # same checks as after init (no changes must be applied)
+        assert 'a@' in setting_dict['A']
+        assert 'b@' in setting_dict['B']
+        assert 'c@' in setting_dict['C']
+        for key in setting_dict:
+            assert type(setting_dict.get_setting(key)) == type(Setting.new('email'))
+
 
 # REQ: When changing the underlying Setting directly, the value returned by
 # SettingDict must appear updated accordingly.
