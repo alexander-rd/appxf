@@ -7,6 +7,15 @@ from kiss_cf.setting import SettingString, SettingInt, SettingFloat, SettingBool
 
 from kiss_cf.storage import RamStorage
 
+# REQ: SettingDict shall be able to be filled with settings by:
+#  1) settings parameter on constructor taking a dictionary {key: setting}
+#  2) [] assignment (one by one): setting_dict[key] = setting
+#  3) .value interface taking a dictionary {key: setting}
+#
+# REQ: Each setting above can be (1) a plain value, (2) a setting class, (3) a
+# setting object or (4) a tuple (type) or (type, value).
+
+# List of sample init values:
 init_values = [
     # Key   Value                       Type        Value_Out       String_Out
     # Value based input
@@ -30,6 +39,7 @@ init_values = [
     ('T3',  ('integer',),               'int',      0,              '0'),
 ]
 
+# construct a Setting object from one of the init_values tuples
 def _get_setting_reference(t):
     if isinstance(t[1], tuple):
         # tuple based init with type+value
@@ -46,6 +56,7 @@ def _get_setting_reference(t):
         return t[1]
     return Setting.new(t[2], value=t[1])
 
+# verify a setting dict against the init_value tuples
 def verify_setting_dict(setting_dict: SettingDict, t_list: list[tuple]):
     for t in t_list:
         setting_ref = _get_setting_reference(t)
@@ -56,11 +67,6 @@ def verify_setting_dict(setting_dict: SettingDict, t_list: list[tuple]):
         # checking input/value interfaces:
         assert setting_dict.value[t[0]] == setting_ref.value
         assert setting_dict.input[t[0]] == setting_ref.input
-
-
-# #############/
-# Init Variants
-# ////////////
 
 # manual filling
 def test_setting_dict_init_and_fill():
@@ -85,39 +91,62 @@ def test_setting_dict_init_by_value():
         for t in init_values}
     verify_setting_dict(setting_dict, init_values)
 
-# general unknown init type
-def test_setting_dict_init_fail_by_no_dict():
-    # iterable with a iterable subelement that does not contain key+value
-    with pytest.raises(AppxfSettingError) as exc_info:
-        SettingDict(settings = 42)
-    assert f'SettingDict' in str(exc_info.value)
-    assert f'42 of type {int}' in str(exc_info.value)
+# Testing invalid inputs - three test cases, each - for __init__, [] and .value
+# interfaces.
 
-# inconsistent type/value combinations
-def test_setting_dict_init_fail_by_invalid_value():
-    with pytest.raises(AppxfSettingConversionError):
-        SettingDict({
-        'test': ('email', 'fail')
-        })
+failure_cases = [
+    # TC name       # settings input        # list of strings that must be in error message
+    ('input type',  42,                     [
+        f'42 of type {int}']),
+    ('invalid key', {42: (str)},            [
+        f'42 of type {int}', 'Only string keys are supported']),
+    ('invalid value', {'test': ('email', 'fail')}, [
+        ]),
+    ('empty tuple', {'test': tuple()},      [
+        '()']),
+    ('long tuple', {'test': (1,2,3)},      [
+        '(1, 2, 3)']),
+    ]
 
-def test_setting_dict_init_fail_by_empty_tuple():
+@pytest.mark.parametrize('name, settings, error_parts',
+                         failure_cases,
+                         ids = [t[0] for t in failure_cases])
+def test_setting_dict_invalid_init(name, settings, error_parts):
     with pytest.raises(AppxfSettingError) as exc_info:
-        SettingDict({'test': tuple()})
-    assert 'SettingDict' in str(exc_info.value)
-    assert '()' in str(exc_info.value)
+        SettingDict(settings = settings)
+    print(exc_info.value)
+    print(exc_info.value.__cause__)
+    assert 'Cannot set/initialize SettingDict' in str(exc_info.value)
+    for part in error_parts:
+        assert part in str(exc_info.value) + str(exc_info.value.__cause__)
 
-def test_setting_dict_init_fail_by_too_long_tuple():
+@pytest.mark.parametrize('name, settings, error_parts',
+                         failure_cases,
+                         ids = [t[0] for t in failure_cases])
+def test_setting_dict_invalid_value(name, settings, error_parts):
+    setting_dict = SettingDict()
     with pytest.raises(AppxfSettingError) as exc_info:
-        SettingDict({'test': (1,2,3)})
-    assert 'SettingDict' in str(exc_info.value)
-    assert '(1, 2, 3)' in str(exc_info.value)
+        setting_dict.value = settings
+    print(exc_info.value)
+    print(exc_info.value.__cause__)
+    for part in error_parts:
+        assert part in str(exc_info.value) + str(exc_info.value.__cause__)
 
-def test_setting_dict_init_fail_by_no_str_key():
+@pytest.mark.parametrize('name, settings, error_parts',
+                         failure_cases,
+                         ids = [t[0] for t in failure_cases])
+def test_setting_dict_invalid_setitem(name, settings, error_parts):
+    setting_dict = SettingDict()
+    if not isinstance(settings, dict):
+        # those cases are only for __init__and value assignments
+        return
     with pytest.raises(AppxfSettingError) as exc_info:
-        SettingDict({13: SettingInt(42)})
-    assert 'SettingDict' in str(exc_info.value)
-    assert 'Cannot set key 13' in str(exc_info.value)
-    assert 'Only string keys are supported' in str(exc_info.value)
+        for key, value in settings.items():
+            setting_dict[key] = value
+    print(exc_info.value)
+    print(exc_info.value.__cause__)
+    for part in error_parts:
+        assert part in str(exc_info.value) + str(exc_info.value.__cause__)
 
 
 # ####################/
@@ -139,14 +168,6 @@ def test_setting_dict_set_via_value():
     setting_dict.value = {'test': 'new@email.com'}
     assert setting_dict['test'] == 'new@email.com'
     assert setting_dict.get_setting('test').value == 'new@email.com'
-
-def test_setting_dict_set_invalid_value():
-    setting_dict = SettingDict({
-        'test': ('email', 'my@email.com')
-        })
-    with pytest.raises(AppxfSettingConversionError):
-        setting_dict['test'] = 'fail'
-    # error message checks are in scope of setting implementation
 
 def test_setting_dict_overwriting_by_setting_object():
     setting_dict = SettingDict({
