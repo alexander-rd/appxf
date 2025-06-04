@@ -93,11 +93,13 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
             return
         if isinstance(settings, Mapping):
             for key, value in settings.items():
-                self._set_item(
-                    key, value,
-                    f'Cannot set key {key} from {settings} '
-                    f'of type {settings.__class__} '
-                    f'provided to SettingDict.__init__(). ')
+                try:
+                    self._set_item(key, value)
+                except (AppxfSettingError, AppxfSettingConversionError) as err:
+                    raise AppxfSettingError(
+                        f'Cannot set/initialize SettingDict. '
+                        f'You provided {settings} of type {settings.__class__}. '
+                    ) from err
             return
         # error, otherwise
         raise AppxfSettingError(
@@ -132,20 +134,18 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         else:
             return Setting.new(tmp_type, value=tmp_value)
 
-    def _set_item(self, key, value, pre_message):
-        ''' Setting expects certain error message behavior
+    def _set_item(self, key, value):
+        ''' separated behavior to avoid too deep nesting
 
-        To satisfy this also for .value assignments and for __init__(), this
-        function is abstracted to incorporate information of the whole setting
-        structure in error messages.
-
-        Intend of this function is otherwise identical to __setitem__().
+        Note that this is called from __init__() and __setitem__ in a
+        try/except to add further error details. Intend of this function is
+        otherwise identical to __setitem__().
         '''
         # reject keys that are not strings
         if not isinstance(key, str):
-            raise AppxfSettingError(pre_message + (
+            raise AppxfSettingError(
                 f'Only string keys are supported. '
-                f'You provided: {key}'))
+                f'You provided: {key} of type {type(key)}')
         # values that are Settings are always accepted
         if isinstance(value, Setting):
             # transfering key name to setting if setting name is empty
@@ -175,7 +175,13 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
     # key {key} with following error message from the Setting class. "
 
     def __setitem__(self, key, value) -> None:
-        self._set_item(key, value, '')
+        try:
+            self._set_item(key, value)
+        except (AppxfSettingError, AppxfSettingConversionError) as err:
+            raise AppxfSettingError(
+                f'Cannot set {key} in SettingDict. '
+                f'You provided value {value} of type {value.__class__}.'
+                ) from err
 
     def __delitem__(self, key):
         del self._value[key]
@@ -292,12 +298,12 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         # returned detailed error.
         if not isinstance(value, Mapping):
             return False, AppxfSettingError(
-                f'Value provided is not a Mapping.')
+                f'Value must be a Mapping. You provided {value} of type {type(value)}.')
         for key, setting in value.items():
             if not isinstance(key, str):
                 return False, AppxfSettingError(
                     f'Only string keys are supported. '
-                    f'You provided: {key}')
+                    f'You provided: {key} of type {type(key)}')
             if isinstance(setting, Setting):
                 continue
             if isinstance(setting, type) and issubclass(setting, Setting):
@@ -330,7 +336,6 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
     def _set_value(self, value: Any):
         valid, err = self._validated_conversion(value)
         if not valid:
-            print(err)
             raise AppxfSettingError(
                 f'Cannot set value of type {type(value)} '
                 f'for SettingDict: {value}. See subsequent error message.'
