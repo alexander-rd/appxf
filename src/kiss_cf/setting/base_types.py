@@ -18,7 +18,7 @@ class SettingString(Setting[str]):
     '''
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
-        return [str, 'str', 'string']
+        return ['string', str, 'str']
 
     @classmethod
     def get_default(cls):
@@ -99,7 +99,7 @@ class SettingPassword(SettingString):
 
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
-        return ['pass', 'password']
+        return ['password', 'pass']
 
     def _validated_conversion(self, value: Any) -> tuple[bool, str]:
         if value == self.get_default():
@@ -160,7 +160,7 @@ class SettingBool(Setting[bool]):
     ''' Setting for booleans '''
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
-        return [bool, 'bool', 'boolean']
+        return ['boolean', bool, 'bool']
 
     @classmethod
     def get_default(cls) -> bool:
@@ -186,7 +186,7 @@ class SettingInt(Setting[int]):
     ''' Setting for Integers '''
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
-        return [int, 'int', 'integer']
+        return ['integer', int, 'int']
 
     @classmethod
     def get_default(cls) -> int:
@@ -205,7 +205,7 @@ class SettingFloat(Setting[float]):
     ''' Setting for Float '''
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
-        return [float, 'float']
+        return ['float', float]
 
     @classmethod
     def get_default(cls) -> float:

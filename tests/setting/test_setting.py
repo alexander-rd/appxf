@@ -219,12 +219,22 @@ def test_setting_self_test():
         f'Following Setting implementations do not have an invalid test '
         f'case in test_setting_conversions: {uncovered_invalid}')
 
+# REQ: If mutable is False, there must be an exception when assigning new
+# values:
 def test_setting_mutable():
     setting = Setting.new(str)
     setting.options.mutable = False
     with pytest.raises(AppxfSettingError) as exc_info:
         setting.value = 'new'
     assert 'is set to be not mutable' in str(exc_info.value)
+
+# REQ: Even if mutable is set to False upon initialization, the initialization
+# must not fail. Note that the setting options are set before the value is
+# taken over.
+def test_setting_not_mutable_init():
+    setting = Setting.new(str, 'test', mutable = False)
+    assert not setting.options.mutable
+    assert setting.value == 'test'
 
 # #######################################/
 # # AppxfSetting base class functionality

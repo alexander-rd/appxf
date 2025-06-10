@@ -92,9 +92,13 @@ class Config():
             storage = self._default_storage_factory(section)
         else:
             storage = RamStorage()
-        # construct section
+        # construct section:
+        #  * SettingDict will take over the section name
+        #  * Config will, by default, not raise exceptions on import when
+        #    a config option is new or missing
         self._sections[section] = SettingDict(
-            storage=storage, settings=settings)
+            storage=storage, settings=settings, name=section,
+            exception_on_new_key = False, exception_on_missing_key = False)
         self.log.info(f'added section: {section}')
         return self._sections[section]
 
