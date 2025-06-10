@@ -2,7 +2,6 @@ appxf >= 0.0.2
 babel
 cryptography
 ftputil
-mariadb
 ntplib
 pandas
 recordclass
