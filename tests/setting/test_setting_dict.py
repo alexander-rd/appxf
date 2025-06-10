@@ -1,5 +1,7 @@
 
 import pytest
+from collections import OrderedDict
+from copy import deepcopy
 
 from kiss_cf.setting import SettingDict, Setting
 from kiss_cf.setting import AppxfSettingConversionError, AppxfSettingError
@@ -116,7 +118,8 @@ def test_setting_dict_invalid_init(name, settings, error_parts):
         SettingDict(settings = settings)
     print(exc_info.value)
     print(exc_info.value.__cause__)
-    assert 'Cannot set/initialize SettingDict' in str(exc_info.value)
+    assert 'Cannot set value' in str(exc_info.value)
+    assert 'for SettingDict' in str(exc_info.value)
     for part in error_parts:
         assert part in str(exc_info.value) + str(exc_info.value.__cause__)
 
@@ -129,6 +132,8 @@ def test_setting_dict_invalid_value(name, settings, error_parts):
         setting_dict.value = settings
     print(exc_info.value)
     print(exc_info.value.__cause__)
+    assert 'Cannot set value' in str(exc_info.value)
+    assert 'for SettingDict' in str(exc_info.value)
     for part in error_parts:
         assert part in str(exc_info.value) + str(exc_info.value.__cause__)
 
@@ -145,8 +150,16 @@ def test_setting_dict_invalid_setitem(name, settings, error_parts):
             setting_dict[key] = value
     print(exc_info.value)
     print(exc_info.value.__cause__)
+    assert 'Cannot set ' in str(exc_info.value)
+    assert 'in SettingDict' in str(exc_info.value)
     for part in error_parts:
         assert part in str(exc_info.value) + str(exc_info.value.__cause__)
+
+def test_setting_dict_value_as_string():
+    setting_dict = SettingDict({'test': 'some'})
+    assert "{'test': 'some'}" == setting_dict.to_string()
+    # Note that to_string() is a mandatory interface for Setting behavior.
+    # There is no reason, yet to support __str__().
 
 
 # ####################/
@@ -198,6 +211,10 @@ def test_setting_dict_overwriting_by_tuple():
     setting_dict['test'] = ('string', 'some')
     assert setting_dict['test'] == 'some'
     assert type(setting_dict.get_setting('test')) == SettingString
+
+# REQ: When updating a value of a setting maintained by SettingDict, the
+# setting object shall remain the same. Rationale: The setting object may
+# already be referenced by others like GUI or application.
 
 def test_setting_dict_keeps_setting_object():
     setting_dict = SettingDict({
@@ -305,28 +322,497 @@ def test_setting_dict_update_on_setting():
     assert setting_dict.get_setting('test').input == 'new'
     assert setting_dict.get_setting('test').value == 'new'
 
+# REQ: When not mutable, changing maintained settings shall still be possible.
+# Rationale: setting values are controlled by THEIR respective mutable obtion.
+def test_setting_dict_not_mutable_setting_changes():
+    setting_dict = SettingDict(settings = {
+        'test': (str, 'init')})
+    setting_dict['test'] = (str, 'init')
+    setting_dict.options.mutable = False
+    assert setting_dict['test'] == 'init'
+
+    setting_dict['test'] = 'changed[]'
+    assert setting_dict['test'] == 'changed[]'
+
+    setting_dict.value = {'test': 'changed_value'}
+    assert setting_dict['test'] == 'changed_value'
+
+# For the following expected errors on "not mutable", the error messages are
+# evaluated by this function:
+def evaluate_not_mutable_error(err: Exception, case: str):
+    print(err.value)
+    print(err.value.__cause__)
+    err_string = str(err.value) + str(err.value.__cause__)
+    assert 'SettingDict() mutable option is False' in err_string
+    if case == 'delete item':
+        assert 'items cannot be deleted' in err_string
+        assert 'key test' in err_string
+    elif case == 'add item':
+        assert 'New keys cannot be added' in err_string
+        assert 'You provided key test_new as new key'
+    elif case == 'overwrite item':
+        assert 'settings cannot be replaced' in err_string
+        assert 'You provided value' in err_string
+        assert 'of type <' in err_string
+    else:
+        raise Exception(f'Case {case} is unknown.')
+
+# REQ: When not mutable, removing or adding items shall not be possible on all
+# interfaces ([] and value) except init. Note that this includes the
+# possibility of renaming.
+
+def test_setting_dict_not_mutable_delete_via_value():
+    setting_dict = SettingDict(settings = {
+        t[0]: t[1]
+        for t in init_values})
+    setting_dict['test'] = (str, 'init')
+    setting_dict.options.mutable = False
+
+    # try to delete
+    values = setting_dict.value
+    del values['test']
+    with pytest.raises(AppxfSettingError) as exc_info:
+        setting_dict.value = values
+    evaluate_not_mutable_error(exc_info, 'delete item')
+    verify_setting_dict(setting_dict, init_values)
+    assert 'test' in setting_dict
+
+def test_setting_dict_not_mutable_delete_via_delitem():
+    setting_dict = SettingDict(settings = {
+        t[0]: t[1]
+        for t in init_values})
+    setting_dict['test'] = (str, 'init')
+    setting_dict.options.mutable = False
+
+    # try to delete
+    with pytest.raises(AppxfSettingError) as exc_info:
+        del setting_dict['test']
+    evaluate_not_mutable_error(exc_info, 'delete item')
+    verify_setting_dict(setting_dict, init_values)
+    assert 'test' in setting_dict
+
+def test_setting_dict_not_mutable_add_via_value():
+    setting_dict = SettingDict(settings = {
+        t[0]: t[1]
+        for t in init_values})
+    setting_dict['test'] = (str, 'init')
+    setting_dict.options.mutable = False
+
+    values = setting_dict.value
+    values['test_new'] = (str, 'should fail')
+    with pytest.raises(AppxfSettingError) as exc_info:
+        setting_dict.value = values
+    evaluate_not_mutable_error(exc_info, 'add item')
+    verify_setting_dict(setting_dict, init_values)
+    assert 'test' in setting_dict
+    assert 'test_new' not in setting_dict
+
+
+def test_setting_dict_not_mutable_add_via_setitem():
+    setting_dict = SettingDict(settings = {
+        t[0]: t[1]
+        for t in init_values})
+    setting_dict['test'] = (str, 'init')
+    setting_dict.options.mutable = False
+
+    with pytest.raises(AppxfSettingError) as exc_info:
+        setting_dict['test_new'] = (str, 'should fail')
+    evaluate_not_mutable_error(exc_info, 'add item')
+    verify_setting_dict(setting_dict, init_values)
+    assert 'test' in setting_dict
+    assert 'test_new' not in setting_dict
+
+# REQ: When not mutable, it shall not be possible to replace the setting
+# objects by new ones. This includes providing Setting objects, Setting classes
+# or tuples.
+
+def test_setting_dict_not_mutable_overwrite_via_value():
+    setting_dict = SettingDict(settings={
+        'test': (str, 'init')},
+        mutable = False)
+
+    values = setting_dict.value
+    values['test'] = (str, 'should fail')
+    with pytest.raises(AppxfSettingError) as exc_info:
+        setting_dict.value = values
+    evaluate_not_mutable_error(exc_info, 'overwrite item')
+
+    values['test'] = SettingString
+    with pytest.raises(AppxfSettingError) as exc_info:
+        setting_dict.value = values
+    evaluate_not_mutable_error(exc_info, 'overwrite item')
+
+    values['test'] = SettingString()
+    with pytest.raises(AppxfSettingError) as exc_info:
+        setting_dict.value = values
+    evaluate_not_mutable_error(exc_info, 'overwrite item')
+
+def test_setting_dict_not_mutable_overwrite_via_setitem():
+    setting_dict = SettingDict(settings={
+        'test': (str, 'init')},
+        mutable = False)
+
+
+    with pytest.raises(AppxfSettingError) as exc_info:
+        setting_dict['test'] = (str, 'should fail')
+    evaluate_not_mutable_error(exc_info, 'overwrite item')
+
+    with pytest.raises(AppxfSettingError) as exc_info:
+        setting_dict['test'] = SettingString
+    evaluate_not_mutable_error(exc_info, 'overwrite item')
+
+    with pytest.raises(AppxfSettingError) as exc_info:
+        setting_dict['test'] = SettingString()
+    evaluate_not_mutable_error(exc_info, 'overwrite item')
+
 # #################/
-# Storable Behavior
+# Stateful Behavior
 # ////////////////
+#
+# Overview:
+#  * test_setting_dict_get_state - evaluating correct returns of get_state()
+#  * test_setting_dict_set_state_default - get_state() restoring based on
+#    get_state() results when NO additional options apply
+#  * test_setting_dict_set_state_type - set_state() handling related to type
+#    handling. Either the type export_option is True or the input data contains
+#    type information.
+
+# to verify output structures, there will be expectations on the keys in two
+# levels. Default output is only {'setting_A': 'value_A'} but with refined
+# output options, this is {'setting_A': {'type': 'string', 'value':
+# 'value_A'}}. The following function supports checking the expected keys on
+# both levels.
+def _verify_get_state_keys(
+    data: OrderedDict,
+    top_level_keys: list[str],
+    setting_keys: list[str] | None = None
+    ):
+    print(data)
+    assert isinstance(data, OrderedDict), f'Expected data to be OrderedDict. It is: {data.__class__}'
+    expected_top_level_keys = ['_version'] + top_level_keys
+    actual_top_level_keys = list(data.keys())
+    for key in expected_top_level_keys:
+        assert key in data.keys(), f'Expected key "{key}" not in get_state() result.'
+    for key in data.keys():
+        assert key in expected_top_level_keys, f'get_state() has unexpected key {key}'
+    # check correct order:
+    for key in expected_top_level_keys:
+        # we already checked that all top_level_keys are present
+        assert actual_top_level_keys.index(key) == expected_top_level_keys.index(key), (
+            f'{key} is present but expected index is {expected_top_level_keys.index(key)}, '
+            f'actual key list is: {actual_top_level_keys}')
+    if setting_keys is None:
+        # none of the keys should be a dict with 'value':
+        for key in top_level_keys:
+            assert not isinstance(data[key], OrderedDict) or not 'value' in data[key], (
+                f'Key "{key}" is not expected to be a dictionary '
+                f'containing "value". It is: {data[key]}')
+        return
+
+    for setting_key, setting in data.items():
+        if setting_key == '_version':
+            continue
+        assert isinstance(setting, OrderedDict), (
+            f'Expected setting {setting_key} to be OrderedDict. It is: {setting.__class__}.'
+            )
+        actual_setting_keys = list(setting.keys())
+        for key in setting_keys:
+            assert key in setting, (
+                f'Setting "{setting_key}" '
+                f'did not include key "{key}" in get_state().'
+                f'Complete setting: {setting}')
+        for key in setting.keys():
+            assert key in setting_keys, (
+                f'Setting "{setting_key}" '
+                f'had unexpected key "{key}" from get_state(). '
+                f'Complete setting: {setting}')
+        for key in setting_keys:
+            # we already checked that all setting_keys are present
+            assert actual_setting_keys.index(key) == setting_keys.index(key), (
+                f'{key} is present but expected index is {setting_keys.index(key)}, '
+                f'actual key list is: {actual_setting_keys}')
+
+# REQ: get_state() shall include only the INPUT values for all settings. This
+# applies to default options and export options.
+def test_setting_dict_get_state_content_default():
+    setting_dict = SettingDict(settings={
+        'testA': (int, '42'),
+        'testB': (str, 'test')})
+    data = setting_dict.get_state()
+    _verify_get_state_keys(data, ['testA', 'testB'])
+    assert data['testA'] == '42'
+    assert data['testB'] == 'test'
+
+# REQ: get_state() shall only include the setting names (from it's options) in
+# the output if it is different from the key name.
+def test_setting_dict_get_state_matching_name_handling():
+    setting_dict = SettingDict(settings={
+        'test': (int, '42')})
+    setting_dict.get_setting('test').options.name = 'test'
+
+    data = setting_dict.get_state(name=True)
+    _verify_get_state_keys(data, ['test'])
+# repetition with also exporting 'type' to catch an otherwise open branch:
+def test_setting_dict_get_state_matching_name_handling2():
+    setting_dict = SettingDict(settings={
+        'test': (int, '42')})
+    setting_dict.get_setting('test').options.name = 'test'
+
+    data = setting_dict.get_state(name=True, type=True)
+    _verify_get_state_keys(data, ['test'], ['type', 'value'])
+
+def test_setting_dict_get_state_non_matching_name_handling():
+    setting_dict = SettingDict(settings={
+        'test': (int, '42')})
+    setting_dict.get_setting('test').options.name = 'own_name'
+
+    # we also check correct order with type
+    data = setting_dict.get_state(name=True, type=True)
+    _verify_get_state_keys(data, ['test'], ['type', 'value', 'name'])
+    assert data['test']['type'] == 'integer'
+    assert data['test']['name'] == 'own_name'
+
+# extra test: setting name is not expected to be in output if export option is
+# not set - even if name is different:
+def test_setting_dict_get_state_non_matching_name_handling2():
+    setting_dict = SettingDict(settings={
+        'test': (int, '42')})
+    setting_dict.get_setting('test').options.name = 'own_name'
+
+    # we also check correct order with type
+    data = setting_dict.get_state(name=False, type=True)
+    _verify_get_state_keys(data, ['test'], ['type', 'value'])
+    assert data['test']['type'] == 'integer'
+
+# REQ: get_state() shall report INPUT value and type if type is TRUE in the
+# export options.
+def test_setting_dict_get_state_content_with_type():
+    setting_dict = SettingDict(settings={
+        'test': (int, '42')})
+    data = setting_dict.get_state(type=True)
+    _verify_get_state_keys(
+        data,
+        ['test'],
+        ['type', 'value'])
+    assert data['test']['value'] == '42'
+    assert data['test']['type'] == 'integer'
+
+# REQ: set_state() shall restore a setting VALUE and INPUT if the setting is
+# already existing.
+def test_setting_dict_set_state_default():
+    setting_dict = SettingDict(settings={
+        'testInt': (int, '42'),
+        'testEmail': ('email', 'someone@something.com')})
+    data = setting_dict.get_state()
+    setting_dict['testInt'] = 13
+    setting_dict['testEmail'] = 'someoneelse@something.com'
+    assert setting_dict.value['testInt'] == 13
+    assert setting_dict.input['testInt'] == 13
+    assert setting_dict['testEmail'] == 'someoneelse@something.com'
+
+    setting_dict.set_state(data)
+    assert setting_dict.value['testInt'] == 42
+    assert setting_dict.input['testInt'] == '42'
+    assert setting_dict['testEmail'] == 'someone@something.com'
+
+# REQ: set_state() shall catch some stupid errors like wrong type or version of
+# input data.
+def test_setting_dict_set_state_default_wrong_type():
+    setting_dict = SettingDict()
+    with pytest.raises(AppxfSettingError) as exc_info:
+        setting_dict.set_state(['test'])
+
+    assert 'Input to set_state must be a dictionary.' in str(exc_info.value)
+
+def test_setting_dict_set_state_default_missing_version():
+    setting_dict = SettingDict()
+    with pytest.raises(AppxfSettingError) as exc_info:
+        setting_dict.set_state(OrderedDict())
+
+    # sample: Cannot determine data version, input data is not a dict with
+    # field "_version".
+    assert 'Cannot determine data version, input data is not a dict with field "_version"' in str(exc_info.value)
+
+def test_setting_dict_set_state_default_wrong_version():
+    setting_dict = SettingDict()
+    with pytest.raises(AppxfSettingError) as exc_info:
+        setting_dict.set_state(OrderedDict({'_version': 1}))
+
+    # sample: Cannot handle version 1 of data, supported is version 2 only.
+    assert 'Cannot handle version 1 of data' in str(exc_info.value)
+
+# REQ: When data for set_state() includes a setting that is not yet maintained
+# by SettingDict, there shall be an exception.
+def test_setting_dict_set_state_default_new_key_exception():
+    setting_dict = SettingDict(settings={
+        'test': (int, '42')})
+    data = setting_dict.get_state()
+
+    del setting_dict['test']
+    assert 'test' not in setting_dict
+    with pytest.raises(AppxfSettingError) as exc_info:
+        setting_dict.set_state(data)
+
+    assert not setting_dict.keys()
+    assert 'Key test is included in set_state() data' in str(exc_info.value)
+    assert 'Consider setting export option "type" or "import_fail_silently"' in str(exc_info.value)
+
+# ...unless exceptions are turned off.
+def test_setting_dict_set_state_default_new_key_no_exception():
+    setting_dict = SettingDict(settings={
+        'test': (int, '42')})
+    setting_dict.export_options.exception_on_new_key = False
+    data = setting_dict.get_state()
+
+    del setting_dict['test']
+    assert 'test' not in setting_dict
+    setting_dict.set_state(data)
+
+    assert not setting_dict.keys()
+
+# REQ: If a key maintained by SettingDict is not included in the input data, it
+# shall result in an exception unless export_option exception_on_missing_key is
+# False.
+def test_setting_dict_set_state_default_missing_key_exception():
+    setting_dict = SettingDict(settings={
+        'A': (str, 'initA'),
+        'B': (str, 'initB')})
+    data = setting_dict.get_state()
+    setting_dict['testA'] = 'changedA'
+    setting_dict['testB'] = 'changedB'
+
+    dataA = deepcopy(data)
+    del dataA['A']
+    with pytest.raises(AppxfSettingError) as excA_info:
+        setting_dict.set_state(dataA)
+
+    # Note: there is NO requirement that the SettingDict state remains the same
+    # in case of failures. While this is done for .value setting where validity
+    # checks belong to the design of setting behavior - there will not be any
+    # validity checks for set_state() and the complexity of adding this
+    # behavior is omitted.
+
+    # We repeat the same for B.
+    dataB = deepcopy(data)
+    del dataB['B']
+    with pytest.raises(AppxfSettingError) as excB_info:
+        setting_dict.set_state(dataB)
+
+    for exc in [('A', str(excA_info.value)),
+                    ('B', str(excB_info.value))]:
+        # sample: Key A is maintained by SettingDict() but not included in
+        # data. Data for set_state() only included the keys:
+        # odict_keys(['_version', 'B']).
+        assert f'Key {exc[0]} is maintained by SettingDict() but not included in data' in exc[1]
+        assert 'Data for set_state() only included the keys' in exc[1]
+
+# REQ: The output of get_state() shall restore missing keys with value AND
+# input when applied to set_state() and type export option is true.
+def test_setting_dict_set_state_type_new_key_ok():
+    setting_dict = SettingDict(settings={
+        'test': (int, '42')})
+    setting_dict.export_options.type = True
+    original_setting = setting_dict.get_setting('test')
+    data = setting_dict.get_state()
+
+    del setting_dict['test']
+    assert 'test' not in setting_dict
+
+    setting_dict.set_state(data)
+    assert setting_dict['test'] == 42
+    assert setting_dict.input['test'] == '42'
+    assert setting_dict.get_setting('test') is not original_setting
+
+# REQ: When using set_state() with a new key that does not include the type
+# information (exported with type==False), there must be an Exception.
+def test_setting_dict_set_state_type_new_key_no_type_exception():
+    setting_dict = SettingDict(settings={
+        'test': (int, '42')})
+    setting_dict.options.name = 'TestDict'
+    data = setting_dict.get_state()
+
+    del setting_dict['test']
+    assert 'test' not in setting_dict
+    setting_dict.export_options.type = True
+    with pytest.raises(AppxfSettingError) as exc_info:
+        setting_dict.set_state(data)
+
+    assert not setting_dict.keys()
+    assert 'Key test does not yet exist in SettingDict(TestDict)' in str(exc_info.value)
+    assert 'but import data does not include type information' in str(exc_info.value)
+
+def test_setting_dict_set_state_type_new_key_no_type_no_exception():
+    setting_dict = SettingDict(settings={
+        'test': (int, '42')})
+    setting_dict.options.name = 'TestDict'
+    data = setting_dict.get_state()
+
+    del setting_dict['test']
+    assert 'test' not in setting_dict
+
+    setting_dict.export_options.type = True
+    setting_dict.export_options.exception_on_new_key = False
+    setting_dict.set_state(data)
+
+    assert not setting_dict.keys()
+
+# REQ: When using set_state() with type==True and keys already existent and
+# type is same, the setting object must be retained. If type does not match,
+# there must be an exception.
+def test_setting_dict_set_state_missing_key_ok():
+    setting_dict = SettingDict(settings={
+        'test': (int, '42')})
+    setting_dict.export_options.type = True
+    original_setting = setting_dict.get_setting('test')
+    data = setting_dict.get_state()
+
+    setting_dict['test'] = '13'
+    setting_dict.set_state(data)
+    assert setting_dict['test'] == 42
+    assert setting_dict.input['test'] == '42'
+    assert setting_dict.get_setting('test') is original_setting
+
+# unless the type does not match.. ..that's still an exception:
+def test_setting_dict_set_state_missing_key_ok():
+    setting_dict = SettingDict(settings={
+        'test': (int, '42')})
+    setting_dict.options.name = 'TestDict'
+    setting_dict.export_options.type = True
+    original_setting = setting_dict.get_setting('test')
+    data = setting_dict.get_state()
+
+
+    print(setting_dict.get_setting('test'))
+    setting_dict['test'] = (str, 'new')
+    print(setting_dict.get_setting('test'))
+    with pytest.raises(AppxfSettingError) as exc_info:
+        setting_dict.set_state(data)
+        print(setting_dict.get_setting('test'))
+
+    assert 'Cannot set_state() key "test" in SettingDict(TestDict).' in str(exc_info.value)
+    assert 'Setting is of type SettingString while provided type is integer.' in str(exc_info.value)
+
+# TODO: special test for get_state of a dict of dict where value is nested.
+
+# TODO: special test for get_state of a SettingSelect - just because it is special.
 
 def test_setting_dict_store_load_cycle():
     # we use an integer here since it differs in "input" and stored "value".
     # And we use an arbitrary string (email) to be a bit more verbose.
     setting_dict = SettingDict({'entry': ('email',), 'input_check': (int,)})
     storage = RamStorage()
-    setting_dict.set_storage(storage, on_load_unknown='ignore', store_setting_object=False)
+    setting_dict.set_storage(storage)
     setting_dict['entry'] = 'before@store.com'
     setting_dict['input_check'] = '1'
+    setting_obj_init_entry = setting_dict.get_setting('entry')
+    setting_obj_init_input_check = setting_dict.get_setting('input_check')
 
     setting_dict.store()
     setting_dict['entry'] = 'after@store.com'
     setting_dict['input_check'] = '2'
-    assert setting_dict['entry'] == 'after@store.com'
-    assert setting_dict.get_setting('entry').value == 'after@store.com'
-    assert setting_dict.get_setting('entry').input == 'after@store.com'
-    assert setting_dict['input_check'] == 2
-    assert setting_dict.get_setting('input_check').value == 2
-    assert setting_dict.get_setting('input_check').input == '2'
+    assert setting_dict.value['entry'] == 'after@store.com'
+    assert setting_dict.input['input_check'] == '2'
+    assert setting_dict.value['input_check'] == 2
 
     setting_dict_reload = SettingDict({'entry': ('email',), 'input_check': (int,)})
     setting_dict_reload.set_storage(storage)

@@ -3,8 +3,9 @@
 Surprise: it bundles Settings to a dictionary behavior. ;)
 '''
 from collections import OrderedDict
+from dataclasses import dataclass
 from copy import deepcopy
-from typing import Any, Callable
+from typing import Any
 from collections.abc import Mapping, MutableMapping
 from kiss_cf.storage import Storable, Storage, RamStorage
 from .setting import Setting, AppxfSettingError, AppxfSettingConversionError
@@ -39,6 +40,32 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
     # having a meaning withing context of Config, it does not belong into the
     # SettingDict options. But it may be similar to a setting name.
 
+    @dataclass(eq=False, order=False)
+    class Options(Setting.Options):
+        ''' options for setting select '''
+        # update value options - None: SettingDict does not have any own
+        # validity except what is fixed (like keys being strings)
+
+        display_columns: int = 1
+
+        # update control options:
+        #  * the default mutable is for adding, removing, rearranging or
+        #    renaming items. No extra option (like mutable_dict is added)
+
+        display_options = (Setting.Options.display_options + [
+            'display_columns'])
+        control_options = (Setting.Options.control_options + [
+            'mutable_dict'])
+
+    @dataclass(eq=False, order=False)
+    class ExportOptions(Setting.ExportOptions):
+        # An import via set_state() may discover an inconsistency within the
+        # imported data. The option was added in context of SettingDict where
+        # loading a stored set of settings should not be blocked by one setting
+        # having a failure. This option allows a silent failure.
+        exception_on_missing_key: bool = True
+        exception_on_new_key: bool = True
+
     def __init__(self,
                  settings: Mapping[str, Any] | None = None,
                  storage: Storage | None = None,
@@ -63,10 +90,9 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
            For non existing keys, the Setting object is created like
            Setting.new(type(value), value).
         '''
-        # take over value which should be settings (extended behavior during init)
-        if settings is None and 'value' in kwargs:
-            settings = kwargs['value']
-            del kwargs['value']
+        # take over settings into kwarg values:
+        if settings is not None and 'value' not in kwargs:
+            kwargs['value'] = settings
         # Cover None arguments
         if storage is None:
             storage = RamStorage()
@@ -74,38 +100,12 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         # rely on it. Since SettingDict is also a Setting, it must be stored as
         # _value:
         self._value: OrderedDict[Any, Setting] = OrderedDict()
-        self.export_options = Setting.ExportOptions()
         # initialize parents
         super().__init__(storage=storage, **kwargs)
 
-        # Storable will initialize with default storage
-        self._on_load_unknown = 'ignore'
-        self._store_setting_object = False
-
-        ### Consume settings input
-        if settings is None:
-            return
-        # handle empty input
-        if (settings == '' or
-            (isinstance(settings, Mapping) and not settings)
-            ):
-            self._value = OrderedDict()
-            return
-        if isinstance(settings, Mapping):
-            for key, value in settings.items():
-                try:
-                    self._set_item(key, value)
-                except (AppxfSettingError, AppxfSettingConversionError) as err:
-                    raise AppxfSettingError(
-                        f'Cannot set/initialize SettingDict. '
-                        f'You provided {settings} of type {settings.__class__}. '
-                    ) from err
-            return
-        # error, otherwise
-        raise AppxfSettingError(
-            f'Cannot set/initialize SettingDict. '
-            f'See documentation of __init__ for expected input. '
-            f'You provided {settings} of type {settings.__class__}.')
+        # The strange next line is just to fix the type hints.
+        self.options: SettingDict.Options = self.options
+        self.export_options: SettingDict.ExportOptions = self.export_options
 
     def __len__(self):
         return self._value.__len__()
@@ -122,8 +122,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                 f'SettingDict items that are tuples must contain a '
                 f'Setting type as the first element. And, optionally '
                 f'a value as the second type. You provided {t}.')
-        if len(t) > 0:
-            tmp_type = t[0]
+        tmp_type = t[0]
         if len(t) > 1:
             tmp_value = t[1]
         else:
@@ -146,6 +145,21 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
             raise AppxfSettingError(
                 f'Only string keys are supported. '
                 f'You provided: {key} of type {type(key)}')
+        # reject new keys AND key replacement if not mutable:
+        if not self.options.mutable:
+            if key not in self._value:
+                raise AppxfSettingError(
+                    f'SettingDict({self.options.name}) mutable option is False. '
+                    f'New keys cannot be added. You provided '
+                    f'key {key} as new key')
+            if (isinstance(value, Setting) or
+                (isinstance(value, type) and issubclass(value, Setting)) or
+                (isinstance(value, tuple))
+                ):
+                raise AppxfSettingError(
+                    f'SettingDict({self.options.name}) mutable option is False and '
+                    f'settings cannot be replaced. '
+                    f'You provided for key {key}: {value}')
         # values that are Settings are always accepted
         if isinstance(value, Setting):
             # transfering key name to setting if setting name is empty
@@ -169,7 +183,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
             self._value[key].value = value
         # Or, the new Setting object is created:
         else:
-            self._value[key] = Setting.new(type(value),value=value)
+            self._value[key] = Setting.new(type(value), value=value)
     # TODO: there should be a try/catch at least for the last two settings to
     # add the failing key to the error message from Setting. Like "Cannot set
     # key {key} with following error message from the Setting class. "
@@ -179,12 +193,18 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
             self._set_item(key, value)
         except (AppxfSettingError, AppxfSettingConversionError) as err:
             raise AppxfSettingError(
-                f'Cannot set {key} in SettingDict. '
+                f'Cannot set {key} in SettingDict({self.options.name}). '
                 f'You provided value {value} of type {value.__class__}.'
                 ) from err
 
     def __delitem__(self, key):
-        del self._value[key]
+        if self.options.mutable:
+            del self._value[key]
+        else:
+            raise AppxfSettingError(
+                f'SettingDict({self.options.name}) mutable option is False and '
+                f'items cannot be deleted. '
+                f'You tried to delete key {key}')
 
     def get_setting(self, key) -> Setting:
         ''' Access Setting object '''
@@ -192,38 +212,12 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
 
     # ## Storage Behavior
 
-    valid_on_load_unknown = ['ignore']
-
     def set_storage(self,
-                    storage: Storage | None = None,
-                    on_load_unknown: str | None = 'ignore',
-                    store_setting_object: bool | None = False
+                    storage: Storage | None = None
                     ):
         ''' Set storage to support store()/load() '''
         if storage is not None:
             self._storage = storage
-
-        if (isinstance(on_load_unknown, str) and
-                on_load_unknown in self.valid_on_load_unknown):
-            self._on_load_unknown = 'ignore'
-        else:
-            raise AppxfSettingError(
-                f'on_load_unknown supports None (no change) '
-                f'and: {self.valid_on_load_unknown}. Extensions may be added.'
-            )
-
-        if store_setting_object is not None:
-            if store_setting_object:
-                raise AppxfSettingError(
-                    'Storing the setting objects is not '
-                    'yet supported.')
-            if isinstance(store_setting_object, bool):
-                self._store_setting_object = False
-            else:
-                raise AppxfSettingError(
-                    'store_setting_object supports None (no change) '
-                    'and True. Extension for False may be added.'
-                )
 
     def get_state(self, **kwarg) -> object:
         # options are handled equivalent to settings
@@ -231,39 +225,102 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         export_options.update_from_kwarg(kwarg)
         Setting.ExportOptions.raise_error_on_non_empty_kwarg(kwarg)
 
-        data: dict[str, Any] = {'_version': 2}
+        data: OrderedDict[str, Any] = OrderedDict({'_version': 2})
         for key, setting in self._value.items():
             data[key] = setting.get_state(options=export_options)
-            # strip name if name is key
+            # strip name if name is key - to avoid cluttering output by
+            # maintaining the name twice.
             if (
-                isinstance(data[key], dict) and
-                'options' in data[key] and
-                'name' in data[key]['options'] and
-                data[key]['options']['name'] == key
+                isinstance(data[key], OrderedDict) and
+                'name' in data[key] and
+                data[key]['name'] == key
             ):
-                data[key]['options'].pop('name')
+                data[key].pop('name')
+                # resolve structure if value is the only entry
+                if list(data[key].keys()) == ['value']:
+                    data[key] = data[key]['value']
         return data
 
-    def set_state(self, data: Mapping, **kwarg):
-        if not isinstance(data, Mapping) or '_version' not in data:
+    def set_state(self, data: Mapping, **kwargs):
+        if not isinstance(data, Mapping):
+            raise AppxfSettingError(
+                'Input to set_state must be a dictionary.')
+        if '_version' not in data:
             raise AppxfSettingError(
                 'Cannot determine data version, '
-                'input data is not a dict with field "_verision".')
+                'input data is not a dict with field "_version".')
         if not data['_version'] == 2:
             raise AppxfSettingError(
                 f'Cannot handle version {data["_version"]} of data, '
                 f'supported is version 2 only.')
+        export_options: SettingDict.ExportOptions = deepcopy(
+            self.export_options)
+        export_options.update_from_kwarg(kwargs)
+
+        data_keys = [key for key in data.keys()
+                     if key not in ['_version']]
+
         # define list of settings to be handled
-        if self._on_load_unknown == 'ignore':
-            key_list = self._value.keys()
+        if export_options.type:
+            # only if type is TRUE, it is expected to also load the keys from
+            # the imported data and the corresponding keys are appended.
+            key_list = self._value.keys() | data_keys
         else:
-            raise AppxfSettingError(
-                f'on_load_unknown option is not supported. '
-                f'Supported options: {self.valid_on_load_unknown}')
+            # throw error if any key in data does not yet exist:
+            failing_key = None
+            if export_options.exception_on_new_key:
+                for key in data_keys:
+                    if key not in self:
+                        failing_key = key
+                        break
+            if failing_key is not None:
+                raise AppxfSettingError(
+                    f'Key {key} is included in set_state() data but is not yet '
+                    f'maintained in SettingDict({self.options.name}). '
+                    f'Consider setting export option "type" or '
+                    f'"import_fail_silently" to True.')
+
+            # See above - it is only expected to laod the existing keys:
+            key_list = self._value.keys()
+
         # cycle through options and set states:
         for key in key_list:
+            # keys maintained in SettingDict but not in data
+            if key not in data and export_options.exception_on_missing_key:
+                raise AppxfSettingError(
+                    f'Key {key} is maintained by SettingDict({self.options.name}) but not included in data. '
+                    f'Data for set_state() only included the keys: {data.keys()}.')
+            # keys in data that are to be added (type import options was TRUE)
+            # and key not yet existing:
+            if key not in self._value:
+                print(f'SET_STATE: detected key {key} not in _value')
+                # to create the new setting, the type must be present:
+                if not isinstance(data[key], dict) or 'type' not in data[key].keys():
+                    print(f'SET_STATE: detected no type information')
+                    if not export_options.exception_on_new_key:
+                        print(f'SET_STATE: continue')
+                        continue
+                    raise AppxfSettingError(
+                        f'Key {key} does not yet exist in SettingDict({self.options.name}) '
+                        f'but import data does not include type information. '
+                        f'Data only comprises: {data[key]}')
+                print(f'SET_STATE: failed')
+                self._value[key] = Setting.new(data[key]['type'])
+
             if key in data:
-                self._value[key].set_state(data[key])
+                # ensure the setting type is correct:
+                if ((isinstance(data[key], dict) and
+                     'type' in data[key] and
+                     export_options.type) and (
+                         data[key]['type'] not in self._value[key].get_supported_types()
+                     )):
+                    raise AppxfSettingError(
+                        f'Cannot set_state() key "{key}" in '
+                        f'SettingDict({self.options.name}). '
+                        f'Setting is of type {self._value[key].__class__.__name__} '
+                        f'while provided type is {data[key]["type"]}. ')
+
+                self._value[key].set_state(data[key], export_options=export_options)
                 # restore setting name:
                 if not self._value[key].options.name:
                     self._value[key].options.name = key
@@ -276,11 +333,35 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
 
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
-        return {'dictionary', 'dict', MutableMapping}
+        return ['dictionary', 'dict', MutableMapping]
 
-    @Setting.value.getter
+    @property
     def value(self) -> dict[str, Any]:
         return {key: self._value[key].value for key in self._value.keys()}
+
+    # The setter needs to be overwritten since the mutable option has a more
+    # refined meaning within SettingDict. We can still change the values of
+    # maintained settings but not extend or delete items in the SettingDict.
+    @value.setter
+    def value(self, value: Any):
+        valid, err = self._validated_conversion(value)
+        if not valid:
+            raise AppxfSettingError(
+                f'Cannot set value of type {type(value)} '
+                f'for SettingDict({self.options.name}): {value}. See subsequent error message.'
+                ) from err
+        # detect removed keys:
+        if not self.options.mutable:
+            for key in self._value:
+                if key not in value:
+                    raise AppxfSettingError(
+                        f'SettingDict({self.options.name}) mutable option is False and '
+                        f'items cannot be deleted. '
+                        f'Input value did not contain key {key}.')
+
+        # validation already confirmed the input being a mapping
+        for key, setting in value.items():
+            self[key] = setting
 
     # Input returns the same as value. Rationale: the actual input is in the
     # Setting objects and there is no apparent benefit to maintain anything on
@@ -310,7 +391,8 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                 continue
             if isinstance(setting, tuple) or key not in self._value:
                 try:
-                    SettingDict(settings={key: setting})
+                    tmp_setting = SettingDict()
+                    tmp_setting['err'] = setting
                 except (AppxfSettingError, AppxfSettingConversionError) as err:
                     return False, err
                 continue
@@ -332,36 +414,6 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                         f'error when trying to set. This should not happen')
 
         return True, None
-
-    def _set_value(self, value: Any):
-        valid, err = self._validated_conversion(value)
-        if not valid:
-            raise AppxfSettingError(
-                f'Cannot set value of type {type(value)} '
-                f'for SettingDict: {value}. See subsequent error message.'
-                ) from err
-        new_value = OrderedDict()
-        # validation already confirmed the input being a mapping
-        for key, setting in value.items():
-            if isinstance(setting, Setting):
-                new_value[key] = setting
-                continue
-            if isinstance(setting, type) and issubclass(setting, Setting):
-                new_value[key] = setting()
-                continue
-            if isinstance(setting, tuple):
-                new_value[key] = self._resolve_tuple(setting)
-                continue
-            if key in self._value:
-                new_value[key] = self._value[key]
-                new_value[key].value = setting
-                continue
-            # situation left: key does NOT yet exist and setting would not
-            # automatically generate a new one (plain value). We reuse existing
-            # implementation even if this is less computational efficient.
-            tmp_setting_dict = SettingDict(settings={key: setting})
-            new_value[key] = tmp_setting_dict.get_setting(key)
-        self._value = new_value
 
     def to_string(self) -> str:
         # Return empty string in case SettingDict does not contain settings:

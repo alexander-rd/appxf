@@ -9,6 +9,7 @@ the following support for usage in applications:
 '''
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
+from copy import deepcopy
 from collections import OrderedDict
 from typing import Generic, TypeVar, Any
 from dataclasses import dataclass
@@ -97,14 +98,22 @@ class _SettingMeta(type):
 
     @classmethod
     def _add_setting(mcs, cls_register: type[Setting[Any]]):
+        supported_types = cls_register.get_supported_types()
         # check supported types output
-        if not cls_register.get_supported_types():
+        if not isinstance(supported_types, list) or not supported_types:
             raise AppxfSettingError(
                 f'Setting {cls_register.__name__} does not return any '
                 f'supported type. Consider returning at least some '
                 f'[''your special type''] from get_supported_types().')
+        if not isinstance(supported_types[0], str):
+            raise AppxfSettingError(
+                f'Setting {cls_register.__name__} does not include a string '
+                f'as the default setting type name. It is used in context of '
+                f'SettingDict to store/load settings including their type '
+                f'in a human readable format. '
+                f'You defined {supported_types[0]}')
         # verify that no supported type already being registered
-        for setting_type in cls_register.get_supported_types():
+        for setting_type in supported_types:
             if setting_type in mcs.type_map:
                 other_cls = mcs.type_map[setting_type].__name__
                 raise AppxfSettingError(
@@ -250,7 +259,7 @@ class SettingExportOptions(Options):
     # but could be exported if necessary:
     name: bool = False
     # The type of the setting is relevant in context of a configurable
-    # configuration where a JSON file defines a set of variables copmletely.
+    # configuration where a JSON file defines a set of variables completely.
     # This value cannot be restored via set_state() and usage is not
     # implemented, yet.
     type: bool = False
@@ -305,8 +314,11 @@ class SettingOptions(Options):
     # configuration for attribute/attribute_mask does not need to be changed
 
     def get_state(self,
-                  options: SettingExportOptions = SettingExportOptions(),
+                  options: SettingExportOptions | None = None,
                   **kwargs) -> OrderedDict[str, Any]:
+        if options is None:
+            options = SettingExportOptions()
+        options.update_from_kwarg(kwargs)
         attributes = (
             (self.value_options if options.value_options else []) +
             (self.display_options if options.display_options else []) +
@@ -380,29 +392,46 @@ class Setting(Generic[_BaseTypeT], Stateful,
         # hierachy.
         # self.options.raise_error_on_non_empty_kwarg(kwargs)
         #
-        # TODO: double-check the change from above (disabling the error) ^^
+        # TODO #28: reactivate the kwarg checking.
+        self.export_options = self.ExportOptions.new_from_kwarg(kwargs)
 
         if value is None:
             self._input = self.get_default()
             self._value = self.get_default()
         else:
-            self.value = value
+            if self.options.mutable:
+                self.value = value
+            else:
+                # bypass mutable being False during initialization:
+                self.options.mutable = True
+                # set value
+                self.value = value
+                # restore mutable
+                self.options.mutable = False
+            # remarks: alternative would be to call _set_value() deriving
+            # classes may overwrite only the toplevel property setter (example:
+            # SettingDict)
 
     # ##################
     # Stateful Related
     # /
     def get_state(self, **kwarg) -> object:
-        export_options = self.ExportOptions.new_from_kwarg(kwarg)
+        export_options = deepcopy(self.export_options)
+        export_options.update_from_kwarg(kwarg)
         self.ExportOptions.raise_error_on_non_empty_kwarg(kwarg)
 
         # Strategy is to fill a dict from the various flags and if this dict
         # remains empty, only the value is returned
-        if export_options.type:
-            raise TypeError('Exporting the type is not yet supported')
+        #if export_options.type:
+        #    raise TypeError('Exporting the type is not yet supported')
         options: OrderedDict = self.options.get_state(options=export_options)
-        if not options:
+        if not options and not export_options.type:
             return self.input
-        out = OrderedDict({'value': self.input})
+        out = OrderedDict()
+        if export_options.type:
+            out['type'] = self.get_supported_types()[0]
+        out['value'] = self.input
+        # append options
         out.update(options)
         return out
 

@@ -187,16 +187,9 @@ class Options(Stateful):
     # get_state needs to handle the export_defaults parameter which runs via
     # the attribute_mask:
     def get_state(self, **kwarg) -> OrderedDict[str, Any]:
-        export_defaults = True
-
-        if 'export_defaults' in kwarg:
-            export_defaults = kwarg['export_defaults']
-            kwarg.pop('export_defaults')
-        if 'attribute_mask' in kwarg:
-            attribute_mask = kwarg['attribute_mask']
-            kwarg.pop('attribute_mask')
-        else:
-            attribute_mask = self.attribute_mask.copy()
+        export_defaults = kwarg.pop('export_defaults', True)
+        attribute_mask = kwarg.pop(
+            'attribute_mask', self.attribute_mask.copy())
 
         if not export_defaults:
             attribute_mask += self._get_fields_with_default_values()
