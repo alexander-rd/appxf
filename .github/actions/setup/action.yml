@@ -20,10 +20,10 @@ runs:
       shell: bash
 
   # LINUX specific steps
-    - name: Install MariaDB
-      run: sudo apt install -y libmariadb-dev
-      shell: bash
-      if: runner.os == 'Linux'
+  #  - name: Install MariaDB
+  #    run: sudo apt install -y libmariadb-dev
+  #    shell: bash
+  #    if: runner.os == 'Linux'
 
     - name: Install tkinter
       run: sudo apt install python3-tk
