@@ -792,9 +792,21 @@ def test_setting_dict_set_state_missing_key_ok():
     assert 'Cannot set_state() key "test" in SettingDict(TestDict).' in str(exc_info.value)
     assert 'Setting is of type SettingString while provided type is integer.' in str(exc_info.value)
 
-# TODO: special test for get_state of a dict of dict where value is nested.
+def test_setting_dict_storage_init():
+    setting_dict = SettingDict({
+        'entry': ('email','some@any.de'),
+        'input_check': (int, '42')
+        })
+    # storage is just dummy:
+    assert isinstance(setting_dict._storage, RamStorage)
+    # while storing works silently:
+    setting_dict.store()
+    setting_dict['entry'] = 'another@any.de'
+    setting_dict['input_check'] = 13
 
-# TODO: special test for get_state of a SettingSelect - just because it is special.
+    setting_dict.load()
+    assert setting_dict['entry'] == 'some@any.de'
+    assert setting_dict.input['input_check'] == '42'
 
 def test_setting_dict_store_load_cycle():
     # we use an integer here since it differs in "input" and stored "value".

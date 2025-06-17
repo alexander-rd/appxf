@@ -10,11 +10,6 @@ from collections.abc import Mapping, MutableMapping
 from kiss_cf.storage import Storable, Storage, RamStorage
 from .setting import Setting, AppxfSettingError, AppxfSettingConversionError
 
-# TODO: Storing the AppxfSetting objects. This would be required for a
-# "configurable config".
-
-# TODO: Loading modes 'add' and 'error'
-
 
 class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
     ''' Maintain a dictionary of settings
@@ -34,11 +29,6 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
     would be removed. Note that this interface is not designed for a normal
     user interface - it works but it is not efficient.
     '''
-    # TODO: add Options and add a replacement for "default_visibility" (viewed
-    # in context of a configuration) - must also scan for usage of this option
-    # since it's meaning may change. Note that if "default visibility" only
-    # having a meaning withing context of Config, it does not belong into the
-    # SettingDict options. But it may be similar to a setting name.
 
     @dataclass(eq=False, order=False)
     class Options(Setting.Options):
@@ -54,8 +44,6 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
 
         display_options = (Setting.Options.display_options + [
             'display_columns'])
-        control_options = (Setting.Options.control_options + [
-            'mutable_dict'])
 
     @dataclass(eq=False, order=False)
     class ExportOptions(Setting.ExportOptions):
@@ -212,12 +200,9 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
 
     # ## Storage Behavior
 
-    def set_storage(self,
-                    storage: Storage | None = None
-                    ):
+    def set_storage(self, storage: Storage):
         ''' Set storage to support store()/load() '''
-        if storage is not None:
-            self._storage = storage
+        self._storage = storage
 
     def get_state(self, **kwarg) -> object:
         # options are handled equivalent to settings
