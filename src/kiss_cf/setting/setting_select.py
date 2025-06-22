@@ -144,7 +144,7 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
             return True, self.select_map[value]
         return False, self.base_setting.get_default()
 
-    def get_state(self, **kwarg) -> object:
+    def get_state(self, **kwarg) -> dict:
         # we export as defined in setting
         out = super().get_state(**kwarg)
         # we have to export the select_map if either mutable_list or
@@ -167,17 +167,24 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
                        'base_setting': self.base_setting.get_state(**kwarg)}
         return out
 
-    def set_state(self, data: object, **kwarg):
+    def set_state(self, data: dict, **kwarg):
+        # extract setting_select specific data before forwarding to setting.
+        # Note that option handling would throw warnings on unknown keys such
+        # that keys from data must be removed:
+        select_map = data.pop('select_map', None)
+        base_setting = data.pop('base_setting', None)
+
         # select_map must be restored before loading the other values since
         # setting the value will perform a validation against the select_map:
-        if isinstance(data, dict) and 'select_map' in data:
-            self.select_map = deepcopy(data['select_map'])
+        if select_map is not None:
+            self.select_map = deepcopy(select_map)
+
         super().set_state(data, **kwarg)
         # catch base setting and apply - it must be applied afterwards since a
         # value for SettingSelect from above would also write the value of
         # base_setting.
-        if isinstance(data, dict) and 'base_setting' in data:
-            self.base_setting.set_state(data['base_setting'], **kwarg)
+        if base_setting is not None:
+            self.base_setting.set_state(base_setting, **kwarg)
 
     # #################/
     # Option Handling

@@ -172,7 +172,7 @@ class Stateful():
         ''' set object state - default implementation
 
         See _get_default_state_attributes() for the considered attributes. The
-        values written via setattr(). Note that the class must take care of
+        values are written via setattr(). Note that the class must take care of
         eventually applying deepcopy().
 
         attributes and attribute_mask replaces the corresponding class
@@ -184,8 +184,10 @@ class Stateful():
         for attr in data:
             if attr not in attributes:
                 raise Warning(
-                    f'Import state for {self.__class__} '
+                    f'State for set_state() of {self.__class__} '
                     f'includes attribute {attr} which is not expected - '
-                    f'expected are {attributes} - ignoring this key'
+                    f'expected are {attributes} - ignoring this key.'
+                    f'Check documentation for call stack to identify wrong '
+                    'options to attributes or atribute_mask.'
                 )
             setattr(self, attr, data[attr])
