@@ -369,7 +369,7 @@ class Setting(Generic[_BaseTypeT], Stateful,
 
     Dependent on the provided type, you may need to overload:
       _validated_conversion() -- where the default implementation returns
-        (False, det_default()) indicating that no conversion is possible. You
+        (False, get_default()) indicating that no conversion is possible. You
         typically need to consider providing conversions from strings.
       to_string() -- where the default implementation will return
         str(self._value) which may not be the expected behavior.
@@ -508,9 +508,14 @@ class Setting(Generic[_BaseTypeT], Stateful,
 
     def _set_value(self, value: Any):
         ''' Reusable implentation for value setter and __init__ '''
-        valid, _value = self._validated_conversion(value)
-        if not valid:
-            raise AppxfSettingConversionError(type(self), value)
+        # default values can always be set even though they may appear as
+        # invalid:
+        if value == self.get_default():
+            _value = self.get_default()
+        else:
+            valid, _value = self._validated_conversion(value)
+            if not valid:
+                raise AppxfSettingConversionError(type(self), value)
         self._input = value
         self._value = _value
 
@@ -528,7 +533,9 @@ class Setting(Generic[_BaseTypeT], Stateful,
     def _validated_conversion(self, value: Any) -> tuple[bool, _BaseTypeT]:
         ''' Validate a string to match the Setting's expectations
 
-        Shall also provide the conversion to it's base type.
+        Shall also provide the conversion to it's base type. Note that the
+        default value (get_default()) can always be set even if this function
+        declares it as invalid.
 
         Arguments:
             string -- the string to check and convert

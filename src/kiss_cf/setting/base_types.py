@@ -65,8 +65,6 @@ class SettingEmail(SettingString):
         return ['email', 'Email']
 
     def _validated_conversion(self, value: Any) -> tuple[bool, str]:
-        if value == self.get_default():
-            return True, value
         if not super()._validated_conversion(value)[0]:
             return False, self.get_default()
         # Check Email based on regexp, taken from here:
@@ -102,8 +100,6 @@ class SettingPassword(SettingString):
         return ['password', 'pass']
 
     def _validated_conversion(self, value: Any) -> tuple[bool, str]:
-        if value == self.get_default():
-            return True, value
         if not super()._validated_conversion(value)[0]:
             return False, self.get_default()
         # only length check:
