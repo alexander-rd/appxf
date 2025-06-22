@@ -142,22 +142,20 @@ class Options(Stateful):
     def _get_kwarg_from_named_option(cls,
                                      kwarg_dict: dict[str, Any]
                                      ) -> dict[str, Any]:
-        option_name = 'options'
-        if option_name in kwarg_dict:
-            if isinstance(kwarg_dict[option_name], cls):
+        options = kwarg_dict.pop('options', None)
+        if options is not None:
+            if isinstance(options, cls):
                 update_dict = {
-                    field.name: getattr(kwarg_dict[option_name], field.name)
-                    for field in fields(kwarg_dict[option_name])}
-                kwarg_dict.pop(option_name)
-            elif isinstance(kwarg_dict[option_name], dict):
-                update_dict = cls._get_normal_kwarg(kwarg_dict[option_name])
-                cls.raise_error_on_non_empty_kwarg(kwarg_dict[option_name])
-                kwarg_dict.pop(option_name)
+                    field.name: getattr(options, field.name)
+                    for field in fields(options)}
+            elif isinstance(options, dict):
+                update_dict = cls._get_normal_kwarg(options)
+                cls.raise_error_on_non_empty_kwarg(options)
             else:
                 raise AttributeError(
-                    f'Argument {option_name} must be {cls} or '
+                    f'Argument options must be {cls} or '
                     f'a dictionary with valid keys, you provided '
-                    f'{kwarg_dict[option_name].__class__.__name__}')
+                    f'{options.__class__.__name__}')
         else:
             update_dict = {}
         return update_dict
@@ -194,7 +192,7 @@ class Options(Stateful):
         if not export_defaults:
             attribute_mask += self._get_fields_with_default_values()
 
-        # note: attributes option is just forwarded as part of ***kwarg
+        # note: attributes option is just forwarded as part of **kwarg
         return self._get_state_default(attribute_mask=attribute_mask, **kwarg)
 
     # handle set_state() input like direct updates to ensure same behavior it

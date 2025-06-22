@@ -333,11 +333,14 @@ class SettingOptions(Options):
 
     def set_state(self,
                   data: object,
-                  options: SettingExportOptions = SettingExportOptions(),
+                  options: SettingExportOptions | None = None,
                   **kwargs):
-        attributes = (self.value_options if options.value_options else [] +
-                      self.display_options if options.display_options else [] +
-                      self.control_options if options.control_options else [])
+        if options is None:
+            options = SettingExportOptions()
+
+        attributes = ((self.value_options if options.value_options else []) +
+                      (self.display_options if options.display_options else []) +
+                      (self.control_options if options.control_options else []))
         return self._set_state_default(data=data,
                                        attributes=attributes,
                                        attribute_mask=[],

@@ -89,13 +89,14 @@ def test_get_set_cycle():
         select_map={'A': 'One', 'B': 'Two'})
     setting.value = 'A'
     data = setting.get_state(value_options=True)
+    data_select_map = data['select_map']
     restored_setting = SettingSelect(Setting.new(str))
     restored_setting.set_state(data)
     # to ensure the restored select_map is fully copied from data, we overwrite
     # the corresponding data element with new content
     assert isinstance(data, dict)
-    data['select_map']['A'] = 'incorrectA'
-    data['select_map']['B'] = 'incorrectB'
+    data_select_map['A'] = 'incorrectA'
+    data_select_map['B'] = 'incorrectB'
 
     assert restored_setting.get_select_keys() == ['A', 'B']
     assert restored_setting.value == 'One'
