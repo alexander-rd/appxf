@@ -430,12 +430,18 @@ class Setting(Generic[_BaseTypeT], Stateful,
         return out
 
     def set_state(self, data: dict, **kwarg):
-        # TODO: why does this set_state not consider ANY details from the
-        # ExportOptions?
-        self.options.update_from_kwarg(kwarg_dict=data)
-        # TODO: if options are set from data, what is kwarg then doing? See
-        # also the TODO above - no export_options handling.
-        self.value = data['value']
+        export_options = self.ExportOptions.new_from_kwarg(kwarg)
+        self.ExportOptions.raise_error_on_non_empty_kwarg(kwarg)
+
+        # apply value and get rid of it from data:
+        self.value = data.pop('value')
+
+        # type is not considered in set_state.. ..the setting is already
+        # constructed. It's needed in get_state() for SettingDict.
+        data.pop('type', None)
+
+        # apply options
+        self.options.set_state(data, options=export_options)
 
     # #####################/
     #  Registry and Factory
