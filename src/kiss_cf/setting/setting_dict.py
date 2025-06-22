@@ -10,7 +10,6 @@ from collections.abc import Mapping, MutableMapping
 from kiss_cf.storage import Storable, Storage, RamStorage
 from .setting import Setting, AppxfSettingError, AppxfSettingConversionError
 
-
 class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
     ''' Maintain a dictionary of settings
 
@@ -93,7 +92,9 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
 
         # The strange next line is just to fix the type hints.
         self.options: SettingDict.Options = self.options
-        self.export_options: SettingDict.ExportOptions = self.export_options
+        # Only the SettingDict maintains the export options. Basic Settings
+        # only take it as an argument to get_state()/set_state().
+        self.export_options: SettingDict.ExportOptions = self.ExportOptions.new_from_kwarg(kwargs)
 
     def __len__(self):
         return self._value.__len__()
@@ -204,57 +205,122 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         ''' Set storage to support store()/load() '''
         self._storage = storage
 
-    def get_state(self, **kwarg) -> object:
-        # options are handled equivalent to settings
-        export_options = deepcopy(self.export_options)
-        export_options.update_from_kwarg(kwarg)
-        Setting.ExportOptions.raise_error_on_non_empty_kwarg(kwarg)
+    _state_version = 2
 
-        data: OrderedDict[str, Any] = OrderedDict({'_version': 2})
+    def get_state(self, **kwargs) -> object:
+        # SettingDict maintains it's own options that is copied and can be
+        # updated:
+        export_options = deepcopy(self.export_options)
+        export_options.update_from_kwarg(kwargs)
+        Setting.ExportOptions.raise_error_on_non_empty_kwarg(kwargs)
+
+        # build up the settings part (value field in normal settings):
+        settings = OrderedDict()
         for key, setting in self._value.items():
-            data[key] = setting.get_state(options=export_options)
+            this_data = setting.get_state(options=export_options)
             # strip name if name is key - to avoid cluttering output by
             # maintaining the name twice.
             if (
-                isinstance(data[key], OrderedDict) and
-                'name' in data[key] and
-                data[key]['name'] == key
+                isinstance(this_data, OrderedDict) and
+                'name' in this_data and
+                this_data['name'] == key
             ):
-                data[key].pop('name')
-                # resolve structure if value is the only entry
-                if list(data[key].keys()) == ['value']:
-                    data[key] = data[key]['value']
+                this_data.pop('name')
+            # there are some specialties for dictionary handling (value field
+            # is a dict):
+            if isinstance(setting, SettingDict):
+                # top-level SettingDict get_state() must have '_version' field
+                # but dict of dict shall not have it. If must be removed in
+                # this loop:
+                this_data.pop('_version')
+                # top-level setting dict shall not have the type but dict of
+                # dict shall declare it (if requested). It must be added
+                # here:
+                if export_options.type:
+                    if '_settings' in this_data:
+                        this_data['type'] = self.get_type()
+                        this_data.move_to_end('type', last=False)
+                    else:
+                        this_data = OrderedDict({
+                            'type': self.get_type(),
+                            '_settings': this_data
+                        })
+            else:
+                # only if value is not a dict, the value field is stripped
+                # (simplified JSON export) if it's the only field:
+                if list(this_data.keys()) == ['value']:
+                    this_data = this_data['value']
+
+            settings[key] = this_data
+        # settings are not yet put into data - this will depend on the point
+        # whether the dictionary to export does have further options..
+        #
+        # ..and for options, we rely on get_state() from Setting implementation
+        option_data = super().get_state(options=export_options)
+        # the value included in there must be removed again (already handled
+        # above):
+        option_data.pop('value', None)
+        # type shall not be exported on the top-level:
+        option_data.pop('type', None)
+
+        if not option_data:
+            # simple output:
+            data = settings
+            data['_version'] = self._state_version
+            data.move_to_end('_version', last=False)
+        else:
+            # output for dict with options:
+            data = OrderedDict({
+                '_version': self._state_version,
+                '_settings': settings
+                })
+            data.update(option_data)
         return data
 
     def set_state(self, data: Mapping, **kwargs):
-        if not isinstance(data, Mapping):
+        # SettingDict maintains it's own options that is copied and can be
+        # updated:
+        export_options: SettingDict.ExportOptions = deepcopy(
+            self.export_options)
+        export_options.update_from_kwarg(kwargs)
+        Setting.ExportOptions.raise_error_on_non_empty_kwarg(kwargs)
+
+        # handle unexpected input:
+        if not isinstance(data, MutableMapping):
             raise AppxfSettingError(
                 'Input to set_state must be a dictionary.')
         if '_version' not in data:
             raise AppxfSettingError(
                 'Cannot determine data version, '
                 'input data is not a dict with field "_version".')
-        if not data['_version'] == 2:
+        if not data['_version'] == self._state_version:
             raise AppxfSettingError(
                 f'Cannot handle version {data["_version"]} of data, '
-                f'supported is version 2 only.')
-        export_options: SettingDict.ExportOptions = deepcopy(
-            self.export_options)
-        export_options.update_from_kwarg(kwargs)
+                f'supported is version {self._state_version} only.')
 
-        data_keys = [key for key in data.keys()
-                     if key not in ['_version']]
+        # obtain the settings (either directly in data, or in "_settings")
+        if '_settings' in data:
+            settings = data.pop('_settings')
+            setting_keys = list(settings.keys())
+            # options must be updated:
+            data.pop('_version', None)
+            self.options.update_from_kwarg(data)
+        else:
+            settings = data
+            setting_keys = [
+                key for key in data.keys()
+                if key not in ['_version']]
 
         # define list of settings to be handled
         if export_options.type:
             # only if type is TRUE, it is expected to also load the keys from
             # the imported data and the corresponding keys are appended.
-            key_list = self._value.keys() | data_keys
+            key_list = self._value.keys() | setting_keys
         else:
-            # throw error if any key in data does not yet exist:
+            # throw error if any setting input does not yet exist:
             failing_key = None
             if export_options.exception_on_new_key:
-                for key in data_keys:
+                for key in setting_keys:
                     if key not in self:
                         failing_key = key
                         break
@@ -264,48 +330,57 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                     f'maintained in SettingDict({self.options.name}). '
                     f'Consider setting export option "type" or '
                     f'"import_fail_silently" to True.')
-
-            # See above - it is only expected to laod the existing keys:
+            # See above - it is only expected to load the existing keys:
             key_list = self._value.keys()
 
-        # cycle through options and set states:
+        # cycle through settings that must be taken over (key_list):
         for key in key_list:
-            # keys maintained in SettingDict but not in data
-            if key not in data and export_options.exception_on_missing_key:
+            # keys maintained in SettingDict but not in settings input
+            if key not in settings and export_options.exception_on_missing_key:
                 raise AppxfSettingError(
                     f'Key {key} is maintained by SettingDict({self.options.name}) but not included in data. '
                     f'Data for set_state() only included the keys: {data.keys()}.')
-            # keys in data that are to be added (type import options was TRUE)
-            # and key not yet existing:
+            # correct simplified format for plain values that are not nested dicts:
+            if isinstance(settings[key], dict):
+                this_setting_data = settings[key]
+            else:
+                this_setting_data = {'value': settings[key]}
+
+            # settings that must be created (type import options was TRUE):
             if key not in self._value:
-                print(f'SET_STATE: detected key {key} not in _value')
                 # to create the new setting, the type must be present:
-                if not isinstance(data[key], dict) or 'type' not in data[key].keys():
-                    print(f'SET_STATE: detected no type information')
+                if 'type' not in this_setting_data.keys():
                     if not export_options.exception_on_new_key:
-                        print(f'SET_STATE: continue')
                         continue
                     raise AppxfSettingError(
                         f'Key {key} does not yet exist in SettingDict({self.options.name}) '
                         f'but import data does not include type information. '
-                        f'Data only comprises: {data[key]}')
-                print(f'SET_STATE: failed')
-                self._value[key] = Setting.new(data[key]['type'])
+                        f'Data only comprises: {this_setting_data}')
+                self._value[key] = Setting.new(this_setting_data['type'])
+                # if created setting is a SettingDict, export options must be forwarded:
+                if isinstance(self._value[key], SettingDict):
+                    self._value[key].export_options = self.export_options
 
-            if key in data:
+            # setting value and options from setting data input
+            if key in key_list:
                 # ensure the setting type is correct:
-                if ((isinstance(data[key], dict) and
-                     'type' in data[key] and
+                if (('type' in this_setting_data and
                      export_options.type) and (
-                         data[key]['type'] not in self._value[key].get_supported_types()
+                         this_setting_data['type'] not in self._value[key].get_supported_types() and
+                         this_setting_data['type'] != self._value[key].get_type()
                      )):
                     raise AppxfSettingError(
                         f'Cannot set_state() key "{key}" in '
                         f'SettingDict({self.options.name}). '
                         f'Setting is of type {self._value[key].__class__.__name__} '
-                        f'while provided type is {data[key]["type"]}. ')
+                        f'while provided type is {this_setting_data["type"]}. ')
 
-                self._value[key].set_state(data[key], export_options=export_options)
+                # ensure _version being available in nested dicts. Note that
+                # correct state_version is already checked above.
+                if isinstance(self._value[key], SettingDict):
+                    this_setting_data['_version'] = self._state_version
+
+                self._value[key].set_state(this_setting_data, options=export_options)
                 # restore setting name:
                 if not self._value[key].options.name:
                     self._value[key].options.name = key
