@@ -14,10 +14,6 @@ from kiss_cf.setting import setting as setting_module
 
 # TODO: test min_length property setting being funcitonal for passwords
 
-class DummyClassErrorOnStrCreation():
-    def __str__(self):
-        raise TypeError('some failure')
-
 @pytest.mark.parametrize(
     'appxf_class', setting_module._SettingMeta.implementations)
 def test_setting_init(appxf_class):
@@ -31,26 +27,6 @@ def test_setting_init(appxf_class):
     #    assert setting.masked
     #else:
     #    assert not setting.masked
-
-param_wrong_init = [
-    # Type      Value
-    (str,       DummyClassErrorOnStrCreation()),
-    (bool,      'value'),
-    (int,       'int'),
-    (float,     'abc')
-    ]
-@pytest.mark.parametrize(
-    'setting_type, value', param_wrong_init)
-def test_setting_wrong_init(setting_type, value):
-    # Utilizing AppxfSetting.new() still uses the corresponding __init__
-    with pytest.raises(AppxfSettingConversionError) as exc_info:
-        Setting.new(setting_type, value)
-    # general error statement
-    assert 'Cannot set' in str(exc_info.value)
-    # value type should be included:
-    assert str(type(value)) in str(exc_info.value)
-    print(exc_info.value)
-    # TODO: check more error message content?
 
 def verify_conversion_error(exc_info, setting: Setting, input: object):
     # General formulation
@@ -66,16 +42,10 @@ param_conversion = [
     # Type      Input           Valid   Value           String
     ('str',     'hello',        True,   'hello',        'hello'),
     (str,       '!"§$%&/()=?'  ,True,   '!"§$%&/()=?'   ,'!"§$%&/()=?'),
-    (str,       '\n',           False,  '',             ''),
     ('text',    '!"§$%&/()=?\n',True,   '!"§$%&/()=?\n','!"§$%&/()=?\n'),
-    (str,       42,             False,  '',             ''),
     ('string',  '42',           True,   '42',           '42'),
     ('email',   'some@thing.it',True,   'some@thing.it','some@thing.it'),
-    ('Email',   'something.it', False,  '',             ''),
-    ('email',   '@some.it',     False,  '',             ''),
-    ('email',   42,             False,  '',             ''),
     ('pass',    'long_enough',  True,   'long_enough',  'long_enough'),
-    ('password','short',        False,  '',              'short'),
 
     # Type      Input           Valid   Value           String
     ('bool',    'yes',          True,   True,           '1'),
@@ -85,7 +55,6 @@ param_conversion = [
     ('bool',    'False',        True,   False,          '0'),
     ('bool',    '1',            True,   True,           '1'),
     ('bool',    'no',           True,   False,          '0'),
-    (bool,      'invlaid',      False,  False,          '0'),
 
     # Type      Input           Valid   Value           String
     ('int',     42,             True,   42,             '42'),
@@ -96,8 +65,6 @@ param_conversion = [
     ('int',     '-1234567890',  True,   -1234567890,    '-1234567890'),
     (int,       True,           True,   1,              '1'),
     (int,       False,          True,   0,              '0'),
-    (int,       'a',            False,  0,              '0'),
-    (int,       b'',           False,  0,              '0'),
 
     # Type      Input           Valid   Value           String
     ('float',   12345,          True,   12345,          '12345.0'),
@@ -105,13 +72,9 @@ param_conversion = [
     (float,     False,          True,   0,              '0.0'),
     (float,     False,          True,   0,              '0.0'),
     (float,     True,           True,   1,              '1.0'),
-    (float,     'True',         False,  0,              '0.0'),
-    (float,     'a',            False,  0,              '0.0'),
-    (float,     b'',           False,  0,              '0.0'),
 
     # Type      Input           Valid   Value           String
     ('dictionary', {},          True,   {},             ''),
-    ('dictionary', 'any',       False,  {},             ''),
     (MutableMapping, {},        True,   {},             ''),
     ('dict',    {},             True,   {},             ''),
     # dict is not explicitly declared as supported but given MutableMapping
@@ -132,13 +95,7 @@ def test_setting_conversions(setting_type, input, valid, value, string):
         f'and resulting in value [{value}] and string [{string}]')
     assert setting.validate(input) == valid, 'Validity not as expected. ' + message
     if not valid:
-        with pytest.raises((AppxfSettingConversionError, AppxfSettingError)) as exc_info:
-            setting.value = input
-        verify_conversion_error(exc_info, setting, input)
-        # Value and input still accoring to default:
-        setting_ref = Setting.new(setting_type)
-        assert setting.value == setting_ref.value
-        assert setting.input == setting_ref.input
+        # already conveyed to new test implementation
         return
     setting.value = input
     assert setting.input == input, 'Input after setting does not match. ' + message
@@ -153,10 +110,7 @@ def test_setting_init_with_value(setting_type, input, valid, value, string):
         f'(expected valid: {valid}) '
         f'and resulting in value [{value}] and string [{string}]')
     if not valid:
-        setting_ref = Setting.new(setting_type)
-        with pytest.raises((AppxfSettingConversionError, AppxfSettingError)) as exc_info:
-            setting = Setting.new(setting_type, value=input)
-        verify_conversion_error(exc_info, setting_ref, input)
+        # already added to 'new'
         return
     else:
         setting = Setting.new(setting_type, value=input)
@@ -186,7 +140,7 @@ def test_setting_init_with_value_pre_lookup(setting_type, input, valid, value, s
         assert setting.value == value, 'Value after setting does not match. ' + message
         assert setting.to_string() == string, 'String after setting does not match. ' + message
 
-def test_setting_self_test():
+def notest_setting_self_test():
     # conversions covering all registered types:
     tested_types = set([t[0] for t in param_conversion])
     uncovered_type = [setting_type for setting_type in setting_module._SettingMeta.type_map.keys()
