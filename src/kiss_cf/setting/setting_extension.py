@@ -67,6 +67,9 @@ class SettingExtension(Generic[_BaseSettingT, _BaseTypeT],
     def get_supported_types(cls) -> list[type | str]:
         return []
 
+    def get_type(self) -> str:
+        return f'{self.setting_extension}::{self.base_setting.get_type()}'
+
     # TODO: the below should become obsolete, setting_select already overwrites
     # it again since updating the getter removes the setter anyways. This may
     # go along with a complete removal of a generic "SeeingExtension" class.

@@ -393,7 +393,6 @@ class Setting(Generic[_BaseTypeT], Stateful,
         # self.options.raise_error_on_non_empty_kwarg(kwargs)
         #
         # TODO #28: reactivate the kwarg checking.
-        self.export_options = self.ExportOptions.new_from_kwarg(kwargs)
 
         if value is None:
             self._input = self.get_default()
@@ -415,32 +414,28 @@ class Setting(Generic[_BaseTypeT], Stateful,
     # ##################
     # Stateful Related
     # /
-    def get_state(self, **kwarg) -> object:
-        export_options = deepcopy(self.export_options)
-        export_options.update_from_kwarg(kwarg)
+    def get_state(self, **kwarg) -> dict:
+        export_options = self.ExportOptions.new_from_kwarg(kwarg)
         self.ExportOptions.raise_error_on_non_empty_kwarg(kwarg)
 
-        # Strategy is to fill a dict from the various flags and if this dict
-        # remains empty, only the value is returned
-        #if export_options.type:
-        #    raise TypeError('Exporting the type is not yet supported')
         options: OrderedDict = self.options.get_state(options=export_options)
-        if not options and not export_options.type:
-            return self.input
         out = OrderedDict()
+        # 1) type should come before anything else
         if export_options.type:
-            out['type'] = self.get_supported_types()[0]
+            out['type'] = self.get_type()
+        # 2) value is next
         out['value'] = self.input
-        # append options
+        # 3) all options are last (includes name)
         out.update(options)
         return out
 
-    def set_state(self, data: object, **kwarg):
-        if isinstance(data, dict):
-            self.options.update_from_kwarg(kwarg_dict=data)
-            self.value = data['value']
-        else:
-            self.value = data
+    def set_state(self, data: dict, **kwarg):
+        # TODO: why does this set_state not consider ANY details from the
+        # ExportOptions?
+        self.options.update_from_kwarg(kwarg_dict=data)
+        # TODO: if options are set from data, what is kwarg then doing? See
+        # also the TODO above - no export_options handling.
+        self.value = data['value']
 
     # #####################/
     #  Registry and Factory
@@ -472,6 +467,15 @@ class Setting(Generic[_BaseTypeT], Stateful,
         specific base class like string, bool or integer, it includes also the
         base type directly.
         '''
+
+    def get_type(self) -> str:
+        ''' Get Setting type
+        '''
+        # Note: This function was added to allow setting extensions like
+        # SettingSelect to return the right setting type (like setting:string).
+        # Note the Meta class implementation (class registration) is checking
+        # for the first entry being a string.
+        return self.get_supported_types()[0]  # type: ignore
 
     @property
     def input(self) -> _BaseTypeT | str:
