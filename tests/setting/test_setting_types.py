@@ -1,3 +1,13 @@
+''' Covers all setting types
+Includes:
+ * init, value setting and validity
+ * basic option handling
+
+Note: due to the self-test that ensures all registered settings being covered,
+the type test classes must be added here. No effort spent in searching the
+whole test database for subclasses of BaseSettingTest.
+'''
+
 import inspect
 import sys
 import pytest
@@ -5,7 +15,7 @@ import pytest
 from collections.abc import MutableMapping
 from typing import Any, Callable
 
-from kiss_cf.setting import Setting, SettingExtension
+from kiss_cf.setting import Setting
 from kiss_cf.setting import AppxfSettingError, AppxfSettingConversionError
 from kiss_cf.setting import SettingString, SettingText, SettingEmail, SettingPassword
 from kiss_cf.setting import SettingBool, SettingInt, SettingFloat
@@ -87,6 +97,8 @@ class BaseSettingTest:
             f'It returned {setting.to_string()}.'
             )
 
+    ### cases for initialization
+
     def test_meta_type_lookup(self):
         for setting_type in self.setting_types:
             setting_class, dump = setting_module._SettingMeta.get_setting_type(setting_type)
@@ -95,13 +107,19 @@ class BaseSettingTest:
     def test_init_simple(self):
         for setting_type in self.setting_types:
             setting = Setting.new(setting_type, self.simple_input.input)
-            assert setting.input == self.simple_input.input
+            assert setting.input == self.simple_input.input_check
             assert setting.value == self.simple_input.value
 
     def test_init_default(self):
         for setting_type in self.setting_types:
             setting = Setting.new(setting_type)
             assert setting.value == setting.get_default()
+
+    def test_init_default_options(self):
+        for setting_type in self.setting_types:
+            setting = Setting.new(setting_type, name='this name')
+            assert setting.options.mutable
+            assert setting.options.name == 'this name'
 
     def test_init_valid(self):
         # default value must initialize:
@@ -132,6 +150,8 @@ class BaseSettingTest:
             assert str(type(value)) in str(exc_info.value)
             # Setting class name
             assert self.setting_class.__name__ in str(exc_info.value)
+
+    ### cases for validation and setting values
 
     def test_validate_valid(self):
         setting = self.setting_class()
@@ -188,6 +208,29 @@ class BaseSettingTest:
             setting_ref = self.setting_class()
             assert setting.value == setting_ref.value
             assert setting.input == setting_ref.input
+
+    ### option handling
+
+    # REQ: If mutable is False, there must be an exception when assigning new
+    # values:
+    def test_setting_not_mutable(self):
+        setting = self.setting_class()
+        setting.options.mutable = False
+        with pytest.raises(AppxfSettingError) as exc_info:
+            setting.value = self.simple_input.input
+        if issubclass(self.setting_class, SettingDict):
+            assert 'SettingDict() mutable option is False' in str(exc_info.value) + str(exc_info.value.__cause__)
+        else:
+            assert 'is set to be not mutable' in str(exc_info.value)
+
+
+    # REQ: Even if mutable is set to False upon initialization, the initialization
+    # must not fail. Note that the setting options are set before the value is
+    # taken over.
+    def test_setting_not_mutable_init(self):
+        setting = self.setting_class(value=self.simple_input.value, mutable = False)
+        assert not setting.options.mutable
+        assert setting.value == self.simple_input.value
 
     def test_set_state_display_options(self):
         setting = self.setting_class(self.simple_input.input)
@@ -260,7 +303,7 @@ class TestSettingBool(BaseSettingTest):
 class TestSettingInt(BaseSettingTest):
     setting_class = SettingInt
     setting_types = [int, 'int', 'integer']
-    invalid_init = ['', '42.2', 'test']
+    invalid_init = ['', b'', '42.2', 'test']
     default_value_is_valid = True
     simple_input = SettingCase(input='42', value=42)
     valid_input = [
@@ -293,7 +336,10 @@ class TestSettingDict(BaseSettingTest):
     setting_types = [dict, MutableMapping, 'dict', 'dictionary']
     invalid_init = ['', 'test', 42]
     default_value_is_valid = True
-    simple_input = SettingCase(input={}, value={})
+    simple_input = SettingCase(
+        input={'key': (str, 'value')},
+        value={'key': 'value'},
+        input_check={'key': 'value'})
     valid_input = [
         SettingCase(input={'int': 42},
                     value={'int': 42},
