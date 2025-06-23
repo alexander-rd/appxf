@@ -3,7 +3,7 @@ import sys
 import pytest
 
 from collections.abc import MutableMapping
-from collections import namedtuple
+from typing import Any, Callable
 
 from kiss_cf.setting import Setting, SettingExtension
 from kiss_cf.setting import AppxfSettingError, AppxfSettingConversionError
@@ -13,8 +13,46 @@ from kiss_cf.setting import SettingDict
 
 from kiss_cf.setting import setting as setting_module
 
-SettingInput = namedtuple('SettingInput', 'input value')
 
+class SettingCase():
+    def __init__(self,
+                 input,
+                 value: Any | None = None,
+                 string: str | None = None,
+                 input_check: Any | None = None):
+        self.input = input
+
+        if value is None:
+            self._value = input
+        else:
+            self._value = value
+
+        if string is None:
+            self._string = str(self.value)
+        else:
+            self._string = string
+
+        if input_check is None:
+            self.input_check = self.input
+        else:
+            self.input_check = input_check
+
+    def __str__(self):
+        return f'Case(input={self.input}, value={self.value}, string={self.string})'
+
+    @property
+    def value(self):
+        if isinstance(self._value, Callable):
+            return self._value(self)
+        else:
+            return self._value
+
+    @property
+    def string(self):
+        if isinstance(self._string, Callable):
+            return self._string(self)
+        else:
+            return self._string
 
 # required class that cannot convert to str and would be invalid input for
 # SettingStr and SettingText:
@@ -25,11 +63,34 @@ class DummyClassErrorOnStrCreation():
 class BaseSettingTest:
     setting_class: type[Setting] = None  # type: ignore
     setting_types: list[str | type] = []
-    simple_input: SettingInput = SettingInput(input='', value='')
+    simple_input: SettingCase = SettingCase(input='')
 
     invalid_init: list = []
     default_value_is_valid = False
-    valid_input: list[SettingInput] = []
+    valid_input: list[SettingCase] = []
+
+    def verify_valid(self, pre_comment: str,
+                     setting: Setting, case: SettingCase):
+        assert setting.input == case.input_check, (
+            f'{pre_comment} for {self.setting_class.__name__} '
+            f'failed for INPUT on case {case}. '
+            f'It returned {setting.input}.'
+            )
+        assert setting.value == case.value, (
+            f'{pre_comment} for {self.setting_class.__name__} '
+            f'failed for VALUE on case {case}. '
+            f'It returned {setting.value}.'
+            )
+        assert setting.to_string() == case.string, (
+            f'{pre_comment} for {self.setting_class.__name__} '
+            f'failed for STRING on case {case}. '
+            f'It returned {setting.to_string()}.'
+            )
+
+    def test_meta_type_lookup(self):
+        for setting_type in self.setting_types:
+            setting_class, dump = setting_module._SettingMeta.get_setting_type(setting_type)
+            assert setting_class == self.setting_class
 
     def test_init_simple(self):
         for setting_type in self.setting_types:
@@ -41,6 +102,12 @@ class BaseSettingTest:
         for setting_type in self.setting_types:
             setting = Setting.new(setting_type)
             assert setting.value == setting.get_default()
+
+    def test_init_valid(self):
+        # default value must initialize:
+        for case in self.valid_input:
+            setting = self.setting_class(case.input)
+            self.verify_valid('Verifying valid init', setting, case)
 
     def test_init_invalid(self):
         # Utilizing AppxfSetting.new() still uses the corresponding __init__
@@ -66,6 +133,14 @@ class BaseSettingTest:
             # Setting class name
             assert self.setting_class.__name__ in str(exc_info.value)
 
+    def test_validate_valid(self):
+        setting = self.setting_class()
+        for case in self.valid_input:
+            assert setting.validate(case.input), (
+                f'{self.setting_class} should identify the following '
+                f'value as valid: "{case.input}"'
+                )
+
     def test_validate_invalid(self):
         setting = self.setting_class()
         value_list = (self.invalid_init if self.default_value_is_valid
@@ -78,11 +153,10 @@ class BaseSettingTest:
                 )
 
     def test_setting_value_valid(self):
-        # note: even though the default value may be invalid
-        # (test_validate_invalid), it can still be set.
-
-        # TODO
-        pass
+        for case in self.valid_input:
+            setting = self.setting_class()
+            setting.value = case.input
+            self.verify_valid('Verifying valid value setting', setting, case)
 
     def test_setting_value_invalid(self):
         setting = self.setting_class()
@@ -130,56 +204,104 @@ class TestSettingString(BaseSettingTest):
     setting_types = [str, 'str', 'string']
     invalid_init = [DummyClassErrorOnStrCreation(), '\n', 42]
     default_value_is_valid = True
-    simple_input = SettingInput(input='', value='')
+    simple_input = SettingCase(input='', value='')
+    valid_input = [
+            SettingCase(input='hello'),
+            SettingCase(input='!"§$%&/()=?'),
+            SettingCase(input='42'),
+    ]
 
 class TestSettingText(BaseSettingTest):
     setting_class = SettingText
     setting_types = ['text']
     invalid_init = [DummyClassErrorOnStrCreation(), DummyClassErrorOnStrCreation, 42]
     default_value_is_valid = True
-    simple_input = SettingInput(input='', value='')
+    simple_input = SettingCase(input='', value='')
+    valid_input = [
+        SettingCase(input='!"§$%&/()=?\n'),
+    ]
 
 class TestSettingPassword(BaseSettingTest):
     setting_class = SettingPassword
     setting_types = ['pass', 'password']
     invalid_init = ['short', 42]
     default_value_is_valid = False
-    simple_input = SettingInput(input='123456', value='123456')
+    simple_input = SettingCase(input='123456', value='123456')
+    valid_input = [
+        SettingCase(input='long_enough'),
+    ]
 
 class TestSettingEmail(BaseSettingTest):
     setting_class = SettingEmail
     setting_types = ['email', 'Email']
     invalid_init = ['no email', 'no email@some.de', 'some@nope', 'nope.de', 42]
     default_value_is_valid = False
-    simple_input = SettingInput(input='some@thing.de', value='some@thing.de')
+    simple_input = SettingCase(input='some@thing.de', value='some@thing.de')
+    valid_input = [
+        SettingCase(input='some@thing.it'),
+    ]
 
 class TestSettingBool(BaseSettingTest):
     setting_class = SettingBool
     setting_types = [bool, 'bool', 'boolean']
     invalid_init = ['', b'', 'nope']
     default_value_is_valid = True
-    simple_input = SettingInput(input='1', value=True)
+    simple_input = SettingCase(input='1', value=True)
+    valid_input = [
+        SettingCase(input=True, value=1),
+        SettingCase(input=False, value=0),
+        SettingCase(input='yes', value=1),
+        SettingCase(input='no', value=0),
+        SettingCase(input='true', value=1),
+        SettingCase(input='False', value=0),
+        SettingCase(input='1', value=1),
+        ]
 
 class TestSettingInt(BaseSettingTest):
     setting_class = SettingInt
     setting_types = [int, 'int', 'integer']
     invalid_init = ['', '42.2', 'test']
     default_value_is_valid = True
-    simple_input = SettingInput(input='42', value=42)
+    simple_input = SettingCase(input='42', value=42)
+    valid_input = [
+        SettingCase(input=0),
+        SettingCase(input=42),
+        SettingCase(input='0042', value=42),
+        SettingCase(input=-1234567890),
+        SettingCase(input='123', value=123),
+        SettingCase(input='-1234567890', value=-1234567890),
+        SettingCase(input=True, value=1),
+        SettingCase(input=False, value=0),
+        ]
 
 class TestSettingFloat(BaseSettingTest):
     setting_class = SettingFloat
     setting_types = [float, 'float']
     invalid_init = ['', b'', 'test']
     default_value_is_valid = True
-    simple_input = SettingInput(input='3.14159', value=3.14159)
+    simple_input = SettingCase(input='3.14159', value=3.14159)
+    valid_input = [
+        SettingCase(input=12345,        value=12345,        string='12345.0'),
+        SettingCase(input=1.1234567890, value=1.1234567890, string='1.123456789'),
+        SettingCase(input=False,        value=0,            string='0.0'),
+        SettingCase(input=False,        value=0,            string='0.0'),
+        SettingCase(input=True,         value=1,            string='1.0'),
+    ]
 
 class TestSettingDict(BaseSettingTest):
     setting_class = SettingDict
     setting_types = [dict, MutableMapping, 'dict', 'dictionary']
     invalid_init = ['', 'test', 42]
     default_value_is_valid = True
-    simple_input = SettingInput(input={}, value={})
+    simple_input = SettingCase(input={}, value={})
+    valid_input = [
+        SettingCase(input={'int': 42},
+                    value={'int': 42},
+                    input_check={'int': 42}),
+        SettingCase(input={'int': (int, '0042')},
+                    value={'int': 42},
+                    input_check={'int': '0042'}),
+    ]
 
 def test_setting_completeness():
     # Get expected classes and type declarations:
@@ -200,6 +322,10 @@ def test_setting_completeness():
             assert obj.invalid_init, (
                 f'Test class {obj.__name__} must define '
                 f'invalid input values (invalid_input).'
+                )
+            assert obj.valid_input, (
+                f'Test class {obj.__name__} must define '
+                f'valid test cases SettingCase.'
                 )
 
             assert obj.setting_class is not None
