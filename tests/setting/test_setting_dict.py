@@ -485,11 +485,13 @@ def test_setting_dict_not_mutable_overwrite_via_setitem():
 def _verify_get_state_keys(
     data: OrderedDict,
     top_level_keys: list[str],
-    setting_keys: list[str] | None = None
+    setting_keys: list[str] | None = None,
+    version_expected: bool = True
     ):
     print(data)
     assert isinstance(data, OrderedDict), f'Expected data to be OrderedDict. It is: {data.__class__}'
-    expected_top_level_keys = ['_version'] + top_level_keys
+    expected_top_level_keys = (['_version'] if version_expected else []) + top_level_keys
+
     actual_top_level_keys = list(data.keys())
     for key in expected_top_level_keys:
         assert key in data.keys(), f'Expected key "{key}" not in get_state() result.'
@@ -596,6 +598,58 @@ def test_setting_dict_get_state_content_with_type():
         ['type', 'value'])
     assert data['test']['value'] == '42'
     assert data['test']['type'] == 'integer'
+
+# REQ: nested dicts must not contain the _version field. Rationale: The
+# top-most dictionary _version will be the same for every nested version and
+# implementation has minimum JSON export in mind.
+#
+# REQ: when exporting dicts with types, the outer one shall not include the
+# type information while nested ones must include type information. Rationale:
+# When having data from setting_dict.get_state() it's already clear that it
+# must be put into a setting_dict.set_state(). .. And we have minimum JSON
+# structures in mind.
+def test_setting_dict_get_state_nested_dict():
+    setting_dict = SettingDict(settings={
+        'test': {'int': (int, '42')}})
+    data = setting_dict.get_state(type=True)
+    _verify_get_state_keys(
+        data,
+        ['test'],
+        ['type', '_settings'])
+    _verify_get_state_keys(
+        data['test']['_settings'],
+        ['int'],
+        ['type', 'value'],
+        version_expected=False)
+    assert data['test']['type'] == 'dictionary'
+    assert data['test']['_settings']['int']['type'] == 'integer'
+    assert data['test']['_settings']['int']['value'] == '42'
+
+def test_setting_dict_get_state_nested_dict_with_options():
+    setting_dict = SettingDict(settings={
+        'test': {'int': (int, '42')}})
+    setting_dict.export_options.type = True
+    setting_dict.export_options.display_options = True
+    setting_dict.export_options.export_defaults = True
+    data = setting_dict.get_state()
+    _verify_get_state_keys(
+        data,
+        ['_settings', 'display_width', 'display_columns'])
+    _verify_get_state_keys(
+        data['_settings'],
+        ['test'], version_expected=False)
+    _verify_get_state_keys(
+        data['_settings']['test'],
+        ['type', '_settings', 'display_width', 'display_columns'], version_expected=False)
+    _verify_get_state_keys(
+        data['_settings']['test']['_settings'],
+        ['int'],
+        ['type', 'value', 'display_width'],
+        version_expected=False)
+    assert data['_settings']['test']['type'] == 'dictionary'
+    assert data['_settings']['test']['_settings']['int']['type'] == 'integer'
+    assert data['_settings']['test']['_settings']['int']['value'] == '42'
+
 
 # REQ: set_state() shall restore a setting VALUE and INPUT if the setting is
 # already existing.
@@ -722,6 +776,28 @@ def test_setting_dict_set_state_type_new_key_ok():
     assert setting_dict['test'] == 42
     assert setting_dict.input['test'] == '42'
     assert setting_dict.get_setting('test') is not original_setting
+
+# restoring keys apparently also must work for nested dicts (this covers some
+# pecularities when handling nested dicts in set_state()):
+def test_setting_dict_set_state_type_new_key_nested_dict():
+    setting_dict = SettingDict(settings={
+        'test': (dict, {
+            'int': (int, '42')
+            })
+        })
+    setting_dict.export_options.type = True
+    original_test: SettingDict = setting_dict.get_setting('test')
+    original_int = original_test.get_setting('int')
+    data = setting_dict.get_state()
+
+    del setting_dict['test']
+    assert 'test' not in setting_dict
+
+    setting_dict.set_state(data)
+    assert setting_dict['test']['int'] == 42
+    assert setting_dict.input['test']['int'] == '42'
+    assert setting_dict.get_setting('test') is not original_test
+    assert setting_dict.get_setting('test').get_setting('int') is not original_int
 
 # REQ: When using set_state() with a new key that does not include the type
 # information (exported with type==False), there must be an Exception.

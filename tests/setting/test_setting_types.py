@@ -209,6 +209,19 @@ class BaseSettingTest:
             assert setting.value == setting_ref.value
             assert setting.input == setting_ref.input
 
+    ### set_state / get_state
+    def test_set_state(self):
+        for case in self.valid_input:
+            setting = self.setting_class(value=case.input)
+            self.verify_valid('Verifying valid value init before set_state', setting, case)
+            state = setting.get_state(type=True)
+
+            # Note: "type=True" is required for the SettingDict cases.
+
+            setting = self.setting_class(type=True)
+            setting.set_state(state)
+            self.verify_valid('Verifying valid value after SET_STATE', setting, case)
+
     ### option handling
 
     # REQ: If mutable is False, there must be an exception when assigning new
