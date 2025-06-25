@@ -626,12 +626,13 @@ def test_setting_dict_get_state_nested_dict():
     assert data['test']['_settings']['int']['value'] == '42'
 
 def test_setting_dict_get_state_nested_dict_with_options():
+    export_options = SettingDict.ExportOptions(
+        type = True,
+        display_options = True,
+        export_defaults = True)
     setting_dict = SettingDict(settings={
         'test': {'int': (int, '42')}})
-    setting_dict.export_options.type = True
-    setting_dict.export_options.display_options = True
-    setting_dict.export_options.export_defaults = True
-    data = setting_dict.get_state()
+    data = setting_dict.get_state(options=export_options)
     _verify_get_state_keys(
         data,
         ['_settings', 'display_width', 'display_columns'])
@@ -715,12 +716,11 @@ def test_setting_dict_set_state_default_new_key_exception():
 def test_setting_dict_set_state_default_new_key_no_exception():
     setting_dict = SettingDict(settings={
         'test': (int, '42')})
-    setting_dict.export_options.exception_on_new_key = False
     data = setting_dict.get_state()
 
     del setting_dict['test']
     assert 'test' not in setting_dict
-    setting_dict.set_state(data)
+    setting_dict.set_state(data, exception_on_new_key = False)
 
     assert not setting_dict.keys()
 
@@ -765,14 +765,13 @@ def test_setting_dict_set_state_default_missing_key_exception():
 def test_setting_dict_set_state_type_new_key_ok():
     setting_dict = SettingDict(settings={
         'test': (int, '42')})
-    setting_dict.export_options.type = True
     original_setting = setting_dict.get_setting('test')
-    data = setting_dict.get_state()
+    data = setting_dict.get_state(type = True)
 
     del setting_dict['test']
     assert 'test' not in setting_dict
 
-    setting_dict.set_state(data)
+    setting_dict.set_state(data, type = True)
     assert setting_dict['test'] == 42
     assert setting_dict.input['test'] == '42'
     assert setting_dict.get_setting('test') is not original_setting
@@ -785,15 +784,14 @@ def test_setting_dict_set_state_type_new_key_nested_dict():
             'int': (int, '42')
             })
         })
-    setting_dict.export_options.type = True
     original_test: SettingDict = setting_dict.get_setting('test')
     original_int = original_test.get_setting('int')
-    data = setting_dict.get_state()
+    data = setting_dict.get_state(type = True)
 
     del setting_dict['test']
     assert 'test' not in setting_dict
 
-    setting_dict.set_state(data)
+    setting_dict.set_state(data, type = True)
     assert setting_dict['test']['int'] == 42
     assert setting_dict.input['test']['int'] == '42'
     assert setting_dict.get_setting('test') is not original_test
@@ -809,9 +807,8 @@ def test_setting_dict_set_state_type_new_key_no_type_exception():
 
     del setting_dict['test']
     assert 'test' not in setting_dict
-    setting_dict.export_options.type = True
     with pytest.raises(AppxfSettingError) as exc_info:
-        setting_dict.set_state(data)
+        setting_dict.set_state(data, type = True)
 
     assert not setting_dict.keys()
     assert 'Key test does not yet exist in SettingDict(TestDict)' in str(exc_info.value)
@@ -826,9 +823,7 @@ def test_setting_dict_set_state_type_new_key_no_type_no_exception():
     del setting_dict['test']
     assert 'test' not in setting_dict
 
-    setting_dict.export_options.type = True
-    setting_dict.export_options.exception_on_new_key = False
-    setting_dict.set_state(data)
+    setting_dict.set_state(data, type = True, exception_on_new_key = False)
 
     assert not setting_dict.keys()
 
@@ -838,31 +833,29 @@ def test_setting_dict_set_state_type_new_key_no_type_no_exception():
 def test_setting_dict_set_state_missing_key_ok():
     setting_dict = SettingDict(settings={
         'test': (int, '42')})
-    setting_dict.export_options.type = True
     original_setting = setting_dict.get_setting('test')
-    data = setting_dict.get_state()
+    data = setting_dict.get_state(type = True)
 
     setting_dict['test'] = '13'
-    setting_dict.set_state(data)
+    setting_dict.set_state(data, type = True)
     assert setting_dict['test'] == 42
     assert setting_dict.input['test'] == '42'
     assert setting_dict.get_setting('test') is original_setting
 
 # unless the type does not match.. ..that's still an exception:
-def test_setting_dict_set_state_missing_key_ok():
+def test_setting_dict_set_state_missing_key_type_mismatch():
     setting_dict = SettingDict(settings={
         'test': (int, '42')})
     setting_dict.options.name = 'TestDict'
-    setting_dict.export_options.type = True
     original_setting = setting_dict.get_setting('test')
-    data = setting_dict.get_state()
+    data = setting_dict.get_state(type = True)
 
 
     print(setting_dict.get_setting('test'))
     setting_dict['test'] = (str, 'new')
     print(setting_dict.get_setting('test'))
     with pytest.raises(AppxfSettingError) as exc_info:
-        setting_dict.set_state(data)
+        setting_dict.set_state(data, type = True)
         print(setting_dict.get_setting('test'))
 
     assert 'Cannot set_state() key "test" in SettingDict(TestDict).' in str(exc_info.value)

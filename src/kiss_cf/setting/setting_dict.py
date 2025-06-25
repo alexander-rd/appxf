@@ -2,6 +2,10 @@
 
 Surprise: it bundles Settings to a dictionary behavior. ;)
 '''
+
+# allow class name being used before being fully defined (like in same class):
+from __future__ import annotations
+
 from collections import OrderedDict
 from dataclasses import dataclass
 from copy import deepcopy
@@ -92,9 +96,6 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
 
         # The strange next line is just to fix the type hints.
         self.options: SettingDict.Options = self.options
-        # Only the SettingDict maintains the export options. Basic Settings
-        # only take it as an argument to get_state()/set_state().
-        self.export_options: SettingDict.ExportOptions = self.ExportOptions.new_from_kwarg(kwargs)
 
     def __len__(self):
         return self._value.__len__()
@@ -207,11 +208,13 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
 
     _state_version = 2
 
-    def get_state(self, **kwargs) -> object:
-        # SettingDict maintains it's own options that is copied and can be
-        # updated:
-        export_options = deepcopy(self.export_options)
-        export_options.update_from_kwarg(kwargs)
+    def get_state(self, options: SettingDict.ExportOptions | None = None, **kwargs) -> object:
+        # handle export options:
+        if options is None:
+            export_options = self.ExportOptions.new_from_kwarg(kwargs)
+        else:
+            kwargs['options'] = options
+            export_options = self.ExportOptions.new_from_kwarg(kwarg_dict=kwargs)
         Setting.ExportOptions.raise_error_on_non_empty_kwarg(kwargs)
 
         # build up the settings part (value field in normal settings):
@@ -277,12 +280,13 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
             data.update(option_data)
         return data
 
-    def set_state(self, data: Mapping, **kwargs):
-        # SettingDict maintains it's own options that is copied and can be
-        # updated:
-        export_options: SettingDict.ExportOptions = deepcopy(
-            self.export_options)
-        export_options.update_from_kwarg(kwargs)
+    def set_state(self, data: Mapping, options: SettingDict.ExportOptions | None = None, **kwargs):
+        # handle export options:
+        if options is None:
+            export_options = self.ExportOptions.new_from_kwarg(kwargs)
+        else:
+            kwargs['options'] = options
+            export_options = self.ExportOptions.new_from_kwarg(kwargs)
         Setting.ExportOptions.raise_error_on_non_empty_kwarg(kwargs)
 
         # handle unexpected input:
@@ -357,9 +361,6 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                         f'but import data does not include type information. '
                         f'Data only comprises: {this_setting_data}')
                 self._value[key] = Setting.new(this_setting_data['type'])
-                # if created setting is a SettingDict, export options must be forwarded:
-                if isinstance(self._value[key], SettingDict):
-                    self._value[key].export_options = self.export_options
 
             # setting value and options from setting data input
             if key in key_list:

@@ -34,9 +34,10 @@ def overwrite_with_defaults(setting_dict: SettingDict):
             this_setting.value = this_setting.get_default()
 
 def verify_json(setting_dict: SettingDict,
+                export_options: SettingDict.ExportOptions,
                 expected_json: str,
                 full_recovery: bool = False):
-    raw_data = setting_dict.get_state()
+    raw_data = setting_dict.get_state(options=export_options)
     serialized_data = JsonSerializer.serialize(raw_data)
 
     # check serialization
@@ -51,10 +52,9 @@ def verify_json(setting_dict: SettingDict,
     recovered_raw_data = JsonSerializer.deserialize(serialized_data)
     if full_recovery:
         recovered_dict = SettingDict()
-        recovered_dict.export_options = setting_dict.export_options
     else:
         recovered_dict = setting_dict
-    recovered_dict.set_state(recovered_raw_data)
+    recovered_dict.set_state(recovered_raw_data, options=export_options)
     assert recovered_dict.input == original_inputs
     assert recovered_dict.value == original_values
 
@@ -68,7 +68,9 @@ def test_setting_json_simple():
             select_map={'01': 'Value'},
             custom_value=False,
             mutable_items=False, mutable_list=False))
-    ])), expected_json='''
+    ])),
+    export_options=SettingDict.ExportOptions(),
+    expected_json='''
 {
     "_version": 2,
     "string": "test",
@@ -80,16 +82,17 @@ def test_setting_json_simple():
 
 def test_setting_json_single_display_option():
     '''JSON for a few non-default options'''
+    export_options = SettingDict.ExportOptions(
+        value_options = True,
+        display_options = True)
     setting_dict = SettingDict({
         'string': Setting.new('string', value='test'),
         'integer': Setting.new('int', value=42),
         'select': Setting.new('select::string', value='01', select_map={'01': 'test_value'},
             display_width = 42, custom_value=False,)
         })
-    setting_dict.export_options.value_options = True
-    setting_dict.export_options.display_options = True
 
-    verify_json(setting_dict, expected_json='''
+    verify_json(setting_dict, export_options=export_options, expected_json='''
 {
     "_version": 2,
     "string": "test",
@@ -113,11 +116,13 @@ def test_setting_json_full_options_export():
         # TODO: integer and select had "options_stored" set to True
         display_columns=3,
         )
-    setting_dict.export_options.control_options = True
-    setting_dict.export_options.value_options = True
-    setting_dict.export_options.display_options = True
-    setting_dict.export_options.export_defaults = True
-    verify_json(setting_dict, expected_json='''
+    export_options = SettingDict.ExportOptions(
+        control_options = True,
+        value_options = True,
+        display_options = True,
+        export_defaults = True)
+
+    verify_json(setting_dict, export_options=export_options, expected_json='''
 {
     "_version": 2,
     "_settings": {
@@ -151,80 +156,6 @@ def test_setting_json_full_options_export():
 }
     ''', full_recovery=False)
 
-# ALTERNATIVE:
-#{
-#    "_version": 2,
-#    "values": [{
-#            "name": "select",
-#            "value": "01",
-#            "display_width": 60,
-#            "mutable": true,
-#            "value_options_mutable": false,
-#            "display_options_mutable": false,
-#            "control_options_mutable": false,
-#            "mutable_items": true,
-#            "mutable_list": true,
-#            "custom_value": true,
-#            "select_map": {"01": "Value"},
-#            "base_setting": {
-#                "value": "Value",
-#                "display_width": 15,
-#                "mutable": true,
-#                "value_options_mutable": false,
-#                "display_options_mutable": false,
-#                "control_options_mutable": false
-#            }
-#        }]
-#    "display_width": 60,
-#    "mutable": true,
-#}
-#
-# In the more simple form with options only for dict, this would become:
-#{
-#    "_version": 2,
-#    "values": [{
-#            "name": "select",
-#            "value": "01",
-#        }{
-#            "name": "another"
-#            "value": "something"
-#    }]
-#    "display_width": 60,
-#    "mutable": true,
-#}
-#
-# RULES:
-#  * dictionary without options (_version, only): use key fields directly
-#  * dictionaries with options: use list of settings)
-#
-# Why? .. .. Because "value" reads "wrong". See:
-#{
-#    "_version": 2,
-#    "value": {
-#        "select": "01",
-#        "another": "something"
-#    }
-#    "display_width": 60,
-#    "mutable": true,
-#}
-#
-# Or in mixed form:
-#{
-#    "_version": 2,
-#    "value": {
-#        "select": {
-#            "value": "01",
-#            "display_width": 60,
-#        }
-#        "another": "something"
-#    }
-#    "display_width": 60,
-#    "mutable": true,
-#}
-#
-# Well - setting dicts are SPECIAL - so they CAN use "settings" instead of "value"!
-
-
 def test_setting_json_full_options_and_type():
     '''JSON for options with and without options being set'''
     setting_dict = SettingDict(
@@ -235,12 +166,13 @@ def test_setting_json_full_options_and_type():
         # TODO: integer and select had "options_stored" set to True
         storage=RamStorage.get(name='setting_dict', ram_area='test')
         )
-    setting_dict.export_options.type = True
-    setting_dict.export_options.control_options = True
-    setting_dict.export_options.value_options = True
-    setting_dict.export_options.display_options = True
-    setting_dict.export_options.export_defaults = True
-    verify_json(setting_dict, expected_json='''
+    export_options = SettingDict.ExportOptions(
+        type = True,
+        control_options = True,
+        value_options = True,
+        display_options = True,
+        export_defaults = True)
+    verify_json(setting_dict, export_options=export_options, expected_json='''
 {
     "_version": 2,
     "_settings": {
@@ -289,7 +221,7 @@ def test_setting_json_dict_of_dict_simple():
                 'integer_two': (int, 2),
             })
         })
-    verify_json(setting_dict, expected_json='''
+    verify_json(setting_dict, export_options=SettingDict.ExportOptions(), expected_json='''
 {
     "_version": 2,
     "dict_one": {
@@ -316,11 +248,12 @@ def test_setting_json_dict_of_dict_some_options():
                 'integer_two': (int, 2),
             }, display_width=102)
         }, display_columns=3)
-    setting_dict.export_options.control_options = True
-    setting_dict.export_options.value_options = True
-    setting_dict.export_options.display_options = True
-    setting_dict.export_options.export_defaults = False
-    verify_json(setting_dict, expected_json='''
+    export_options = SettingDict.ExportOptions(
+        control_options = True,
+        value_options = True,
+        display_options = True,
+        export_defaults = False)
+    verify_json(setting_dict, export_options=export_options, expected_json='''
 {
     "_version": 2,
     "_settings": {
@@ -357,8 +290,8 @@ def test_setting_json_dict_of_dict_type_recovery():
                 'integer_two': (int, 2),
             })
         })
-    setting_dict.export_options.type = True
-    verify_json(setting_dict, expected_json='''
+    export_options = SettingDict.ExportOptions(type = True)
+    verify_json(setting_dict, export_options=export_options, expected_json='''
 {
     "_version": 2,
     "dict_one": {
