@@ -61,11 +61,6 @@ class Config():
         super().__init__()
         self._default_storage_factory = default_storage_factory
         self._sections: dict[str, SettingDict] = {}
-        #  * Config will, by default, not raise exceptions on import when
-        #    a config option is new or missing
-        self.export_options = SettingDict.ExportOptions(
-            exception_on_new_key = False,
-            exception_on_missing_key = False)
 
     @property
     def sections(self) -> list[str]:
@@ -101,16 +96,23 @@ class Config():
         #  * SettingDict will take over the section name
         self._sections[section] = SettingDict(
             storage=storage, settings=settings, name=section)
+        #  * Config will, by default, not raise exceptions on import when
+        #    a config option is new or missing
+        self._sections[section].stateful_kwargs = SettingDict.ExportOptions(
+            exception_on_new_key = False,
+            exception_on_missing_key = False
+            ).get_state()
+
         self.log.info(f'added section: {section}')
         return self._sections[section]
 
     def store(self):
         ''' Store all sections '''
         for section in self._sections.values():
-            section.store(options=self.export_options)
+            section.store()
 
     def load(self):
         ''' Load all sections '''
         for section in self._sections.values():
             if section.exists():
-                section.load(options=self.export_options)
+                section.load()
