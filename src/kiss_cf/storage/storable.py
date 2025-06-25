@@ -32,6 +32,7 @@ class Storable(Stateful):
         if storage is None:
             storage = RamStorage()
         self._storage: Storage = storage
+        self.stateful_kwargs = {}
         super().__init__(**kwargs)
 
     # taking over get_state()/set_state() from Stateful but updating the attribute_mask:
@@ -47,8 +48,8 @@ class Storable(Stateful):
         if not self._storage.exists():
             # Protect deriving classes treating empty data like b''.
             raise AppxfStorableError('Storage does not exist.')
-        self.set_state(self._storage.load(), **kwargs) # type: ignore  # see store()
+        self.set_state(self._storage.load(), **self.stateful_kwargs) # type: ignore  # see store()
 
     def store(self, **kwargs):
         ''' Store to provided Storage '''
-        self._storage.store(self.get_state(**kwargs))
+        self._storage.store(self.get_state(**self.stateful_kwargs))
