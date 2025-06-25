@@ -218,8 +218,8 @@ class BaseSettingTest:
 
             # Note: "type=True" is required for the SettingDict cases.
 
-            setting = self.setting_class(type=True)
-            setting.set_state(state)
+            setting = self.setting_class()
+            setting.set_state(state, type=True)
             self.verify_valid('Verifying valid value after SET_STATE', setting, case)
 
     ### option handling

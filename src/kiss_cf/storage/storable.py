@@ -42,13 +42,13 @@ class Storable(Stateful):
         ''' Storage file exists (call before load()) '''
         return self._storage.exists()
 
-    def load(self):
+    def load(self, **kwargs):
         ''' Load from provided Storage '''
         if not self._storage.exists():
             # Protect deriving classes treating empty data like b''.
             raise AppxfStorableError('Storage does not exist.')
-        self.set_state(self._storage.load()) # type: ignore  # see store()
+        self.set_state(self._storage.load(), **kwargs) # type: ignore  # see store()
 
-    def store(self):
+    def store(self, **kwargs):
         ''' Store to provided Storage '''
-        self._storage.store(self.get_state())
+        self._storage.store(self.get_state(**kwargs))
