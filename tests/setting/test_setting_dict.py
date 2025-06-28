@@ -864,6 +864,24 @@ def test_setting_dict_set_state_missing_key_type_mismatch():
     assert 'Cannot set_state() key "test" in SettingDict(TestDict).' in str(exc_info.value)
     assert 'Setting is of type SettingString while provided type is integer.' in str(exc_info.value)
 
+# REQ: According to remove_missing_key option, mising keys of input must be
+# removed from SettingDict. Default is False and alredy tested above.
+def test_setting_dict_set_state_missing_key_remove():
+    setting_dict = SettingDict(settings={
+        'test_int': (int, '42'),
+        'test_str': (str, 'test')})
+    data = setting_dict.get_state()
+
+    setting_dict['test_int'] = 13
+    assert setting_dict['test_int'] == 13
+    setting_dict['test_str'] = 'changed'
+
+    # remove test_str from input data:
+    del data['test_str']
+    setting_dict.set_state(data, remove_missing_keys = True)
+    assert 'test_str' not in setting_dict
+    assert setting_dict['test_int'] == 42
+
 def test_setting_dict_storage_init():
     setting_dict = SettingDict({
         'entry': ('email','some@any.de'),
