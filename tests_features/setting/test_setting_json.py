@@ -168,6 +168,7 @@ def test_setting_json_full_options_and_type():
         )
     export_options = SettingDict.ExportOptions(
         type = True,
+        add_new_keys= True,
         control_options = True,
         value_options = True,
         display_options = True,
@@ -290,7 +291,7 @@ def test_setting_json_dict_of_dict_type_recovery():
                 'integer_two': (int, 2),
             })
         })
-    export_options = SettingDict.ExportOptions(type = True)
+    export_options = SettingDict.ExportOptions(type = True, add_new_keys= True)
     verify_json(setting_dict, export_options=export_options, expected_json='''
 {
     "_version": 2,

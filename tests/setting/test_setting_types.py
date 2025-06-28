@@ -216,10 +216,14 @@ class BaseSettingTest:
             self.verify_valid('Verifying valid value init before set_state', setting, case)
             state = setting.get_state(type=True)
 
-            # Note: "type=True" is required for the SettingDict cases.
+            # Note: "type=True" above is required for the SettingDict cases.
+            # Same for add_new_keys=True below.
 
             setting = self.setting_class()
-            setting.set_state(state, type=True)
+            if issubclass(self.setting_class, SettingDict):
+                setting.set_state(state, type=True, add_new_keys=True)
+            else:
+                setting.set_state(state)
             self.verify_valid('Verifying valid value after SET_STATE', setting, case)
 
     ### option handling

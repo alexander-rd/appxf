@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from collections import OrderedDict
 from dataclasses import dataclass
-from copy import deepcopy
 from typing import Any
 from collections.abc import Mapping, MutableMapping
 from kiss_cf.storage import Storable, Storage, RamStorage
@@ -50,12 +49,36 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
 
     @dataclass(eq=False, order=False)
     class ExportOptions(Setting.ExportOptions):
-        # An import via set_state() may discover an inconsistency within the
-        # imported data. The option was added in context of SettingDict where
-        # loading a stored set of settings should not be blocked by one setting
-        # having a failure. This option allows a silent failure.
+        # An import via set_state() may discover an inconsistency between input
+        # data and available keys. The following options control whether an
+        # exception will be raised on (1) missing keys or (2) new keys.
         exception_on_missing_key: bool = True
         exception_on_new_key: bool = True
+        # The type option could have been used to define whether new keys from
+        # the input data are supposed to be taken over into the SettingDict
+        # (True == add the new keys) but a corresponding option for removing
+        # missing keys would have been missing. Therefore, importing uses the
+        # following options while exporting remains using type.
+        remove_missing_keys: bool = False
+        add_new_keys: bool = False
+        # Interpretation of option combinations:
+        #  * remove/add and exception: Key will be added to (removed from)
+        #    SettingDict and a warning message will be logged.
+        #  * remove/add and NO exception: Key will be added to (removed from)
+        #    Setting dict without any logging.
+        #  * NO remove/add and NO exception: missing or new keys in input data
+        #    will be silently ignored.
+        #  * NO remove/add and exception: Exceptions on missing (or new) keys
+        #    will be raised.
+        #
+        # Rationale on default values. There is not realy a most likely case
+        # from the use cases listed above. However, add_new_keys cannot be set
+        # to True without setting the type to true since importing a missing
+        # key cannot work without having type information. Type was not set to
+        # True since Setting implementation focused on a minumum get_state().
+        # Hence, add_new_keys and remove_missing_keys are set to False. Setting
+        # the exceptions to True was then selected for transprency to avoid
+        # silent "misbehavior" just because of a type in JSON files.
 
     def __init__(self,
                  settings: Mapping[str, Any] | None = None,
@@ -315,52 +338,79 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                 key for key in data.keys()
                 if key not in ['_version']]
 
-        # define list of settings to be handled
-        if export_options.type:
-            # only if type is TRUE, it is expected to also load the keys from
-            # the imported data and the corresponding keys are appended.
-            key_list = self._value.keys() | setting_keys
-        else:
-            # throw error if any setting input does not yet exist:
-            failing_key = None
-            if export_options.exception_on_new_key:
-                for key in setting_keys:
-                    if key not in self:
-                        failing_key = key
-                        break
-            if failing_key is not None:
-                raise AppxfSettingError(
-                    f'Key {key} is included in set_state() data but is not yet '
-                    f'maintained in SettingDict({self.options.name}). '
-                    f'Consider setting export option "type" or '
-                    f'"import_fail_silently" to True.')
-            # See above - it is only expected to load the existing keys:
-            key_list = self._value.keys()
+        # check mismatch of keys:
+        current_keys = set(self._value.keys())
+        input_keys = set(setting_keys)
+        new_keys = input_keys - current_keys
+        missing_keys = current_keys - input_keys
+        # key list to handle starts with the full set of keys (available and
+        # input):
+        key_list = current_keys | input_keys
+        # hanlde missing keys:
+        if missing_keys:
+            message = (
+                f'The following keys are maintained by SettingDict({self.options.name}) '
+                f'but not included in data. Missing are: {missing_keys}.')
+            if not export_options.exception_on_missing_key:
+                # nothing to report
+                pass
+            elif export_options.remove_missing_keys:
+                # warning message, only:
+                pass
+                # TODO: log warning message
+            else:
+                # exception expected:
+                raise AppxfSettingError(message)
+
+            if export_options.remove_missing_keys:
+                for key in missing_keys:
+                    del self._value[key]
+            # in either case, the key list to handle stuff must not include
+            # those missing keys:
+            key_list = key_list - missing_keys
+
+        # handle new keys:
+        if new_keys:
+            message = (
+                f'The following keys are included in set_state() data but not yet '
+                f'maintained in SettingDict({self.options.name}). '
+                f'Consider setting export option "add_missing_keys" to True or '
+                f'"exception_on_new_key" to False or '
+                f'add the missing keys to the input data. '
+                f'Missing keys are: {new_keys}.')
+            if not export_options.exception_on_new_key:
+                # nothing to report
+                pass
+            elif export_options.add_new_keys:
+                # warning message, only:
+                pass
+                # TODO: log warning message
+            else:
+                # exception expected:
+                raise AppxfSettingError(message)
+
+            if export_options.add_new_keys:
+                for key in new_keys:
+                    # to create the new setting, the type must be present:
+                    if not isinstance(settings[key], dict) or 'type' not in settings[key].keys():
+                        raise AppxfSettingError(
+                            f'Key {key} does not yet exist in SettingDict({self.options.name}) '
+                            f'but import data does not include type information. '
+                            f'Data only comprises: {settings[key]}')
+                    self._value[key] = Setting.new(settings[key]['type'])
+                    # also restore setting name:
+                    self._value[key].options.name = key
+            else:
+                # strip new keys from keys to be updated
+                key_list = key_list - new_keys
 
         # cycle through settings that must be taken over (key_list):
         for key in key_list:
-            # keys maintained in SettingDict but not in settings input
-            if key not in settings and export_options.exception_on_missing_key:
-                raise AppxfSettingError(
-                    f'Key {key} is maintained by SettingDict({self.options.name}) but not included in data. '
-                    f'Data for set_state() only included the keys: {data.keys()}.')
             # correct simplified format for plain values that are not nested dicts:
             if isinstance(settings[key], dict):
                 this_setting_data = settings[key]
             else:
                 this_setting_data = {'value': settings[key]}
-
-            # settings that must be created (type import options was TRUE):
-            if key not in self._value:
-                # to create the new setting, the type must be present:
-                if 'type' not in this_setting_data.keys():
-                    if not export_options.exception_on_new_key:
-                        continue
-                    raise AppxfSettingError(
-                        f'Key {key} does not yet exist in SettingDict({self.options.name}) '
-                        f'but import data does not include type information. '
-                        f'Data only comprises: {this_setting_data}')
-                self._value[key] = Setting.new(this_setting_data['type'])
 
             # setting value and options from setting data input
             if key in key_list:
@@ -385,6 +435,9 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                 # restore setting name:
                 if not self._value[key].options.name:
                     self._value[key].options.name = key
+                # TODO: is the above actually necessary? If SettingDict is
+                # implemented as expected, any Setting that is adde will have
+                # the right name.
 
     # ## Setting behavior
 

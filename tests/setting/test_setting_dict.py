@@ -709,8 +709,11 @@ def test_setting_dict_set_state_default_new_key_exception():
         setting_dict.set_state(data)
 
     assert not setting_dict.keys()
-    assert 'Key test is included in set_state() data' in str(exc_info.value)
-    assert 'Consider setting export option "type" or "import_fail_silently"' in str(exc_info.value)
+    assert 'but not yet maintained in SettingDict' in str(exc_info.value)
+    assert 'setting export option "add_missing_keys" to True' in str(exc_info.value)
+    assert '"exception_on_new_key" to False' in str(exc_info.value)
+    assert 'add the missing keys to the input data.' in str(exc_info.value)
+    assert 'test' in str(exc_info.value)
 
 # ...unless exceptions are turned off.
 def test_setting_dict_set_state_default_new_key_no_exception():
@@ -753,12 +756,12 @@ def test_setting_dict_set_state_default_missing_key_exception():
         setting_dict.set_state(dataB)
 
     for exc in [('A', str(excA_info.value)),
-                    ('B', str(excB_info.value))]:
+                ('B', str(excB_info.value))]:
         # sample: Key A is maintained by SettingDict() but not included in
         # data. Data for set_state() only included the keys:
         # odict_keys(['_version', 'B']).
-        assert f'Key {exc[0]} is maintained by SettingDict() but not included in data' in exc[1]
-        assert 'Data for set_state() only included the keys' in exc[1]
+        assert f'but not included in data' in exc[1]
+        assert f"{exc[0]}" in exc[1]
 
 # REQ: The output of get_state() shall restore missing keys with value AND
 # input when applied to set_state() and type export option is true.
@@ -771,7 +774,7 @@ def test_setting_dict_set_state_type_new_key_ok():
     del setting_dict['test']
     assert 'test' not in setting_dict
 
-    setting_dict.set_state(data, type = True)
+    setting_dict.set_state(data, add_new_keys = True)
     assert setting_dict['test'] == 42
     assert setting_dict.input['test'] == '42'
     assert setting_dict.get_setting('test') is not original_setting
@@ -791,7 +794,7 @@ def test_setting_dict_set_state_type_new_key_nested_dict():
     del setting_dict['test']
     assert 'test' not in setting_dict
 
-    setting_dict.set_state(data, type = True)
+    setting_dict.set_state(data, add_new_keys = True)
     assert setting_dict['test']['int'] == 42
     assert setting_dict.input['test']['int'] == '42'
     assert setting_dict.get_setting('test') is not original_test
@@ -808,7 +811,7 @@ def test_setting_dict_set_state_type_new_key_no_type_exception():
     del setting_dict['test']
     assert 'test' not in setting_dict
     with pytest.raises(AppxfSettingError) as exc_info:
-        setting_dict.set_state(data, type = True)
+        setting_dict.set_state(data, exception_on_new_key = False, add_new_keys = True)
 
     assert not setting_dict.keys()
     assert 'Key test does not yet exist in SettingDict(TestDict)' in str(exc_info.value)
