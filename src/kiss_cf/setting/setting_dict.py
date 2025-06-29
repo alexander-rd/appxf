@@ -12,6 +12,13 @@ from typing import Any
 from collections.abc import Mapping, MutableMapping
 from kiss_cf.storage import Storable, Storage, RamStorage
 from .setting import Setting, AppxfSettingError, AppxfSettingConversionError
+import warnings
+
+
+class AppxfSettingWarning(Warning):
+    ''' Warning for AppxfSettings '''
+    pass
+
 
 class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
     ''' Maintain a dictionary of settings
@@ -356,8 +363,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                 pass
             elif export_options.remove_missing_keys:
                 # warning message, only:
-                pass
-                # TODO: log warning message
+                warnings.warn(AppxfSettingWarning(message))
             else:
                 # exception expected:
                 raise AppxfSettingError(message)
@@ -383,8 +389,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                 pass
             elif export_options.add_new_keys:
                 # warning message, only:
-                pass
-                # TODO: log warning message
+                warnings.warn(AppxfSettingWarning(message))
             else:
                 # exception expected:
                 raise AppxfSettingError(message)

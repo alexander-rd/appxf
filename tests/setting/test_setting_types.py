@@ -221,7 +221,7 @@ class BaseSettingTest:
 
             setting = self.setting_class()
             if issubclass(self.setting_class, SettingDict):
-                setting.set_state(state, type=True, add_new_keys=True)
+                setting.set_state(state, type=True, add_new_keys=True, exception_on_new_key=False)
             else:
                 setting.set_state(state)
             self.verify_valid('Verifying valid value after SET_STATE', setting, case)
@@ -364,6 +364,9 @@ class TestSettingDict(BaseSettingTest):
         SettingCase(input={'int': (int, '0042')},
                     value={'int': 42},
                     input_check={'int': '0042'}),
+        SettingCase(input={},
+                    value={},
+                    string='')
     ]
 
 def test_setting_completeness():
