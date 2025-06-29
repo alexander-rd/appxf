@@ -32,6 +32,6 @@ from .base_types import SettingBool, SettingInt, SettingFloat
 from .setting_extension import SettingExtension
 from .setting_select import SettingSelect
 
-from .setting_dict import SettingDict
+from .setting_dict import SettingDict, AppxfSettingWarning
 
 from .base_types import validated_conversion_configparser

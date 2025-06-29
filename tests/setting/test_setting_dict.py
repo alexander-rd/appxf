@@ -4,7 +4,7 @@ from collections import OrderedDict
 from copy import deepcopy
 
 from kiss_cf.setting import SettingDict, Setting
-from kiss_cf.setting import AppxfSettingConversionError, AppxfSettingError
+from kiss_cf.setting import AppxfSettingError, AppxfSettingWarning
 from kiss_cf.setting import SettingString, SettingInt, SettingFloat, SettingBool
 
 from kiss_cf.storage import RamStorage
@@ -765,7 +765,7 @@ def test_setting_dict_set_state_default_missing_key_exception():
 
 # REQ: The output of get_state() shall restore missing keys with value AND
 # input when applied to set_state() and type export option is true.
-def test_setting_dict_set_state_type_new_key_ok():
+def test_setting_dict_set_state_new_key():
     setting_dict = SettingDict(settings={
         'test': (int, '42')})
     original_setting = setting_dict.get_setting('test')
@@ -774,10 +774,17 @@ def test_setting_dict_set_state_type_new_key_ok():
     del setting_dict['test']
     assert 'test' not in setting_dict
 
-    setting_dict.set_state(data, add_new_keys = True)
+    with pytest.warns(AppxfSettingWarning) as warn_info:
+        setting_dict.set_state(data, add_new_keys = True)
     assert setting_dict['test'] == 42
     assert setting_dict.input['test'] == '42'
     assert setting_dict.get_setting('test') is not original_setting
+
+    assert 'but not yet maintained in SettingDict' in str(warn_info[0].message)
+    assert 'setting export option "add_missing_keys" to True' in str(warn_info[0].message)
+    assert '"exception_on_new_key" to False' in str(warn_info[0].message)
+    assert 'add the missing keys to the input data.' in str(warn_info[0].message)
+    assert 'test' in str(warn_info[0].message)
 
 # restoring keys apparently also must work for nested dicts (this covers some
 # pecularities when handling nested dicts in set_state()):
@@ -794,7 +801,8 @@ def test_setting_dict_set_state_type_new_key_nested_dict():
     del setting_dict['test']
     assert 'test' not in setting_dict
 
-    setting_dict.set_state(data, add_new_keys = True)
+    # default options (exceptions not disables) shall raise a warning:
+    setting_dict.set_state(data, add_new_keys = True, exception_on_new_key = False)
     assert setting_dict['test']['int'] == 42
     assert setting_dict.input['test']['int'] == '42'
     assert setting_dict.get_setting('test') is not original_test
@@ -833,20 +841,20 @@ def test_setting_dict_set_state_type_new_key_no_type_no_exception():
 # REQ: When using set_state() with type==True and keys already existent and
 # type is same, the setting object must be retained. If type does not match,
 # there must be an exception.
-def test_setting_dict_set_state_missing_key_ok():
+def test_setting_dict_set_state_type_ok():
     setting_dict = SettingDict(settings={
         'test': (int, '42')})
     original_setting = setting_dict.get_setting('test')
     data = setting_dict.get_state(type = True)
 
     setting_dict['test'] = '13'
-    setting_dict.set_state(data, type = True)
+    setting_dict.set_state(data, type = True, add_new_keys = True)
     assert setting_dict['test'] == 42
     assert setting_dict.input['test'] == '42'
     assert setting_dict.get_setting('test') is original_setting
 
 # unless the type does not match.. ..that's still an exception:
-def test_setting_dict_set_state_missing_key_type_mismatch():
+def test_setting_dict_set_state_type_mismatch():
     setting_dict = SettingDict(settings={
         'test': (int, '42')})
     setting_dict.options.name = 'TestDict'
@@ -865,7 +873,7 @@ def test_setting_dict_set_state_missing_key_type_mismatch():
     assert 'Setting is of type SettingString while provided type is integer.' in str(exc_info.value)
 
 # REQ: According to remove_missing_key option, mising keys of input must be
-# removed from SettingDict. Default is False and alredy tested above.
+# removed from SettingDict. Default is False and already tested above.
 def test_setting_dict_set_state_missing_key_remove():
     setting_dict = SettingDict(settings={
         'test_int': (int, '42'),
@@ -878,7 +886,27 @@ def test_setting_dict_set_state_missing_key_remove():
 
     # remove test_str from input data:
     del data['test_str']
-    setting_dict.set_state(data, remove_missing_keys = True)
+    # without disabling exceptions, there will still be a warning:
+    with pytest.warns(AppxfSettingWarning) as warn_info:
+        setting_dict.set_state(data, remove_missing_keys = True)
+    assert 'test_str' not in setting_dict
+    assert setting_dict['test_int'] == 42
+    # check warnings content:
+    assert f'but not included in data' in str(warn_info[0].message)
+    assert f'test_str' in str(warn_info[0].message)
+    assert f'test_int' not in str(warn_info[0].message)
+
+# same test as above but not triggering the warning (switched off):
+@pytest.mark.filterwarnings("error")
+def test_setting_dict_set_state_missing_key_remove_no_warning():
+    setting_dict = SettingDict(settings={
+        'test_int': (int, '42'),
+        'test_str': (str, 'test')})
+    data = setting_dict.get_state()
+
+    # remove test_str from input data:
+    del data['test_str']
+    setting_dict.set_state(data, remove_missing_keys = True, exception_on_missing_key = False)
     assert 'test_str' not in setting_dict
     assert setting_dict['test_int'] == 42
 
