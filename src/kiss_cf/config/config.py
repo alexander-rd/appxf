@@ -98,10 +98,12 @@ class Config():
             storage=storage, settings=settings, name=section)
         #  * Config will, by default, not raise exceptions on import when
         #    a config option is new or missing
-        self._sections[section].stateful_kwargs = SettingDict.ExportOptions(
+        export_options = SettingDict.ExportOptions(
             exception_on_new_key = False,
             exception_on_missing_key = False
             ).get_state()
+        self._sections[section].get_state_kwargs = {'options': export_options}
+        self._sections[section].set_state_kwargs = {'options': export_options}
 
         self.log.info(f'added section: {section}')
         return self._sections[section]
