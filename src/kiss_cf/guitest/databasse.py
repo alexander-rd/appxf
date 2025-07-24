@@ -1,7 +1,20 @@
 # The Database class maintains the test case information.
-
+import os
+from pathlib import Path
 from kiss_cf.storage import Storable, JsonSerializer, LocalStorage
 from kiss_cf.setting import SettingDict
+
+
+class Entry():
+    def __init__(self,
+                 path:str = '',
+                 file:str = '',
+                 **kwargs):
+        super().__init__(**kwargs)
+        self.data = SettingDict(settings={
+            'path': (str, path),
+            'file': (str, file),
+            })
 
 class Database(Storable):
     # Test cases shall be selected efficiently which is ideally supported by
@@ -24,6 +37,14 @@ class Database(Storable):
             )
         super().__init__(storage=storage, **kwargs)
         self.data = SettingDict()
+        # all data fields have the same entries
+        self.data.set_default_constructor_for_new_keys(
+            lambda: Entry().data)
+        # all known files will be loaded:
+        export_options = SettingDict.ExportOptions()
+        export_options.exception_on_new_key = False
+        export_options.add_new_keys = True
+        self.set_state_kwargs = {'options': export_options}
 
         # ensure loaded data and initialized database file
         if self.exists():
@@ -43,7 +64,8 @@ class Database(Storable):
         # add new test case file to database
         #
         # If the file was already present, it will remain untouched.
-        pass
+        full_path = Path(path) / file
+        self.data[full_path.as_posix()] = Entry(path, file).data
 
     def remove(self,
                path: str,
@@ -51,4 +73,6 @@ class Database(Storable):
         # remove existing test case file from database
         #
         # If path/file does not exist, nothing will happen.
-        pass
+        full_path = Path(path) / file
+        print(f'Removing {full_path.as_posix()}')
+        del self.data[full_path.as_posix()]
