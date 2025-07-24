@@ -4,6 +4,8 @@ __pycache__/
 *$py.class
 *.drawio.bkp
 cov_*
+/guitest
+/guitest_features
 pytest-env
 data
 notes
