@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections import OrderedDict
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 from collections.abc import Mapping, MutableMapping
 from kiss_cf.storage import Storable, Storage, RamStorage
 from .setting import Setting, AppxfSettingError, AppxfSettingConversionError
@@ -126,6 +126,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
 
         # The strange next line is just to fix the type hints.
         self.options: SettingDict.Options = self.options
+        self.default_constructor: None | Callable[[], Setting] = None
 
     def __len__(self):
         return self._value.__len__()
@@ -396,13 +397,18 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
 
             if export_options.add_new_keys:
                 for key in new_keys:
-                    # to create the new setting, the type must be present:
+                    # to create the new setting, the type must be present or a
+                    # default type must be set.
                     if not isinstance(settings[key], dict) or 'type' not in settings[key].keys():
-                        raise AppxfSettingError(
-                            f'Key {key} does not yet exist in SettingDict({self.options.name}) '
-                            f'but import data does not include type information. '
-                            f'Data only comprises: {settings[key]}')
-                    self._value[key] = Setting.new(settings[key]['type'])
+                        if self.default_constructor is None:
+                            raise AppxfSettingError(
+                                f'Key {key} does not yet exist in SettingDict({self.options.name}) '
+                                f'but import data does not include type information. '
+                                f'Data only comprises: {settings[key]}')
+                        else:
+                            self._value[key] = self.default_constructor()
+                    else:
+                        self._value[key] = Setting.new(settings[key]['type'])
                     # also restore setting name:
                     self._value[key].options.name = key
             else:
@@ -443,6 +449,21 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                 # TODO: is the above actually necessary? If SettingDict is
                 # implemented as expected, any Setting that is adde will have
                 # the right name.
+
+    def set_default_constructor_for_new_keys(self,
+        default_constructor: None | Callable[[], Setting]):
+        ''' Set the constructor for new keys upon set_state/load
+
+        This constructor is used when a new key is supposed to be loaded that
+        would have no type information. This setting only applies on this level
+        and the default type is not known to any nested dicts. The default type
+        must support default construction ().
+
+        This option is commonly used for SettingDicts that represent a database
+        to entries of the same type. This setting allows storage of the
+        database without adding type information.
+        '''
+        self.default_constructor = default_constructor
 
     # ## Setting behavior
 
