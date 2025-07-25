@@ -1,8 +1,8 @@
 import tkinter
-from tests._fixtures.guitest_helper import ManualTestHelper
+from kiss_cf.guitest.case_runner import GuitestCaseRunner
 from kiss_cf.gui.application import KissApplication
 
-tester = ManualTestHelper('''
+tester = GuitestCaseRunner('''
 Resizing: First main frame has a border and is the only thing that must resize.
 Switch Button: It toggle buttons to switch to start/second. Switching must NOT resize the window.
 ''')  # noqa: E501

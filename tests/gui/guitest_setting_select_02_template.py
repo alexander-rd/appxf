@@ -20,11 +20,11 @@ save button on top, not a delete button.
 
 import tkinter
 
-from tests._fixtures.guitest_helper import ManualTestHelper
+from kiss_cf.guitest.case_runner import GuitestCaseRunner
 from kiss_cf.setting import Setting
 from kiss_cf.gui import FrameWindow, SettingSelectDetailFrame
 
-tester = ManualTestHelper(__doc__)
+tester = GuitestCaseRunner(__doc__)
 
 setting = Setting.new('select::text',
     select_map={'01 One': 'Template text 01 to be adapted.',

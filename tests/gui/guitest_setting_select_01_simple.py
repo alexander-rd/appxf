@@ -1,10 +1,10 @@
-from tests._fixtures.guitest_helper import ManualTestHelper
+from kiss_cf.guitest.case_runner import GuitestCaseRunner
 from kiss_cf.setting import Setting
 from kiss_cf.gui import SettingSelectFrame
 
 # Scope: SettingSelect functionality by single SettingFrame
 
-tester = ManualTestHelper('''
+tester = GuitestCaseRunner('''
 Frame shall only show the label and the dropdown. The edit button must not be
 presented. The dropdown must be empty at startup (nothing selected) and contain
 three options.
