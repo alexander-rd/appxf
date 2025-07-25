@@ -1,6 +1,6 @@
 '''Test case description - test case description could come from here'''
 
-from tests._fixtures.guitest_helper import ManualTestHelper
+from kiss_cf.guitest.case_runner import GuitestCaseRunner
 from kiss_cf.setting import SettingBool, SettingString, SettingEmail, SettingDict
 from kiss_cf.gui.setting_dict import SettingDictWindow
 from appxf import logging
@@ -8,7 +8,7 @@ from appxf import logging
 #logging.activate_logging()
 #logging.console_handler.setFormatter(logging.file_formatter)
 
-tester = ManualTestHelper('''
+tester = GuitestCaseRunner('''
 Resizing: should only affect the right entry part.
 Validation: Entry types are shown. Latest after loosing focus on entry, wrong values should turn the entry red.
 Columns: Placing options on top of this widget will test alignement of entry fields. Here, all properties are independent and entr fields start directly after the label.

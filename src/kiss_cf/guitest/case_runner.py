@@ -8,8 +8,12 @@ import os
 import re
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__),'../../'))
-from conftest import pytest_runtest_setup
-pytest_runtest_setup(None)
+
+# TODO: the following two lines were something about proper logging activation.
+# This should be added again.
+#
+#from conftest import pytest_runtest_setup
+#pytest_runtest_setup(None)
 
 # TODO: find a way to accumulate coverage as part of the reporting
 # I will need:
@@ -29,7 +33,7 @@ pytest_runtest_setup(None)
 #for logger_name in logging.logging.Logger.manager.loggerDict:
 #    print(logger_name)
 
-class ManualTestHelper(tkinter.Tk):
+class GuitestCaseRunner(tkinter.Tk):
     def __init__(self, explanation: str | None):
 
         super().__init__()

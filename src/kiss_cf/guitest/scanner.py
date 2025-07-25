@@ -5,30 +5,33 @@ import os
 import fnmatch
 from pathlib import Path
 from appxf import logging
-from .database import Database
+from .case_data import CaseData
 
 
 class Scanner():
     def __init__(self,
-                 database: Database,
-                 path: str = './tests'):
-        self.path = path
-        self.database = database
+                 case_data: CaseData,
+                 path: str | list[str] = './tests'):
+        if isinstance(path, str):
+            path = [path]
+        else:
+            self.path = path
+        self.database = case_data
 
     def scan(self):
         # remove files that are not existing anymore
         remove_list = []
-        for case_name, case_data in self.database.data.items():
-            if not Path(self.path, case_name).is_file():
+        for case_name, case_data in self.database.case_data.items():
+            if not Path(case_name).is_file():
                 remove_list += [case_data]
         for case in remove_list:
             self.database.remove(case['path'], case['file'])
 
         # find new files:
-        for dirpath, dirnames, filenames in os.walk(self.path):
-            for filename in fnmatch.filter(filenames, "guitest_*.py"):
-                # strip first level of path (./tests/) since this should not be
-                # relevant in database:
-                path = Path(*Path(dirpath).parts[1:])
-                self.database.new(path.as_posix(), filename)
+        for path in self.path:
+            for dirpath, dirnames, filenames in os.walk(path):
+                for filename in fnmatch.filter(filenames, "guitest_*.py"):
+                    # strip first level of path (./tests/) since this should not be
+                    # relevant in database:
+                    self.database.new(dirpath, filename)
         self.database.store()

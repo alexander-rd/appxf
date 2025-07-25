@@ -231,6 +231,10 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         ''' Access Setting object '''
         return self._value[key]
 
+    def sort(self, reverse: bool=False):
+        ''' Sort the keys of the SettingDict '''
+        self._value = OrderedDict(sorted(self._value.items(), key=lambda item: item[0], reverse=reverse))
+
     # ## Storage Behavior
 
     def set_storage(self, storage: Storage):

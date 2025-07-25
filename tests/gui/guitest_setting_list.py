@@ -1,7 +1,7 @@
 import tkinter
 
 from appxf import logging
-from tests._fixtures.guitest_helper import ManualTestHelper
+from kiss_cf.guitest.case_runner import GuitestCaseRunner
 from kiss_cf.setting import Setting
 from kiss_cf.gui import FrameWindow, SettingDictColumnFrame
 
@@ -41,7 +41,7 @@ class FrameForTesting(FrameWindow):
 gui_logger = logging.getLogger('kiss_cf.gui')
 gui_logger.setLevel(logging.logging.WARNING)
 
-tester = ManualTestHelper('''
+tester = GuitestCaseRunner('''
 Test case is less about
 ''')  # noqa: E501
 
