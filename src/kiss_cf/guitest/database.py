@@ -2,7 +2,7 @@
 import os
 from pathlib import Path
 from kiss_cf.storage import Storable, JsonSerializer, LocalStorage
-from kiss_cf.setting import SettingDict
+from kiss_cf.setting import SettingDict, SettingSelect, SettingString
 
 
 class Entry():
@@ -14,9 +14,20 @@ class Entry():
         self.data = SettingDict(settings={
             'path': (str, path),
             'file': (str, file),
+            'state': SettingSelect(
+                base_setting=SettingString(),
+                value='new',
+                select_map = {state: state for state in [
+                    'new', 'valid', 'invalid']},
+                # switch off all fency stuff to disable exporting those details
+                # into storage:
+                mutable_list = False,
+                mutable_items = False,
+                custom_value = False
+                ),
             })
 
-class Database(Storable):
+class Database():
     # Test cases shall be selected efficiently which is ideally supported by
     # the database storage. The followins layers may exist:
     #  1) Test case library like, unit tests and feature tests in case of
@@ -28,35 +39,33 @@ class Database(Storable):
     #
     # (2) and (3) will be the the reference for the test case while both will
     # be separate elements for the data element.
+    #
+    # The database is fixed to use a local, JSON (human readable) storage
+    # format.
 
     def __init__(self, path: str = 'guitest', **kwargs):
-        storage = LocalStorage(
-            file='database',
+        super().__init__(**kwargs)
+        self.storage_factory = LocalStorage.get_factory(
             path=path,
-            serializer=JsonSerializer
-            )
-        super().__init__(storage=storage, **kwargs)
-        self.data = SettingDict()
-        # all data fields have the same entries
+            serializer=JsonSerializer)
+        # initialize data as SettingDict:
+        self.data = SettingDict(
+            storage=self.storage_factory('database'))
+        # all data fields have the same entries:
         self.data.set_default_constructor_for_new_keys(
             lambda: Entry().data)
-        # all known files will be loaded:
+        # all known cases will be loaded:
         export_options = SettingDict.ExportOptions()
+        export_options.exception_on_missing_key = False
         export_options.exception_on_new_key = False
         export_options.add_new_keys = True
-        self.set_state_kwargs = {'options': export_options}
+        self.data.set_state_kwargs = {'options': export_options}
 
         # ensure loaded data and initialized database file
-        if self.exists():
-            self.load()
+        if self.data.exists():
+            self.data.load()
         else:
-            self.store()
-
-    def get_state(self, **kwarg) -> object:
-        return self.data.get_state(**kwarg)
-
-    def set_state(self, data: object, **kwarg):
-        return self.data.set_state(data, **kwarg)
+            self.data.store()
 
     def new(self,
             path: str,
@@ -65,7 +74,12 @@ class Database(Storable):
         #
         # If the file was already present, it will remain untouched.
         full_path = Path(path) / file
-        self.data[full_path.as_posix()] = Entry(path, file).data
+        full_path = full_path.as_posix()
+        if full_path in self.data:
+            print(f'Already existing: {full_path}')
+        else:
+            print(f'Added new to database: {full_path}')
+            self.data[full_path] = Entry(path, file).data
 
     def remove(self,
                path: str,
@@ -74,5 +88,13 @@ class Database(Storable):
         #
         # If path/file does not exist, nothing will happen.
         full_path = Path(path) / file
-        print(f'Removing {full_path.as_posix()}')
-        del self.data[full_path.as_posix()]
+        full_path = full_path.as_posix()
+        if full_path in self.data:
+            print(f'Removed from database: {full_path}')
+            del self.data[full_path]
+
+    def store(self):
+        self.data.store()
+
+    def load(self):
+        self.data.load()
