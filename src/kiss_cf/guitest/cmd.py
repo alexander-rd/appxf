@@ -36,17 +36,18 @@ class CmdHelper():
             self.run_case(case)
 
     def run_case(self, case_name: str):
-        coverage_file = Path(self.database.root_path,
-                             self.database.get_case_path_string(case_name),
-                             self.database.get_case_name(case_name) + '.coverage')
+        out_path = Path(self.database.root_path,
+                        self.database.get_case_path_string(case_name))
+        coverage_file = out_path / (self.database.get_case_name(case_name) + '.coverage')
+        result_file = out_path / (self.database.get_case_name(case_name) + '.result.json')
         subprocess.run([
             sys.executable,
-            "-m",
-            "coverage",
-            "run",
-            "--source=kiss_cf",
+            '-m', 'coverage', 'run',
+            '--source=kiss_cf',
+            '--branch',
             f'--data-file={coverage_file}',
-            case_name
+            case_name,
+            f'--result-file={result_file}'
             ],
             check=True)
 
