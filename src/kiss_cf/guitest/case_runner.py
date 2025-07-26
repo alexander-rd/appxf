@@ -3,9 +3,12 @@ import argparse
 import inspect
 import json
 import os
+import subprocess
 import re
 import tkinter
 import sys
+
+import datetime
 
 # IMPORTANT: appxf modules must not be imported. This guitest module is all
 # about supporting manual testing. Test case executions will become obsolete if
@@ -36,32 +39,16 @@ pytest_runtest_setup(None)
 
 class GuitestCaseRunner(tkinter.Tk):
     def __init__(self, explanation: str | None):
-
         super().__init__()
-        self.title('Test Control')
+        self.title('APPXF Manual Test Case Runner')
 
         self.explanation = explanation.strip() if explanation else ''
         # remove single newlines (wither a full paragraph \n\n or no paragraph
         # at all). The regexp is for \n neither preceeded (?<!\n) nor followed
         # (?!\n) by a newline:
-        self.explanation =  re.sub(r'(?<!\n)\n(?!\n)', '', self.explanation)
+        self.explanation = re.sub(r'(?<!\n)\n(?!\n)', '', self.explanation)
 
-        explanation_label = tkinter.Label(
-            self, text=self.explanation,
-            wraplength=450, justify=tkinter.LEFT,
-            padx=5, pady=5)
-        explanation_label.pack()
-
-        button_ok = tkinter.Button(
-            self, text="OK", command=self.button_ok)
-        button_ok.pack()
-
-        # TODO: for toplevel, we might want to reopen it.
-
-        # TODO: also for frame tests, we might want to open on demand
-
-        # TODO: needed is a debug window to check some states before/after
-        # execution of the window
+        # argument parsing:
         parser = argparse.ArgumentParser(
             prog=f'{sys.argv[0]}',
             description=(
@@ -75,8 +62,90 @@ class GuitestCaseRunner(tkinter.Tk):
         args = parser.parse_args()
         self.result_file = args.result_file
 
+        # timestamp:
+        self.timestamp = datetime.datetime.now(datetime.timezone.utc)
+        self._get_git_user_info()
+
+        self._build_window()
+
+    def _get_git_user_info(self):
+        try:
+            self.git_name = subprocess.check_output(
+                ["git", "config", "user.name"],
+                text=True).strip()
+        except subprocess.CalledProcessError:
+            self.git_name = 'Unknown GIT User'
+        try:
+            self.git_email = subprocess.check_output(
+                ["git", "config", "user.email"],
+                text=True).strip()
+        except subprocess.CalledProcessError:
+            self.git_email = 'Unknown GIT Email'
+
+    def _build_window(self):
+
+        # Test case explanations:
+        explanation_label = tkinter.Label(
+            self, text=self.explanation,
+            wraplength=450, justify=tkinter.LEFT,
+            padx=5, pady=5)
+        explanation_label.pack(anchor='w')
+
+        # Identification label:
+        identification_label = tkinter.Label(
+            self, text=f'{self.timestamp} by {self.git_name} <{self.git_email}>',
+            padx=5, pady=5)
+        identification_label.pack(anchor='w')
+
+        # Test results:
+        self.entry = tkinter.Text(
+                self, width=80, height=15)
+        self.entry.insert('1.0', 'Enter test results here...')
+        #self.scrollbar = tkinter.Scrollbar(
+        #        self, orient=tkinter.VERTICAL,
+        #        command=self.entry.yview)  # type: ignore (entry is Text)
+        #self.place(self.scrollbar, row=0, column=2,
+        #            setting=GridSetting(padx=(0, 5), sticky='NSE'))
+        #self.entry.configure(yscrollcommand=self.scrollbar.set)
+        self.entry.pack(anchor='w')
+
+        # Button Frame
+        button_frame = tkinter.Frame(self)
+        button_frame.pack()
+        # OK Button:
+        button_ok = tkinter.Button(
+            button_frame, text="OK", command=self.button_ok)
+        button_ok.pack(side=tkinter.LEFT)
+        # Failed Button:
+        button_failed = tkinter.Button(
+            button_frame, text="Fail", command=self.button_failed)
+        button_failed.pack(side=tkinter.LEFT)
+
+        # TODO: for toplevel, we might want to reopen it.
+
+        # TODO: also for frame tests, we might want to open on demand
+
+        # TODO: needed is a debug window to check some states before/after
+        # execution of the window
+
     def button_ok(self):
+        self._write_result_file('ok')
         self.destroy()
+
+    def button_failed(self):
+        self._write_result_file('failed')
+        self.destroy()
+
+    def _write_result_file(self, result: str):
+        if self.result_file:
+            with open(self.result_file, 'w') as file:
+                json.dump({
+                    'timestamp': f'{self.timestamp}',
+                    'author': f'{self.git_name} <{self.git_email}>',
+                    'description': self.explanation,
+                    'comment': self.entry.get('1.0', tkinter.END),
+                    'result': result
+                    }, file, indent=2)
 
     def run(self, tkinter_class: type[tkinter.BaseWidget], *args, **kwargs):
         if issubclass(tkinter_class, tkinter.Toplevel):
@@ -99,9 +168,6 @@ class GuitestCaseRunner(tkinter.Tk):
         self.place_toplevel(test_window)
 
         self.mainloop()
-        if self.result_file:
-            with open(self.result_file, 'w') as file:
-                json.dump({'dummy': 'data'}, file, indent=2)
 
 
     def _run_toplevel(self,
