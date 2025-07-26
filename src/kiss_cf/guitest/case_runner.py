@@ -1,25 +1,26 @@
-import inspect
-import tkinter
 
-# Manual tests are not pytests but general setup (like start of logging) is
-# configured in conftest. To enable reuse and the import the root path of the
-# module is added to the system path:
+import argparse
+import inspect
+import json
 import os
 import re
+import tkinter
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__),'../../'))
 
-# TODO: the following two lines were something about proper logging activation.
-# This should be added again.
+# IMPORTANT: appxf modules must not be imported. This guitest module is all
+# about supporting manual testing. Test case executions will become obsolete if
+# relevant covered lines change. Hence, if this module coveres any additional
+# appxf line, all manual test cases would become dependent on those lines.
 #
-#from conftest import pytest_runtest_setup
-#pytest_runtest_setup(None)
+# Exceptions are guitest modules.
 
-# TODO: find a way to accumulate coverage as part of the reporting
-# I will need:
-# coverage run --source=kiss_cf --data-file=.coerage.<test-module>
-# running:
-# coverage run --branch --append tests/manual/property_editor.py
+# Manual tests are not pytests but general setup (like start of logging) is
+# configured in conftest. To enable reuse and import the root path of the
+# module is added to the system path:
+sys.path.append(os.path.join(os.path.dirname(__file__),'../../../'))
+# the following import enables the appxf logging:
+from conftest import pytest_runtest_setup
+pytest_runtest_setup(None)
 
 # TODO: store test results somehow:
 # - invalidate when included library parts changed
@@ -61,6 +62,18 @@ class GuitestCaseRunner(tkinter.Tk):
 
         # TODO: needed is a debug window to check some states before/after
         # execution of the window
+        parser = argparse.ArgumentParser(
+            prog=f'{sys.argv[0]}',
+            description=(
+                'This CaseRunner from APPXF guitest module '
+                'was called via above mentioned python script.'
+            ))
+        parser.add_argument(
+            '--result-file',
+            required=False, default='',
+            help='File to store test results in JSON format.')
+        args = parser.parse_args()
+        self.result_file = args.result_file
 
     def button_ok(self):
         self.destroy()
@@ -86,6 +99,10 @@ class GuitestCaseRunner(tkinter.Tk):
         self.place_toplevel(test_window)
 
         self.mainloop()
+        if self.result_file:
+            with open(self.result_file, 'w') as file:
+                json.dump({'dummy': 'data'}, file, indent=2)
+
 
     def _run_toplevel(self,
                      toplevel_type: type[tkinter.Toplevel],
