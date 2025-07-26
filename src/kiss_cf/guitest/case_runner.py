@@ -1,14 +1,22 @@
 
 import argparse
+import datetime
 import inspect
 import json
+import markdown
 import os
 import subprocess
 import re
 import tkinter
 import sys
 
-import datetime
+from tkhtmlview import HTMLLabel
+from tkinter import font as tkfont
+
+#from tkhtmlview.html_parser import Defs as html_def
+#html_def.DEFAULT_TEXT_FONT_FAMILY = 'TkDefaultFont'
+#html_def.FONT_SIZE = 6
+
 
 # IMPORTANT: appxf modules must not be imported. This guitest module is all
 # about supporting manual testing. Test case executions will become obsolete if
@@ -83,31 +91,54 @@ class GuitestCaseRunner(tkinter.Tk):
             self.git_email = 'Unknown GIT Email'
 
     def _build_window(self):
-
         # Test case explanations:
-        explanation_label = tkinter.Label(
-            self, text=self.explanation,
-            wraplength=450, justify=tkinter.LEFT,
-            padx=5, pady=5)
-        explanation_label.pack(anchor='w')
+        self.instruction_label = tkinter.Label(
+            self, text='Test Instructions:',
+            padx=0, pady=0)
+        self.instruction_label.pack(anchor='w', padx=5, pady=0)
+        self.instruction_frame = tkinter.Frame(
+            bd=1, relief='sunken')
+        self.instruction_frame.pack(fill='x', padx=5, pady=0)
+        self.instruction_widget = self._get_markdown_label(
+            parent=self.instruction_frame,
+            markdown_text=self.explanation,
+            width=80)
+        self.instruction_widget.pack(
+            fill='x')
 
         # Identification label:
-        identification_label = tkinter.Label(
-            self, text=f'{self.timestamp} by {self.git_name} <{self.git_email}>',
-            padx=5, pady=5)
-        identification_label.pack(anchor='w')
+        self.observations_label = tkinter.Label(
+            self, text='Obervations:',
+            padx=0, pady=0)
+        self.observations_label.pack(anchor='w', padx=5, pady=0)
+
+        self.observations_info_frame = tkinter.Frame(
+            bd=1, relief='sunken')
+        self.observations_info_frame.pack(fill='x', padx=5, pady=0)
+        self.observations_info_timestamp_label = tkinter.Label(
+            self.observations_info_frame,
+            text=f'UTC Timestamp: {self.timestamp}',
+            justify=tkinter.LEFT)
+        self.observations_info_timestamp_label.pack(
+            anchor='w', padx=0, pady=0)
+        self.observations_info_author_label = tkinter.Label(
+            self.observations_info_frame,
+            text=f'Author (GIT name <email>): {self.git_name} <{self.git_email}>',
+            justify=tkinter.LEFT)
+        self.observations_info_author_label.pack(
+            anchor='w', padx=0, pady=0)
 
         # Test results:
-        self.entry = tkinter.Text(
+        self.observations_text = tkinter.Text(
                 self, width=80, height=15)
-        self.entry.insert('1.0', 'Enter test results here...')
+        self.observations_text.insert('1.0', 'Enter observations...')
         #self.scrollbar = tkinter.Scrollbar(
         #        self, orient=tkinter.VERTICAL,
         #        command=self.entry.yview)  # type: ignore (entry is Text)
         #self.place(self.scrollbar, row=0, column=2,
         #            setting=GridSetting(padx=(0, 5), sticky='NSE'))
         #self.entry.configure(yscrollcommand=self.scrollbar.set)
-        self.entry.pack(anchor='w')
+        self.observations_text.pack(anchor='w', fill='x', padx=5, pady=0)
 
         # Button Frame
         button_frame = tkinter.Frame(self)
@@ -128,6 +159,29 @@ class GuitestCaseRunner(tkinter.Tk):
         # TODO: needed is a debug window to check some states before/after
         # execution of the window
 
+    def _get_markdown_label(self,
+                            parent,
+                            markdown_text: str,
+                            width: int = 400) -> tkinter.Widget:
+        ''' Get label displaying markdown formatted text '''
+        # Convert markdown to HTML
+        html = markdown.markdown(markdown_text)
+        #print(f'Input: {markdown}')
+        #print(f'HTML: {html}')
+        # adjust font sizes via adding code to paragraphs:
+        html = re.sub('<p>', '<p style="font-size: 11px;">', html)
+        #print(f'HTML2: {html}')
+
+        # Create HTMLLabel with fixed width
+        widget = HTMLLabel(parent, html=html,
+                           width=width)
+
+        # Ensure text wraps within width
+        #widget.fit_height()  # Adjust height to content
+        widget.after(100, lambda: widget.fit_height())
+
+        return widget
+
     def button_ok(self):
         self._write_result_file('ok')
         self.destroy()
@@ -143,7 +197,7 @@ class GuitestCaseRunner(tkinter.Tk):
                     'timestamp': f'{self.timestamp}',
                     'author': f'{self.git_name} <{self.git_email}>',
                     'description': self.explanation,
-                    'comment': self.entry.get('1.0', tkinter.END),
+                    'comment': self.observations_text.get('1.0', tkinter.END),
                     'result': result
                     }, file, indent=2)
 
