@@ -3,4 +3,4 @@
 from .case_data import CaseData
 from .scanner import Scanner
 from .cmd import CmdHelper
-from .case_runner import GuitestCaseRunner
+from .case_runner import ManualCaseRunner

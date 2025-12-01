@@ -1,6 +1,6 @@
-''' Guitest Runner
+''' Manual Test Runner
 
-Call via:  ./.venv/bin/python guitest.py
+Call via:  ./.venv/bin/python manual_tests.py
 
 Virtual environment (venv) is required since, without, appxf would be unknown.
 '''

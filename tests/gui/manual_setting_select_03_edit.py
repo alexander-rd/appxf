@@ -1,10 +1,10 @@
-from kiss_cf.guitest.case_runner import GuitestCaseRunner
+from kiss_cf.guitest.case_runner import ManualCaseRunner
 from kiss_cf.gui.setting_dict import SettingDictSingleFrame
 from kiss_cf.setting import Setting, SettingDict
 
 # Scope: SettingSelect edit options functionality
 
-tester = GuitestCaseRunner('''
+tester = ManualCaseRunner('''
 TBD
 ''')  # noqa: E501
 
