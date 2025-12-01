@@ -6,17 +6,16 @@ The test strategy considers the following two test levels:
    While focusing on individual modules, tests may or may not cut free
    interfaces to other modules. No excuses -- all GUI elements must also be
    covered.
- * __Feature Tests__ are driven by the APPXF supported __*use cases*__ and to
-   be monitored __*performance targets*__. Feature tests shall use the APPXF
-   implementation as-is wherever possible. Use cases like login/registration
-   typically involve many modules like GUI elements, storage and settings. Even
-   though such test cases intend to ensure proper interaction between the basic
-   modules, the term *integration test* will not be used since there is no
-   integration: APPXF is *one* package. If basic use cases are already covered
-   well by the unit tests, they will not be repeated as feature tests unless
-   the following is validated: (1) the documented usage of the interface or (2)
-   performance characteristics or (3) the implementation of simpler test steps
-   for reuse.
+ * __Feature Tests__ are driven by the APPXF supported ***use cases*** and
+   __*performance targets*__. Feature tests shall use the APPXF implementation
+   as-is wherever possible. Use cases like login/registration typically involve
+   many modules like GUI elements, storage and settings. Even though such test
+   cases intend to ensure proper interaction between the basic modules, the
+   term *integration test* will not be used since there is no integration:
+   APPXF is *one* package. If basic use cases are already covered well by the
+   unit tests, they will not be repeated as feature tests unless the following
+   is validated: (1) the documented usage of the interface or (2) performance
+   characteristics or (3) the implementation of simpler test steps for reuse.
 
 The following details must be considered:
  * __Backwards Compatibility__ shall be ensured by either unit tests or feature
@@ -58,8 +57,8 @@ The idea comprises steps in the automation via TOX:
    changes and scanning for existing manual test cases)
  * a test case that is FAILING if any planned test case has no valid test
    execution
- * merging the coverage of valid manual test case executions with the oder unit
-   tests or feature tests
+ * merging the coverage of valid manual test case executions with the automated
+   unit tests or feature tests
 
 and scripting (or an application) assisting with:
  * triggering the steps mentioned above in TOX
@@ -126,3 +125,4 @@ level. The prefix <code>test_bdd</code> is mandated to remain consistent if
 behavior tests are combined with normal unit tests for the same module.
 
 \# TODO: file guideline should include the fixtures folder.
+\# TODO: guitest prefix is not consistent since actual meaning is "manual test". Prefix "manual" seems to to be the cleanest solution since the test context is already clear from the top-level folder. "mtest" or "mantest" would need more explanation while "manualtest" or "manual_test" would be too long.
