@@ -13,17 +13,12 @@ import sys
 from tkhtmlview import HTMLLabel
 from tkinter import font as tkfont
 
-#from tkhtmlview.html_parser import Defs as html_def
-#html_def.DEFAULT_TEXT_FONT_FAMILY = 'TkDefaultFont'
-#html_def.FONT_SIZE = 6
-
-
 # IMPORTANT: appxf modules must not be imported. This guitest module is all
 # about supporting manual testing. Test case executions will become obsolete if
 # relevant covered lines change. Hence, if this module coveres any additional
 # appxf line, all manual test cases would become dependent on those lines.
 #
-# Exceptions are guitest modules.
+# Exceptions may be guitest modules.
 
 # Manual tests are not pytests but general setup (like start of logging) is
 # configured in conftest. To enable reuse and import the root path of the
