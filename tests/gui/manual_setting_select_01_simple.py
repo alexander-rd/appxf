@@ -1,10 +1,10 @@
-from kiss_cf.guitest.case_runner import GuitestCaseRunner
+from kiss_cf.guitest.case_runner import ManualCaseRunner
 from kiss_cf.setting import Setting
 from kiss_cf.gui import SettingSelectFrame
 
 # Scope: SettingSelect functionality by single SettingFrame
 
-tester = GuitestCaseRunner('''
+tester = ManualCaseRunner('''
 Frame shall only show the label and the dropdown. The edit button must not be
 presented. The dropdown must be empty at startup (nothing selected) and contain
 three options.

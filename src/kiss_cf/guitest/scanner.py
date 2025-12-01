@@ -1,4 +1,4 @@
-# Test directories need to be scanned for guitest_*.py files to initialize the
+# Test directories need to be scanned for manual_*.py files to initialize the
 # test database. In case of renaming or removal, such test cases also must be
 # removed. This is done by the Scanner class.
 import os
@@ -14,8 +14,7 @@ class Scanner():
                  path: str | list[str] = './tests'):
         if isinstance(path, str):
             path = [path]
-        else:
-            self.path = path
+        self.path = path
         self.database = case_data
 
     def scan(self):
@@ -30,7 +29,7 @@ class Scanner():
         # find new files:
         for path in self.path:
             for dirpath, dirnames, filenames in os.walk(path):
-                for filename in fnmatch.filter(filenames, "guitest_*.py"):
+                for filename in fnmatch.filter(filenames, "manual_*.py"):
                     # strip first level of path (./tests/) since this should not be
                     # relevant in database:
                     self.database.new(dirpath, filename)

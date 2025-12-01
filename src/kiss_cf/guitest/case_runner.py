@@ -13,12 +13,13 @@ import sys
 from tkhtmlview import HTMLLabel
 from tkinter import font as tkfont
 
-# IMPORTANT: appxf modules must not be imported. This guitest module is all
-# about supporting manual testing. Test case executions will become obsolete if
-# relevant covered lines change. Hence, if this module coveres any additional
-# appxf line, all manual test cases would become dependent on those lines.
+# IMPORTANT: appxf modules must not be imported. This manual-test support
+# module is all about supporting manual testing. Test case executions will
+# become obsolete if relevant covered lines change. Hence, if this module
+# coveres any additional appxf line, all manual test cases would become
+# dependent on those lines.
 #
-# Exceptions may be guitest modules.
+# Exceptions may be the manual-test modules.
 
 # Manual tests are not pytests but general setup (like start of logging) is
 # configured in conftest. To enable reuse and import the root path of the
@@ -40,7 +41,7 @@ pytest_runtest_setup(None)
 #for logger_name in logging.logging.Logger.manager.loggerDict:
 #    print(logger_name)
 
-class GuitestCaseRunner(tkinter.Tk):
+class ManualCaseRunner(tkinter.Tk):
     def __init__(self, explanation: str | None):
         super().__init__()
         self.title('APPXF Manual Test Case Runner')
@@ -55,7 +56,7 @@ class GuitestCaseRunner(tkinter.Tk):
         parser = argparse.ArgumentParser(
             prog=f'{sys.argv[0]}',
             description=(
-                'This CaseRunner from APPXF guitest module '
+                'This CaseRunner from the APPXF manual test module '
                 'was called via above mentioned python script.'
             ))
         parser.add_argument(

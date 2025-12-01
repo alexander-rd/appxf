@@ -1,8 +1,8 @@
-from kiss_cf.guitest.case_runner import GuitestCaseRunner
+from kiss_cf.guitest.case_runner import ManualCaseRunner
 from kiss_cf.setting import SettingBool, SettingDict
 from kiss_cf.gui import setting_dict
 
-tester = GuitestCaseRunner('''
+tester = ManualCaseRunner('''
 Resizing: should affect columns evenly.
 Validation: Entry types are shown. Latest after loosing focus on entry, wrong values should turn the entry red.
 Columns: Placing options on top of this widget will test alignement of entry fields. Here, all properties are independent and entry fields start directly after the label.

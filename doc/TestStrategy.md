@@ -104,7 +104,7 @@ Unit tests are all in <code>tests</code> and in subfolders according to the modu
  * normal unit tests should use the naming of the <code>src</code> file with
    the prefix <code>test_</code>.
  * manual test cases for GUI elements also use the naming of the
-   <code>src</code> file with the prefix <code>guitest_</code> but need to add
+   <code>src</code> file with the prefix <code>manual_</code> but need to add
    further details into the file name since each file represents one test case.
  * behavior driven tests (bdd) need to use the prefix <code>test_bdd</code> and
    come along with a second <code>*.feature</code> file.
@@ -114,7 +114,7 @@ Feature tests are all stored in <code>feature_tests</code> while following the s
  Examples:
  * <code>tests/test_buffer.py</code>
  * <code>tests/storage/test_ram.py</code>
- * <code>tests/gui/guitest_setting_dict_column_frame.py</code>
+ * <code>tests/gui/manual_setting_dict_column_frame.py</code>
  * <code>tests_features/sync/test_bdd_sync.py</code> and
    <code>tests_features/sync/test_bdd_sync.feature</code>
 
@@ -125,4 +125,3 @@ level. The prefix <code>test_bdd</code> is mandated to remain consistent if
 behavior tests are combined with normal unit tests for the same module.
 
 \# TODO: file guideline should include the fixtures folder.
-\# TODO: guitest prefix is not consistent since actual meaning is "manual test". Prefix "manual" seems to to be the cleanest solution since the test context is already clear from the top-level folder. "mtest" or "mantest" would need more explanation while "manualtest" or "manual_test" would be too long.

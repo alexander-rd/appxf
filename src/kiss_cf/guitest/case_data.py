@@ -45,7 +45,7 @@ class CaseData():
     # format.
 
     def __init__(self,
-                 path: str = 'guitest',
+                 path: str = 'manual_tests',
                  **kwargs):
         super().__init__(**kwargs)
         self.root_path = path
@@ -98,7 +98,7 @@ class CaseData():
             del self.case_data[full_path]
 
     def get_case_name(self, case) -> str:
-        return Path(case).stem[len('guitest_'):]
+        return Path(case).stem[len('manual_'):]
 
     def get_case_path_string(self, case: str) -> str:
         return Path(case).parent.as_posix()
