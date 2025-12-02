@@ -201,14 +201,24 @@ def _init_path_from_origin(target_path, origin_path: str = '', keep: bool = Fals
 def test_cleanup(request):
     ''' cleanup current kiss_cf directories
 
-    Fucntion is expected to be executed before any test case. Modelled as test
+    Function is expected to be executed before any test case. Modelled as test
     case to re-use fixtures.
     '''
-    dir = appxf_objects.get_initialized_test_path(request)
-    for context in ['fresh_user', 'initialized_user', 'app_admin_user_pair', ]:
-        path = os.path.join(dir, f'app_{context}_{version}')
-        if os.path.exists(path):
+    base_dir = appxf_objects.testing_base_dir
+    if not os.path.isdir(base_dir):
+        print(f'No cleanup required, base dir missing: {base_dir}')
+        return
+
+    for entry in os.listdir(base_dir):
+        if not entry.startswith('app_'):
+            continue
+        path = os.path.join(base_dir, entry)
+        if os.path.isdir(path):
             shutil.rmtree(path)
             print(f'Removed {path}')
         else:
-            print(f'No cleanup required for {path}')
+            print(f'Skipped non-directory {path}')
+
+# TODO: I think the cleanup above does not work as intenden. (1) The context
+# list would not include "app_user". (2) it executes in some folder with
+# "test_cleanup" which does not contain the current base application folders.

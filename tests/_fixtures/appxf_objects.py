@@ -10,7 +10,7 @@ from kiss_cf.config import Config
 testing_base_dir = './.testing'
 
 def get_initialized_test_path(request: pytest.FixtureRequest):
-    # This is the current test funciont/method name:
+    # This is the current test function/method name:
     test_name = request.node.name
 
     # Obtain the module name:
