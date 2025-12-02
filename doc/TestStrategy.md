@@ -125,3 +125,4 @@ level. The prefix <code>test_bdd</code> is mandated to remain consistent if
 behavior tests are combined with normal unit tests for the same module.
 
 \# TODO: file guideline should include the fixtures folder.
+\# TODO: when rolling out the overall dependency shall be APPXF-ManualTests depending on APPXF-Gui which depends on APPXF. APPXF-GUI still uses APPXF-ManualTests but this dependency is only required during testing, not for the module itself.
