@@ -5,7 +5,7 @@ import os
 from kiss_cf.security import Security, SecurePrivateStorage
 from kiss_cf.registry import Registry, SharedSync, SecureSharedStorage
 from kiss_cf.config import Config
-from kiss_cf.storage import LocalStorage
+from kiss_cf.storage import LocalStorage, Storage
 
 from .restricted_location import CredentialLocationMock
 
@@ -36,6 +36,8 @@ class ApplicationMock:
         self.salt = 'test'
         self.user = user
         self.password = f'{self.user}-password'
+
+        Storage.switch_context(self.user)
 
         # Create data storage objects (those steps will NOT include any data
         # loading since data would be stored encrypted and no password is set
@@ -143,6 +145,7 @@ class ApplicationMock:
 
         This use case is covered by login_gui.py.
         '''
+        Storage.switch_context(self.user)
         # User would enter their details:
         self._set_user_data()
         # .. at setting the password:
@@ -168,6 +171,7 @@ class ApplicationMock:
 
         This use case is covered by login_gui.py.
         '''
+        Storage.switch_context(self.user)
         self.security.unlock_user(self.password)
         # After unlocking, registration should be continued (if possible)
         if not self.registry.try_load():
@@ -193,6 +197,7 @@ class ApplicationMock:
 
     def perform_registration_admin_init(self):
         ''' Perform registration procedure: initialize DB as admin '''
+        Storage.switch_context(self.user)
         self.registry.initialize_as_admin()
         # The below will likely fail but will commonly be executed after
         # passing registration.
@@ -217,10 +222,12 @@ class ApplicationMock:
         admin
         '''
         # TODO: encryption is missing
+        Storage.switch_context(self.user)
         return self.registry.get_request_bytes()
 
     def perform_registration(self, request_bytes: bytes) -> bytes:
         ''' Perform registration from request and return with response '''
+        Storage.switch_context(self.user)
         request = self.registry.get_request_data(request_bytes)
         user_id = self.registry.add_user_from_request(request)
         response_bytes = self.registry.get_response_bytes(user_id, ['TEST'])
@@ -229,6 +236,7 @@ class ApplicationMock:
 
     def perform_registration_set_response(self, response_bytes: bytes):
         ''' Apply registration response to an application '''
+        Storage.switch_context(self.user)
         self.registry.set_response_bytes(response_bytes)
         # sync and load configuration:
         self.shared_sync.sync()

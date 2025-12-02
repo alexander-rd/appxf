@@ -9,7 +9,9 @@ from kiss_cf.config import Config
 
 testing_base_dir = './.testing'
 
-def get_initialized_test_path(request: pytest.FixtureRequest):
+def get_initialized_test_path(
+    request: pytest.FixtureRequest,
+    cleanup: bool = True):
     # This is the current test function/method name:
     test_name = request.node.name
 
@@ -47,7 +49,7 @@ def get_initialized_test_path(request: pytest.FixtureRequest):
     path = os.path.join(path, test_name)
 
     # Cleanup directors:
-    if os.path.exists(path):
+    if cleanup and os.path.exists(path):
         shutil.rmtree(path)
     # and ensure it will be existing:
     os.makedirs(path, exist_ok=True)

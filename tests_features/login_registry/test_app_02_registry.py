@@ -1,11 +1,13 @@
 import pytest
 
-from tests._fixtures.application_mock import ApplicationMock
-from tests._fixtures.application import app_unlocked_user_admin_pair, app_unlocked_user, app_initialized_user
+from tests._fixtures import application, appxf_objects
 
-def test_app_02_registry_basic_cycle(app_unlocked_user_admin_pair):
-    app_user: ApplicationMock = app_unlocked_user_admin_pair['app_user']
-    app_admin: ApplicationMock = app_unlocked_user_admin_pair['app_admin']
+
+def test_app_02_registry_basic_cycle(request):
+    appxf_objects.get_initialized_test_path(request, cleanup=True)
+    app_user = application.get_unlocked_application(request, 'user')
+    app_admin = application.get_application_registration_admin_initialized(request, 'admin')
+    app_admin.perform_login_unlock()
 
     # registration request
     request_bytes = app_user.perform_registration_get_request()
