@@ -17,22 +17,25 @@ version = toml_data['project']['version']
 print(f'Current kiss_cf version: {version}')
 
 @pytest.fixture
-def app_fresh_user(request):
+def app_fresh(request):
     Storage.reset()
-    dir = appxf_objects.get_initialized_test_path(request)
-    return _init_application_fixture(
-        dir,
-        _init_app_context_fresh_user,
-        request)
+    app = get_fresh_application(request, 'user')
+    return {
+        'path': app.root_path,
+        'users': ['user'],
+        'app_user': app}
 
 @pytest.fixture
 def app_initialized_user(request):
     Storage.reset()
-    dir = appxf_objects.get_initialized_test_path(request)
-    return _init_application_fixture(
-        dir,
-        _init_app_context_initialized_user,
-        request)
+    app = get_initialized_application(request, 'user')
+    return {
+        'path': app.root_path,
+        'users': ['user'],
+        'app_user': app}
+
+# TODO: below and further: remove dependencies on fixtures. Problem is that ALL
+# fixtures in whole dependency tree must be included in a test case using them.
 
 @pytest.fixture
 def app_unlocked_user(app_initialized_user):
@@ -42,20 +45,19 @@ def app_unlocked_user(app_initialized_user):
     return app_initialized_user
 
 @pytest.fixture
-def app_unlocked_user_admin_pair(request):
-    Storage.reset()
-    dir = appxf_objects.get_initialized_test_path(request)
-    data = _init_application_fixture(
-        dir,
-        _init_app_context_user_admin_pair,
-        request)
-    # unlock users
-    for user in data['users']:
-        Storage.switch_context('user')
-        app: ApplicationMock = data[f'app_{user}']
-        app.perform_login_unlock()
+def app_unlocked_user_admin_pair(request, app_unlocked_user):
+    # app_unlocked_user is already initialized and unlocked, we just need to
+    # add the admin instance:
+    Storage.switch_context('admin')
+    app_admin = get_initialized_application(request, 'admin')
+    app_admin.perform_login_unlock()
+    app_admin.perform_registration_admin_init()
+    # remove storage context to ensure tests are aware of context switching:
     Storage.switch_context('')
-    return data
+    # extend environment data:
+    app_unlocked_user['users'].append('admin')
+    app_unlocked_user['app_admin'] = app_admin
+    return app_unlocked_user
 
 @pytest.fixture
 def app_registered_unlocked_user_admin_pair(app_unlocked_user_admin_pair):
@@ -75,37 +77,52 @@ def app_registered_unlocked_user_admin_pair(app_unlocked_user_admin_pair):
     # registration
     return data
 
+def get_fresh_application(
+        request,
+        user: str = 'user'
+        ) -> ApplicationMock:
+    # initialize test directory:
+    test_root_path = appxf_objects.get_initialized_test_path(request)
+    # ensure base context is available
+    original_context = _init_app_context_fresh()
+    # copy from base context:
+    _init_path_from_origin(target_path=test_root_path,
+                           origin_path=original_context['path'])
+    # open application mock to return
+    Storage.switch_context(user)
+    return ApplicationMock(test_root_path, user)
+
+def get_initialized_application(
+        request,
+        user: str = 'user'
+        ) -> ApplicationMock:
+    # initialize test directory:
+    test_root_path = appxf_objects.get_initialized_test_path(request)
+    # ensure base context is available
+    original_context = _init_app_context_initialized_user(user=user)
+    # copy from base context:
+    _init_path_from_origin(target_path=test_root_path,
+                           origin_path=original_context['path'])
+    # open application mock to return
+    Storage.switch_context(user)
+    return ApplicationMock(test_root_path, user)
+
+def get_admin_initialized_application(
+        request,
+        user: str = 'user'
+        ) -> ApplicationMock:
+    # initialize test directory:
+    test_root_path = appxf_objects.get_initialized_test_path(request)
+    # ensure base context is available
+    original_context = _init_app_context_initialized_user(user=user)
+    # copy from base context:
+    _init_path_from_origin(target_path=test_root_path,
+                           origin_path=original_context['path'])
+    # open application mock to return
+    Storage.switch_context(user)
+    return ApplicationMock(test_root_path, user)
 
 ### Application Context Initialization
-
-# This function applies general handling of the context initialization to be
-# applied to the test setup:
-def _init_application_fixture(path_testing, context_init_fun, request):
-    ''' Ensure context intialization and apply to test case
-
-    Arguments:
-    path_testing -- base directory for testing
-    context_init_fun -- defines the context initialization
-    request -- test case details via pytest fixture
-
-    Returns: Dictionary with:
-      'path' -- root of application context
-      'users' -- list of initialized applications
-      'app_<user>' -- The ApplicationMock objects for each user.
-    '''
-    original_dict = context_init_fun()
-    path_origin = original_dict['path']
-    path = os.path.join(path_testing,
-                        request.node.name)
-    _init_path_from_origin(path, path_origin)
-    fixed_dict = {'path': path,
-                  'users': original_dict['users']}
-    def add_app(path, user):
-        Storage.switch_context(user)
-        return ApplicationMock(path, user)
-    app_dict = {f'app_{user}': add_app(path, user)
-                for user in original_dict['users']}
-    return {**fixed_dict, **app_dict}
 
 # The following structure applies to all init functions:
 #
@@ -116,9 +133,9 @@ def _init_application_fixture(path_testing, context_init_fun, request):
 #   'path' -- root of the initialized application context
 #   'users' -- list of initialized users It is intentional that the
 # ApplicationMock objects are not forwarded
-def _init_app_context_fresh_user():
+def _init_app_context_fresh():
     path_origin = os.path.join(appxf_objects.testing_base_dir,
-                               f'app_fresh_user_{version}')
+                               f'app_fresh_{version}')
     return_dict = {'path': path_origin, 'users': ['user']}
     # do not repeat if already present:
     if os.path.exists(path_origin):
@@ -131,11 +148,11 @@ def _init_app_context_fresh_user():
     app_user = ApplicationMock(root_path=path_origin, user='user')
     return return_dict
 
-def _init_app_context_initialized_user():
+def _init_app_context_initialized_user(user: str = 'user'):
     path_origin = os.path.join(appxf_objects.testing_base_dir,
-                               f'app_initialized_user_{version}')
+                               f'app_initialized_{user}_{version}')
     # we rely on fresh user:
-    data_derive = _init_app_context_fresh_user()
+    data_derive = _init_app_context_fresh()
     return_dict = {'path': path_origin, 'users': data_derive['users']}
     # do not repeat if already present:
     if os.path.exists(path_origin):
@@ -143,30 +160,9 @@ def _init_app_context_initialized_user():
     # otherwise, create:
     _init_path_from_origin(path_origin, origin_path=data_derive['path'], keep = True)
     # We need to get the app to set the password
-    Storage.switch_context('user')
-    app_user = ApplicationMock(path_origin, 'user')
+    Storage.switch_context(user)
+    app_user = ApplicationMock(path_origin, user)
     app_user.perform_login_init()
-    return return_dict
-
-def _init_app_context_user_admin_pair():
-    path_origin = os.path.join(appxf_objects.testing_base_dir,
-                               f'app_admin_user_pair_{version}')
-    return_dict = {'path': path_origin, 'users': ['admin', 'user']}
-    # do not repeat if already present:
-    if os.path.exists(path_origin):
-        return return_dict
-    # otherwise, create:
-    _init_path_from_origin(path_origin, keep = True)
-    # Admin and user will be, at least initialized with their own passwords.
-    # Admin will be initialized with registry.
-    Storage.switch_context('admin')
-    app_user = ApplicationMock(path_origin, 'admin')
-    app_user.perform_login_init()
-    app_user.perform_registration_admin_init()
-    Storage.switch_context('user')
-    app_admin = ApplicationMock(path_origin, 'user')
-    app_admin.perform_login_init()
-    Storage.switch_context('')
     return return_dict
 
 def _init_path_from_origin(target_path, origin_path: str = '', keep: bool = False):

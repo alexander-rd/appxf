@@ -10,7 +10,7 @@ from kiss_cf.security import Security
 
 # Indirectly used environments still need to be importet
 from tests._fixtures.application_mock import ApplicationMock
-from tests._fixtures.application import app_unlocked_user, app_fresh_user, app_initialized_user, app_registered_unlocked_user_admin_pair, app_unlocked_user_admin_pair
+from tests._fixtures.application import app_unlocked_user, app_fresh, app_initialized_user, app_registered_unlocked_user_admin_pair, app_unlocked_user_admin_pair
 
 
 # TODO UPGRADE: Is the "user" in interface name "is_user_unlocked" necessary?
@@ -30,15 +30,15 @@ from tests._fixtures.application import app_unlocked_user, app_fresh_user, app_i
 # there is probably more to do.
 
 # Uninitialized test location should indicate as not user initialized.
-def test_app_10_security_uninitialized(app_fresh_user):
-    app: ApplicationMock = app_fresh_user['app_user']
+def test_app_10_security_uninitialized(app_fresh):
+    app: ApplicationMock = app_fresh['app_user']
     assert not app.security.is_user_initialized()
     # also not unlocked
     assert not app.security.is_user_unlocked()
 
 # Initialize a user (write file and authenticate)
-def test_app_10_security_init(app_fresh_user):
-    app: ApplicationMock = app_fresh_user['app_user']
+def test_app_10_security_init(app_fresh):
+    app: ApplicationMock = app_fresh['app_user']
     app.security.init_user('some_password')
     # file should now be present:
     assert os.path.exists(app.file_sec)

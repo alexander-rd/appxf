@@ -9,6 +9,13 @@ from kiss_cf.storage import LocalStorage
 
 from .restricted_location import CredentialLocationMock
 
+# TODO: __init__ of the application mock should not create folders. A typical
+# application would only generate them when RUNNING uppon first call. The
+# remote folder generation should also not be part of the application mock
+# since the remote folder does not belong to the application itself. In
+# consequence, the "app_fresh_user" would need to be completely empty UNLESS
+# there are default files like configuration.
+
 class ApplicationMock:
     def __init__(self,
                  root_path: str,
@@ -22,9 +29,9 @@ class ApplicationMock:
             encryption
           * "remote" is the shared database.
         '''
-        self._root_path = root_path
-        self._app_path = os.path.join(root_path, f'app_{user}')
-        os.makedirs(self._app_path, exist_ok = True)
+        self.root_path = root_path
+        self.app_path = os.path.join(root_path, f'app_{user}')
+        os.makedirs(self.app_path, exist_ok = True)
 
         self.salt = 'test'
         self.user = user
@@ -35,17 +42,17 @@ class ApplicationMock:
         # yet OR password was not yet entered)
 
         # SECURITY
-        self.file_sec = os.path.join(self._app_path, 'data/user/security')
+        self.file_sec = os.path.join(self.app_path, 'data/user/security')
         self.security = Security(salt=self.salt, file=self.file_sec)
 
         # CONFIG::LOCAL USER
-        self.path_user_config = os.path.join(self._app_path, 'data/user/config')
+        self.path_user_config = os.path.join(self.app_path, 'data/user/config')
         self.storagef_user_config = SecurePrivateStorage.get_factory(
             base_storage_factory=LocalStorage.get_factory(
                 path=self.path_user_config),
             security=self.security)
         # CONGIG::SHARED TOOL
-        self.path_shared_config = os.path.join(self._app_path, 'data/shared/config')
+        self.path_shared_config = os.path.join(self.app_path, 'data/shared/config')
         self.storagef_shared_config = SecurePrivateStorage.get_factory(
             LocalStorage.get_factory(
                 path=self.path_shared_config),
@@ -71,10 +78,10 @@ class ApplicationMock:
             'TEST', settings = {'test': (int,)})
 
         # REGISTRY: local storage (security applied within Regisrty)
-        self.path_registry = os.path.join(self._app_path, 'data/registry')
+        self.path_registry = os.path.join(self.app_path, 'data/registry')
         self.storagef_registry = LocalStorage.get_factory(path=self.path_registry)
         # REGISTRY: remote storage (security applied within Regisrty)
-        self.path_remote_registry = os.path.join(self._root_path, 'remote/registry')
+        self.path_remote_registry = os.path.join(self.root_path, 'remote/registry')
         self.storagef_remote_registry = LocalStorage.get_factory(path=self.path_remote_registry)
         # REGISTRY
         self.registry = Registry(
@@ -84,19 +91,19 @@ class ApplicationMock:
             config=self.user_config)
 
         # some DATA LOCATION
-        self.path_data = os.path.join(self._app_path, 'data')
+        self.path_data = os.path.join(self.app_path, 'data')
         self.storagef_data = SecurePrivateStorage.get_factory(
             base_storage_factory=LocalStorage.get_factory(path=self.path_data),
             security=self.security)
 
         # matching REMOTE LOCATIONs
         # CONFIG: REMOTE STORAGE
-        self.path_remote_config = os.path.join(self._root_path, 'remote/config')
+        self.path_remote_config = os.path.join(self.root_path, 'remote/config')
         self.storagef_remote_config = SecureSharedStorage.get_factory(
             base_storage_factory=LocalStorage.get_factory(path=self.path_remote_config),
             security=self.security,
             registry=self.registry)
-        self.path_remote_data = os.path.join(self._root_path, 'remote/data')
+        self.path_remote_data = os.path.join(self.root_path, 'remote/data')
         self.storagef_remote_data = SecureSharedStorage.get_factory(
             base_storage_factory=LocalStorage.get_factory(path=self.path_remote_data),
             security=self.security,

@@ -1,7 +1,7 @@
 import pytest
 
 from tests._fixtures.application_mock import ApplicationMock
-from tests._fixtures.application import app_unlocked_user_admin_pair
+from tests._fixtures.application import app_unlocked_user_admin_pair, app_unlocked_user, app_initialized_user
 
 def test_app_02_registry_basic_cycle(app_unlocked_user_admin_pair):
     app_user: ApplicationMock = app_unlocked_user_admin_pair['app_user']
