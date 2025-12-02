@@ -2,6 +2,7 @@ Feature: Registration
 
     Scenario: user registration cycle
     Given admin with an application in status admin initialized
-    And user with an application in status unlocked but unregistered
+    And user with an application in status unregistered
+    And all applications are unlocked
 
 # currently taking over steps from manual_bdd_registry.feature

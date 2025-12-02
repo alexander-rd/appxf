@@ -5,12 +5,10 @@ setup within the application.
 '''
 
 import os
-
+import pytest
 from kiss_cf.security import Security
 
-# Indirectly used environments still need to be importet
-from tests._fixtures.application_mock import ApplicationMock
-from tests._fixtures.application import app_unlocked_user, app_fresh, app_initialized_user, app_registered_unlocked_user_admin_pair, app_unlocked_user_admin_pair
+from tests._fixtures import application, appxf_objects
 
 
 # TODO UPGRADE: Is the "user" in interface name "is_user_unlocked" necessary?
@@ -29,16 +27,21 @@ from tests._fixtures.application import app_unlocked_user, app_fresh, app_initia
 # testing (reloading application data after implementation changes).. ..then
 # there is probably more to do.
 
+@pytest.fixture(autouse=True)
+def test_setup(request):
+    appxf_objects.get_initialized_test_path(request, cleanup=True)
+
+
 # Uninitialized test location should indicate as not user initialized.
-def test_app_10_security_uninitialized(app_fresh):
-    app: ApplicationMock = app_fresh['app_user']
+def test_app_10_security_uninitialized(request):
+    app = application.get_fresh_application(request)
     assert not app.security.is_user_initialized()
     # also not unlocked
     assert not app.security.is_user_unlocked()
 
 # Initialize a user (write file and authenticate)
-def test_app_10_security_init(app_fresh):
-    app: ApplicationMock = app_fresh['app_user']
+def test_app_10_security_init(request):
+    app = application.get_fresh_application(request)
     app.security.init_user('some_password')
     # file should now be present:
     assert os.path.exists(app.file_sec)
@@ -51,8 +54,8 @@ def test_app_10_security_init(app_fresh):
     assert app.security.is_user_unlocked()
 
 # Unlock a user
-def test_app_10_security_unlock(app_initialized_user):
-    app: ApplicationMock = app_initialized_user['app_user']
+def test_app_10_security_unlock(request):
+    app = application.get_application_login_initialized(request)
     assert app.security.is_user_initialized()
     assert not app.security.is_user_unlocked()
     # unlock:
@@ -60,8 +63,8 @@ def test_app_10_security_unlock(app_initialized_user):
     assert app.security.is_user_unlocked()
 
 # Store and load
-def test_app_10_security_store_load(app_unlocked_user):
-    app: ApplicationMock = app_unlocked_user['app_user']
+def test_app_10_security_store_load(request):
+    app = application.get_unlocked_application(request)
     data = b'123456ABC!'
     storage = app.storagef_data('some_file')
     # store
@@ -88,8 +91,8 @@ def test_app_10_security_store_load(app_unlocked_user):
 # implementation sign and manual verify. (2) Manual sign and let implementation
 # verify.
 
-def test_app_10_security_store_assymetric_keys(app_unlocked_user):
-    app: ApplicationMock = app_unlocked_user['app_user']
+def test_app_10_security_store_assymetric_keys(request):
+    app = application.get_unlocked_application(request)
 
     # get public keys. Note that they might be generated on first time
     # accessing them.
@@ -106,8 +109,8 @@ def test_app_10_security_store_assymetric_keys(app_unlocked_user):
     assert encryp_public_key == security.get_encryption_public_key()
 
 # Verify cycle
-def test_app_10_security_sign_verify(app_unlocked_user):
-    app: ApplicationMock = app_unlocked_user['app_user']
+def test_app_10_security_sign_verify(request):
+    app = application.get_unlocked_application(request)
 
     data = b'To Be Signed'
     signature = app.security.sign(data)
@@ -117,8 +120,8 @@ def test_app_10_security_sign_verify(app_unlocked_user):
     assert not app.security.verify(data, signatureFalse)
 
 # Hybrid encrypt/decrypt cycle:
-def test_app_10_security_hybrid_encrypt_decrypt(app_unlocked_user):
-    app: ApplicationMock = app_unlocked_user['app_user']
+def test_app_10_security_hybrid_encrypt_decrypt(request):
+    app = application.get_unlocked_application(request)
 
     data = b'To be encrypted'
     data_encrpted, key_map = app.security.hybrid_encrypt(data)
