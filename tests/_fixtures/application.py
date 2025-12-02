@@ -93,7 +93,7 @@ def _init_application_fixture(path_testing, context_init_fun, request):
       'users' -- list of initialized applications
       'app_<user>' -- The ApplicationMock objects for each user.
     '''
-    original_dict = context_init_fun(path_testing)
+    original_dict = context_init_fun()
     path_origin = original_dict['path']
     path = os.path.join(path_testing,
                         request.node.name)
@@ -116,8 +116,9 @@ def _init_application_fixture(path_testing, context_init_fun, request):
 #   'path' -- root of the initialized application context
 #   'users' -- list of initialized users It is intentional that the
 # ApplicationMock objects are not forwarded
-def _init_app_context_fresh_user(path_testing: str):
-    path_origin = os.path.join(path_testing, f'app_fresh_user_{version}')
+def _init_app_context_fresh_user():
+    path_origin = os.path.join(appxf_objects.testing_base_dir,
+                               f'app_fresh_user_{version}')
     return_dict = {'path': path_origin, 'users': ['user']}
     # do not repeat if already present:
     if os.path.exists(path_origin):
@@ -130,10 +131,11 @@ def _init_app_context_fresh_user(path_testing: str):
     app_user = ApplicationMock(root_path=path_origin, user='user')
     return return_dict
 
-def _init_app_context_initialized_user(path_testing: str):
-    path_origin = os.path.join(path_testing, f'app_initialized_user_{version}')
+def _init_app_context_initialized_user():
+    path_origin = os.path.join(appxf_objects.testing_base_dir,
+                               f'app_initialized_user_{version}')
     # we rely on fresh user:
-    data_derive = _init_app_context_fresh_user(path_testing)
+    data_derive = _init_app_context_fresh_user()
     return_dict = {'path': path_origin, 'users': data_derive['users']}
     # do not repeat if already present:
     if os.path.exists(path_origin):
@@ -146,8 +148,9 @@ def _init_app_context_initialized_user(path_testing: str):
     app_user.perform_login_init()
     return return_dict
 
-def _init_app_context_user_admin_pair(path_testing: str):
-    path_origin = os.path.join(path_testing, f'app_admin_user_pair_{version}')
+def _init_app_context_user_admin_pair():
+    path_origin = os.path.join(appxf_objects.testing_base_dir,
+                               f'app_admin_user_pair_{version}')
     return_dict = {'path': path_origin, 'users': ['admin', 'user']}
     # do not repeat if already present:
     if os.path.exists(path_origin):
