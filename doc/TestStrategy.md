@@ -1,26 +1,28 @@
 # APPXF Test Strategy
 
 The test strategy considers the following two test levels:
- * __Unit Tests__ cover individual modules and *should cover 100%* (lines and
-   branches) while *80% branch coverage is acceptable for initial versions*.
-   While focusing on individual modules, tests may or may not cut free
-   interfaces to other modules. No excuses -- all GUI elements must also be
-   covered.
+ * __Unit Tests__ are driven by code coverage of the individual modules and
+   *should cover 100%* (lines and branches) while *80% branch coverage is
+   acceptable for initial versions*. While focusing on individual modules,
+   tests may or may not cut free interfaces to other modules. Modules include
+   GUI modules which must be covered by manual tests.
  * __Feature Tests__ are driven by the APPXF supported ***use cases*** and
-   __*performance targets*__. Feature tests shall use the APPXF implementation
-   as-is wherever possible. Use cases like login/registration typically involve
-   many modules like GUI elements, storage and settings. Even though such test
-   cases intend to ensure proper interaction between the basic modules, the
-   term *integration test* will not be used since there is no integration:
-   APPXF is *one* package. If basic use cases are already covered well by the
-   unit tests, they will not be repeated as feature tests unless the following
-   is validated: (1) the documented usage of the interface or (2) performance
-   characteristics or (3) the implementation of simpler test steps for reuse.
+   ***performance targets*** while *appropriate coverage is determined by
+   review*. If use cases are already well covered by the unit tests, they do
+   not need to be repeated but a corresponding file shall still be present with
+   corresponding arugments. Feature tests shall use the APPXF implementation
+   as-is wherever possible.
 
-The following details must be considered:
+Remark: While use cases like login/registration involve many modules like GUI
+elements, storage and settings which shall also ensure proper interaction
+between the APPXF modules, the term *integration test* will not be used.
+Rationale: there is no integration, APPXF is *one* package of cross-functional
+modules.
+
+The following details shall be considered:
  * __Backwards Compatibility__ shall be ensured by either unit tests or feature
    tests (not yet available).
- * Test execution must be __automated__. For manual test cases, this implies:
+ * Test execution shall be __automated__. For manual test cases, this implies:
    results are checked-in, compared against changes and their execution is
    validated in an automated test case. Test coverage from (valid) manual test
    executions will be merged with the automated ones.
@@ -75,9 +77,9 @@ During manual test case execution:
 such a GUI test. Further details likely require a separate markdown page. See
 ticket #25
 
-ApplicationMock
+Application Harness
 ---------------
-The __ApplicationMock__ in <code>tests/_fixtures/application_mock.py</code> mimics an application sufficiently complex for advanced test cases. The fixtures in <code>tests/fixtures/application.py</code> may combine several ApplicationMock instances. They are prepared and used as follows:
+The __AppHarness__ in <code>tests/_fixtures/app_harness.py</code> aggregates APPXF objects like they might be used in a real application. The fixtures in <code>tests/fixtures/application.py</code> may combine several ApplicationMock instances. They are prepared and used as follows:
   1. The file structure is prepared once for the kiss_cf library version at location: <code>.testing/app_\<context\>_\<kiss_cf version\></code>.
   1. The prepared folder is copied for the specific test case. The dictionary of the fixture contains entries like <code>app_user</code> which return an ApplicationMock object. This ApplicationMock includes all objects and required paths in context of the ApplicationMock.
 
