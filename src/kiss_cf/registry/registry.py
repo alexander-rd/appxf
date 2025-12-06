@@ -36,6 +36,7 @@ class Registry(RegistryBase):
                  security: Security,
                  config: Config,
                  user_config_section: str = 'USER',
+                 response_config_sections: list[str] | None = None,
                  **kwargs):
         ''' Create Registry Handler
 
@@ -59,6 +60,9 @@ class Registry(RegistryBase):
         self._local_storage_factory = local_storage_factory
         self._remote_storage_factory = remote_storage_factory
         self._user_config_section = user_config_section
+        if response_config_sections is None:
+            response_config_sections = []
+        self._response_config_sections = response_config_sections
 
         # USER_ID does not need to be secured
         self._user_id = UserId(local_storage_factory('USER_ID'))
@@ -76,6 +80,15 @@ class Registry(RegistryBase):
 
         # Note: USER_DB cannot be synced from __init__ since security module
         # will not yet be unlocked
+
+    # TODO: response_config_sections likely needs an explicit setter to have
+    # the options to define configuration settings after defining the user
+    # registry. Also, this list may need to be a mapping since different roles
+    # may receive different subsets of configuration data. But this should be
+    # reconsidered since this part of the configuration sharing may be handled
+    # via the remote synchronization. Main question is: should APPXF support a
+    # user registry without shared storage? == A share of credentials without
+    # any mode of updating them later?
 
     @property
     def user_id(self):
@@ -243,9 +256,10 @@ class Registry(RegistryBase):
         self.sync_with_remote(mode='sending')
         return user_id
 
-    def get_response_bytes(self,
-                           user_id: int,
-                           sections: list[str] = []) -> bytes:
+    def get_response_bytes(
+            self,
+            user_id: int,
+            ) -> bytes:
         ''' Get response bytes from admin to user
 
         Bytes are sent back to user outside of tis tool's scope. For example,
@@ -255,7 +269,7 @@ class Registry(RegistryBase):
             raise KissRegistryUnitialized(
                 'registry is not yet loaded, cannot construct a response')
         # check sections existing before applying
-        for section in sections:
+        for section in self._response_config_sections:
             if section not in self._config.sections:
                 raise KissRegistryUnknownConfigSection(
                     f'Section {section} does not exist.')
@@ -263,7 +277,7 @@ class Registry(RegistryBase):
             user_id=user_id,
             user_db=self._user_db.get_state(),
             config_sections={section: dict(self._config.section(section))
-             for section in sections})
+             for section in self._response_config_sections})
         return response.get_response_bytes()
 
     def set_response_bytes(self, response_bytes: bytes):

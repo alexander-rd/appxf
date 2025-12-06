@@ -82,6 +82,12 @@ class AppHarness:
         # add some arbitraty configuration
         self.user_config.add_section(
             'TEST', settings = {'test': (int,)})
+        # add a configuration section that is shared during registration in
+        # addition to SHARED_STORAGE which must be shared to access remote
+        # data.
+        self.user_config.add_section(
+            'REGISTRATION_SHARED', settings = {'test': (str,)}
+        )
 
         # REGISTRY: local storage (security applied within Regisrty)
         self.path_registry = os.path.join(self.app_path, 'data/registry')
@@ -94,7 +100,8 @@ class AppHarness:
             local_storage_factory=self.storagef_registry,
             remote_storage_factory=self.storagef_remote_registry,
             security=self.security,
-            config=self.user_config)
+            config=self.user_config,
+            response_config_sections=['SHARED_STORAGE', 'REGISTRATION_SHARED'])
 
         # some DATA LOCATION
         self.path_data = os.path.join(self.app_path, 'data')
@@ -234,7 +241,7 @@ class AppHarness:
         Storage.switch_context(self.user)
         request = self.registry.get_request_data(request_bytes)
         user_id = self.registry.add_user_from_request(request)
-        response_bytes = self.registry.get_response_bytes(user_id, ['TEST'])
+        response_bytes = self.registry.get_response_bytes(user_id)
         self.shared_sync.sync()
         return response_bytes
 
