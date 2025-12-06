@@ -34,14 +34,17 @@ def test_app_02_registry_basic_cycle(request):
     # TODO: consistency validation_key versus signing_key
     assert app_admin.registry._user_db.get_validation_key(user_id) == app_user.security.get_signing_public_key()
     assert app_admin.registry._user_db.get_encryption_key(user_id) == app_user.security.get_encryption_public_key()
-    # admin sending back user_id and config data sections
-    response_bytes = app_admin.registry.get_response_bytes(user_id, ['TEST'])
+    # admin sending back user_id and config data sections but beforehand
+    # setting some testable configuration data:
+    app_admin.user_config.section('REGISTRATION_SHARED')['test'] = 'admin test value'
+    app_user.user_config.section('REGISTRATION_SHARED')['test'] = 'user test value'
+    response_bytes = app_admin.registry.get_response_bytes(user_id)
 
     # user getting response
     app_user.registry.set_response_bytes(response_bytes)
     assert app_user.registry._user_id.id == user_id
-    assert (app_user.user_config.section('TEST') ==
-            app_admin.user_config.section('TEST'))
+    assert (app_admin.user_config.section('REGISTRATION_SHARED')['test'] ==
+            app_user.user_config.section('REGISTRATION_SHARED')['test'])
 
     # TODO: some details from above do belong into a UNIT testing. The test
     # case should be based on:
