@@ -1,3 +1,14 @@
+''' AppHarness Class for Testing
+
+The application harness aggregates real APPXF objects for all supported
+features that might be used in a real application. It also provides operations
+to get the objects into a consistent application state.
+
+Since it uses real APPXF objects, the ApplicationHarness must run on top of a
+directory within the file system. See appxf_objects.py for helpers on the test
+directory.
+'''
+
 from __future__ import annotations
 
 import os
@@ -9,25 +20,18 @@ from kiss_cf.storage import LocalStorage, Storage
 
 from .restricted_location import CredentialLocationMock
 
-# TODO: __init__ of the application mock should not create folders. A typical
-# application would only generate them when RUNNING uppon first call. The
-# remote folder generation should also not be part of the application mock
-# since the remote folder does not belong to the application itself. In
-# consequence, the "app_fresh_user" would need to be completely empty UNLESS
-# there are default files like configuration.
-
-class ApplicationMock:
+class AppHarness:
     def __init__(self,
                  root_path: str,
                  user: str):
-        ''' Get a dummy application including folder structure
+        ''' Get a set of APPXF objects mimicing an application
 
         A folder "app_<user>" is added to root_path for application specific
-        data. Additional directories are created for simulating remote file
-        transer:
-          * "remote-pub" will share the public admin keys for
-            encryption
-          * "remote" is the shared database.
+        data. Additional directories in the root path are created for remote
+        files.
+
+        Note that LocalStorage is gernerating the paths upon construction of
+        file objects.
         '''
         self.root_path = root_path
         self.app_path = os.path.join(root_path, f'app_{user}')
@@ -225,7 +229,7 @@ class ApplicationMock:
         Storage.switch_context(self.user)
         return self.registry.get_request_bytes()
 
-    def perform_registration(self, request_bytes: bytes) -> bytes:
+    def perform_registration_from_request(self, request_bytes: bytes) -> bytes:
         ''' Perform registration from request and return with response '''
         Storage.switch_context(self.user)
         request = self.registry.get_request_data(request_bytes)
@@ -249,3 +253,8 @@ class ApplicationMock:
         # sync. But the question will remain: how to sync registry at all.
 
         self.user_config.load()
+
+    def perform_registration(self, app_admin: AppHarness):
+        request_bytes = self.perform_registration_get_request()
+        response_bytes = app_admin.perform_registration_from_request(request_bytes=request_bytes)
+        self.perform_registration_set_response(response_bytes=response_bytes)

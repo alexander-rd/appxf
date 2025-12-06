@@ -6,7 +6,7 @@ import pytest
 from kiss_cf.storage import LocalStorage, Storage
 
 from tests.storage.test_storage_base import BaseStorageTest
-from tests._fixtures import appxf_objects
+from tests._fixtures import test_sandbox
 
 # TODO: test for right place of meta storage
 
@@ -17,7 +17,7 @@ from tests._fixtures import appxf_objects
 @pytest.fixture(autouse=True)
 def setup_local(request):
     Storage.reset()
-    request.instance.env = {'dir': appxf_objects.get_initialized_test_path(request)}
+    request.instance.env = {'dir': test_sandbox.init_test_sandbox_from_fixture(request)}
 
 class TestLocalStorage(BaseStorageTest):
     ''' run basic Storage tests for RamStorage '''

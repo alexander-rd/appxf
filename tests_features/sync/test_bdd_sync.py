@@ -10,6 +10,7 @@ import os.path
 # Fixtures upon which the ones we require are depenent on must be included as
 # well. Otherwise, we will get a "fixture not found".
 from tests._fixtures import appxf_objects
+import tests._fixtures.test_sandbox
 scenarios('test_bdd_sync.feature')
 
 # TODO: should be rewritten to use the application.py fixture
@@ -19,7 +20,7 @@ scenarios('test_bdd_sync.feature')
 def env(request):
     Storage.reset()
 
-    env = {'dir': appxf_objects.get_initialized_test_path(request)}
+    env = {'dir': tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(request)}
     # commonly used objects:
     env['security'] = appxf_objects.get_security_unlocked(path=env['dir'])
     env['config'] = Config(default_storage=LocalStorage.get_factory(

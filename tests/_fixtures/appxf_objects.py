@@ -1,60 +1,12 @@
-import os
-import pytest
-import shutil
+''' Helper functions to generate dummy APPXF objects for testing
+'''
 
-from kiss_cf.storage import LocalStorage, RamStorage, JsonSerializer
+import os
+
+from kiss_cf.storage import LocalStorage, RamStorage
 from kiss_cf.security import Security, SecurityMock
 from kiss_cf.registry import Registry
 from kiss_cf.config import Config
-
-testing_base_dir = './.testing'
-
-def get_initialized_test_path(
-    request: pytest.FixtureRequest,
-    cleanup: bool = True):
-    # This is the current test function/method name:
-    test_name = request.node.name
-
-    # Obtain the module name:
-    module = request.node.module
-    module_name = module.__name__
-
-    # Obtain folder of the current module. Assuming a structure like
-    # ./tests/module_name/test_file.py, the module_name should be part of the
-    # created subdirectory for test files.
-    module_path = request.node.fspath
-    module_directory = os.path.dirname(str(module_path))
-    module_last_folder = os.path.basename(module_directory)
-    if module_last_folder in ['test', 'tests']:
-        module_last_folder = ''
-
-    # Also obtain the class name in case the executed function is actually a
-    # method. In such a case, the test class should also be part of the created
-    # testing subdirectory.
-    test_cls = request.node.cls
-    class_name = ''
-    if test_cls:
-        class_name = test_cls.__name__
-
-    # This would now be the directory to be created
-    path = testing_base_dir
-    if module_last_folder and class_name:
-        path = os.path.join(path, f'{module_last_folder}.{module_name}.{class_name}')
-    elif module_last_folder:
-        path = os.path.join(path, f'{module_last_folder}.{module_name}')
-    elif class_name:
-        path = os.path.join(path, f'{module_name}.{class_name}')
-    else:
-        path = os.path.join(path, f'{module_name}')
-    path = os.path.join(path, test_name)
-
-    # Cleanup directors:
-    if cleanup and os.path.exists(path):
-        shutil.rmtree(path)
-    # and ensure it will be existing:
-    os.makedirs(path, exist_ok=True)
-    print(f'Created and cleanup testing path: {path}')
-    return path
 
 def get_dummy_config() -> Config:
     return Config()
@@ -69,12 +21,12 @@ def get_security_unlocked(path: str | None = None) -> Security:
         # use security mock
         sec = SecurityMock()
     else:
-        sec = Security(salt='test',
-                    file=os.path.join(path, 'user'))
+        sec = Security(
+            salt='test',
+            file=os.path.join(path, 'user'))
     sec.init_user('password')
     sec.unlock_user('password')
     return sec
-
 
 def get_fresh_registry(security: Security,
                        config: Config,

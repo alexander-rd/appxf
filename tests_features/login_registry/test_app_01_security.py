@@ -8,7 +8,7 @@ import os
 import pytest
 from kiss_cf.security import Security
 
-from tests._fixtures import application, appxf_objects
+from tests._fixtures import application, test_sandbox
 
 
 # TODO UPGRADE: Is the "user" in interface name "is_user_unlocked" necessary?
@@ -29,7 +29,7 @@ from tests._fixtures import application, appxf_objects
 
 @pytest.fixture(autouse=True)
 def test_setup(request):
-    appxf_objects.get_initialized_test_path(request, cleanup=True)
+    test_sandbox.init_test_sandbox_from_fixture(request, cleanup=True)
 
 
 # Uninitialized test location should indicate as not user initialized.

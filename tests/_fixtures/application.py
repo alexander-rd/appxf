@@ -6,40 +6,34 @@ which is required to reach initialized applications.
 import os
 import shutil
 import pytest
-import toml
 from kiss_cf.storage import Storage
-from tests._fixtures import appxf_objects
-from tests._fixtures.application_mock import ApplicationMock
+from tests._fixtures.app_harness import AppHarness
+import tests._fixtures.test_sandbox
+from tests._fixtures.test_sandbox import project_version
 
-# get current kiss_cf version
-toml_data = toml.load(open('pyproject.toml'))
-version = toml_data['project']['version']
-print(f'Current kiss_cf version: {version}')
-
-def perform_registration(app: ApplicationMock, app_admin: ApplicationMock):
-    ''' Preform registration
-
-    Note: Both application mocks must be unlocked!
-    '''
-    request_bytes = app.perform_registration_get_request()
-    response_bytes = app_admin.perform_registration(request_bytes=request_bytes)
-    app.perform_registration_set_response(response_bytes=response_bytes)
+# TODO: Verify if the complexity in this file is actually required.
+# Implementation essentially allows to get an application sandbox/context from
+# copying an already initialized one. This may make sense if this
+# initialization takes very long, but a fresh application or login application
+# may not be such cases. Maybe even a registered user with remote files is not
+# woth this complexity. The evaluation should anylyze the time savings of the
+# most complex cases (like: registeres user with set up remote files).
 
 def get_fresh_application(
         request,
         user: str = 'user'
-        ) -> ApplicationMock:
+        ) -> AppHarness:
     # ensure initialized test directory:
-    test_root_path = appxf_objects.get_initialized_test_path(request, cleanup=False)
+    test_root_path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(request, cleanup=False)
     # just create the application mock which generates requried folders:
-    return ApplicationMock(test_root_path, user)
+    return AppHarness(test_root_path, user)
 
 def get_application_login_initialized(
         request,
         user: str = 'user'
-        ) -> ApplicationMock:
+        ) -> AppHarness:
     # initialize test directory:
-    test_root_path = appxf_objects.get_initialized_test_path(request, cleanup=False)
+    test_root_path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(request, cleanup=False)
     # ensure base context is available
     app_context_path = _init_app_context_login_initialized(user=user)
     # copy from base context:
@@ -47,27 +41,27 @@ def get_application_login_initialized(
                            origin_path=app_context_path)
     # open application mock to return
     Storage.switch_context(user)
-    return ApplicationMock(test_root_path, user)
+    return AppHarness(test_root_path, user)
 
 def get_application_registration_admin_initialized(
         request,
         user: str = 'user'
-        ) -> ApplicationMock:
+        ) -> AppHarness:
     # initialize test directory:
-    test_root_path = appxf_objects.get_initialized_test_path(request, cleanup=False)
+    test_root_path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(request, cleanup=False)
     # ensure base context is available
     app_context_path = _init_app_context_registration_admin_initialized(user=user)
     # copy from base context:
     _init_path_from_origin(target_path=test_root_path,
                            origin_path=app_context_path)
     # open application mock to return
-    app = ApplicationMock(test_root_path, user)
+    app = AppHarness(test_root_path, user)
     return app
 
 def get_unlocked_application(
         request,
         user: str = 'user'
-        ) -> ApplicationMock:
+        ) -> AppHarness:
     app = get_application_login_initialized(request, user=user)
     app.perform_login_unlock()
     return app
@@ -85,20 +79,20 @@ def get_unlocked_application(
 # ApplicationMock objects are not forwarded
 
 def _init_app_context_login_initialized(user: str = 'user'):
-    path = os.path.join(appxf_objects.testing_base_dir,
-                        f'app_login_initialized_{user}_{version}')
+    path = os.path.join(tests._fixtures.test_sandbox.test_sandbox_root,
+                        f'app_login_initialized_{user}_{project_version}')
     # do not repeat if already present:
     if os.path.exists(path):
         return path
     # otherwise, create:
     # We need to get the app to set the password
-    app_user = ApplicationMock(path, user)
+    app_user = AppHarness(path, user)
     app_user.perform_login_init()
     return path
 
 def _init_app_context_registration_admin_initialized(user: str = 'user'):
-    path = os.path.join(appxf_objects.testing_base_dir,
-                        f'app_registration_initialized_{user}_{version}')
+    path = os.path.join(tests._fixtures.test_sandbox.test_sandbox_root,
+                        f'app_registration_initialized_{user}_{project_version}')
     if user != 'admin':
         raise ValueError('Only admin user can be initialized as registration admin')
     # do not repeat if already present:
@@ -106,7 +100,7 @@ def _init_app_context_registration_admin_initialized(user: str = 'user'):
         return path
     # otherwise, create:
     # We need to get the app to set the password
-    app_user = ApplicationMock(path, user)
+    app_user = AppHarness(path, user)
     app_user.perform_login_init()
     app_user.perform_registration_admin_init()
     return path
@@ -140,7 +134,7 @@ def test_cleanup(request):
     Function is expected to be executed before any test case. Modelled as test
     case to re-use fixtures.
     '''
-    base_dir = appxf_objects.testing_base_dir
+    base_dir = tests._fixtures.test_sandbox.test_sandbox_root
     if not os.path.isdir(base_dir):
         print(f'No cleanup required, base dir missing: {base_dir}')
         return

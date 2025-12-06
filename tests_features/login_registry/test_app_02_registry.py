@@ -1,10 +1,10 @@
 import pytest
 
-from tests._fixtures import application, appxf_objects
+from tests._fixtures import application, test_sandbox
 
 
 def test_app_02_registry_basic_cycle(request):
-    appxf_objects.get_initialized_test_path(request, cleanup=True)
+    test_sandbox.init_test_sandbox_from_fixture(request, cleanup=True)
     app_user = application.get_unlocked_application(request, 'user')
     app_admin = application.get_application_registration_admin_initialized(request, 'admin')
     app_admin.perform_login_unlock()
