@@ -16,6 +16,12 @@ classifiers = [
     "Programming Language :: Python :: 3"
 ]
 
+[tool.appxf]
+# The testing sandbox is the root directory where files are placed that are
+# needed or generated during test case. Each test case should use individual
+# subfolders.
+test-sandbox-root = "./.testing"
+
 [tool.tox]
 legacy_tox_ini = """
     [tox]

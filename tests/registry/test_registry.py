@@ -5,6 +5,7 @@ from kiss_cf.storage import Storage
 from kiss_cf.registry import Registry
 
 from tests._fixtures import appxf_objects
+import tests._fixtures.test_sandbox
 
 #! TODO: those getters should be moved into appxf_objects as functions and not
 #  as fixtures
@@ -19,7 +20,7 @@ def fresh_registry(request):
     # Usually, testing uses RAM objects (quicker)
     path = None
     # For debugging, you may want to use real files:
-    path = appxf_objects.get_initialized_test_path(request)
+    path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(request)
     print(path)
     #path = env_base['dir']
     return appxf_objects.get_fresh_registry(
@@ -40,7 +41,7 @@ def admin_user_initialized_registry_pair(request):
     # Usually, testing uses RAM objects (quicker)
     path = None
     # For debugging, you may want to use real files:
-    path = appxf_objects.get_initialized_test_path(request)
+    path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(request)
 
     Storage.switch_context('admin')
     admin_config = appxf_objects.get_dummy_user_config()

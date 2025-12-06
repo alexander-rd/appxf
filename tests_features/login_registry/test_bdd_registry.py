@@ -3,7 +3,7 @@ from pytest import fixture
 from kiss_cf.storage import Storage
 
 from tests._fixtures import application
-from tests._fixtures.application_mock import ApplicationMock
+from tests._fixtures.app_harness import AppHarness
 
 
 # Fixtures upon which the ones we require are depenent on must be included as
@@ -40,14 +40,14 @@ def unlock_all_applications(env):
         role = key[len('app_'):]
         print(f'Unlocking {role}')
         Storage.switch_context(role)
-        app: ApplicationMock = item
+        app: AppHarness = item
         app.perform_login_unlock()
         Storage.switch_context('')
 
 @given(parsers.parse('{role} has stored {config_data} in the {config_item} configuration'))
 @then(parsers.parse('{role} has stored {config_data} in the {config_item} configuration'))
 def stored_in_configuration(env, role, config_data, config_item):
-    app: ApplicationMock = env['app_' + role]
+    app: AppHarness = env['app_' + role]
     Storage.switch_context(role)
     #if config_item == 'registry shared':
     #    app.store_in_registry_shared_configuration(config_data)
@@ -59,15 +59,15 @@ def stored_in_configuration(env, role, config_data, config_item):
 
 @given(parsers.parse('{role} {config_item} is empty'))
 def stored_in_configuration(env, role, config_item):
-    app: ApplicationMock = env['app_' + role]
+    app: AppHarness = env['app_' + role]
     Storage.switch_context(role)
     # TODO
     Storage.switch_context('')
 
 @when(parsers.parse('{role_user} registers the application to {role_admin}'))
 def register_application(env, role_user, role_admin):
-    app_user: ApplicationMock = env['app_' + role_user]
-    app_admin: ApplicationMock = env['app_' + role_admin]
+    app_user: AppHarness = env['app_' + role_user]
+    app_admin: AppHarness = env['app_' + role_admin]
     request = app_user.perform_registration_get_request()
-    response = app_admin.perform_registration(request_bytes=request)
+    response = app_admin.perform_registration_from_request(request_bytes=request)
     app_user.perform_registration_set_response(response_bytes=response)

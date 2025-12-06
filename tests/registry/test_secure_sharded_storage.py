@@ -7,6 +7,7 @@ from kiss_cf.storage import Storage, LocalStorage
 from kiss_cf.security import SecurePrivateStorage
 from kiss_cf.registry import SecureSharedStorage
 
+import tests._fixtures.test_sandbox
 from tests.storage.test_storage_base import BaseStorageTest
 from tests._fixtures import appxf_objects
 
@@ -22,7 +23,7 @@ from tests._fixtures import appxf_objects
 @pytest.fixture(autouse=True)
 def setup_local(request):
     Storage.reset()
-    env = {'dir': appxf_objects.get_initialized_test_path(request)}
+    env = {'dir': tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(request)}
     env['config'] = appxf_objects.get_dummy_config()
     env['security'] = appxf_objects.get_security_unlocked(path=env['dir'])
     env['registry'] = appxf_objects.get_registry_admin_initialized(
