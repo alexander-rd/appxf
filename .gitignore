@@ -11,6 +11,9 @@ notes
 prof
 .coverage
 .env
+.obsidian/plugins
+.obsidian/appearance.json
+.obsidian/workspace.json
 .testing
 .tox
 .venv
