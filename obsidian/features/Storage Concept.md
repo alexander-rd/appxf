@@ -7,8 +7,8 @@
 * as binary (via TBD) or
 * human readable as JSON file
 and **additional methods**:
-* locally encrypted (see [[Local Encryption and Login]])
-* shared storage that includes meta data [[Shared Storage]]
+* locally encrypted (see [[Login for Local Encryption]])
+* shared storage that includes meta data [[Data Synchronization]]
 	* without encryption
 	* with encryption based on [[User Registry]] 
 * encrypted for remote shares (see [[User Registry]])
