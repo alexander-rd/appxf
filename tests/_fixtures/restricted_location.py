@@ -7,15 +7,14 @@ procedure.
 from kiss_cf.storage import LocalStorage
 from kiss_cf.setting import Setting
 
-global_credential = 'yes, sir!'
-
-
 class CredentialLocationMock(LocalStorage):
+
+    credential = 'yes, sir!'
 
     config_properties = {
         'credential': Setting.new(str)}
 
     def __init__(self, path: str, credential: str = ''):
-        if credential != global_credential:
+        if credential != self.credential:
             raise Exception('Open location without having the credentials')
         super().__init__(path)

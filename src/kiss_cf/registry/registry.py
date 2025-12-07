@@ -296,8 +296,21 @@ class Registry(RegistryBase):
         # application "uninitialized" until then
         self._user_id.id = response.user_id
         self._user_db.set_state(response.user_db_bytes)
+        # set_state does not automatically store the user_db, hence a manual
+        # call:
+        self._user_db.store()
         # get full user database
         self.sync_with_remote(mode='receiving')
+
+        # TODO: the above line also ensures syncing the user database. Sync
+        # behavior of other to-be-shared data is still to be defined. From
+        # admin side, everything should be synced upon change immediately while
+        # here, on user side, it should receive ALL defined remote data, even
+        # overwriting local ones. BUT scenarios can easily arise when
+        # registration is optional and a user instance is already generating
+        # data locally! >> Classical conflict resolution.
+        #
+        # >> See comment on #7, 07.12.2025.
 
         # TODO: check incoming information and log (1) the retrieved ID and (2)
         # and incoming config sections that are updated and (3) the admin that

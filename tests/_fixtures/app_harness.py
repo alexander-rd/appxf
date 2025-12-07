@@ -57,7 +57,7 @@ class AppHarness:
             base_storage_factory=LocalStorage.get_factory(
                 path=self.path_user_config),
             security=self.security)
-        # CONGIG::SHARED TOOL
+        # CONFIG::SHARED
         self.path_shared_config = os.path.join(self.app_path, 'data/shared/config')
         self.storagef_shared_config = SecurePrivateStorage.get_factory(
             LocalStorage.get_factory(
@@ -65,7 +65,8 @@ class AppHarness:
             security=self.security)
         # We still apply one config for all that stores to shared tool storage
         # by default since only few will be user specific.
-        self.user_config = Config(default_storage=self.storagef_shared_config)
+        self.user_config = Config(
+            default_storage_factory=self.storagef_shared_config)
         # add USER config with some basic user data: email and name
         self.user_config.add_section(
             'USER', storage_factory=self.storagef_user_config,
@@ -73,20 +74,20 @@ class AppHarness:
                 'email': ('email',),
                 'name': (str,),
                 })
-
-
         # add credentials options for shared storage (no values!)
         self.user_config.add_section(
             'SHARED_STORAGE',
             settings = CredentialLocationMock.config_properties)
-        # add some arbitraty configuration
+        # add some configuration that will be shared upon sync
         self.user_config.add_section(
-            'TEST', settings = {'test': (int,)})
+            'SHARED',
+            settings = {'test': (str,)})
         # add a configuration section that is shared during registration in
         # addition to SHARED_STORAGE which must be shared to access remote
         # data.
         self.user_config.add_section(
-            'REGISTRATION_SHARED', settings = {'test': (str,)}
+            'REGISTRATION_SHARED',
+            settings = {'test': (str,)}
         )
 
         # REGISTRY: local storage (security applied within Regisrty)
@@ -216,9 +217,7 @@ class AppHarness:
 
         # add some configuration detail for testing:
         #   1) a password to be shared on registration to access the shared storage
-        self.user_config.section('SHARED_STORAGE')['credential'] = 'yes, sir!'
-        #   2) and some config that is shared after a sync
-        self.user_config.section('TEST')['test'] = 42
+        self.user_config.section('SHARED_STORAGE')['credential'] = CredentialLocationMock.credential
 
         self.user_config.store()
 
@@ -242,6 +241,11 @@ class AppHarness:
         request = self.registry.get_request_data(request_bytes)
         user_id = self.registry.add_user_from_request(request)
         response_bytes = self.registry.get_response_bytes(user_id)
+        # TODO: following sync is deactivated since sync behavior after
+        # registration must sill be defined. See also the same line on
+        # perform_registration_set_response(). >> See comment on #7,
+        # 07.12.2025.
+        #
         self.shared_sync.sync()
         return response_bytes
 
@@ -249,8 +253,12 @@ class AppHarness:
         ''' Apply registration response to an application '''
         Storage.switch_context(self.user)
         self.registry.set_response_bytes(response_bytes)
-        # sync and load configuration:
-        self.shared_sync.sync()
+        # TODO: following sync is deactivated since sync behavior after
+        # registration must sill be defined. See also the same line on
+        # perform_registration_from_request(). >> See comment on #7,
+        # 07.12.2025.
+        #
+        # self.shared_sync.sync()
 
         # TODO: the above fails since it tries to sync while registry is not
         # yet updated. The registry does not even contain the user's entry,

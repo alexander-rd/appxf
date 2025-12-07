@@ -44,25 +44,63 @@ def unlock_all_applications(env):
         app.perform_login_unlock()
         Storage.switch_context('')
 
-@given(parsers.parse('{role} has stored {config_data} in the {config_item} configuration'))
-@then(parsers.parse('{role} has stored {config_data} in the {config_item} configuration'))
-def stored_in_configuration(env, role, config_data, config_item):
+def map_config_section_name(config_section: str) -> str:
+    ''' Map config_section as used in BDD test cases to names used in the application harness '''
+    if config_section in ['registry shared']:
+        config_section = 'REGISTRATION_SHARED'
+    if config_section in ['shared']:
+        config_section = 'SHARED'
+    return config_section
+@given(parsers.parse('{role} is storing {config_data} in the {config_section} configuration'))
+def store_value_in_configuration(env, role, config_data, config_section):
+    ''' Check value of test configuration
+
+    Arguments:
+    role -- determines the application harness to be used
+    config_section -- the config section which must contain a setting "test"
+    config_data -- the value of the "test" setting in the config_section
+    '''
     app: AppHarness = env['app_' + role]
+    config_section = map_config_section_name(config_section)
+
     Storage.switch_context(role)
-    #if config_item == 'registry shared':
-    #    app.store_in_registry_shared_configuration(config_data)
-    #elif config_item == 'shared':
-    #    app.store_in_shared_configuration(config_data)
-    #else:
-    #    raise ValueError(f'Unknown configuration item: {config_item}')
+    # section must exist:
+    assert config_section in app.user_config.sections
+    # the "test" setting must exist
+    assert 'test' in app.user_config.section(config_section)
+    # and it must have the right value
+    app.user_config.section(config_section)['test'] = config_data
+    # just to ensure setting the value worked:
+    assert config_data == app.user_config.section(config_section)['test']
+    # ensure information being persisted
+    app.user_config.store()
     Storage.switch_context('')
 
-@given(parsers.parse('{role} {config_item} is empty'))
-def stored_in_configuration(env, role, config_item):
+@then(parsers.parse('{role} has stored {config_data} in the {config_section} configuration'))
+def verify_stored_in_configuration(env, role, config_data, config_section):
+    ''' Check value of test configuration
+
+    Arguments:
+    role -- determines the application harness to be used
+    config_section -- the config section which must contain a setting "test"
+    config_data -- the value of the "test" setting in the config_section
+    '''
     app: AppHarness = env['app_' + role]
+    config_section = map_config_section_name(config_section)
+
     Storage.switch_context(role)
-    # TODO
+    # section must exist:
+    assert config_section in app.user_config.sections
+    # the "test" setting must exist
+    assert 'test' in app.user_config.section(config_section)
+    # and it must have the right value
+    assert config_data == app.user_config.section(config_section)['test']
     Storage.switch_context('')
+
+@given(parsers.parse('{role} {config_section} configuration is empty'))
+def empty_value_in_configuration(env, role, config_section):
+    app: AppHarness = env['app_' + role]
+    verify_stored_in_configuration(env, role, '', config_section)
 
 @when(parsers.parse('{role_user} registers the application to {role_admin}'))
 def register_application(env, role_user, role_admin):
