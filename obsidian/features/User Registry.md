@@ -4,7 +4,7 @@ Via a user registration, you can **maintain users** and their **roles**. You can
 
 # Procedure
 1. User generates a registration request (file or text string).
-	* Contains user information (see [[Login]])
+	* Contains user information (see [[Local Encryption and Login]])
 	* Encrypted with admin public key
 	* Typically sent by Email
 2. Admin reviews registration request and generates registration response

@@ -2,6 +2,10 @@ import pytest
 
 from tests._fixtures import application, test_sandbox
 
+# TODO: this test case shall be replaced by a BDD based test case AND proper
+# unit testing shall be added. Current implementation tests too many things at
+# once. Likely, the unit testing should use mocks/stubs of objects like the
+# conifuration. BECAUSE registry unit tests should NOT cover the other classes.
 
 def test_app_02_registry_basic_cycle(request):
     test_sandbox.init_test_sandbox_from_fixture(request, cleanup=True)
