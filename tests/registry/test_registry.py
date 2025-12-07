@@ -25,7 +25,7 @@ def fresh_registry(request):
     #path = env_base['dir']
     return appxf_objects.get_fresh_registry(
         path=path,
-        security=appxf_objects.get_security_unlocked(),
+        security=appxf_objects.get_security_unlocked(path),
         config=appxf_objects.get_dummy_config())
 
 @pytest.fixture
@@ -48,7 +48,7 @@ def admin_user_initialized_registry_pair(request):
     print(f'FANCY INIT obtained config for admin: {admin_config}')
     admin_registry = appxf_objects.get_fresh_registry(
         path=path,
-        security=appxf_objects.get_security_unlocked(),
+        security=appxf_objects.get_security_unlocked(path),
         config=admin_config,
         local_name='local_registry_admin',
         remote_name='remote_registry')
@@ -59,7 +59,7 @@ def admin_user_initialized_registry_pair(request):
     print(f'FANCY INIT obtained config for admin: {user_config}')
     user_registry = appxf_objects.get_fresh_registry(
         path=path,
-        security=appxf_objects.get_security_unlocked(),
+        security=appxf_objects.get_security_unlocked(path),
         config=user_config,
         local_name='local_registry_user',
         remote_name='remote_registry')
