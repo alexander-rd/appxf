@@ -7,3 +7,7 @@ def pytest_runtest_setup(item):
     if not FLAG_LOG_ACTIVATED:
         logging.activate_logging('kiss_cf')
         FLAG_LOG_ACTIVATED = True
+
+# Add logging for feature execution:
+def pytest_bdd_before_step_call(request, feature, scenario, step, step_func):
+    print(f"[BDD] {feature.filename}:{step.line_number} - {step.name}")
