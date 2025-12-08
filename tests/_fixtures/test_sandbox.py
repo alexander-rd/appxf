@@ -4,11 +4,12 @@ The test sandbox is a directory where each test case can create a sanbox for
 files and folders needed during test case execution. This module provides
 corresponding variables and helpers.
 '''
-
 import pytest
 import os
 import shutil
 import toml
+import inspect
+from pathlib import Path
 
 ### Reading configuration from pyproject.toml
 toml_data = toml.load(open('pyproject.toml'))
@@ -23,11 +24,12 @@ print(f'Configuration from pyproject.toml:\n'
 def init_test_sandbox_from_fixture(
     request: pytest.FixtureRequest,
     cleanup: bool = True) -> str:
-    ''' Initialize a test sandbox from a pytest fixture (request)
+    ''' Create a sandbox from a pytest fixture (request) returning the
+    path as string
 
     attributes:
-        request -- the pytest fixture request object
-        cleanup -- sandbox will be cleaned up (from previous tests),
+        request -- the pytest fixture request object cleanup -- sandbox will be
+        cleaned up (from previous tests),
                    default: True
     return: path to the created test sandbox
     '''
@@ -43,9 +45,6 @@ def init_test_sandbox_from_fixture(
     # created subdirectory for test files.
     module_path = request.node.fspath
     module_directory = os.path.dirname(str(module_path))
-    module_last_folder = os.path.basename(module_directory)
-    if module_last_folder in ['test', 'tests']:
-        module_last_folder = ''
 
     # Also obtain the class name in case the executed function is actually a
     # method. In such a case, the test class should also be part of the created
@@ -55,22 +54,67 @@ def init_test_sandbox_from_fixture(
     if test_cls:
         class_name = test_cls.__name__
 
-    # This would now be the directory to be created
-    path = test_sandbox_root
-    if module_last_folder and class_name:
-        path = os.path.join(path, f'{module_last_folder}.{module_name}.{class_name}')
-    elif module_last_folder:
-        path = os.path.join(path, f'{module_last_folder}.{module_name}')
-    elif class_name:
-        path = os.path.join(path, f'{module_name}.{class_name}')
-    else:
-        path = os.path.join(path, f'{module_name}')
-    path = os.path.join(path, test_name)
+    return _init_test_sandbox(module_name, module_directory, test_name, class_name, cleanup)
 
-    # Cleanup directors:
+def init_test_sandbox_for_caller_module(cleanup: bool = True) -> str:
+    '''Create a sandbox for the caller returning the path as string
+
+    Arguments:
+        cleanup -- sandbox will be cleaned up (from previous runs), default: True
+    Return: path to the created test sandbox
+    '''
+    # Identify the calling frame and resolve module/path information for namespacing.
+    caller = inspect.stack()[1]
+    caller_path = Path(caller.filename).resolve()
+    caller_module = inspect.getmodule(caller.frame)
+    module_name = caller_module.__name__ if caller_module and caller_module.__name__ != '__main__' else ''
+    print(f'Create sandbox caller module [{module_name}] in path [{caller_path}]')
+    # Fall back to a path-derived module name when no module is available.
+    if not module_name:
+        module_name = caller_path.stem
+
+    module_directory = caller_path.parent.as_posix()
+
+    # Intended use of this sandbox creation is for manual test cases where the
+    # file itself is the test case. Therefore, only the module name (test case
+    # name) and the path to this module matter. Class name does not matter.
+    return _init_test_sandbox(
+        module_name='',
+        module_directory=module_directory,
+        test_name=module_name,
+        class_name='',
+        cleanup=cleanup)
+
+def _init_test_sandbox(module_name: str,
+                       module_directory: str,
+                       test_name: str,
+                       class_name: str = '',
+                       cleanup: bool = True) -> str:
+    print(f'Sandboxing for module [{module_name}] in [{module_directory}] '
+          f'the test [{test_name}] '
+          f'{f'(class: {class_name})' if class_name else '(no class)'}'
+          f'{' with cleanup.' if cleanup else '.'}')
+    sandbox_root_parent = Path(test_sandbox_root).resolve().parent
+    module_path = Path(module_directory).resolve()
+    try:
+        relative_module_path = module_path.relative_to(sandbox_root_parent).as_posix()
+    except ValueError:
+        relative_module_path = module_path.name
+    if relative_module_path in ['test', 'tests']:
+        relative_module_path = ''
+
+    path = test_sandbox_root
+    if relative_module_path:
+        path = os.path.join(path, relative_module_path)
+    if module_name:
+        path = os.path.join(path, module_name)
+    if class_name:
+        path = os.path.join(path, class_name)
+    if test_name:
+        path = os.path.join(path, test_name)
+
     if cleanup and os.path.exists(path):
         shutil.rmtree(path)
-    # and ensure it will be existing:
     os.makedirs(path, exist_ok=True)
-    print(f'Created and cleanup testing path: {path}')
+    print(f'Sandbox path {path}')
     return path

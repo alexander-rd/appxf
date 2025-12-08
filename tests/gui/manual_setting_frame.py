@@ -1,6 +1,6 @@
 from kiss_cf.setting import SettingBool
 from kiss_cf.gui import SettingFrameDefault
-from kiss_cf.guitest.case_runner import ManualCaseRunner
+from appxf_matema.case_runner import ManualCaseRunner
 
 tester = ManualCaseRunner('''
 __Resizing:__ should only affect the right entry part.
