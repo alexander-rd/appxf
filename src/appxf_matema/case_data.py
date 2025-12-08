@@ -86,12 +86,11 @@ class CaseData():
             self.case_data[full_path] = CaseEntry(path, file).data
 
     def remove(self,
-               path: str,
-               file: str):
+               case: str):
         # remove existing test case file from database
         #
-        # If path/file does not exist, nothing will happen.
-        full_path = Path(path) / file
+        # case ist the full path to the file
+        full_path = Path(case)
         full_path = full_path.as_posix()
         if full_path in self.case_data:
             print(f'Removed from database: {full_path}')
