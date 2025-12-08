@@ -1,6 +1,6 @@
 '''Test case description - test case description could come from here'''
 
-from kiss_cf.guitest.case_runner import ManualCaseRunner
+from appxf_matema.case_runner import ManualCaseRunner
 from kiss_cf.setting import SettingBool, SettingString, SettingEmail, SettingDict
 from kiss_cf.gui.setting_dict import SettingDictWindow
 from appxf import logging

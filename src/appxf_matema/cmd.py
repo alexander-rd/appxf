@@ -40,6 +40,11 @@ class CmdHelper():
                         self.database.get_case_path_string(case_name))
         coverage_file = out_path / (self.database.get_case_name(case_name) + '.coverage')
         result_file = out_path / (self.database.get_case_name(case_name) + '.result.json')
+        # Extend python ENV to local path from where THIS is called. If not,
+        # python assumes the path of the called subprocess and imports may not
+        # work as expected.
+        env = os.environ.copy()
+        env['PYTHONPATH'] = os.pathsep.join([env.get('PYTHONPATH', ''), '.']).strip(os.pathsep)
         subprocess.run([
             sys.executable,
             '-m', 'coverage', 'run',
@@ -49,7 +54,8 @@ class CmdHelper():
             case_name,
             f'--result-file={result_file}'
             ],
-            check=True)
+            check=True,
+            env=env)
 
         # Optional: Combine results if running multiple times
         #subprocess.run([sys.executable, "-m", "coverage", "combine"], check=True)

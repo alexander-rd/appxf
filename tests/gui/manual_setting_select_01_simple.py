@@ -1,4 +1,4 @@
-from kiss_cf.guitest.case_runner import ManualCaseRunner
+from appxf_matema.case_runner import ManualCaseRunner
 from kiss_cf.setting import Setting
 from kiss_cf.gui import SettingSelectFrame
 

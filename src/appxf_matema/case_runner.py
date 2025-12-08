@@ -12,6 +12,7 @@ import sys
 
 from tkhtmlview import HTMLLabel
 from tkinter import font as tkfont
+from appxf import logging
 
 # IMPORTANT: appxf modules must not be imported. This manual-test support
 # module is all about supporting manual testing. Test case executions will
@@ -26,8 +27,9 @@ from tkinter import font as tkfont
 # module is added to the system path:
 sys.path.append(os.path.join(os.path.dirname(__file__),'../../../'))
 # the following import enables the appxf logging:
-from conftest import pytest_runtest_setup
-pytest_runtest_setup(None)
+logging.activate_logging('appxf_matema')
+#from conftest import pytest_runtest_setup
+#pytest_runtest_setup(None)
 
 # TODO: store test results somehow:
 # - invalidate when included library parts changed
@@ -202,6 +204,11 @@ class ManualCaseRunner(tkinter.Tk):
             self._run_toplevel(tkinter_class, *args, **kwargs)
         elif issubclass(tkinter_class, tkinter.Frame):
             self._run_frame(tkinter_class, *args, **kwargs)
+        else:
+            raise TypeError(
+                f'Provided tkinter class {tkinter_class.__class__}'
+                f'is not supported. Supported are: '
+                f'TopLevel, Frame.')
 
 
     def _run_frame(self, frame_type: type[tkinter.Frame], *args, **kwargs):
