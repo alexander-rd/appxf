@@ -1,6 +1,8 @@
-**Situation and Problem.** Assume you are developer or tester in a resonable complex project running on low budget that needs manual test cases because it has GUI elements to test. You already have some test cases but fear to add more because you have no means to maintain an overview nor do you have time to run all tests for every code change you do. But you also do not want to sacrifice quality. The tools in APPXF-ManualTests are supposed to help.
+**MaTeMa** - **Ma**nual **Te**st **Ma**nager
 
-Let's go through some typical development tasts.
+**Situation and Problem.** Assume you are developer or tester in a reasonable complex project running on low budget that needs manual test cases because it has GUI elements to test. You already have some test cases but fear to add more because you have no means to maintain an overview nor do you have time to run all tests for every code change you do. But you also do not want to sacrifice quality. 
+
+The tools in APPXF-ManualTests are supposed to help. Let's go through some typical development tests.
 1. You added new functionality and need to identify which test cases to re-run an if you require new ones.
 	* The test case manager will mark any test execution invalid if you changed files the execution depended on on.
 	* Since the manual test case coverage results are merged with the overall coverage, you can identify if any new manual test case is required.
