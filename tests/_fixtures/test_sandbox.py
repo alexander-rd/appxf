@@ -92,8 +92,8 @@ def _init_test_sandbox(module_name: str,
                        cleanup: bool = True) -> str:
     print(f'Sandboxing for module [{module_name}] in [{module_directory}] '
           f'the test [{test_name}] '
-          f'{f'(class: {class_name})' if class_name else '(no class)'}'
-          f'{' with cleanup.' if cleanup else '.'}')
+          f'{f"(class: {class_name})" if class_name else "(no class)"}'
+          f'{" with cleanup." if cleanup else "."}')
     sandbox_root_parent = Path(test_sandbox_root).resolve().parent
     module_path = Path(module_directory).resolve()
     try:
