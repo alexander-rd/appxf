@@ -296,6 +296,14 @@ class SettingOptions(Options):
     # export group)
     name: str = ''
 
+    # all settings may be hidden in display, the user would not see it being
+    # present. While this is not helpful for a setting on it's own, it is
+    # relevant for settings in SettingDicts.
+    visible: bool = True
+    # TODO: the visible option was added during implementation of registration
+    # feature (when utiliing the KissApplication frame and getting the config
+    # menu displayed) and does not yet have a consistent effect.
+
     # the only display option that applies to all settings because all settings
     # support string input
     display_width: int = 15
@@ -305,7 +313,7 @@ class SettingOptions(Options):
     # defined to which the option fields must be added - any field not in an
     # export group cannot be exported (except name)
     value_options = []
-    display_options = ['display_width']
+    display_options = ['visible', 'display_width']
     control_options = ['mutable', 'value_options_mutable',
                        'display_options_mutable', 'control_options_mutable',
                        ]
