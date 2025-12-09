@@ -84,9 +84,8 @@ class SettingDictSingleFrame(SettingFrameBase):
         self.setting_dict = {key: setting.get_setting(key)
                              for key in setting.keys()
                              if setting.get_setting(key).options.mutable}
-
-        # TODO: the above should be applied according to default_visibility.
-        # Not mutable should still be displayed but grayed out or not editable.
+        # TODO: the above should be applied according to visibility. Not
+        # mutable should still be displayed but grayed out or not editable.
 
         self.columnconfigure(0, weight=1)
         # rowconfigure in the loop below
@@ -98,9 +97,9 @@ class SettingDictSingleFrame(SettingFrameBase):
         # setting as well.
         element_gui_options = {}
         self.frame_list: list[SettingFrameBase] = []
-        for key in self.setting_dict.keys():
+        for key, this_setting in self.setting_dict.items():
             self._place_setting_frame(
-                setting.get_setting(key),
+                this_setting,
                 element_gui_options.get(key, {}))
 
     def _place_setting_frame(self, setting: Setting, gui_options):
@@ -270,11 +269,11 @@ class SettingDictWindow(FrameWindow):
         # Whole class operated on SettingDict and a single setting is just cast
         # up to a SettingDict to handle it (required to obtain store/load
         # behavior for backup&restore upon cancel)
-        if isinstance(setting, Setting):
+        if isinstance(setting, SettingDict):
+            self.property_dict = setting
+        elif isinstance(setting, Setting):
             self.property_dict = SettingDict(
                 settings={setting.options.name: setting})
-        elif isinstance(setting, SettingDict):
-            self.property_dict = setting
         else:
             raise AppxfGuiError(f'Setting must be AppxfSetting or SettingDict '
                                 f'but is {type(setting)}')

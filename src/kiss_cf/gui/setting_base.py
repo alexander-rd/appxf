@@ -40,10 +40,14 @@ class SettingFrameDefault(SettingFrameBase):
 
         self.setting = setting
 
+        # Place label - still place something empty if label is '' to satisfy
+        # implementations expecting something (like alignment of columns)
+        self.label = tkinter.Label(self, justify='right')
         if setting.options.name:
-            self.label = tkinter.Label(self, justify='right')
             self.label.config(text=setting.options.name + ':')
-            self.place(self.label, row=0, column=0)
+        else:
+            self.label.config(text='')
+        self.place(self.label, row=0, column=0)
 
         value = str(self.setting.value)
         self.sv = tkinter.StringVar(self, value)
