@@ -40,13 +40,16 @@ class Login():
     log = logging.getLogger(__name__ + '.Login')
 
     def __init__(self, security: Security,
-                 user_config: SettingDict=SettingDict(),
+                 user_config: SettingDict | None = None,
                  app_name='Login',
                  pwd_min_length=6,
                  **kwargs):
         super().__init__(**kwargs)
         self._security = security
-        self._user_config = user_config
+        if user_config is None:
+            self._user_config = SettingDict()
+        else:
+            self._user_config = user_config
         self._app_name = app_name
         self._pwd_min_length = pwd_min_length
 

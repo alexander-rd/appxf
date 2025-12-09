@@ -25,9 +25,7 @@ class ConfigMenu(tkinter.Menu):
         self._config = config
 
         for section in config.sections:
-            print(f'HANDLING {section}')
             if not config.section(section).options.visible:
-                print(f'DROPPING {section}')
                 break
 
             def command(section=section):

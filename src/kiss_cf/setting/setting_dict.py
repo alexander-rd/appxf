@@ -181,21 +181,23 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                     f'SettingDict({self.options.name}) mutable option is False and '
                     f'settings cannot be replaced. '
                     f'You provided for key {key}: {value}')
-        # values that are Settings are always accepted
         if isinstance(value, Setting):
             # transfering key name to setting if setting name is empty
             if not value.options.name:
                 value.options.name = key
             self._value[key] = value
             return
-        # setting classes are applies with default values
+        # setting classes are applied with default values
         if isinstance(value, type) and issubclass(value, Setting):
             self._value[key] = value()
+            self._value[key].options.name = key
             return
         # If input is a tuple, first should be the type and the second,
         # optional element, the value.
         if isinstance(value, tuple):
             self._value[key] = self._resolve_tuple(value)
+            if not self._value[key].options.name:
+                self._value[key].options.name = key
             return
         # What is left is not a tuple (type, value) nor a Setting class/object.
         # The key must exist and the value is applied to the existing Setting's
@@ -205,6 +207,9 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         # Or, the new Setting object is created:
         else:
             self._value[key] = Setting.new(type(value), value=value)
+        # apply name:
+        if not self._value[key].options.name:
+                self._value[key].options.name = key
     # TODO: there should be a try/catch at least for the last two settings to
     # add the failing key to the error message from Setting. Like "Cannot set
     # key {key} with following error message from the Setting class. "

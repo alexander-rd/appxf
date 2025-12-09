@@ -16,3 +16,6 @@ avoided. I would build a GUI application on top of the existing application
 harness. ?? Is this GUI application generic or specific to registration tests?
 Well, there is nothing wrong if the first version is specific to the
 registration test.
+
+### Setting names empty
+I have SettingDicts (like login) for which the name options are empty. This leads to empty labels when puttint the SettingSingleFrame thingys.
