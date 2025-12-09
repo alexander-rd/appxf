@@ -12,11 +12,9 @@ The following details shall be considered:
 All methods, mentioned below may be combined!
 ## Pytest
 The default approach is straight-forward pytest test cases. Pytest is preferred (not mandated) for automated unit tests since BDD test would add the complexity of two-files, a more abstract implementation and the abstraction of the Gherkin language.  
-
 ## Behavior Driven Tests (bdd)
 They are included in a pytest run and just use the capabilities of python-bdd with Gherkin syntax. They are preferred for use case based feature testing and the added complexity in comparison to plain pytest is reasonable since the feature files shall represent functional requirements.
-
-## GUI (manual tests)
+## Manual Tests (GUI)
 __This is work in progress.__ Most of the required helpers are not yet existing! The idea comprises steps in the automation via TOX:
 * updating the manual test case database (validity of test cases based on code changes and scanning for existing manual test cases)
 * a test case that is FAILING if any planned test case has no valid test execution
@@ -34,11 +32,17 @@ commenting results with OK/FAILED
 
 #TODO: General TODO of implementation and mentioning a specific example of such a GUI test. Further details likely require a separate markdown page. See ticket #25
 
-## Application Harness
-The __AppHarness__ in <code>tests/_fixtures/app_harness.py</code> aggregates APPXF objects like they might be used in a real application. The fixtures in <code>tests/fixtures/application.py</code> may combine several ApplicationMock instances. They are prepared and used as follows:
+#TODO: For application level testing, the test preparation steps *must be separated*  for the coverage. Example: even though the user data (login) preparation is executed for a test case concerning registry, the login steps are not tested in such a test case. Hence, the test case for registration should not be invalidated by changing the login implementation. This is a trade-off.
+## Application Testing
+### Application Harness
+**Definition.** In APPXF context, an application harness aggregates objects for a basic application. It ***does*** provide methods for operations on the aggregated objects while it ***does not*** provide any user interface or enforces behavior more than initialization.
+
+The __AppHarness__ for testing is stored in `tests/_fixtures/app_harness.py`. The fixtures in `tests/fixtures/application.py` may combine several ApplicationMock instances. They are prepared and used as follows:
 1. The file structure is prepared once for the kiss_cf library version at location: 
    `.testing/app_\<context\>_\<kiss_cf version\>`.
 2. The prepared folder is copied for the specific test case. The dictionary of the fixture contains entries like `app_user` which return an ApplicationMock object. This ApplicationMock includes all objects and required paths in context of the ApplicationMock.
+### Application Harness User Interface
+**Definition.** In APPXF context, an application harness user interface just puts a default user interface on top of an application harness.
 
 ## Backwards Compatibility
 __This is work in progress.__ Most of the required helpers are not yet existing! 
