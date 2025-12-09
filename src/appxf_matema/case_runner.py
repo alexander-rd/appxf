@@ -13,6 +13,7 @@ import sys
 from tkhtmlview import HTMLLabel
 from tkinter import font as tkfont
 from appxf import logging
+from appxf_matema.case_parser import CaseParser
 
 # IMPORTANT: appxf modules must not be imported. This manual-test support
 # module is all about supporting manual testing. Test case executions will
@@ -44,9 +45,17 @@ logging.activate_logging('appxf_matema')
 #    print(logger_name)
 
 class ManualCaseRunner(tkinter.Tk):
-    def __init__(self, explanation: str | None):
+    def __init__(self, explanation: str = ''):
         super().__init__()
         self.title('APPXF Manual Test Case Runner')
+
+        # Get the module that instantiated the case runner. Frame 0 will be the
+        # CaseParser __init__, frame 1 is this __init__ and frame 2 will be
+        # within the module that called this Case Runner.
+        self.case_parser = CaseParser(frame_index=2)
+
+        if not explanation:
+            explanation = self.case_parser.caller_module_docstring
 
         self.explanation = explanation.strip() if explanation else ''
         # remove single newlines (wither a full paragraph \n\n or no paragraph
