@@ -11,6 +11,7 @@ from kiss_cf.storage import Storage
 from tests._fixtures import test_sandbox
 from tests._fixtures import application
 from tests._fixtures.app_harness import AppHarness
+from tests._fixtures.app_harness_gui import AppHarnessGui
 
 tester = ManualCaseRunner(__doc__)
 
@@ -22,25 +23,23 @@ Storage.switch_context('invalid')
 app_admin = AppHarness(sandbox_path, 'admin')
 app_admin.perform_login_init()
 app_admin.perform_registration_admin_init()
-launch_admin = lambda: KissApplication().mainloop()
+launch_admin = lambda: AppHarnessGui(app_admin).mainloop()
 
 app_userA = AppHarness(sandbox_path, 'userA')
 app_userA.perform_login_init()
 app_userA.perform_registration(app_admin)
-launch_userA = lambda: KissApplication().mainloop()
+launch_userA = lambda: AppHarnessGui(app_userA).mainloop()
 
 app_userB = AppHarness(sandbox_path, 'userB')
 app_userB.perform_login_init()
 app_userB.perform_registration(app_admin)
-launch_userB = lambda: KissApplication().mainloop()
+launch_userB = lambda: AppHarnessGui(app_userB).mainloop()
 
 tester.run_custom_commands({
     'Run Admin': launch_admin,
     'Run User A': launch_userA,
     'Run User B': launch_userB
     })
-
-
 
 # tester.run_custom_commands({})
 

@@ -21,11 +21,13 @@ class ConfigMenu(tkinter.Menu):
     '''Menu containing all configurable sections.'''
 
     def __init__(self, parent: tkinter.Tk, config: Config, **kwargs):
-        super().__init__(tearoff=0, **kwargs)
+        super().__init__(parent, tearoff=0, **kwargs)
         self._config = config
 
         for section in config.sections:
-            if not config.section(section).default_visibility:
+            print(f'HANDLING {section}')
+            if not config.section(section).options.visible:
+                print(f'DROPPING {section}')
                 break
 
             def command(section=section):
