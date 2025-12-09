@@ -138,6 +138,10 @@ class ManualCaseRunner(tkinter.Tk):
         #self.entry.configure(yscrollcommand=self.scrollbar.set)
         self.observations_text.pack(anchor='w', fill='x', padx=5, pady=0)
 
+        # an empty button frame between observations nad fail/OK buttons.
+        self.extra_button_frame = tkinter.Frame(self)
+        self.extra_button_frame.pack()
+
         # Button Frame
         button_frame = tkinter.Frame(self)
         button_frame.pack()
@@ -210,6 +214,15 @@ class ManualCaseRunner(tkinter.Tk):
                 f'is not supported. Supported are: '
                 f'TopLevel, Frame.')
 
+    def run_custom_commands(self, command_map: dict[str, callable]):
+        for name, method in command_map.items():
+            button = tkinter.Button(
+                self.extra_button_frame,
+                text=name,
+                command=method)
+            button.pack(side=tkinter.LEFT)
+        self.update()
+        self.mainloop()
 
     def _run_frame(self, frame_type: type[tkinter.Frame], *args, **kwargs):
         test_window = tkinter.Toplevel(self)
