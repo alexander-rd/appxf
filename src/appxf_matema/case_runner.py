@@ -44,10 +44,24 @@ logging.activate_logging('appxf_matema')
 #for logger_name in logging.logging.Logger.manager.loggerDict:
 #    print(logger_name)
 
-class ManualCaseRunner(tkinter.Tk):
+class CaseRunnerGui:
+    '''GUI container for manual test case runner.
+
+    Encapsulates the tkinter window and related UI components.
+    '''
+    def __init__(
+            self,
+            tk_root: tkinter.Tk,
+            extra_button_frame: tkinter.Frame,
+            observations_text: tkinter.Text
+            ):
+        self.tk = tk_root
+        self.extra_button_frame = extra_button_frame
+        self.observations_text = observations_text
+
+
+class ManualCaseRunner:
     def __init__(self, explanation: str = ''):
-        super().__init__()
-        self.title('APPXF Manual Test Case Runner')
 
         # Get the module that instantiated the case runner. Frame 0 will be the
         # CaseParser __init__, frame 1 is this __init__ and frame 2 will be
@@ -74,14 +88,21 @@ class ManualCaseRunner(tkinter.Tk):
             '--result-file',
             required=False, default='',
             help='File to store test results in JSON format.')
-        args = parser.parse_args()
-        self.result_file = args.result_file
+        self._add_arguments_from_caller(parser)
+        self.argparse_result = parser.parse_args()
 
         # timestamp:
         self.timestamp = datetime.datetime.now(datetime.timezone.utc)
         self._get_git_user_info()
 
-        self._build_window()
+    def _add_arguments_from_caller(self, parser: argparse.ArgumentParser):
+        for function, summary in self.case_parser.caller_module_function_map.items():
+            if function.startswith('process_'):
+                parser.add_argument(
+                    f'--{function}',
+                    action='store_true',
+                    help=summary)
+
 
     def _get_git_user_info(self):
         try:
@@ -97,70 +118,72 @@ class ManualCaseRunner(tkinter.Tk):
         except subprocess.CalledProcessError:
             self.git_email = 'Unknown GIT Email'
 
-    def _build_window(self):
+    def _get_main_window(self) -> CaseRunnerGui:
+        """Build and return the main control window GUI without calling mainloop."""
+        root = tkinter.Tk()
+        root.title('APPXF Manual Test Case Runner')
+
         # Test case explanations:
-        self.instruction_label = tkinter.Label(
-            self, text='Test Instructions:',
+        instruction_label = tkinter.Label(
+            root, text='Test Instructions:',
             padx=0, pady=0)
-        self.instruction_label.pack(anchor='w', padx=5, pady=0)
-        self.instruction_frame = tkinter.Frame(
-            bd=1, relief='sunken')
-        self.instruction_frame.pack(fill='x', padx=5, pady=0)
-        self.instruction_widget = self._get_markdown_label(
-            parent=self.instruction_frame,
+        instruction_label.pack(anchor='w', padx=5, pady=0)
+        instruction_frame = tkinter.Frame(
+            root, bd=1, relief='sunken')
+        instruction_frame.pack(fill='x', padx=5, pady=0)
+        instruction_widget = self._get_markdown_label(
+            parent=instruction_frame,
             markdown_text=self.explanation,
             width=80)
-        self.instruction_widget.pack(
+        instruction_widget.pack(
             fill='x')
 
         # Identification label:
-        self.observations_label = tkinter.Label(
-            self, text='Obervations:',
+        observations_label = tkinter.Label(
+            root, text='Obervations:',
             padx=0, pady=0)
-        self.observations_label.pack(anchor='w', padx=5, pady=0)
+        observations_label.pack(anchor='w', padx=5, pady=0)
 
-        self.observations_info_frame = tkinter.Frame(
-            bd=1, relief='sunken')
-        self.observations_info_frame.pack(fill='x', padx=5, pady=0)
-        self.observations_info_timestamp_label = tkinter.Label(
-            self.observations_info_frame,
+        observations_info_frame = tkinter.Frame(
+            root, bd=1, relief='sunken')
+        observations_info_frame.pack(fill='x', padx=5, pady=0)
+        observations_info_timestamp_label = tkinter.Label(
+            observations_info_frame,
             text=f'UTC Timestamp: {self.timestamp}',
             justify=tkinter.LEFT)
-        self.observations_info_timestamp_label.pack(
+        observations_info_timestamp_label.pack(
             anchor='w', padx=0, pady=0)
-        self.observations_info_author_label = tkinter.Label(
-            self.observations_info_frame,
+        observations_info_author_label = tkinter.Label(
+            observations_info_frame,
             text=f'Author (GIT name <email>): {self.git_name} <{self.git_email}>',
             justify=tkinter.LEFT)
-        self.observations_info_author_label.pack(
+        observations_info_author_label.pack(
             anchor='w', padx=0, pady=0)
 
         # Test results:
-        self.observations_text = tkinter.Text(
-                self, width=80, height=15)
-        self.observations_text.insert('1.0', 'Enter observations...')
-        #self.scrollbar = tkinter.Scrollbar(
-        #        self, orient=tkinter.VERTICAL,
-        #        command=self.entry.yview)  # type: ignore (entry is Text)
-        #self.place(self.scrollbar, row=0, column=2,
-        #            setting=GridSetting(padx=(0, 5), sticky='NSE'))
-        #self.entry.configure(yscrollcommand=self.scrollbar.set)
-        self.observations_text.pack(anchor='w', fill='x', padx=5, pady=0)
+        observations_text = tkinter.Text(
+                root, width=80, height=15)
+        observations_text.insert('1.0', 'Enter observations...')
+        observations_text.pack(anchor='w', fill='x', padx=5, pady=0)
 
         # an empty button frame between observations nad fail/OK buttons.
-        self.extra_button_frame = tkinter.Frame(self)
-        self.extra_button_frame.pack()
+        extra_button_frame = tkinter.Frame(root)
+        extra_button_frame.pack()
 
         # Button Frame
-        button_frame = tkinter.Frame(self)
+        button_frame = tkinter.Frame(root)
         button_frame.pack()
+
+        # Create the CaseRunnerGui object that will be passed to button callbacks
+        gui = CaseRunnerGui(root, extra_button_frame, observations_text)
+
         # OK Button:
         button_ok = tkinter.Button(
-            button_frame, text="OK", command=self.button_ok)
+            button_frame, text="OK", command=lambda: self.button_ok(gui))
         button_ok.pack(side=tkinter.LEFT)
         # Failed Button:
         button_failed = tkinter.Button(
-            button_frame, text="Fail", command=self.button_failed)
+            button_frame, text="Fail", command=lambda: self.button_failed(gui))
         button_failed.pack(side=tkinter.LEFT)
 
         # TODO: for toplevel, we might want to reopen it.
@@ -169,6 +192,8 @@ class ManualCaseRunner(tkinter.Tk):
 
         # TODO: needed is a debug window to check some states before/after
         # execution of the window
+
+        return gui
 
     def _get_markdown_label(self,
                             parent,
@@ -193,48 +218,90 @@ class ManualCaseRunner(tkinter.Tk):
 
         return widget
 
-    def button_ok(self):
-        self._write_result_file('ok')
-        self.destroy()
+    def button_ok(self, gui: CaseRunnerGui):
+        self._write_result_file('ok', gui)
+        gui.tk.destroy()
 
-    def button_failed(self):
-        self._write_result_file('failed')
-        self.destroy()
+    def button_failed(self, gui: CaseRunnerGui):
+        self._write_result_file('failed', gui)
+        gui.tk.destroy()
 
-    def _write_result_file(self, result: str):
-        if self.result_file:
-            with open(self.result_file, 'w') as file:
+    def _write_result_file(self, result: str, gui: CaseRunnerGui = None):
+        if self.argparse_result.result_file:
+            comment = ''
+            if gui:
+                comment = gui.observations_text.get('1.0', tkinter.END)
+            with open(self.argparse_result.result_file, 'w', encoding='utf-8') as file:
                 json.dump({
                     'timestamp': f'{self.timestamp}',
                     'author': f'{self.git_name} <{self.git_email}>',
                     'description': self.explanation,
-                    'comment': self.observations_text.get('1.0', tkinter.END),
+                    'comment': comment,
                     'result': result
                     }, file, indent=2)
 
     def run(self, tkinter_class: type[tkinter.BaseWidget], *args, **kwargs):
+        gui = self._get_main_window()
         if issubclass(tkinter_class, tkinter.Toplevel):
-            self._run_toplevel(tkinter_class, *args, **kwargs)
+            self._run_toplevel(gui, tkinter_class, *args, **kwargs)
         elif issubclass(tkinter_class, tkinter.Frame):
-            self._run_frame(tkinter_class, *args, **kwargs)
+            self._run_frame(gui, tkinter_class, *args, **kwargs)
         else:
             raise TypeError(
                 f'Provided tkinter class {tkinter_class.__class__}'
                 f'is not supported. Supported are: '
                 f'TopLevel, Frame.')
+        gui.tk.mainloop()
 
-    def run_custom_commands(self, command_map: dict[str, callable]):
-        for name, method in command_map.items():
-            button = tkinter.Button(
-                self.extra_button_frame,
-                text=name,
-                command=method)
-            button.pack(side=tkinter.LEFT)
-        self.update()
-        self.mainloop()
+    def run_by_file_parsing(self):
+        '''Execute process functions via command-line arguments or button interface.
 
-    def _run_frame(self, frame_type: type[tkinter.Frame], *args, **kwargs):
-        test_window = tkinter.Toplevel(self)
+        Checks if any --process_* arguments were passed. If yes, executes the
+        corresponding function. If no, creates buttons for each process_* function
+        that spawn Python subprocesses with the appropriate --process_* flag.
+
+        Only one --process_* argument is expected at a time. If multiple are passed,
+        only the first is executed (unexpected but handled gracefully).
+        '''
+        # Find the first --process_* argument that was passed via command line
+        process_arg = None
+        for arg in vars(self.argparse_result):
+            if arg.startswith('process_') and getattr(self.argparse_result, arg):
+                process_arg = arg
+                break
+
+        if process_arg:
+            # Execute the requested function
+            if hasattr(self.case_parser.module, process_arg):
+                function = getattr(self.case_parser.module, process_arg)
+                function()
+        else:
+            # No process argument passed: create buttons for process_* functions
+            gui = self._get_main_window()
+            for function_name, summary in self.case_parser.caller_module_function_map.items():
+                if function_name.startswith('process_'):
+                    self._add_subprocess_button(
+                        gui,
+                        function_name,
+                        self.case_parser.caller_module_path)
+            gui.tk.update()
+            gui.tk.mainloop()
+
+    def _add_subprocess_button(self, gui: CaseRunnerGui, process_function_name: str, module_path: str):
+        '''Add a button that spawns a subprocess to execute a process function.'''
+        def spawn_process():
+            subprocess.run(
+                [sys.executable, module_path, f'--{process_function_name}'],
+                check=False)
+
+        button = tkinter.Button(
+            gui.extra_button_frame,
+            text=process_function_name,
+            command=spawn_process)
+        button.pack(side=tkinter.LEFT)
+
+    def _run_frame(self, gui: CaseRunnerGui, frame_type: type[tkinter.Frame], *args, **kwargs):
+        test_window = tkinter.Toplevel(gui.tk)
 
         test_window.rowconfigure(0, weight=1)
         test_window.columnconfigure(0, weight=1)
@@ -244,12 +311,10 @@ class ManualCaseRunner(tkinter.Tk):
         test_frame.grid(row=0, column=0, sticky='NSWE')
 
         # place test frame right to control window
-        self.place_toplevel(test_window)
-
-        self.mainloop()
+        self.place_toplevel(gui.tk, test_window)
 
 
-    def _run_toplevel(self,
+    def _run_toplevel(self, gui: CaseRunnerGui,
                      toplevel_type: type[tkinter.Toplevel],
                      *args, **kwargs):
         # print out caller docstring
@@ -267,20 +332,19 @@ class ManualCaseRunner(tkinter.Tk):
             del stack  # Clean up to avoid reference cycles
 
         # window handling
-        test_window = toplevel_type(self, *args, **kwargs)
+        test_window = toplevel_type(gui.tk, *args, **kwargs)
         # test_window.grab_set()
-        self.place_toplevel(test_window)
-        self.mainloop()
+        self.place_toplevel(gui.tk, test_window)
 
-    def place_toplevel(self, toplevel: tkinter.Toplevel):
+    def place_toplevel(self, root: tkinter.Tk, toplevel: tkinter.Toplevel):
         '''Place a toplevel to the right of the control window.'''
-        self.update()
+        root.update()
         toplevel.update()
         toplevel.geometry('%dx%d+%d+%d' % (
             toplevel.winfo_width(),
             toplevel.winfo_height(),
-            self.winfo_x() + self.winfo_width() + 10,
-            self.winfo_y()))
+            root.winfo_x() + root.winfo_width() + 10,
+            root.winfo_y()))
 
 
 class ManualTestFrame(tkinter.Toplevel):

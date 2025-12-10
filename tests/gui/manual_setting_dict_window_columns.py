@@ -26,10 +26,11 @@ gui_property = {
 #for key in prop_dict.keys():
 #    print(f'{key}: {prop_dict[key]}')
 
-tester._run_toplevel(setting_dict.SettingDictWindow,
-                    'Edit Window Title',
-                    prop_dict,
-                    gui_property)
+tester.run(
+    setting_dict.SettingDictWindow,
+    'Edit Window Title',
+    prop_dict,
+    gui_property)
 
 for key in prop_dict.keys():
     print(f'{key}: {prop_dict[key]}')

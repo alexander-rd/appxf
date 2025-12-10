@@ -30,17 +30,17 @@ flake8 --count src
 git diff --name-only HEAD~1
 
 ## Branching
-git checkout -b <ticket-number>_short_title
-git push -u origin <branch-name>
+git checkout -b \<ticket-number\>_short_title
+git push -u origin \<branch-name\>
 # (checkout branch)
 
 # merging
 git checkout main
-git merge <branch-name>
+git merge \<branch-name\>
 git push
 # cleanup branch
-git branch -d <branch-name>
-git push origin --delete <branch-name>
+git branch -d \<branch-name\>
+git push origin --delete \<branch-name\>
 
 ## Others
  * Reproduce: errors are not shown in the log file (like wrong database conrhyfig, likely

@@ -15,14 +15,23 @@ class CaseParser():
 
             # Extract all defined functions (not imported)
             self.caller_module_functions = []
+            self.caller_module_function_map = {}
             for name, obj in inspect.getmembers(self.module):
                 if inspect.isfunction(obj) and obj.__module__ == self.module.__name__:
                     self.caller_module_functions.append(name)
+                    # Extract first paragraph (summary) of docstring, per PEP 257
+                    docstring = obj.__doc__ or ''
+                    # Get text before first blank line (or entire docstring if no blank line)
+                    summary = docstring.split('\n\n')[0].strip()
+                    # Collapse multi-line summary into single line
+                    summary = ' '.join(summary.split())
+                    self.caller_module_function_map[name] = summary
         else:
             self.caller_module_name = ''
             self.caller_module_path = ''
             self.caller_module_docstring = ''
             self.caller_module_functions = []
+            self.caller_module_function_map = {}
 
         self.report()
 

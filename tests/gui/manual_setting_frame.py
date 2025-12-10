@@ -10,4 +10,5 @@ __Validation:__ This entry is for a boolean. Latest after loosing focus on entry
 
 prop = SettingBool(name='bool')
 
-tester._run_frame(SettingFrameDefault, prop)
+tester.run(
+    SettingFrameDefault, prop)
