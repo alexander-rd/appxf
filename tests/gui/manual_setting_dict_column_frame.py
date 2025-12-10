@@ -18,5 +18,6 @@ prop_dict = {
     'Already having content': SettingString('some content')
 }
 
-tester._run_frame(setting_dict.SettingDictColumnFrame,
-                 prop_dict, columns=2)
+tester.run(
+    setting_dict.SettingDictColumnFrame,
+    prop_dict, columns=2)

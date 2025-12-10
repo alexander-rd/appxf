@@ -44,5 +44,4 @@ settingTwo = Setting.new('select::int',
 
 setting = SettingDict(settings={'SelectString': settingOne, 'Integer': settingTwo})
 
-tester._run_frame(SettingDictSingleFrame,
-                 setting)
+tester.run(SettingDictSingleFrame, setting)

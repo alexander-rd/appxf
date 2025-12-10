@@ -71,4 +71,6 @@ voluptua.''',
              }, name='Dropdown',
     mutable_items=False, mutable_list=False)
 
-tester._run_frame(SettingSelectFrame, setting)
+tester.run(
+    SettingSelectFrame,
+    setting)

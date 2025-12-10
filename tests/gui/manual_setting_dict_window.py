@@ -21,9 +21,10 @@ setting_dict = SettingDict({
     'Boolean Value': SettingBool(),
     })
 
-tester._run_toplevel(SettingDictWindow,
-                    'Edit Window Title',
-                    setting_dict)
+tester.run(
+    SettingDictWindow,
+    'Edit Window Title',
+    setting_dict)
 
 #for key, setting in setting_dict.items():
 #    print(f'{key}: {setting}')

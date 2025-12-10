@@ -35,10 +35,10 @@ def process_app_user():
     AppHarnessGui(app_user).start()
 
 # New starter:
-# ManualCaseRunner(__doc__).run()
+ManualCaseRunner().run_by_file_parsing()
 
 # Old starter:
-tester = ManualCaseRunner()
-tester.run_custom_commands({
-    'Run User Application': process_app_user,
-    })
+# tester = ManualCaseRunner()
+# tester.run_custom_commands({
+#     'Run User Application': process_app_user,
+#     })

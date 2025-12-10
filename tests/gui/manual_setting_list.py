@@ -45,4 +45,5 @@ tester = ManualCaseRunner('''
 Test case is less about
 ''')  # noqa: E501
 
-tester._run_toplevel(FrameForTesting, setting_dict)
+tester.run(
+    FrameForTesting, setting_dict)
