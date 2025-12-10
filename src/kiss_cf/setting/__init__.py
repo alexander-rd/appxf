@@ -28,6 +28,7 @@ the following classes are the entry points:
 from .setting import Setting, AppxfSettingError, AppxfSettingConversionError
 from .base_types import SettingString, SettingText, SettingEmail, SettingPassword
 from .base_types import SettingBool, SettingInt, SettingFloat
+from .base_types import SettingBase64
 
 from .setting_extension import SettingExtension
 from .setting_select import SettingSelect
