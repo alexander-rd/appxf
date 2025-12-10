@@ -40,4 +40,5 @@ class CaseParser():
         print(f'CaseParser identified module: {self.caller_module_name}\n'
               f'path: {self.caller_module_path}\n'
               f'functions: {self.caller_module_functions}\n'
+              f'as map: {self.caller_module_function_map}\n'
               f'docstring: {self.caller_module_docstring}')

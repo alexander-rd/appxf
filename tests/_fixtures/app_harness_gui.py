@@ -56,4 +56,6 @@ class AppHarnessGui():
                 app_name='Login: ' + self.app_name)
             login.check()
 
+        self.harness.user_config.load()
+
         self._run_application()
