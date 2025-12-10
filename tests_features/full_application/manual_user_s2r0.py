@@ -22,23 +22,18 @@ from tests._fixtures.app_harness import AppHarness
 from tests._fixtures.app_harness_gui import AppHarnessGui
 
 def setup():
-    test_sandbox.init_test_sandbox_for_caller_module(cleanup=True)
-
-# Still requried?
-# Storage.reset()
-# Storage.switch_context('invalid')
+    sandbox_path = test_sandbox.init_test_sandbox_for_caller_module(cleanup=True)
+    app_user = AppHarness(sandbox_path, 'user',
+                          registry_enabled=True)
+    app_user.perform_login_init()
 
 def process_app_user():
     ''' Launch User '''
     sandbox_path = test_sandbox.init_test_sandbox_for_caller_module(cleanup=False)
-    app_user = AppHarness(sandbox_path, 'user')
+    app_user = AppHarness(sandbox_path, 'user',
+                          registry_enabled=True)
+    app_user.perform_login_unlock()
     AppHarnessGui(app_user).start()
 
 # New starter:
 ManualCaseRunner().run_by_file_parsing()
-
-# Old starter:
-# tester = ManualCaseRunner()
-# tester.run_custom_commands({
-#     'Run User Application': process_app_user,
-#     })
