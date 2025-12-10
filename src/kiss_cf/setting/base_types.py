@@ -4,6 +4,8 @@ from __future__ import annotations
 from typing import Type, Any
 from dataclasses import dataclass
 
+import base64
+import binascii
 import re
 import configparser
 
@@ -217,3 +219,62 @@ class SettingFloat(Setting[float]):
             return validated_conversion_configparser(value, float,
                                                      self.get_default())
         return False, self.get_default()
+
+# TODO: add a SettingBase64 which is deriving from Setting[byte]. Default
+# should be b''. Supported types are 'base64' and 'Base64' but NOT byte. The
+# options are extended with "size" (value option). The validation would accept
+# any byte value but also any string for which it expects a base 64 encoding.
+# In addition to the base64 check and conversion, the resulting bytes must
+# match the size option. A size=0 (default value) would ignore this size check.
+
+
+class SettingBase64(Setting[bytes]):
+    ''' Setting for bytes encoded as base64 strings
+
+    Accepts raw bytes/bytearray values or base64-encoded strings.
+    Options:
+      - size: int (value option) -- if >0 the resulting bytes must match this
+        length. Default is 0 which disables size checking.
+    '''
+    @dataclass
+    class Options(Setting.Options):
+        ''' Options for SettingBase64 '''
+        size: int = 0
+        value_options = Setting.Options.value_options + ['size']
+
+    options: Options
+
+    @classmethod
+    def get_supported_types(cls) -> list[type | str]:
+        return ['base64', 'Base64']
+
+    @classmethod
+    def get_default(cls) -> bytes:
+        return b''
+
+    def _validated_conversion(self, value: Any) -> tuple[bool, bytes]:
+        # Accept raw bytes/bytearray directly
+        if isinstance(value, (bytes, bytearray)):
+            data = bytes(value)
+            if self.options.size > 0 and len(data) != self.options.size:
+                return False, self.get_default()
+            return True, data
+
+        # Accept strings that are base64 encoded
+        if isinstance(value, str):
+            # Strip whitespace/newlines which are valid in some base64 forms
+            cleaned = ''.join(value.split())
+            try:
+                decoded = base64.b64decode(cleaned, validate=True)
+            except (binascii.Error, ValueError):
+                return False, self.get_default()
+            if self.options.size > 0 and len(decoded) != self.options.size:
+                return False, self.get_default()
+            return True, decoded
+
+        # Not acceptable
+        return False, self.get_default()
+
+    def to_string(self) -> str:
+        # Return base64 representation of stored bytes
+        return base64.b64encode(self._value).decode('ascii')

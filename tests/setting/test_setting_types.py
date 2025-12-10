@@ -19,6 +19,7 @@ from kiss_cf.setting import Setting
 from kiss_cf.setting import AppxfSettingError, AppxfSettingConversionError
 from kiss_cf.setting import SettingString, SettingText, SettingEmail, SettingPassword
 from kiss_cf.setting import SettingBool, SettingInt, SettingFloat
+from kiss_cf.setting import SettingBase64
 from kiss_cf.setting import SettingDict
 
 from kiss_cf.setting import setting as setting_module
@@ -368,6 +369,29 @@ class TestSettingDict(BaseSettingTest):
                     value={},
                     string='')
     ]
+
+
+class TestSettingBase64(BaseSettingTest):
+    setting_class = SettingBase64
+    setting_types = ['base64', 'Base64']
+    default_value_is_valid = True
+    simple_input = SettingCase(input=b'', value=b'', string='')
+    valid_input = [
+        SettingCase(input=b'\x00\x01', value=b'\x00\x01', string='AAE='),
+        SettingCase(input=bytearray(b'\x00\x01'), value=b'\x00\x01', string='AAE='),
+        SettingCase(input='AAE=', value=b'\x00\x01', string='AAE='),
+        SettingCase(input='AAE=\n', value=b'\x00\x01', string='AAE='),
+    ]
+    invalid_init = [42, 'not_base64!!', object()]
+
+def test_base64_wrong_size():
+    setting = SettingBase64(size=3)
+    assert not setting.validate(b'')
+    assert not setting.validate(b'\x00\x01')
+    assert not setting.validate(b'\x00\x00\x00\x00')
+    assert setting.validate(b'\x00\x00\x00')
+    assert not setting.validate('AAE=')
+    assert setting.validate('AAEA')
 
 def test_setting_completeness():
     # Get expected classes and type declarations:

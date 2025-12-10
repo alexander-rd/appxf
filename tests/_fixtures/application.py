@@ -26,7 +26,7 @@ def get_fresh_application(
     # ensure initialized test directory:
     test_root_path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(request, cleanup=False)
     # just create the application mock which generates requried folders:
-    return AppHarness(test_root_path, user)
+    return AppHarness(test_root_path, user, registry_enabled=True)
 
 def get_application_login_initialized(
         request,
@@ -41,7 +41,7 @@ def get_application_login_initialized(
                            origin_path=app_context_path)
     # open application mock to return
     Storage.switch_context(user)
-    return AppHarness(test_root_path, user)
+    return AppHarness(test_root_path, user, registry_enabled=True)
 
 def get_application_registration_admin_initialized(
         request,
@@ -55,7 +55,7 @@ def get_application_registration_admin_initialized(
     _init_path_from_origin(target_path=test_root_path,
                            origin_path=app_context_path)
     # open application mock to return
-    app = AppHarness(test_root_path, user)
+    app = AppHarness(test_root_path, user, registry_enabled=True)
     return app
 
 def get_unlocked_application(
@@ -86,7 +86,7 @@ def _init_app_context_login_initialized(user: str = 'user'):
         return path
     # otherwise, create:
     # We need to get the app to set the password
-    app_user = AppHarness(path, user)
+    app_user = AppHarness(path, user, registry_enabled=True)
     app_user.perform_login_init()
     return path
 
@@ -100,7 +100,7 @@ def _init_app_context_registration_admin_initialized(user: str = 'user'):
         return path
     # otherwise, create:
     # We need to get the app to set the password
-    app_user = AppHarness(path, user)
+    app_user = AppHarness(path, user, registry_enabled=True)
     app_user.perform_login_init()
     app_user.perform_registration_admin_init()
     return path
