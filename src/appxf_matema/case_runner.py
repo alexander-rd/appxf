@@ -303,21 +303,30 @@ class ManualCaseRunner:
                     self._add_subprocess_button(
                         gui,
                         function_name,
+                        summary,
                         self.case_parser.caller_module_path)
             gui.tk.update()
 
             self._start_case_runner(gui)
 
-    def _add_subprocess_button(self, gui: CaseRunnerGui, process_function_name: str, module_path: str):
+    def _add_subprocess_button(
+        self,
+        gui: CaseRunnerGui,
+        process_function_name: str,
+        process_function_label: str,
+        module_path: str):
         '''Add a button that spawns a subprocess to execute a process function.'''
         def spawn_process():
             subprocess.run(
                 [sys.executable, module_path, f'--{process_function_name}'],
                 check=False)
 
+        if not process_function_label:
+            process_function_label = process_function_name
+
         button = tkinter.Button(
             gui.extra_button_frame,
-            text=process_function_name,
+            text=process_function_label,
             command=spawn_process)
         button.pack(side=tkinter.LEFT)
 
