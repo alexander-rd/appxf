@@ -23,7 +23,9 @@ from .restricted_location import CredentialLocationMock
 class AppHarness:
     def __init__(self,
                  root_path: str,
-                 user: str):
+                 user: str,
+                 login_enabled: bool = True,
+                 registry_enabled: bool = False):
         ''' Get a set of APPXF objects mimicing an application
 
         A folder "app_<user>" is added to root_path for application specific
@@ -40,6 +42,8 @@ class AppHarness:
         self.salt = 'test'
         self.user = user
         self.password = f'{self.user}-password'
+        self.login_enabled = login_enabled
+        self.registry_enabled = registry_enabled
 
         Storage.switch_context(self.user)
 
@@ -65,44 +69,45 @@ class AppHarness:
             security=self.security)
         # We still apply one config for all that stores to shared tool storage
         # by default since only few will be user specific.
-        self.user_config = Config(
+        self.config = Config(
             default_storage_factory=self.storagef_shared_config)
         # add USER config with some basic user data: email and name
-        self.user_config.add_section(
+        self.config.add_section(
             'USER', storage_factory=self.storagef_user_config,
             settings = {
                 'email': ('email',),
                 'name': (str,),
                 })
-        # add credentials options for shared storage (no values!)
-        self.user_config.add_section(
+        # add credential options for shared storage (no values!)
+        self.config.add_section(
             'SHARED_STORAGE',
             settings = CredentialLocationMock.config_properties)
         # add some configuration that will be shared upon sync
-        self.user_config.add_section(
+        self.config.add_section(
             'SHARED',
             settings = {'test': (str,)})
         # add a configuration section that is shared during registration in
         # addition to SHARED_STORAGE which must be shared to access remote
         # data.
-        self.user_config.add_section(
+        self.config.add_section(
             'REGISTRATION_SHARED',
             settings = {'test': (str,)}
         )
 
-        # REGISTRY: local storage (security applied within Regisrty)
-        self.path_registry = os.path.join(self.app_path, 'data/registry')
-        self.storagef_registry = LocalStorage.get_factory(path=self.path_registry)
-        # REGISTRY: remote storage (security applied within Regisrty)
-        self.path_remote_registry = os.path.join(self.root_path, 'remote/registry')
-        self.storagef_remote_registry = LocalStorage.get_factory(path=self.path_remote_registry)
-        # REGISTRY
-        self.registry = Registry(
-            local_storage_factory=self.storagef_registry,
-            remote_storage_factory=self.storagef_remote_registry,
-            security=self.security,
-            config=self.user_config,
-            response_config_sections=['SHARED_STORAGE', 'REGISTRATION_SHARED'])
+        if self.registry_enabled:
+            # REGISTRY: local storage (security applied within Regisrty)
+            self.path_registry = os.path.join(self.app_path, 'data/registry')
+            self.storagef_registry = LocalStorage.get_factory(path=self.path_registry)
+            # REGISTRY: remote storage (security applied within Regisrty)
+            self.path_remote_registry = os.path.join(self.root_path, 'remote/registry')
+            self.storagef_remote_registry = LocalStorage.get_factory(path=self.path_remote_registry)
+            # REGISTRY
+            self.registry = Registry(
+                local_storage_factory=self.storagef_registry,
+                remote_storage_factory=self.storagef_remote_registry,
+                security=self.security,
+                config=self.config,
+                response_config_sections=['SHARED_STORAGE', 'REGISTRATION_SHARED'])
 
         # some DATA LOCATION
         self.path_data = os.path.join(self.app_path, 'data')
@@ -112,38 +117,39 @@ class AppHarness:
 
         # matching REMOTE LOCATIONs
         # CONFIG: REMOTE STORAGE
-        self.path_remote_config = os.path.join(self.root_path, 'remote/config')
-        self.storagef_remote_config = SecureSharedStorage.get_factory(
-            base_storage_factory=LocalStorage.get_factory(path=self.path_remote_config),
-            security=self.security,
-            registry=self.registry)
-        self.path_remote_data = os.path.join(self.root_path, 'remote/data')
-        self.storagef_remote_data = SecureSharedStorage.get_factory(
-            base_storage_factory=LocalStorage.get_factory(path=self.path_remote_data),
-            security=self.security,
-            registry=self.registry)
+        if self.registry_enabled:
+            self.path_remote_config = os.path.join(self.root_path, 'remote/config')
+            self.storagef_remote_config = SecureSharedStorage.get_factory(
+                base_storage_factory=LocalStorage.get_factory(path=self.path_remote_config),
+                security=self.security,
+                registry=self.registry)
+            self.path_remote_data = os.path.join(self.root_path, 'remote/data')
+            self.storagef_remote_data = SecureSharedStorage.get_factory(
+                base_storage_factory=LocalStorage.get_factory(path=self.path_remote_data),
+                security=self.security,
+                registry=self.registry)
 
-        # TODO: Setting up remote storage like this is quite cumbersome. A sync
-        # short cut should allow some: sync(local_factory, remote_factory(w/o
-        # path)). The remote factoy would not have the full path defined, yet.
-        # And allow: factory(name=bla, path='sub/location') which would be done
-        # by sync.
+            # TODO: Setting up remote storage like this is quite cumbersome. A sync
+            # short cut should allow some: sync(local_factory, remote_factory(w/o
+            # path)). The remote factoy would not have the full path defined, yet.
+            # And allow: factory(name=bla, path='sub/location') which would be done
+            # by sync.
 
-        # setup shared sync:
-        self.shared_sync = SharedSync(registry=self.registry)
-        self.shared_sync.add_sync_pair(
-            local=self.storagef_data,
-            remote=self.storagef_remote_data,
-            writing_roles=['user', 'admin']
-        )
-        self.shared_sync.add_sync_pair(
-            local=self.storagef_shared_config,
-            remote=self.storagef_remote_config,
-            writing_roles=['admin'],
-            additional_readers=['user']
-        )
-        # TODO: registry (USER_DB) is not yet included. How would that be
-        # synced? Also by just setting up another pair??
+            # setup shared sync:
+            self.shared_sync = SharedSync(registry=self.registry)
+            self.shared_sync.add_sync_pair(
+                local=self.storagef_data,
+                remote=self.storagef_remote_data,
+                writing_roles=['user', 'admin']
+            )
+            self.shared_sync.add_sync_pair(
+                local=self.storagef_shared_config,
+                remote=self.storagef_remote_config,
+                writing_roles=['admin'],
+                additional_readers=['user']
+            )
+            # TODO: registry (USER_DB) is not yet included. How would that be
+            # synced? Also by just setting up another pair??
 
 
     #######################################################
@@ -163,11 +169,11 @@ class AppHarness:
         # .. at setting the password:
         self.security.init_user(self.password)
         # USER config must be stored accordinly:
-        self.user_config.section('USER').store()
+        self.config.section('USER').store()
 
     def _set_user_data(self):
         ''' set email and name'''
-        section = self.user_config.section('USER')
+        section = self.config.section('USER')
         section['email'] = f'{self.user}@url.com'
         section['name'] = f'{self.user}'
 
@@ -190,7 +196,7 @@ class AppHarness:
             return
         # TODO: any "privately stored" configuration can be loaded
         # USER configuration can now be loaded:
-        self.user_config.section('USER').load()
+        self.config.section('USER').load()
         #self._perform_try_load_registration()
 
     ######################
@@ -217,9 +223,9 @@ class AppHarness:
 
         # add some configuration detail for testing:
         #   1) a password to be shared on registration to access the shared storage
-        self.user_config.section('SHARED_STORAGE')['credential'] = CredentialLocationMock.credential
+        self.config.section('SHARED_STORAGE')['credential'] = CredentialLocationMock.credential
 
-        self.user_config.store()
+        self.config.store()
 
     def perform_registration_get_request(self) -> bytes:
         ''' Perform registration procedure: get registration bytes
@@ -267,7 +273,7 @@ class AppHarness:
         # Alternative A: Just include the user row to the USER_DB until next
         # sync. But the question will remain: how to sync registry at all.
 
-        self.user_config.load()
+        self.config.load()
 
     def perform_registration(self, app_admin: AppHarness):
         request_bytes = self.perform_registration_get_request()

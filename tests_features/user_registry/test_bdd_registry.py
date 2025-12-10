@@ -65,15 +65,15 @@ def store_value_in_configuration(env, role, config_data, config_section):
 
     Storage.switch_context(role)
     # section must exist:
-    assert config_section in app.user_config.sections
+    assert config_section in app.config.sections
     # the "test" setting must exist
-    assert 'test' in app.user_config.section(config_section)
+    assert 'test' in app.config.section(config_section)
     # and it must have the right value
-    app.user_config.section(config_section)['test'] = config_data
+    app.config.section(config_section)['test'] = config_data
     # just to ensure setting the value worked:
-    assert config_data == app.user_config.section(config_section)['test']
+    assert config_data == app.config.section(config_section)['test']
     # ensure information being persisted
-    app.user_config.store()
+    app.config.store()
     Storage.switch_context('')
 
 @then(parsers.parse('{role} has stored {config_data} in the {config_section} configuration'))
@@ -90,11 +90,11 @@ def verify_stored_in_configuration(env, role, config_data, config_section):
 
     Storage.switch_context(role)
     # section must exist:
-    assert config_section in app.user_config.sections
+    assert config_section in app.config.sections
     # the "test" setting must exist
-    assert 'test' in app.user_config.section(config_section)
+    assert 'test' in app.config.section(config_section)
     # and it must have the right value
-    assert config_data == app.user_config.section(config_section)['test']
+    assert config_data == app.config.section(config_section)['test']
     Storage.switch_context('')
 
 @given(parsers.parse('{role} {config_section} configuration is empty'))

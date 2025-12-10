@@ -18,7 +18,7 @@ def test_app_02_registry_basic_cycle(request):
 
     # admin registration handling
     request = app_admin.registry.get_request_data(request_bytes)
-    assert app_user.user_config.section('USER') == request.user_data
+    assert app_user.config.section('USER') == request.user_data
     # admin would now inspect the user data of the reuquest, likely in a GUI.
     # Most important check: does the user already exist and does it need to be
     # mapped to an existing ID?
@@ -40,15 +40,15 @@ def test_app_02_registry_basic_cycle(request):
     assert app_admin.registry._user_db.get_encryption_key(user_id) == app_user.security.get_encryption_public_key()
     # admin sending back user_id and config data sections but beforehand
     # setting some testable configuration data:
-    app_admin.user_config.section('REGISTRATION_SHARED')['test'] = 'admin test value'
-    app_user.user_config.section('REGISTRATION_SHARED')['test'] = 'user test value'
+    app_admin.config.section('REGISTRATION_SHARED')['test'] = 'admin test value'
+    app_user.config.section('REGISTRATION_SHARED')['test'] = 'user test value'
     response_bytes = app_admin.registry.get_response_bytes(user_id)
 
     # user getting response
     app_user.registry.set_response_bytes(response_bytes)
     assert app_user.registry._user_id.id == user_id
-    assert (app_admin.user_config.section('REGISTRATION_SHARED')['test'] ==
-            app_user.user_config.section('REGISTRATION_SHARED')['test'])
+    assert (app_admin.config.section('REGISTRATION_SHARED')['test'] ==
+            app_user.config.section('REGISTRATION_SHARED')['test'])
 
     # TODO: some details from above do belong into a UNIT testing. The test
     # case should be based on:
