@@ -128,6 +128,7 @@ def test_setting_json_full_options_export():
     "_settings": {
         "select": {
             "value": "01",
+            "visible": true,
             "display_width": 60,
             "mutable": true,
             "value_options_mutable": false,
@@ -139,6 +140,7 @@ def test_setting_json_full_options_export():
             "select_map": {"01": "Value"},
             "base_setting": {
                 "value": "Value",
+                "visible": true,
                 "display_width": 15,
                 "mutable": true,
                 "value_options_mutable": false,
@@ -147,6 +149,7 @@ def test_setting_json_full_options_export():
             }
         }
     },
+    "visible": true,
     "display_width": 15,
     "display_columns": 3,
     "mutable": true,
@@ -181,6 +184,7 @@ def test_setting_json_full_options_and_type():
         "select": {
             "type": "select::string",
             "value": "01",
+            "visible": true,
             "display_width": 60,
             "mutable": true,
             "value_options_mutable": false,
@@ -193,6 +197,7 @@ def test_setting_json_full_options_and_type():
             "base_setting": {
                 "type": "string",
                 "value": "Value",
+                "visible": true,
                 "display_width": 15,
                 "mutable": true,
                 "value_options_mutable": false,
@@ -201,6 +206,7 @@ def test_setting_json_full_options_and_type():
             }
         }
     },
+    "visible": true,
     "display_width": 15,
     "display_columns": 1,
     "mutable": true,

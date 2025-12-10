@@ -635,17 +635,17 @@ def test_setting_dict_get_state_nested_dict_with_options():
     data = setting_dict.get_state(options=export_options)
     _verify_get_state_keys(
         data,
-        ['_settings', 'display_width', 'display_columns'])
+        ['_settings', 'visible', 'display_width', 'display_columns'])
     _verify_get_state_keys(
         data['_settings'],
         ['test'], version_expected=False)
     _verify_get_state_keys(
         data['_settings']['test'],
-        ['type', '_settings', 'display_width', 'display_columns'], version_expected=False)
+        ['type', '_settings', 'visible', 'display_width', 'display_columns'], version_expected=False)
     _verify_get_state_keys(
         data['_settings']['test']['_settings'],
         ['int'],
-        ['type', 'value', 'display_width'],
+        ['type', 'value', 'visible', 'display_width'],
         version_expected=False)
     assert data['_settings']['test']['type'] == 'dictionary'
     assert data['_settings']['test']['_settings']['int']['type'] == 'integer'
