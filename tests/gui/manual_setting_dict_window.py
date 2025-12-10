@@ -2,6 +2,7 @@
 
 from appxf_matema.case_runner import ManualCaseRunner
 from kiss_cf.setting import SettingBool, SettingString, SettingEmail, SettingDict
+from kiss_cf.setting import SettingBase64
 from kiss_cf.gui.setting_dict import SettingDictWindow
 from appxf import logging
 
@@ -19,6 +20,7 @@ setting_dict = SettingDict({
     'String': SettingString(),
     'Email of the master of disaster': SettingEmail(),
     'Boolean Value': SettingBool(),
+    'Base64 (3bytes)': SettingBase64(value=b'\x01\x02\x03', size=3)
     })
 
 tester.run(

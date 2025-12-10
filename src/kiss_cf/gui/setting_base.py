@@ -49,7 +49,10 @@ class SettingFrameDefault(SettingFrameBase):
             self.label.config(text='')
         self.place(self.label, row=0, column=0)
 
-        value = str(self.setting.value)
+        # The following line was str(self.setting.value) before but the string
+        # conversion must be handled by the setting class for stranger examples
+        # like SettingBase64
+        value = self.setting.to_string()
         self.sv = tkinter.StringVar(self, value)
         self.sv.trace_add(
             'write', lambda var, index, mode: self.value_update())
