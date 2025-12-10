@@ -240,6 +240,25 @@ class ManualCaseRunner:
                     'result': result
                     }, file, indent=2)
 
+    def _start_case_runner(self, gui: CaseRunnerGui, *args, **kwargs):
+        '''Handle startup and teardown for case runner execution.
+
+        Calls setup() function from the tested module if it exists, executes
+        the main function with GUI, then calls teardown() if it exists.
+        '''
+        # Call setup() if it exists in the tested module
+        if hasattr(self.case_parser.module, 'setup'):
+            setup_func = getattr(self.case_parser.module, 'setup')
+            setup_func()
+        try:
+            # Execute the main case runner function
+            gui.tk.mainloop()
+        finally:
+            # Call teardown() if it exists in the tested module
+            if hasattr(self.case_parser.module, 'teardown'):
+                teardown_func = getattr(self.case_parser.module, 'teardown')
+                teardown_func()
+
     def run(self, tkinter_class: type[tkinter.BaseWidget], *args, **kwargs):
         gui = self._get_main_window()
         if issubclass(tkinter_class, tkinter.Toplevel):
@@ -251,7 +270,8 @@ class ManualCaseRunner:
                 f'Provided tkinter class {tkinter_class.__class__}'
                 f'is not supported. Supported are: '
                 f'TopLevel, Frame.')
-        gui.tk.mainloop()
+
+        self._start_case_runner(gui)
 
     def run_by_file_parsing(self):
         '''Execute process functions via command-line arguments or button interface.
@@ -271,7 +291,7 @@ class ManualCaseRunner:
                 break
 
         if process_arg:
-            # Execute the requested function
+            # Execute the requested function with setup/teardown
             if hasattr(self.case_parser.module, process_arg):
                 function = getattr(self.case_parser.module, process_arg)
                 function()
@@ -285,7 +305,8 @@ class ManualCaseRunner:
                         function_name,
                         self.case_parser.caller_module_path)
             gui.tk.update()
-            gui.tk.mainloop()
+
+            self._start_case_runner(gui)
 
     def _add_subprocess_button(self, gui: CaseRunnerGui, process_function_name: str, module_path: str):
         '''Add a button that spawns a subprocess to execute a process function.'''
