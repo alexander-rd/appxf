@@ -13,35 +13,42 @@ from tests._fixtures import application
 from tests._fixtures.app_harness import AppHarness
 from tests._fixtures.app_harness_gui import AppHarnessGui
 
-tester = ManualCaseRunner(__doc__)
+def setup():
+    sandbox_path = test_sandbox.init_test_sandbox_for_caller_module(cleanup=True)
 
-sandbox_path = test_sandbox.init_test_sandbox_for_caller_module()
+    app_admin = AppHarness(sandbox_path, 'admin',
+                           registry_enabled=True)
+    app_admin.perform_login_init()
+    app_admin.perform_registration_admin_init()
 
-Storage.reset()
-Storage.switch_context('invalid')
+    app_userA = AppHarness(sandbox_path, 'userA',
+                           registry_enabled=True)
+    app_userA.perform_login_init()
+    app_userA.perform_registration(app_admin)
 
-app_admin = AppHarness(sandbox_path, 'admin')
-app_admin.perform_login_init()
-app_admin.perform_registration_admin_init()
-launch_admin = lambda: AppHarnessGui(app_admin).mainloop()
+    app_userB = AppHarness(sandbox_path, 'userB',
+                           registry_enabled=True)
+    app_userB.perform_login_init()
+    app_userB.perform_registration(app_admin)
 
-app_userA = AppHarness(sandbox_path, 'userA')
-app_userA.perform_login_init()
-app_userA.perform_registration(app_admin)
-launch_userA = lambda: AppHarnessGui(app_userA).mainloop()
+def launch_app(user: str):
+    sandbox_path = test_sandbox.init_test_sandbox_for_caller_module(cleanup=False)
+    app_user = AppHarness(sandbox_path, user)
+    AppHarnessGui(app_user).start()
 
-app_userB = AppHarness(sandbox_path, 'userB')
-app_userB.perform_login_init()
-app_userB.perform_registration(app_admin)
-launch_userB = lambda: AppHarnessGui(app_userB).mainloop()
+def process_app_admin():
+    ''' Launch Admin '''
+    launch_app('admin')
 
-tester.run_custom_commands({
-    'Run Admin': launch_admin,
-    'Run User A': launch_userA,
-    'Run User B': launch_userB
-    })
+def process_app_userA():
+    ''' Launch User A '''
+    launch_app('userA')
 
-# tester.run_custom_commands({})
+def process_app_userB():
+    ''' Launch User B '''
+    launch_app('userB')
 
-# running currently requires a window or frame to run.. ..work in progress.
-# tester.run()
+#Storage.reset()
+#Storage.switch_context('invalid')
+
+ManualCaseRunner().run_by_file_parsing()

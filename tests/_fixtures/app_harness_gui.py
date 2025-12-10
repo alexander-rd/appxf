@@ -1,5 +1,5 @@
 ''' Provide a GUI for the application harness '''
-from kiss_cf.gui import KissApplication, ConfigMenu, Login
+from kiss_cf.gui import KissApplication, ConfigMenu, Login, Registration
 from tests._fixtures.app_harness import AppHarness
 import tkinter
 
@@ -58,8 +58,9 @@ class AppHarnessGui():
 
         # ensure registry being initialized
         if self.harness.registry_enabled and not self.harness.registry.is_initialized():
-
-            pass
+            registration = Registration(
+                registry = self.harness.registry)
+            registration.check()
 
         # loading regitry will happen automatically when required - like during
         # a sync attempt:

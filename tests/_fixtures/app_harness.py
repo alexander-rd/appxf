@@ -192,7 +192,7 @@ class AppHarness:
         Storage.switch_context(self.user)
         self.security.unlock_user(self.password)
         # After unlocking, registration should be continued (if possible)
-        if not self.registry.try_load():
+        if self.registry_enabled and not self.registry.try_load():
             return
         # TODO: any "privately stored" configuration can be loaded
         # USER configuration can now be loaded:
