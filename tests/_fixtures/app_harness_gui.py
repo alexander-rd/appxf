@@ -8,16 +8,12 @@ class AppHarnessGui():
     def __init__(
         self,
         harness: AppHarness,
-        login_enabled: bool = True,
-        registry_enabled: bool = False,
         *args, **kwargs):
 
         super().__init__(*args, **kwargs)
 
         self.harness = harness
         self.app_name = f'AppHarnessGui for {harness.user}'
-        self.login_enabled = login_enabled
-        self.registry_enabled = registry_enabled
 
     def _run_application(self):
         app = KissApplication()
@@ -35,7 +31,7 @@ class AppHarnessGui():
         # within the menus.
 
         # --- Config Menu --- #
-        configMenu = ConfigMenu(app, self.harness.user_config)
+        configMenu = ConfigMenu(app, self.harness.config)
         # gui_root.frame_menu.add_separator()
         app.frame_menu.add_cascade(label='Config', menu=configMenu)
 
@@ -49,13 +45,25 @@ class AppHarnessGui():
 
     def start(self) -> None:
         # Chek login state before application start
-        if self.login_enabled and not self.harness.security.is_user_unlocked():
+        if self.harness.login_enabled and not self.harness.security.is_user_unlocked():
             login = Login(
                 security=self.harness.security,
-                user_config=self.harness.user_config.section('USER'),
+                user_config=self.harness.config.section('USER'),
                 app_name='Login: ' + self.app_name)
             login.check()
 
-        self.harness.user_config.load()
+        # config is privately encrypted and must be loaded before any sync
+        # (even if sync may update it):
+        self.harness.config.load()
+
+        # ensure registry being initialized
+        if self.harness.registry_enabled and not self.harness.registry.is_initialized():
+
+            pass
+
+        # loading regitry will happen automatically when required - like during
+        # a sync attempt:
+        #
+        # TODO: the sync attempt
 
         self._run_application()
