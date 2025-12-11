@@ -8,7 +8,7 @@ import tkinter.ttk
 
 from appxf import logging
 from kiss_cf.registry import Registry
-from kiss_cf.setting import SettingDict
+from kiss_cf.setting import SettingDict, Setting
 from kiss_cf.gui.setting_dict import SettingDictSingleFrame
 
 
@@ -108,3 +108,48 @@ class Registration:
         '''Handle Initialize as Admin action (placeholder).'''
         self.log.debug('__on_initialize_as_admin called')
         # TODO: Implement initialize as admin logic
+
+    def register_user(self):
+        ''' pop up toplevel window for user registration
+
+        Arguments:
+            security -- Security object to retrieve encryption key from.
+                       If None, no key is displayed.
+        '''
+        self.log.debug('register_user called')
+
+        # Create TopLevel window
+        toplevel = tkinter.Toplevel()
+        toplevel.title('User Registration - Encryption Key')
+        toplevel.geometry('600x400')
+
+        # Main label
+        main_label = tkinter.Label(
+            toplevel,
+            text='User Encryption Key',
+            font=('TkDefaultFont', 12, 'bold'))
+        main_label.pack(padx=10, pady=10)
+
+        # Get user's encryption key
+        encryption_key = self._registry.get_encryption_key()
+
+
+        # Create SettingDict with encryption key for display
+        encryption_key_setting = Setting.new('base64',
+            value=encryption_key,
+            name='Encryption Key')
+
+        settings_dict = SettingDict({
+            'Encryption Key': encryption_key_setting,
+            })
+
+        # Display settings using SettingDictSingleFrame
+        frame = SettingDictSingleFrame(toplevel, setting=settings_dict)
+        frame.pack(fill='both', expand=True, padx=10, pady=10)
+
+        # Close button
+        close_button = tkinter.Button(
+            toplevel,
+            text='Close',
+            command=toplevel.destroy)
+        close_button.pack(pady=10)
