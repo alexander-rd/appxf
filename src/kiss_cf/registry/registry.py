@@ -326,7 +326,21 @@ class Registry(RegistryBase):
         # TODO: clarfify how it is checked that everything worked
 
     def get_encryption_keys(self, roles: list[str] | str) -> list[bytes]:
+        ''' Return list of (public) encryption keys for defined role(s)
+        '''
         return self._user_db.get_encryption_keys(roles)
+
+    def get_encryption_key(self, user_id: int = -1) -> bytes:
+        ''' Provide encryption key (bytes) for user ID
+
+        If no ID is provided or a negative ID, the encryption key for the
+        current user will be returned.
+        '''
+        self._ensure_loaded()
+        if user_id >= 0:
+            return self._user_db.get_encryption_key(user_id)
+        else:
+            return self._user_db.get_encryption_key(self.user_id)
 
 # TODO: can we register the same user twice? How would we know? We
 # would need to double-check the keys (which we did not want to use as
