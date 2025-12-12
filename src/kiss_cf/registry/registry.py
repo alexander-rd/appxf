@@ -262,7 +262,7 @@ class Registry(RegistryBase):
             ) -> bytes:
         ''' Get response bytes from admin to user
 
-        Bytes are sent back to user outside of tis tool's scope. For example,
+        Bytes are sent back to user outside of this tool's scope. For example,
         as file via Email. See: get_request_bytes().
         '''
         if not self._loaded:

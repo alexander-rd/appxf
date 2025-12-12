@@ -1,21 +1,16 @@
 ### Configuration transfer via REGISTRY (SDT #14, Kiss #26)
 **Status:** mechanism seems to work to transfer configuration data via registration
-response to the registering user. Open is the GUI perspective of this behavior.
+response to the registering user. Open is the GUI perspective BUT before this, it must be clarified how the request/response is exchanged. Currently, this is a bytes object handled within python. Needed is a file based exchange.
 
-To enable GUI testing, I can either:
- (A) Setup ONE GUI test with two applications (user and admin)
-     running in parallel and with supporting a multi-step procedure.
- (B) Automatically prepare both instances to a certain point and, within each
-     manual test case, only instantiate ONE GUI, performing the ONE particular
-     step. Support that likely needs to be added is: assertions during setup
-     and assertions at teardown of the test. Especially tests at teardown shall
-     avoid manual checks of expected results.
+It is already clear that I need to handle request/response via *one* file. This poses some challenges:
+* currently, the interface is just "bytes" (which could be streamed into a file)
 
-Clearly, (B) should be realized. Not unlikely, the sketched additions can be
-avoided. I would build a GUI application on top of the existing application
-harness. ?? Is this GUI application generic or specific to registration tests?
-Well, there is nothing wrong if the first version is specific to the
-registration test.
+Drafting Solution:
+* Response/Request already generate the bytes via serializer. Those objects can handle well any future encryption and signing.
+* The bytes can just be dumped into a file and loaded from there. ***Any additional handling is done by Response/Request objects***.
+GUI Procedure:
+1. get folder or file name via GUI
+2. get bytes for request from registry (load bytes for response)
+3. write bytes to file (send bytes of response to registry)
 
-### Setting names empty
-I have SettingDicts (like login) for which the name options are empty. This leads to empty labels when puttint the SettingSingleFrame thingys.
+**Observation.** While adding the GUI behavior it becomes apparent that the functional analysis in problem domain is missing. It appears in questions like: "what if the user needs to raise a new registration requests to repair something in the configuration (utilizing the registration config transfer)" or "what if the user was already registered - should there be an option to generate a response for an existing user". >> I should start adding some diagram on this level (and resolve the drawio ones).
