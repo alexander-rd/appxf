@@ -27,7 +27,7 @@ def test_app_02_registry_basic_cycle(request):
     #
     # admin adding to user DB
     user_id = app_admin.registry.add_user_from_request(request)
-    assert user_id == 1
+    assert user_id == 2
     # TODO: reconsider the interfacing. user_db appears to be hidden behind
     # registry. This makes sense but suddenly requires interface forwarding.
     # Possibly, the logic should move to registry while USER_DB is pure storage

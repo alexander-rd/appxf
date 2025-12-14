@@ -5,7 +5,7 @@ FLAG_LOG_ACTIVATED = False
 def pytest_runtest_setup(item):
     global FLAG_LOG_ACTIVATED
     if not FLAG_LOG_ACTIVATED:
-        logging.activate_logging('kiss_cf')
+        logging.activate_logging('kiss_cf', directory='.testing/log')
         FLAG_LOG_ACTIVATED = True
 
 def pytest_runtest_teardown(item, nextitem):

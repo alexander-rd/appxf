@@ -1,3 +1,4 @@
+from appxf import logging
 from kiss_cf.storage import Storable, Storage, CompactSerializer
 from typing import Set, TypedDict
 
@@ -16,13 +17,19 @@ class UserEntry(TypedDict):
 
 
 class UserDatabase(Storable):
+    log = logging.getLogger(__name__ + '.UserDatabase')
+
     def __init__(self, storage_method: Storage, **kwargs):
         super().__init__(storage_method, **kwargs)
 
         self._version = 1
         # ID handling:
         self._unused_id_list = []
-        self._next_id = 0
+        # negative user IDs are not allowed: we use negative user IDs as error
+        # indicator for adding new users which indicates potential duplicates
+        # with negative user ID such that even the initial admin should not use
+        # ID 0.
+        self._next_id = 1
         # The user_map maps ID's to UserEntry objects (dictionaries).
         self._user_db: dict[int, UserEntry] = {}
         # The role_map maps roles to lists of ID's to quickly collect lists of
@@ -62,17 +69,44 @@ class UserDatabase(Storable):
                 validation_key: bytes,
                 encryption_key: bytes,
                 roles: list[str] | str = 'user') -> int:
+        ''' add user with UNKNOWN user Id, returning new user ID
+
+        Negative user IDs are invalid: Existing keys are checked. If the keys
+        already exist and are consistent, the existing user ID is returned and
+        no new user ID will be added. If one of the keys already exists but the
+        entry is inconsistent, a NEGATIVE user ID is returned. This implies
+        that duplicate keys are not possible.
+        '''
         if isinstance(roles, str):
             roles = [roles.lower()]
         else:
             roles = [role.lower() for role in roles]
 
+        # check for existing keys (users)
+        for user_id, user_entry in self._user_db.items():
+            match_found = 0
+            if user_entry['validation_key'] == validation_key:
+                match_found += 1
+            if user_entry['encryption_key'] == encryption_key:
+                match_found += 1
+            # if keys exist with consistent IDs, update roles and conclude
+            if match_found == 2:
+                self.log.info(f'new user already existing with ID {user_id}')
+                self.set_roles(user_id, roles)
+                self.store()
+                return user_id
+            # if keys exist but are inconsistent:
+            if match_found == 1:
+                # return the negative user ID (we ensured that user IDs start
+                # with 1, not with 0)
+                self.log.info(f'new user keys already exist for user ID {user_id}')
+                return -user_id
+
         # TODO: get determine new ID (implementation might already consider
         # sys.maxsize)
         user_id = self._next_id
         self._next_id += 1
-        # TODO: proper logging
-        print(f'Adding new user with {user_id}, next: {self._next_id}')
+        self.log.info(f'adding new user with {user_id}, next: {self._next_id}')
 
         # forward to reuse function with init_user_db()
         self.add(user_id=user_id,
@@ -174,12 +208,39 @@ class UserDatabase(Storable):
         entry = self._get_user_entry(user_id)
         return entry['roles']
 
+    def set_roles(self, user_id: int, roles: list[str] | str):
+        ''' set roles for user ID '''
+        if user_id not in self._user_db:
+            raise ValueError(f'User ID {user_id} is not registered.')
+
+        if isinstance(roles, str):
+            roles = [roles]
+
+        current_roles = self.get_roles(user_id)
+        for role in current_roles:
+            if role not in roles:
+                self._role_map[role].remove(user_id)
+        for role in roles:
+            if role not in current_roles:
+                self._role_map[role].add(user_id)
+        self._user_db[user_id]['roles'] = roles
+        self.store()
+
     def get_user_config(self, user_id: int):
         # TODO: implementation and define return value. Might be a dictionary
         # or a Config object.
         #  1) It shall only contain a USER section
         #  2) It shall be usable with a config editor (read only)
         pass
+
+    # Adding logging to store/load
+    def store(self, **kwargs):
+        self.log.debug(f'Storing USER DB')
+        return super().store(**kwargs)
+
+    def load(self, **kwargs):
+        self.log.debug(f'Loading USER DB')
+        return super().load(**kwargs)
 
 # TODO: Support is needed to verify conditions to purge a user. This requires a
 # complete registry of all files the user may have stored in the past. This
