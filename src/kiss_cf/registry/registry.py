@@ -99,15 +99,25 @@ class Registry(RegistryBase):
         '''
         return self._user_id.id
 
-    def get_roles(self, uid: int | None = None) -> list[str]:
-        if uid is None:
+    def get_roles(self, user_id: int | None = None) -> list[str]:
+        ''' get roles as list of strings
+
+        uid -- a valid positive user ID - OR -
+               0 for the roles of current user - OR -
+               None for all known roles
+        '''
+        if user_id is None:
             return self._user_db.get_roles()
-        elif uid < 0:
+        if user_id < 0:
+            raise ValueError(
+                f'User ID {user_id} is unexpected. '
+                f'Expected are: None, 0 or positive user ID')
+        if user_id == 0:
             # TODO: why does only require access of _user_id an ensure_loaded()
             # but not access of _user_db above and below?
             self._ensure_loaded()
-            uid = self._user_id.id
-        return self._user_db.get_roles(uid)
+            user_id = self._user_id.id
+        return self._user_db.get_roles(user_id)
 
     def is_initialized(self) -> bool:
         return (self._loaded or (
@@ -227,7 +237,18 @@ class Registry(RegistryBase):
             user_data = {}
         return RegistrationRequest.new(user_data, self._security)
 
-    def get_request_data(self, request: bytes) -> RegistrationRequest:
+    # TODO: At least one get_request* function can be stripped.
+    # get_request_data() and get_request() can be mapped into one
+    # get_request_object() which has an optional bytes argument (for
+    # transformation from bytes) if no argument is given, it would return the
+    # current object.
+    #
+    # Even further, the get_request_bytes can then also be stripped since
+    # whoever then works directly with the object. >> Making the object public.
+    # (then, please consistent with response object) >> Possibly calling
+    # RegistrationRequest and RegistrationResponse.
+
+    def get_request_data(self, request: bytes | None) -> RegistrationRequest:
         return RegistrationRequest.from_request(request)
 
     def add_user_from_request(self,
@@ -252,8 +273,11 @@ class Registry(RegistryBase):
             validation_key=request.signing_key,
             encryption_key=request.encryption_key,
             roles=roles)
-        # Note: add_new automatically stored the new USER_DB
-        self.sync_with_remote(mode='sending')
+
+        # Note: add_new automatically stored the new user DB and sync can be
+        # skipped if add_new failed:
+        if user_id > 0:
+            self.sync_with_remote(mode='sending')
         return user_id
 
     def get_response_bytes(

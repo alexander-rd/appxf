@@ -102,11 +102,11 @@ def test_registry_admin_init(admin_initialized_registry):
     assert len(registry.get_encryption_keys('admin')) == 1
     assert len(registry.get_encryption_keys('user')) == 1
     # user ID for initialized admin should be 0
+    assert 'admin' in registry.get_roles(1)
+    assert 'user' in registry.get_roles(1)
+    # self USER_ID should be known
     assert 'admin' in registry.get_roles(0)
     assert 'user' in registry.get_roles(0)
-    # self USER_ID should be known
-    assert 'admin' in registry.get_roles(-1)
-    assert 'user' in registry.get_roles(-1)
 
 def test_registry_user_init(admin_user_initialized_registry_pair):
     admin_registry: Registry = admin_user_initialized_registry_pair[0]
@@ -114,23 +114,57 @@ def test_registry_user_init(admin_user_initialized_registry_pair):
     #assert user_registry.is_initialized()
 
     # verify user ID's
-    assert admin_registry.user_id == 0
-    assert user_registry.user_id == 1
+    assert admin_registry.user_id == 1
+    assert user_registry.user_id == 2
 
-    # check roles of new user that should have ID 1
-    assert 'user' in admin_registry.get_roles(1)
-    assert 'new' in admin_registry.get_roles(1)
+    # check roles of new user that should have ID 2
+    assert 'user' in admin_registry.get_roles(2)
+    assert 'new' in admin_registry.get_roles(2)
     # general roles
     assert 'new' in admin_registry.get_roles()
     assert len(admin_registry.get_roles()) == 3
 
-    # SAME on user side
-    # check roles of new user that should have ID 1
-    assert 'user' in user_registry.get_roles(-1)
-    assert 'new' in user_registry.get_roles(-1)
+    # SAME on user side check roles of new user that should have ID 2 - but
+    # using 0 for current user:
+    assert 'user' in user_registry.get_roles(0)
+    assert 'new' in user_registry.get_roles(0)
     # general roles
     assert 'new' in user_registry.get_roles()
     assert len(user_registry.get_roles()) == 3
+
+def test_registry_existing_user(admin_user_initialized_registry_pair):
+    admin_registry: Registry = admin_user_initialized_registry_pair[0]
+    user_registry: Registry = admin_user_initialized_registry_pair[1]
+    user_id = user_registry.user_id
+
+    # user current roles
+    user_roles = admin_registry.get_roles(user_id)
+    assert 'user' in user_roles
+    assert 'new' in user_roles
+    assert 2 == len(user_roles)
+
+    request = user_registry.get_request()
+    assert user_id == admin_registry.add_user_from_request(
+        request, 'user')
+
+    # check again the user DB at admin side on the changed roles
+    user_roles = admin_registry.get_roles(user_id)
+    assert 'user' in user_roles
+    assert 1 == len(user_roles)
+
+def test_registy_inconsistent_user(admin_user_initialized_registry_pair):
+    admin_registry: Registry = admin_user_initialized_registry_pair[0]
+    user_registry: Registry = admin_user_initialized_registry_pair[1]
+
+    # request differs in encryption key:
+    request = user_registry.get_request()
+    request._data['encryption_key'] = request.encryption_key + b'.'
+    assert admin_registry.add_user_from_request(request, 'user') < 0
+    # request differs in signing key:
+    request = user_registry.get_request()
+    request._data['signing_key'] = request.signing_key + b'.'
+    assert admin_registry.add_user_from_request(request, 'user') < 0
+
 
 # TODO: test case adding a second user and information being transferred to
 # first user.
