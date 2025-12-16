@@ -132,7 +132,8 @@ def _sync_storage(storage_a: Storage,
                   only_a_to_b: bool):
     # TODO: theoretically, this one could sync storage of DIFFERENT names,
     # potentially causing confision.
-    print(f'Syncing:\nA={storage_a.id()}\nB={storage_b}')
+    print(f'Syncing:\nA={storage_a.id()}\nB={storage_b.id()}')
+    log.debug(f'Syncing:\nA={storage_a.id()}\nB={storage_b.id()}')
 
     # ## Decision Stage 1: File Existance
     exists_a = storage_a.exists()
@@ -142,16 +143,21 @@ def _sync_storage(storage_a: Storage,
         log.debug(f'Storage does not existing on both sides.'
                   f'\nA: {storage_a.id()}\nB: {storage_b.id()}')
         return
+    if not exists_a and only_a_to_b:
+        # nothing can be done is A does not exist
+        return
+    if not exists_a:
+        # b exists and it is not only_a_to_b, so we try to sync:
+        log.debug(f'Storage B does not existing on A'
+                  f'\nA: {storage_a.id()}\nB: {storage_b.id()}')
+        _execute_sync(storage_b, storage_a)
+        return
     if not exists_b:
         log.debug(f'Storage A does not existing on B'
                   f'\nA: {storage_a.id()}\nB: {storage_b.id()}')
         _execute_sync(storage_a, storage_b)
         return
-    if not exists_a and not only_a_to_b:
-        log.debug(f'Storage B does not existing on A'
-                  f'\nA: {storage_a.id()}\nB: {storage_b.id()}')
-        _execute_sync(storage_b, storage_a)
-        return
+
     # Both files exist. We continue normally.
 
     # ## Decision Stage 2: Decision based on UUID

@@ -37,7 +37,10 @@ class AppHarnessGui():
         app.frame_menu.add_cascade(label='Config', menu=configMenu)
 
         # --- Registration Menu --- #
-        if self.harness.registry_enabled and self.harness.registry.is_initialized():
+        if (self.harness.registry_enabled and
+            self.harness.registry.is_initialized() and
+            'admin' in self.harness.registry.get_roles(user_id=0)
+            ):
             def show_registration():
                 registration = RegistrationAdmin(
                     registry=self.harness.registry,

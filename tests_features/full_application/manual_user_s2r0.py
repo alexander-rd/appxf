@@ -1,18 +1,13 @@
 ''' User Initialization without Registration
 
-__Precondition:__ Fresh user application.
+__Precondition:__ User application with initialized user (Local Security) but
+pending registration (no request generated, yet)
 
-__Scope:__ Procedure of local user initialization.
+__Scope:__ No testing. This case is for development.
 
-__Step 1:__ Upon first opening, the user data initialization window should show
-with BUT NOT YET the application window. You should be able to close the
-window, launch again with same window appearing and entered data being lost.
-
-__Step 2:__ After entering user data and password, the main application should
-pop up. From there, you can review the user data.
-
-__Step 3:__ Closing the app and reopening should call for the password.
-Entering the right one should again provide access to the application.
+__Reset:__ The sandbox is NOT reset during executions to support development
+testing. Use the reset button to manualle reset the sandbox. **Do not reset
+while the application is launched!**
 '''
 from kiss_cf.storage import Storage
 
@@ -22,6 +17,14 @@ from tests._fixtures.app_harness import AppHarness
 from tests._fixtures.app_harness_gui import AppHarnessGui
 
 def setup():
+    sandbox_path = test_sandbox.init_test_sandbox_for_caller_module(cleanup=False)
+    app_user = AppHarness(sandbox_path, 'user',
+                          registry_enabled=True)
+    if not app_user.security.is_user_initialized():
+        app_user.perform_login_init()
+
+def process_reset_sandbox():
+    ''' Reset Sandbox '''
     sandbox_path = test_sandbox.init_test_sandbox_for_caller_module(cleanup=True)
     app_user = AppHarness(sandbox_path, 'user',
                           registry_enabled=True)
