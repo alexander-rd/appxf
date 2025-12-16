@@ -10,6 +10,10 @@ from .storage_to_bytes import StorageToBytes
 from .serializer_json import JsonSerializer
 from .meta_data import MetaData
 
+
+log = logging.getLogger(__name__)
+
+
 class KissStorageSyncException(Exception):
     ''' General exception from storage Sync '''
 
@@ -87,9 +91,6 @@ class SyncData(Storable):
     attribute_mask = Storable.attribute_mask + ['_this_storage']
 
 
-log = logging.getLogger(__name__)
-
-
 # Pyhon dirsync:
 # https://github.com/tkhyn/dirsync/blob/develop/dirsync/syncer.py
 #  * Uses timestamps (stat)
@@ -132,7 +133,6 @@ def _sync_storage(storage_a: Storage,
                   only_a_to_b: bool):
     # TODO: theoretically, this one could sync storage of DIFFERENT names,
     # potentially causing confision.
-    print(f'Syncing:\nA={storage_a.id()}\nB={storage_b.id()}')
     log.debug(f'Syncing:\nA={storage_a.id()}\nB={storage_b.id()}')
 
     # ## Decision Stage 1: File Existance
