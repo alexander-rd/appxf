@@ -10,6 +10,7 @@ import re
 import tkinter
 import sys
 
+from appxf import logging
 from tkhtmlview import HTMLLabel
 from tkinter import font as tkfont
 from appxf import logging
@@ -27,10 +28,6 @@ from appxf_matema.case_parser import CaseParser
 # configured in conftest. To enable reuse and import the root path of the
 # module is added to the system path:
 sys.path.append(os.path.join(os.path.dirname(__file__),'../../../'))
-# the following import enables the appxf logging:
-logging.activate_logging('appxf_matema')
-#from conftest import pytest_runtest_setup
-#pytest_runtest_setup(None)
 
 # TODO: store test results somehow:
 # - invalidate when included library parts changed
@@ -61,7 +58,19 @@ class CaseRunnerGui:
 
 
 class ManualCaseRunner:
-    def __init__(self, explanation: str = ''):
+    log = logging.getLogger(__name__ + '.ManualCaseRunner')
+
+    def __init__(self,
+                 explanation: str = '',
+                 logging_context:str = ''):
+        # For any manual test case, the construction of THIS object is the
+        # entry point also when ran from MaTeMa since it creates a new process
+        # to run the case. Hence, logging must be activated.
+        #
+        # Using logging_context = '' will activate any logging since settings
+        # for '' will be inherited from anything on top.
+        logging.activate_logging(logging_context, directory='.testing/log')
+        self.log.debug(f'Started {__class__.__name__}')
 
         # Get the module that instantiated the case runner. Frame 0 will be the
         # CaseParser __init__, frame 1 is this __init__ and frame 2 will be
