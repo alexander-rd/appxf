@@ -9,6 +9,7 @@ response to the registering user. A drafted GUI is available, exposing required 
 ## Observations
 * I do not like the pop-up windows upon errors. However, errors should be treated. Adding some visibility must be a logging capabilty (log to file AND display pop up or into a logging stream)
 * Gray out or leave empty the user information (and role assignment) until the request is loaded
+* proper usage of "setup()" and "setup_sandbox()"
 
 ## Not yet considered
 * **Shared storage**: even though it kind of works (for user DB share), conflicts must be handled before going live. Idea almost implies that the sync needs a plugin UI which is reversed dependency compared to Login and Registry.

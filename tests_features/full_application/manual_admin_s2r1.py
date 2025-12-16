@@ -8,8 +8,6 @@ __Reset:__ The sandbox is NOT reset during executions to support development
 testing. Use the reset button to manualle reset the sandbox. **Do not reset
 while the application is launched!**
 '''
-from kiss_cf.storage import Storage
-
 from appxf_matema.case_runner import ManualCaseRunner
 from tests._fixtures import test_sandbox
 from tests._fixtures.app_harness import AppHarness
@@ -40,5 +38,4 @@ def process_reset_sandbox():
     app_admin.perform_login_init()
     app_admin.perform_registration_admin_init()
 
-# New starter:
 ManualCaseRunner().run_by_file_parsing()
