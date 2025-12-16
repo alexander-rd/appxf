@@ -92,40 +92,31 @@ class RegistrationUser:
         self._gui_root.columnconfigure(0, weight=1)
 
         # Frame 1: Registration Request Data (User Data)
-        request_frame_label = tkinter.Label(self._gui_root, text='Registration Request Data')
-        request_frame_label.grid(row=0, column=0, sticky='NW', padx=5, pady=5)
+        #request_frame_label = tkinter.Label(self._gui_root, text='Registration Request Data')
+        #request_frame_label.grid(row=0, column=0, sticky='NW', padx=5, pady=5)
 
-        request_data = SettingDict()
+        # request_data = SettingDict()
         # Placeholder: in real usage this would come from the registry's user config
-        request_frame = SettingDictSingleFrame(self._gui_root, setting=request_data)
-        request_frame.grid(row=0, column=0, sticky='NSWE', padx=5, pady=5)
+        #request_frame = SettingDictSingleFrame(self._gui_root, setting=request_data)
+        #request_frame.grid(row=0, column=0, sticky='NSWE', padx=5, pady=5)
 
-        sep1 = tkinter.ttk.Separator(self._gui_root, orient='horizontal')
-        sep1.grid(row=1, column=0, sticky='WE')
-
-        # Frame 2: Admin Public Key
-        admin_key_label = tkinter.Label(self._gui_root, text='Admin Public Key')
-        admin_key_label.grid(row=2, column=0, sticky='NW', padx=5, pady=5)
-
-        admin_key_text = tkinter.Text(self._gui_root, width=60, height=5)
-        admin_key_text.grid(row=2, column=0, sticky='NSWE', padx=5, pady=5)
-        # Placeholder: in real usage this would read from SettingDict
-        admin_key_text.insert('1.0', '(Admin public key would appear here)')
-
-        sep2 = tkinter.ttk.Separator(self._gui_root, orient='horizontal')
-        sep2.grid(row=3, column=0, sticky='WE')
+        #sep1 = tkinter.ttk.Separator(self._gui_root, orient='horizontal')
+        #sep1.grid(row=1, column=0, sticky='WE')
 
         # Frame 3: Action Buttons
         button_frame = tkinter.Frame(self._gui_root)
-        button_frame.grid(row=4, column=0, sticky='E', padx=5, pady=5)
+        button_frame.grid(row=1, column=0, sticky='E', padx=5, pady=5)
 
         def generate_request_handler(event=None):
-            '''Handle Generate Request button press.'''
             self._on_generate_request()
 
         def initialize_as_admin_handler(event=None):
-            '''Handle Initialize as Admin button press.'''
             self._on_initialize_as_admin()
+            if self._registry.is_initialized():
+                self._gui_root.destroy()
+
+        def load_response(event=None):
+            self.on_load_response()
             if self._registry.is_initialized():
                 self._gui_root.destroy()
 
@@ -139,6 +130,10 @@ class RegistrationUser:
             command=generate_request_handler)
         generate_button.pack(side=tkinter.RIGHT, padx=5)
 
+        load_resp_button = tkinter.Button(
+            button_frame, text='Load Response', command=load_response)
+        load_resp_button.pack(side=tkinter.RIGHT, padx=5)
+
         if self._parent is None:
             self._gui_root.mainloop()
 
@@ -148,6 +143,7 @@ class RegistrationUser:
 
         # Ask user for a file location to save the registration request bytes.
         file_path = filedialog.asksaveasfilename(
+            parent=self._gui_root,
             title='Save Registration Request',
             initialdir=self._root_dir,
             initialfile='registration.request',
@@ -175,6 +171,47 @@ class RegistrationUser:
 
         self.log.info('Registration request saved to %s', file_path)
         messagebox.showinfo('Saved', f'Registration request saved to {file_path}')
+
+
+    def on_load_response(self):
+            '''Handle Load Response button press: apply registration response.'''
+            file_path = filedialog.askopenfilename(
+                parent=self._gui_root,
+                title='Select Registration Response File',
+                initialdir=self._root_dir,
+                initialfile='registration.response',
+                defaultextension='')
+            if not file_path:
+                return
+
+            try:
+                with open(file_path, 'rb') as fh:
+                    response_bytes = fh.read()
+
+                # Apply response bytes to registry
+                self._registry.set_response_bytes(response_bytes)
+                self.log.info('Registration response applied from %s', file_path)
+
+                # Close GUI if registration completed
+                if self._registry.is_initialized() and self._gui_root is not None:
+                    try:
+                        self._gui_root.destroy()
+                    # pylint: disable=broad-except
+                    except Exception:
+                        pass
+
+            except (OSError, IOError) as e:
+                self.log.error('Failed to read response file: %s', e)
+                messagebox.showerror(
+                    'Error',
+                    f'Failed to read file: {e}',
+                    parent=self._gui_root)
+            except (ValueError, KeyError) as e:
+                self.log.error('Failed to apply response: %s', e)
+                messagebox.showerror(
+                    'Error',
+                    f'Failed to apply response: {e}',
+                    parent=self._gui_root)
 
     def _on_initialize_as_admin(self):
         ''' Handling initialization as admin '''
@@ -241,22 +278,24 @@ class RegistrationAdmin:
             self._admin_window = tkinter.Toplevel(self._parent)
             self._admin_window.title('Admin - Registration')
 
-        self._admin_window.geometry('600x700')
-
         # ==== SECTION 1: Action Buttons ====
         section1_frame = tkinter.LabelFrame(
             self._admin_window, text='Actions', padx=10, pady=10)
         section1_frame.pack(fill='x', padx=10, pady=10)
 
-        def on_generate_admin_keys():
-            '''Stub: Generate admin encryption keys.'''
-            # TODO: implement admin key generation
-            self.log.debug('Generate admin keys called')
-            messagebox.showinfo('TODO', 'Admin key generation not yet implemented')
+        # def on_generate_admin_keys():
+        #     '''Stub: Generate admin encryption keys.'''
+        #     # TODO: implement admin key generation
+        #     self.log.debug('Generate admin keys called')
+        #     messagebox.showinfo(
+        #         'TODO',
+        #         'Admin key generation not yet implemented',
+        #         parent=self._admin_window)
 
         def on_load_request():
             '''Load a registration request file.'''
             file_path = filedialog.askopenfilename(
+                parent=self._admin_window,
                 title='Select Registration Request File',
                 initialdir=self._root_dir,
                 initialfile='registration.request',
@@ -271,11 +310,14 @@ class RegistrationAdmin:
                 self.log.info('Request loaded from %s', file_path)
             except (OSError, IOError) as e:
                 self.log.error('Failed to read request file: %s', e)
-                messagebox.showerror('Error', f'Failed to read file: {e}')
+                messagebox.showerror(
+                    'Error',
+                    f'Failed to read file: {e}',
+                    parent=self._admin_window)
 
-        gen_keys_btn = tkinter.Button(
-            section1_frame, text='Generate Admin Keys', command=on_generate_admin_keys)
-        gen_keys_btn.pack(side=tkinter.LEFT, padx=5)
+        # gen_keys_btn = tkinter.Button(
+        #     section1_frame, text='Generate Admin Keys', command=on_generate_admin_keys)
+        # gen_keys_btn.pack(side=tkinter.LEFT, padx=5)
 
         load_req_btn = tkinter.Button(
             section1_frame, text='Load Registration Request', command=on_load_request)
@@ -332,13 +374,19 @@ class RegistrationAdmin:
             '''Add user to registry with selected roles.'''
             # Check that a request is loaded
             if self._current_request is None:
-                messagebox.showwarning('No Request', 'Please load a registration request first')
+                messagebox.showwarning(
+                    'No Request',
+                    'Please load a registration request first',
+                    parent=self._admin_window)
                 return
 
             # Get selected roles from checkboxes
             selected_roles = [r for r, v in self._role_vars.items() if v.get()]
             if not selected_roles:
-                messagebox.showwarning('No Roles', 'Please select at least one role')
+                messagebox.showwarning(
+                    'No Roles',
+                    'Please select at least one role',
+                     parent=self._admin_window)
                 return
 
             try:
@@ -348,17 +396,23 @@ class RegistrationAdmin:
                 self.log.info('User added with ID: %s and roles: %s', user_id, selected_roles)
                 messagebox.showinfo(
                     'Success',
-                    f'User added successfully!\nUser ID: {user_id}\nRoles: {", ".join(selected_roles)}')
+                    f'User added successfully!\nUser ID: {user_id}\nRoles: {", ".join(selected_roles)}',
+                    parent=self._admin_window)
                 self._current_user_id = user_id
             except (ValueError, KeyError) as e:
                 self.log.error('Failed to add user: %s', e)
-                messagebox.showerror('Error', f'Failed to add user: {e}')
-
+                messagebox.showerror(
+                    'Error',
+                    f'Failed to add user: {e}',
+                    parent=self._admin_window)
         def on_write_response():
             '''Write registration response to file.'''
             # Check that a user has been added
             if self._current_user_id is None:
-                messagebox.showwarning('No User', 'Please add a user first before writing response')
+                messagebox.showwarning(
+                    'No User',
+                    'Please add a user first before writing response',
+                    parent=self._admin_window)
                 return
 
             try:
@@ -367,6 +421,7 @@ class RegistrationAdmin:
 
                 # Ask user where to save the file
                 file_path = filedialog.asksaveasfilename(
+                    parent=self._admin_window,
                     title='Save Registration Response',
                     defaultextension='.response',
                     filetypes=[('Response Files', '*.response'), ('All Files', '*.*')],
@@ -381,10 +436,12 @@ class RegistrationAdmin:
                     f.write(response_bytes)
 
                 self.log.info('Response written to: %s', file_path)
-                messagebox.showinfo('Success', f'Response written to:\n{file_path}')
             except (ValueError, KeyError, OSError) as e:
                 self.log.error('Failed to write response: %s', e)
-                messagebox.showerror('Error', f'Failed to write response: {e}')
+                messagebox.showerror(
+                    'Error',
+                    f'Failed to write response: {e}',
+                    parent=self._admin_window)
 
         close_btn = tkinter.Button(section4_frame, text='Close', command=on_close, width=15)
         close_btn.pack(side=tkinter.LEFT, padx=5)
@@ -412,7 +469,10 @@ class RegistrationAdmin:
             request = RegistrationRequest.from_request(request_bytes)
         except (ValueError, KeyError) as e:
             self.log.error('Failed to parse registration request: %s', e)
-            messagebox.showerror('Error', f'Invalid request format: {e}')
+            messagebox.showerror(
+                'Error',
+                f'Invalid request format: {e}',
+                parent=self._admin_window)
             return
 
         # Store request for later use
@@ -432,7 +492,7 @@ class RegistrationAdmin:
             # Update individual frames to reflect changed values
             for setting_frame in self._user_data_frame.frame_list:
                 setting_frame.update()
+        # with newly loaded user data, the user_id is unknown again:
+        self._current_user_id = None
 
         self.log.debug('Request user data: %s', request.user_data)
-        messagebox.showinfo('Request Loaded',
-                           f'Loaded request with user data: {request.user_data}')
