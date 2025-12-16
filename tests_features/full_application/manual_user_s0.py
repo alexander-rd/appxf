@@ -14,8 +14,6 @@ pop up. From there, you can review the user data.
 __Step 3:__ Closing the app and reopening should call for the password.
 Entering the right one should again provide access to the application.
 '''
-from kiss_cf.storage import Storage
-
 from appxf_matema.case_runner import ManualCaseRunner
 from tests._fixtures import test_sandbox
 from tests._fixtures.app_harness import AppHarness
@@ -24,15 +22,10 @@ from tests._fixtures.app_harness_gui import AppHarnessGui
 def setup():
     test_sandbox.init_test_sandbox_for_caller_module(cleanup=True)
 
-# Still requried?
-# Storage.reset()
-# Storage.switch_context('invalid')
-
 def process_app_user():
     ''' Launch User '''
     sandbox_path = test_sandbox.init_test_sandbox_for_caller_module(cleanup=False)
     app_user = AppHarness(sandbox_path, 'user')
     AppHarnessGui(app_user).start()
 
-# New starter:
 ManualCaseRunner().run_by_file_parsing()
