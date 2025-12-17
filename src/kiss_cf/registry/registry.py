@@ -69,7 +69,7 @@ class Registry(RegistryBase):
 
         # USER_DB must be secured
         self._local_user_db_storage = SecurePrivateStorage(
-            base_storage = local_storage_factory('USER_DB'),
+            base_storage=local_storage_factory('USER_DB'),
             security=security)
         self._user_db = UserDatabase(self._local_user_db_storage)
         # Matching remote storage
@@ -213,8 +213,8 @@ class Registry(RegistryBase):
                 if is_admin:
                     print(' -- sending')
                     sync(storage_a=self._local_user_db_storage,
-                        storage_b=self._remote_user_db_storage,
-                        only_a_to_b=True)
+                         storage_b=self._remote_user_db_storage,
+                         only_a_to_b=True)
             else:
                 raise KissRegistryError(f'Mode {mode} is unknown.')
 
@@ -300,8 +300,10 @@ class Registry(RegistryBase):
         response = RegistrationResponse.new(
             user_id=user_id,
             user_db=self._user_db.get_state(),
-            config_sections={section: dict(self._config.section(section))
-             for section in self._response_config_sections})
+            config_sections={
+                section: dict(self._config.section(section))
+                for section in self._response_config_sections
+                })
         return response.get_response_bytes()
 
     def set_response_bytes(self, response_bytes: bytes):

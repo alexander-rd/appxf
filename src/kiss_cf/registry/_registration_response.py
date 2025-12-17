@@ -59,7 +59,8 @@ class RegistrationResponse():
     def from_response_bytes(cls,
                             registration_response: bytes
                             ) -> RegistrationResponse:
-        data: RegistrationResponseData = CompactSerializer.deserialize(registration_response)
+        data: RegistrationResponseData = (
+            CompactSerializer.deserialize(registration_response))
         return cls(data)
 
     def get_response_bytes(self) -> bytes:

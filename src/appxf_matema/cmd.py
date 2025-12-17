@@ -8,7 +8,8 @@ from prompt_toolkit.completion import WordCompleter
 
 from .case_data import CaseData
 
-class CmdHelper():
+
+class CmdHelper:
     def __init__(self,
                  database: CaseData):
         self.database = database
@@ -36,15 +37,22 @@ class CmdHelper():
             self.run_case(case)
 
     def run_case(self, case_name: str):
-        out_path = Path(self.database.root_path,
-                        self.database.get_case_path_string(case_name))
-        coverage_file = out_path / (self.database.get_case_name(case_name) + '.coverage')
-        result_file = out_path / (self.database.get_case_name(case_name) + '.result.json')
+        out_path = Path(
+            self.database.root_path,
+            self.database.get_case_path_string(case_name),
+        )
+        coverage_file = out_path / (
+            self.database.get_case_name(case_name) + '.coverage'
+        )
+        result_file = out_path / (
+            self.database.get_case_name(case_name) + '.result.json'
+        )
         # Extend python ENV to local path from where THIS is called. If not,
         # python assumes the path of the called subprocess and imports may not
         # work as expected.
         env = os.environ.copy()
-        env['PYTHONPATH'] = os.pathsep.join([env.get('PYTHONPATH', ''), '.']).strip(os.pathsep)
+        existing = env.get('PYTHONPATH', '')
+        env['PYTHONPATH'] = os.pathsep.join([existing, '.']).strip(os.pathsep)
         subprocess.run([
             sys.executable,
             '-m', 'coverage', 'run',
@@ -58,5 +66,7 @@ class CmdHelper():
             env=env)
 
         # Optional: Combine results if running multiple times
-        #subprocess.run([sys.executable, "-m", "coverage", "combine"], check=True)
-        #subprocess.run([sys.executable, "-m", "coverage", "report"], check=True)
+        # subprocess.run([sys.executable, "-m", "coverage", "combine"],
+        #               check=True)
+        # subprocess.run([sys.executable, "-m", "coverage", "report"],
+        #               check=True)

@@ -57,7 +57,7 @@ class SettingExtension(Generic[_BaseSettingT, _BaseTypeT],
     # implementation (which violates the assumed types)
 
     @classmethod
-    def get_default(cls) -> _BaseTypeT:
+    def get_default(cls) -> _BaseTypeT:  # noqa F811
         return None  # type: ignore
     # TODO: the above double definition of get_default() is not correct and one
     # of the main reasons why the SettingExtension concept must be reworked.

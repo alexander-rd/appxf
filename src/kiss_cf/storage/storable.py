@@ -37,9 +37,9 @@ class Storable(Stateful):
         self.set_state_kwargs = {}
         super().__init__(**kwargs)
 
-    # taking over get_state()/set_state() from Stateful but updating the attribute_mask:
+    # taking over get_state()/set_state() from Stateful but updating the
+    # attribute_mask:
     attribute_mask = ['_storage']
-
 
     def exists(self):
         ''' Storage file exists (call before load()) '''
@@ -50,7 +50,10 @@ class Storable(Stateful):
         if not self._storage.exists():
             # Protect deriving classes treating empty data like b''.
             raise AppxfStorableError('Storage does not exist.')
-        self.set_state(self._storage.load(), **self.set_state_kwargs) # type: ignore  # see store()
+        self.set_state(
+            self._storage.load(),
+            **self.set_state_kwargs
+            )  # type: ignore  # see store()
 
     def store(self, **kwargs):
         ''' Store to provided Storage '''

@@ -2,8 +2,9 @@
 
 The configuration concept is accumulating KissPropertyDict objects as sections.
 '''
-
 from appxf import logging
+from typing import Any
+from collections.abc import Mapping
 
 from kiss_cf.setting import SettingDict
 from kiss_cf.storage import Storage, RamStorage
@@ -57,7 +58,9 @@ class Config():
     '''
     log = logging.getLogger(__name__ + '.Config')
 
-    def __init__(self, default_storage_factory: Storage.Factory | None = None, **kwargs):
+    def __init__(self,
+                 default_storage_factory: Storage.Factory | None = None,
+                 **kwargs):
         super().__init__()
         self._default_storage_factory = default_storage_factory
         self._sections: dict[str, SettingDict] = {}
@@ -78,7 +81,7 @@ class Config():
     def add_section(self,
                     section: str,
                     storage_factory: Storage.Factory | None = None,
-                    settings = None
+                    settings: Mapping[str, Any] = None
                     ) -> SettingDict:
         '''Add section if not yet existing.  '''
         # ensure section does not yet exist:
@@ -99,8 +102,8 @@ class Config():
         #  * Config will, by default, not raise exceptions on import when
         #    a config option is new or missing
         export_options = SettingDict.ExportOptions(
-            exception_on_new_key = False,
-            exception_on_missing_key = False
+            exception_on_new_key=False,
+            exception_on_missing_key=False
             ).get_state()
         self._sections[section].get_state_kwargs = {'options': export_options}
         self._sections[section].set_state_kwargs = {'options': export_options}

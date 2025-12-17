@@ -1,6 +1,6 @@
 '''Define security algorithms.'''
-
 from .security import Security
+
 
 class SecurityMock(Security):
     ''' Provide a mock for testing

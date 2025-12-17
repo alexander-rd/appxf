@@ -36,8 +36,8 @@ class UserDatabase(Storable):
         # keys.
         self._role_map: dict[str, Set] = {'admin': set(), 'user': set()}
 
-
-    attributes = ['_version', '_next_id', '_unused_id_list', '_user_db', '_role_map']
+    attributes = ['_version', '_next_id', '_unused_id_list',
+                  '_user_db', '_role_map']
     # TODO: should apply custom get_state to apply version check
 
     # TODO: next_id / unused_id_list should rather be re-created than stored
@@ -99,7 +99,8 @@ class UserDatabase(Storable):
             if match_found == 1:
                 # return the negative user ID (we ensured that user IDs start
                 # with 1, not with 0)
-                self.log.info(f'new user keys already exist for user ID {user_id}')
+                self.log.info(
+                    f'new user keys already exist for user ID {user_id}')
                 return -user_id
 
         # TODO: get determine new ID (implementation might already consider
@@ -235,11 +236,11 @@ class UserDatabase(Storable):
 
     # Adding logging to store/load
     def store(self, **kwargs):
-        self.log.debug(f'Storing USER DB')
+        self.log.debug('Storing USER DB')
         return super().store(**kwargs)
 
     def load(self, **kwargs):
-        self.log.debug(f'Loading USER DB')
+        self.log.debug('Loading USER DB')
         return super().load(**kwargs)
 
 # TODO: Support is needed to verify conditions to purge a user. This requires a

@@ -4,7 +4,6 @@ Provide GUI classes for yagni_cft Config objects.
 
 import tkinter
 
-from appxf import logging
 from kiss_cf.gui.setting_dict import SettingDictWindow
 from kiss_cf.config import Config
 
@@ -16,6 +15,7 @@ from kiss_cf.config import Config
 
 # TODO: better option on when to validate input:
 # https://www.plus2net.com/python/tkinter-validation.php
+
 
 class ConfigMenu(tkinter.Menu):
     '''Menu containing all configurable sections.'''
@@ -29,7 +29,8 @@ class ConfigMenu(tkinter.Menu):
                 break
 
             def command(section=section):
-                window = SettingDictWindow(parent,
+                window = SettingDictWindow(
+                    parent,
                     title=f'Settings for {section}',
                     setting=self._config.section(section),
                     )

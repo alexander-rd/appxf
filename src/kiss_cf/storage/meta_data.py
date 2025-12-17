@@ -11,7 +11,7 @@ class MetaData():
     '''
 
     def __init__(self,
-                 valid:bool = True,
+                 valid: bool = True,
                  state: dict | None = None):
         if state is not None:
             self.__dict__.update(state)
@@ -20,10 +20,8 @@ class MetaData():
             self.uuid: bytes = uuid.uuid4().bytes
             self.hash: bytes = b''
             self.timestamp: str | None = None
-            #self.timestamp: datetime | None = None
             if valid:
                 self.timestamp = datetime.now().isoformat()
-                #self.timestamp = datetime.now()
 
     def get_state(self) -> dict:
         return self.__dict__

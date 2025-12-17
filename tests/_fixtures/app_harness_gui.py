@@ -51,9 +51,6 @@ class AppHarnessGui():
                 label='Registration',
                 command=show_registration)
 
-
-
-
         app.mainloop()
 
     def start(self) -> None:

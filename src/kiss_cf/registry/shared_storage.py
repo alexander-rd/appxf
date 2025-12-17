@@ -2,17 +2,20 @@
 # allow class name being used before being fully defined (like in same class):
 from __future__ import annotations
 
-from kiss_cf.storage import StorageToBytes, StorageToBytes, Storage, AppxfStorageError
-from kiss_cf.storage import Serializer, CompactSerializer, JsonSerializer
+from kiss_cf.storage import (
+    StorageToBytes, Storage, AppxfStorageError,
+    Serializer, CompactSerializer, JsonSerializer,
+    )
 from kiss_cf.security import Security
 
-from._registry_base import RegistryBase
+from ._registry_base import RegistryBase
 from ._signature import Signature
 from ._public_encryption import PublicEncryption
 
 # SecureSharedStorage uses two meta files for which we define the serializers:
 StorageToBytes.set_meta_serializer('signature', JsonSerializer)
 StorageToBytes.set_meta_serializer('keys', CompactSerializer)
+
 
 class SecureSharedStorage(StorageToBytes):
     ''' Typical setup for shared storage
@@ -71,9 +74,9 @@ class SecureSharedStorage(StorageToBytes):
     # then be responsible for storing/loading also the supporting files. <<
     # this is the way to go!
 
-    #TODO: __init__ and get are missing the serializer argument
+    # TODO: __init__ and get are missing the serializer argument
 
-    #TODO: here and in SecureStorage.. ..document clearly which serializer is
+    # TODO: here and in SecureStorage.. ..document clearly which serializer is
     #  applied. The one from the base_storage or the one added to
     #  SecureShared/SecurePrivate storage.
 
@@ -95,13 +98,14 @@ class SecureSharedStorage(StorageToBytes):
     @classmethod
     def get_factory(cls, base_storage_factory: Storage.Factory,
                     security: Security, registry: RegistryBase,
-                    serializer: type[Serializer] = CompactSerializer) -> Storage.Factory:
-        return super().get_factory(base_storage=base_storage_factory,
-                                   storage_get_fun=lambda name: SecureSharedStorage.get(
-                                       base_storage=base_storage_factory(name),
-                                       security=security, registry=registry,
-                                       serializer=serializer
-                                   ))
+                    serializer: type[Serializer] = CompactSerializer
+                    ) -> Storage.Factory:
+        return super().get_factory(
+            base_storage=base_storage_factory,
+            storage_get_fun=lambda name: SecureSharedStorage.get(
+                base_storage=base_storage_factory(name),
+                security=security, registry=registry,
+                serializer=serializer))
 
     def ensure_usable(self):
         ''' Check security and registry objects
@@ -120,7 +124,8 @@ class SecureSharedStorage(StorageToBytes):
     def exists(self) -> bool:
         if self.base_storage is None:
             raise AppxfStorageError(
-                f'{self.__class__.__name__} required a base storage but you used None.')
+                f'{self.__class__.__name__} required a base storage '
+                f'but you used None.')
         # security and registry must have appropriate states
         if not self.ensure_usable():
             return False
@@ -145,8 +150,7 @@ class SecureSharedStorage(StorageToBytes):
         # encryption
         data_bytes = self._public_encryption.encrypt(data)
         self._public_encryption.store()
-        #data_bytes = data
-        ## signing (encrypted data)
+        # signing (encrypted data)
         self._signature.sign(data_bytes)
         self._signature.store()
         self.base_storage.store_raw(data_bytes)

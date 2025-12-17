@@ -12,8 +12,6 @@ import sys
 
 from appxf import logging
 from tkhtmlview import HTMLLabel
-from tkinter import font as tkfont
-from appxf import logging
 from appxf_matema.case_parser import CaseParser
 
 # IMPORTANT: appxf modules must not be imported. This manual-test support
@@ -27,7 +25,8 @@ from appxf_matema.case_parser import CaseParser
 # Manual tests are not pytests but general setup (like start of logging) is
 # configured in conftest. To enable reuse and import the root path of the
 # module is added to the system path:
-sys.path.append(os.path.join(os.path.dirname(__file__),'../../../'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../../'))
+
 
 # TODO: store test results somehow:
 # - invalidate when included library parts changed
@@ -36,10 +35,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__),'../../../'))
 
 # TODO: find a way to start/stop the testing window together with a debug
 # window to show states.
-
-#logging.activate_logging(app_scope='kiss_cf')
-#for logger_name in logging.logging.Logger.manager.loggerDict:
-#    print(logger_name)
 
 class CaseRunnerGui:
     '''GUI container for manual test case runner.
@@ -62,7 +57,7 @@ class ManualCaseRunner:
 
     def __init__(self,
                  explanation: str = '',
-                 logging_context:str = ''):
+                 logging_context: str = ''):
         # For any manual test case, the construction of THIS object is the
         # entry point also when ran from MaTeMa since it creates a new process
         # to run the case. Hence, logging must be activated.
@@ -84,7 +79,8 @@ class ManualCaseRunner:
         # remove single newlines (wither a full paragraph \n\n or no paragraph
         # at all). The regexp is for \n neither preceeded (?<!\n) nor followed
         # (?!\n) by a newline:
-        self.explanation = re.sub(r'(?<!\n)\n(?!\n)', '', self.explanation)
+        self.explanation = re.sub(
+            r'(?<!\n)\n(?!\n)', '', self.explanation)
 
         # argument parsing:
         parser = argparse.ArgumentParser(
@@ -105,13 +101,14 @@ class ManualCaseRunner:
         self._get_git_user_info()
 
     def _add_arguments_from_caller(self, parser: argparse.ArgumentParser):
-        for function, summary in self.case_parser.caller_module_function_map.items():
+        for function, summary in (
+                self.case_parser.caller_module_function_map.items()
+        ):
             if function.startswith('process_'):
                 parser.add_argument(
                     f'--{function}',
                     action='store_true',
                     help=summary)
-
 
     def _get_git_user_info(self):
         try:
@@ -128,7 +125,9 @@ class ManualCaseRunner:
             self.git_email = 'Unknown GIT Email'
 
     def _get_main_window(self) -> CaseRunnerGui:
-        """Build and return the main control window GUI without calling mainloop."""
+        """Build and return the main control window GUI
+        without calling mainloop.
+        """
         root = tkinter.Tk()
         root.title('APPXF Manual Test Case Runner')
 
@@ -158,16 +157,23 @@ class ManualCaseRunner:
         observations_info_frame.pack(fill='x', padx=5, pady=0)
         observations_info_timestamp_label = tkinter.Label(
             observations_info_frame,
-            text=f'UTC Timestamp: {self.timestamp}',
-            justify=tkinter.LEFT)
+            text=(
+                f'UTC Timestamp: {self.timestamp}',
+            ),
+            justify=tkinter.LEFT,
+        )
         observations_info_timestamp_label.pack(
             anchor='w', padx=0, pady=0)
         observations_info_author_label = tkinter.Label(
             observations_info_frame,
-            text=f'Author (GIT name <email>): {self.git_name} <{self.git_email}>',
-            justify=tkinter.LEFT)
-        observations_info_author_label.pack(
-            anchor='w', padx=0, pady=0)
+            text=(
+                'Author (GIT name <email>): '
+                f'{self.git_name} '
+                f'<{self.git_email}>'
+            ),
+            justify=tkinter.LEFT,
+        )
+        observations_info_author_label.pack(anchor='w', padx=0, pady=0)
 
         # Test results:
         observations_text = tkinter.Text(
@@ -183,16 +189,23 @@ class ManualCaseRunner:
         button_frame = tkinter.Frame(root)
         button_frame.pack()
 
-        # Create the CaseRunnerGui object that will be passed to button callbacks
+        # Create the CaseRunnerGui object that will be passed to
+        # button callbacks
         gui = CaseRunnerGui(root, extra_button_frame, observations_text)
 
         # OK Button:
         button_ok = tkinter.Button(
-            button_frame, text="OK", command=lambda: self.button_ok(gui))
+            button_frame,
+            text="OK",
+            command=lambda: self.button_ok(gui),
+        )
         button_ok.pack(side=tkinter.LEFT)
         # Failed Button:
         button_failed = tkinter.Button(
-            button_frame, text="Fail", command=lambda: self.button_failed(gui))
+            button_frame,
+            text="Fail",
+            command=lambda: self.button_failed(gui),
+        )
         button_failed.pack(side=tkinter.LEFT)
 
         # TODO: for toplevel, we might want to reopen it.
@@ -211,18 +224,18 @@ class ManualCaseRunner:
         ''' Get label displaying markdown formatted text '''
         # Convert markdown to HTML
         html = markdown.markdown(markdown_text)
-        #print(f'Input: {markdown}')
-        #print(f'HTML: {html}')
+        # print(f'Input: {markdown}')
+        # print(f'HTML: {html}')
         # adjust font sizes via adding code to paragraphs:
         html = re.sub('<p>', '<p style="font-size: 11px;">', html)
-        #print(f'HTML2: {html}')
+        # print(f'HTML2: {html}')
 
         # Create HTMLLabel with fixed width
         widget = HTMLLabel(parent, html=html,
                            width=width)
 
         # Ensure text wraps within width
-        #widget.fit_height()  # Adjust height to content
+        # widget.fit_height()  # Adjust height to content
         widget.after(100, lambda: widget.fit_height())
 
         return widget
@@ -240,14 +253,20 @@ class ManualCaseRunner:
             comment = ''
             if gui:
                 comment = gui.observations_text.get('1.0', tkinter.END)
-            with open(self.argparse_result.result_file, 'w', encoding='utf-8') as file:
+            with open(
+                self.argparse_result.result_file,
+                'w', encoding='utf-8'
+            ) as file:
                 json.dump({
                     'timestamp': f'{self.timestamp}',
-                    'author': f'{self.git_name} <{self.git_email}>',
+                    'author': (
+                        f'{self.git_name} '
+                        f'<{self.git_email}>'
+                    ),
                     'description': self.explanation,
                     'comment': comment,
                     'result': result
-                    }, file, indent=2)
+                }, file, indent=2)
 
     def _start_case_runner(self, gui: CaseRunnerGui, *args, **kwargs):
         '''Handle startup and teardown for case runner execution.
@@ -276,26 +295,31 @@ class ManualCaseRunner:
             self._run_frame(gui, tkinter_class, *args, **kwargs)
         else:
             raise TypeError(
-                f'Provided tkinter class {tkinter_class.__class__}'
-                f'is not supported. Supported are: '
-                f'TopLevel, Frame.')
+                f'Provided tkinter class {tkinter_class.__class__} '
+                'is not supported. Supported are: TopLevel, Frame.'
+            )
 
         self._start_case_runner(gui)
 
     def run_by_file_parsing(self):
-        '''Execute process functions via command-line arguments or button interface.
+        '''Execute process functions via command-line arguments or
+        button interface.
 
         Checks if any --process_* arguments were passed. If yes, executes the
-        corresponding function. If no, creates buttons for each process_* function
-        that spawn Python subprocesses with the appropriate --process_* flag.
+        corresponding function. If no, creates buttons for each process_*
+        function that spawn Python subprocesses with the appropriate
+        --process_* flag.
 
-        Only one --process_* argument is expected at a time. If multiple are passed,
-        only the first is executed (unexpected but handled gracefully).
+        Only one --process_* argument is expected at a time. If multiple are
+        passed, only the first is executed (unexpected but handled gracefully).
         '''
         # Find the first --process_* argument that was passed via command line
         process_arg = None
         for arg in vars(self.argparse_result):
-            if arg.startswith('process_') and getattr(self.argparse_result, arg):
+            if (
+                arg.startswith('process_') and
+                getattr(self.argparse_result, arg)
+            ):
                 process_arg = arg
                 break
 
@@ -305,15 +329,19 @@ class ManualCaseRunner:
                 function = getattr(self.case_parser.module, process_arg)
                 function()
         else:
-            # No process argument passed: create buttons for process_* functions
+            # No process argument passed: create buttons for
+            # process_* functions
             gui = self._get_main_window()
-            for function_name, summary in self.case_parser.caller_module_function_map.items():
+            for function_name, summary in (
+                    self.case_parser.caller_module_function_map.items()
+            ):
                 if function_name.startswith('process_'):
                     self._add_subprocess_button(
                         gui,
                         function_name,
                         summary,
-                        self.case_parser.caller_module_path)
+                        self.case_parser.caller_module_path,
+                    )
             gui.tk.update()
 
             self._start_case_runner(gui)
@@ -323,12 +351,19 @@ class ManualCaseRunner:
         gui: CaseRunnerGui,
         process_function_name: str,
         process_function_label: str,
-        module_path: str):
-        '''Add a button that spawns a subprocess to execute a process function.'''
+        module_path: str,
+    ):
+        '''Add a button that spawns a subprocess to execute a
+        process function.'''
         def spawn_process():
             subprocess.run(
-                [sys.executable, module_path, f'--{process_function_name}'],
-                check=False)
+                [
+                    sys.executable,
+                    module_path,
+                    f'--{process_function_name}'
+                ],
+                check=False,
+            )
 
         if not process_function_label:
             process_function_label = process_function_name
@@ -336,10 +371,16 @@ class ManualCaseRunner:
         button = tkinter.Button(
             gui.extra_button_frame,
             text=process_function_label,
-            command=spawn_process)
+            command=spawn_process,
+        )
         button.pack(side=tkinter.LEFT)
 
-    def _run_frame(self, gui: CaseRunnerGui, frame_type: type[tkinter.Frame], *args, **kwargs):
+    def _run_frame(
+        self,
+        gui: CaseRunnerGui,
+        frame_type: type[tkinter.Frame],
+        *args, **kwargs,
+    ):
         test_window = tkinter.Toplevel(gui.tk)
 
         test_window.rowconfigure(0, weight=1)
@@ -352,10 +393,12 @@ class ManualCaseRunner:
         # place test frame right to control window
         self.place_toplevel(gui.tk, test_window)
 
-
-    def _run_toplevel(self, gui: CaseRunnerGui,
-                     toplevel_type: type[tkinter.Toplevel],
-                     *args, **kwargs):
+    def _run_toplevel(
+        self,
+        gui: CaseRunnerGui,
+        toplevel_type: type[tkinter.Toplevel],
+        *args, **kwargs,
+    ):
         # print out caller docstring
         stack = inspect.stack()
         try:
@@ -379,11 +422,13 @@ class ManualCaseRunner:
         '''Place a toplevel to the right of the control window.'''
         root.update()
         toplevel.update()
-        toplevel.geometry('%dx%d+%d+%d' % (
+        geom = '%dx%d+%d+%d' % (
             toplevel.winfo_width(),
             toplevel.winfo_height(),
             root.winfo_x() + root.winfo_width() + 10,
-            root.winfo_y()))
+            root.winfo_y(),
+        )
+        toplevel.geometry(geom)
 
 
 class ManualTestFrame(tkinter.Toplevel):

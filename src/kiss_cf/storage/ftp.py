@@ -1,6 +1,5 @@
 # Enable to test for key indexable (object[]) behavior:
 from ftputil import FTPHost
-from datetime import datetime
 import os.path
 
 from appxf import logging
@@ -50,7 +49,12 @@ class FtpLocation(StorageToBytes):
 
     log = logging.getLogger(__name__ + '.RemoteConnection')
 
-    def __init__(self, host: str, user: str, password: str, path: str = '', **kwargs):
+    def __init__(self,
+                 host: str,
+                 user: str,
+                 password: str,
+                 path: str = '',
+                 **kwargs):
         ''' Maintainer for FTP locations
 
         The handler will handle one path on an FTP host. The host connections
@@ -148,4 +152,3 @@ class FtpLocation(StorageToBytes):
             # ftplib object. Consider collecting from obsolete pycurl
             # implementation.
             raise e
-

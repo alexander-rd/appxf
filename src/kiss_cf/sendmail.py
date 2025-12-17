@@ -16,6 +16,7 @@ config_property_template = SettingDict(
      'password': ('password',)})
 # TODO: Properties could add "URL"
 
+
 class Email(MIMEMultipart):
     ''' Email Object
 
@@ -109,7 +110,10 @@ def send(email: list[Email] | Email,
 
             target = set(to + cc + bcc)
             if debug_substituttion_email:
-                log.debug(f'Using substitution Email: {debug_substituttion_email} instead of {target}')
+                log.debug(
+                    f'Using substitution Email: '
+                    f'{debug_substituttion_email} '
+                    f'instead of {target}')
                 target = [debug_substituttion_email]
             else:
                 log.debug(f'Sending to: {target}')

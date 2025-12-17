@@ -33,9 +33,9 @@ def _get_default_key_dict():
     }
 
 
-#! TODO: it would be helpful being able to construct a security object in RAM
-#  for unit testing. Currently, any testing on SecurePrivate or SecureShared or
-#  involving Security/Registry would have to use the file system.
+# TODO: it would be helpful being able to construct a security object in RAM
+# for unit testing. Currently, any testing on SecurePrivate or SecureShared or
+# involving Security/Registry would have to use the file system.
 
 
 class Security():
@@ -142,7 +142,7 @@ class Security():
     def _get_symmetric_key(self):
         if not self.is_user_unlocked():
             raise Exception(
-                f'Trying to access symmetric keys before '
+                'Trying to access symmetric keys before '
                 'succeeding with unlock_user()')
         return self._key_dict['symmetric_key']
 

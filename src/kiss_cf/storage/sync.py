@@ -22,7 +22,9 @@ class KissChangeOnBothSidesException(Exception):
     ''' Files were changed on both storage locations sides when executing
     synchronization. '''
 
+
 StorageToBytes.set_meta_serializer('sync', JsonSerializer)
+
 
 class SyncData(Storable):
     ''' Synchronization data (as in: <some file>.sync)
@@ -114,7 +116,10 @@ def sync(storage_a: Storage | list[Storage] | Storage.Factory,
     '''
     if isinstance(storage_a, Storage) and isinstance(storage_b, Storage):
         return _sync_storage(storage_a, storage_b, only_a_to_b)
-    if isinstance(storage_a, Storage.Factory) and isinstance(storage_b, Storage.Factory):
+    if (
+        isinstance(storage_a, Storage.Factory) and
+        isinstance(storage_b, Storage.Factory)
+    ):
         # TODO: this case is not "fair" it could also take all from B and then
         # constract in A.
         print(f'Syncing {storage_a} with {storage_b}')
@@ -164,18 +169,14 @@ def _sync_storage(storage_a: Storage,
     # Get file uuid's
     meta_a: MetaData = storage_a.get_meta_data()
     meta_b: MetaData = storage_b.get_meta_data()
-    #print(f'>> uuid_a: {meta_a.uuid}')
-    #print(f'>> uuid_b: {meta_b.uuid}')
     # read sync data
     sync_data_a = _get_sync_data(storage_a)
     sync_data_b = _get_sync_data(storage_b)
     # timestamps and uuid in sync data
     last_uuid_a = sync_data_a.get_location_uuid(
         other_storage=storage_b)
-    #print(f'>> uuid result: {last_uuid_a}')
     last_uuid_b = sync_data_b.get_location_uuid(
         other_storage=storage_a)
-    #print(f'>> uuid result: {last_uuid_b}')
 
     # Defensive implementation: this case cannot happen.
     # StorageLocations should generate a UUID even if the file
@@ -208,8 +209,8 @@ def _sync_storage(storage_a: Storage,
 
 
 def _execute_sync(
-    source: Storage,
-    target: Storage):
+        source: Storage,
+        target: Storage):
 
     log.info(f'Updating from {source.id()} to {target.id()}')
 

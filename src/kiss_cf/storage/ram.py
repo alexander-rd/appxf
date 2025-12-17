@@ -36,7 +36,7 @@ class RamStorage(Storage):
                 f'RAM storage for {ram_area}::{name} already exists: risk of '
                 f'writing to same storage. You should use RamStorage.get() '
                 f'instead of RamStorage() constructor.')
-            #! TODO: the error message is wrong unless we keep get()
+            # TODO: the error message is wrong unless we keep get()
 
     @classmethod
     def get(cls,
@@ -61,7 +61,6 @@ class RamStorage(Storage):
         return super().reset()
 
     def exists(self) -> bool:
-        # print(f'Checking for {self.id()}: {self._data} - {self}')
         if not self._meta:
             if self._location not in self._data:
                 return False
@@ -75,14 +74,14 @@ class RamStorage(Storage):
             return False
         return self._meta in self._meta_data[self._location][self._name]
 
-
     def store_raw(self, data: object):
         if self._meta:
             if self._location not in self._meta_data:
                 self._meta_data[self._location] = {}
-            if self._name not in self._meta_data[self._location]:
-                self._meta_data[self._location][self._name] = {}
-            self._meta_data[self._location][self._name][self._meta] = deepcopy(data)
+            meta_data_location = self._meta_data[self._location]
+            if self._name not in meta_data_location:
+                meta_data_location[self._name] = {}
+            meta_data_location[self._name][self._meta] = deepcopy(data)
         else:
             if self._location not in self._data:
                 self._data[self._location] = {}
@@ -94,6 +93,7 @@ class RamStorage(Storage):
         if not self.exists():
             return None
         if self._meta:
-            return deepcopy(self._meta_data[self._location][self._name][self._meta])
+            return deepcopy(
+                self._meta_data[self._location][self._name][self._meta])
         # not meta:
         return deepcopy(self._data[self._location][self._name])

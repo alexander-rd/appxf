@@ -1,5 +1,4 @@
 ''' Providing a helper to maintain test case data '''
-import os
 
 from pathlib import Path
 from collections import OrderedDict
@@ -8,25 +7,26 @@ from kiss_cf.storage import JsonSerializer, LocalStorage
 from kiss_cf.setting import SettingDict, SettingSelect, SettingString
 
 
-class CaseEntry():
+class CaseEntry:
     def __init__(self,
-                 path:str = '',
-                 file:str = '',
+                 path: str = '',
+                 file: str = '',
                  **kwargs):
         super().__init__(**kwargs)
         self.data = SettingDict(settings={
             'state': SettingSelect(
                 base_setting=SettingString(),
                 value='new',
-                select_map = {state: state for state in [
+                select_map={state: state for state in [
                     'new', 'valid', 'invalid']},
-                # switch off all fency stuff to disable exporting those details
+                # switch off all fancy stuff to disable exporting those details
                 # into storage:
-                mutable_list = False,
-                mutable_items = False,
-                custom_value = False
+                mutable_list=False,
+                mutable_items=False,
+                custom_value=False
                 ),
             })
+
 
 class CaseData():
     # Test cases shall be selected efficiently which is ideally supported by

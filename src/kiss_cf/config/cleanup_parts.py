@@ -2,6 +2,9 @@
 # TODO: reactivate storing and loading sections as INI files
 
 
+import configparser
+
+
 class ToolConfigParser(configparser.ConfigParser):
     '''Internal helper with predefined settings for ConfigParser()'''
     def __init__(self, **kwargs):

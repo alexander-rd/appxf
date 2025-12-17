@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from typing import TypedDict, Any
 
-from kiss_cf.setting import SettingDict
 from kiss_cf.security import Security
 from kiss_cf.storage import CompactSerializer
 

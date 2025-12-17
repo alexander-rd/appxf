@@ -79,22 +79,22 @@ class JsonSerializer(Serializer):
                  cls.encode_transform(value, log_tree+[f'value for {key}'])]
                 for key, value in obj.items()]}
 
-
         if isinstance(obj, (list, tuple, set)):
             encoded_list = [
                 cls.encode_transform(element, log_tree + [str(element)])
                 for element in obj]
-            if type(obj) == list:
+            if type(obj) is list:
                 return encoded_list
-            if type(obj) == set:
+            if type(obj) is set:
                 return {'__set__': encoded_list}
-            if type(obj) == tuple:
+            if type(obj) is tuple:
                 return {'__tuple__': encoded_list}
         if isinstance(obj, bytes):
             return {'__bytes__': cls._encode_bytes(obj)}
         if isinstance(obj, cls.SimpleTypes):
             return obj
-        raise TypeError(f'Cannot serialize type {type(obj)} trace: {log_tree}.')
+        raise TypeError(
+            f'Cannot serialize type {type(obj)} trace: {log_tree}.')
 
     @classmethod
     def decode_transform(cls,
@@ -115,15 +115,14 @@ class JsonSerializer(Serializer):
                 return tuple(cls.decode_transform(value, log_tree + ['tuple']))
             if key == '__set__':
                 return set(cls.decode_transform(value, log_tree + ['set']))
-            #if key == '__OrderedDict__':
-            #    # nothing to do, the JSON object within was already decoded as OrderedDict:
-            #    return value
             if key == '__dict__':
                 # this was a dict with non trivial key types that come as list
                 # of two-element lists:
                 decode_dict = OrderedDict(
-                    (cls.decode_transform(dict_element[0], log_tree+[key]),
-                     cls.decode_transform(dict_element[1], log_tree+[f'value for key'])
+                    (cls.decode_transform(
+                        dict_element[0], log_tree+[key]),
+                     cls.decode_transform(
+                         dict_element[1], log_tree+['value for key'])
                      )
                     for dict_element in value)
                 return decode_dict
@@ -133,16 +132,20 @@ class JsonSerializer(Serializer):
                 obj[key] = cls.decode_transform(value, log_tree + [key])
             return obj
         if isinstance(obj, list):
-            return [cls.decode_transform(element, log_tree + [str(element)]) for element in obj]
+            return [cls.decode_transform(element, log_tree + [str(element)])
+                    for element in obj]
         if isinstance(obj, cls.SimpleTypes):
             return obj
         # the following error should never be reached since a decoded JSON will
         # only containt he above checked types
-        raise TypeError(f'Cannot decode object {obj} of type {obj}, trace: {log_tree}') # pragma: no cover
+        raise TypeError(
+            f'Cannot decode object {obj} of type {obj}, '
+            f'trace: {log_tree}')  # pragma: no cover
 
     @classmethod
     def _encode_bytes(cls, obj: bytes) -> str:
         return base64.b64encode(obj).decode('utf-8')
+
     @classmethod
     def _decode_bytes(cls, obj: str) -> bytes:
         return base64.b64decode(obj)
