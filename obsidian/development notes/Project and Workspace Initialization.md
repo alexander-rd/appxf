@@ -3,6 +3,7 @@
 ```bash
 sudo apt-get install tox
 sudo apt install python3.12-venv
+sudo apt-get install flake8
 ```
 # VENV
 install pyenv and make python versions available: https://help.clouding.io/hc/en-us/articles/13555555842588-How-to-install-different-versions-of-Python-on-Ubuntu (Needs refinements/updates: exact lines on which versions to install; actually using pyenv)
@@ -14,10 +15,11 @@ python -m pip install --upgrade pip
 pip install -e . -r requirements.txt -r requirements_test.txt
 ```
 # Check Setup
-Run testing to verify your setup:
+Run commands to verify setup, each line separately.
 ```bash
 pytest -rA
 tox -e py312
+flake8 --count src
 python manual_test.py
 python tests/gui/manual_whatever.py
 python tests_features/gui/full_application/user_s0.py

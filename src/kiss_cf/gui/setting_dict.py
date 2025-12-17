@@ -10,8 +10,9 @@ import math
 from appxf import logging
 from kiss_cf.setting import SettingBool, Setting, SettingDict, SettingSelect
 
-from .common import AppxfGuiError, FrameWindow, GridFrame
-from .setting_base import SettingFrameBase, SettingFrameBool, SettingFrameDefault
+from .common import AppxfGuiError, FrameWindow
+from .setting_base import SettingFrameBase, SettingFrameBool
+from .setting_base import SettingFrameDefault
 from .setting_select import SettingSelectFrame
 
 # TODO: There is a matter of style open for displaying settings in a column.
@@ -21,6 +22,7 @@ from .setting_select import SettingSelectFrame
 SettingInput: TypeAlias = (Setting | SettingDict |
                            dict[str, Any] | Iterable[Setting])
 
+
 def get_single_setting_frame(parent: tkinter.BaseWidget,
                              setting: Setting,
                              **kwargs) -> SettingFrameBase:
@@ -29,6 +31,7 @@ def get_single_setting_frame(parent: tkinter.BaseWidget,
             parent=parent,
             setting=setting,
             **kwargs)
+
     if isinstance(setting, SettingBool):
         return SettingFrameBool(
             parent=parent,
@@ -38,6 +41,17 @@ def get_single_setting_frame(parent: tkinter.BaseWidget,
             parent=parent,
             setting=setting,
             **kwargs)
+
+    if isinstance(setting, SettingBool):
+        return SettingFrameBool(
+            parent=parent,
+            setting=setting,
+            **kwargs)
+    return SettingFrameDefault(
+            parent=parent,
+            setting=setting,
+            **kwargs)
+
 
 def input_type_to_setting_dict(setting: SettingInput) -> SettingDict:
     ''' Convert allowed compound setting inputs to a SettingDict'''
@@ -51,7 +65,7 @@ def input_type_to_setting_dict(setting: SettingInput) -> SettingDict:
         # Typing is ignored below since an Iterable[AppxfSetting] could
         # theoretically be a Mapping[AppxfSetting, Unknown] which would also
         # end up here. This is invalid input and not cought here.
-        return SettingDict(settings=setting) # type: ignore
+        return SettingDict(settings=setting)  # type: ignore
     # iterables of settings are also handled like SettingDict
     if isinstance(setting, Iterable) and not isinstance(setting, Mapping):
         return SettingDict(settings={

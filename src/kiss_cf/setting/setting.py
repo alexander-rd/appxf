@@ -9,7 +9,6 @@ the following support for usage in applications:
 '''
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
-from copy import deepcopy
 from collections import OrderedDict
 from typing import Generic, TypeVar, Any
 from dataclasses import dataclass
@@ -131,7 +130,10 @@ class _SettingMeta(type):
              })
 
     @classmethod
-    def _add_extension(mcs, cls_register: type['SettingExtension[Any, Any]']):
+    def _add_extension(
+            mcs,
+            cls_register: type['SettingExtension[Any, Any]']  # noqa F821
+            ):
         '''Adding an extending Setting
 
         The existance of setting_extension is already checked when calling.
@@ -220,7 +222,8 @@ class _SettingMeta(type):
 
         The type may also be an Setting directly
         '''
-        setting_type, base_setting_type = cls.get_setting_type(requested_type=requested_type)
+        setting_type, base_setting_type = cls.get_setting_type(
+            requested_type=requested_type)
 
         if base_setting_type is None:
             # this is a normal setting
@@ -241,6 +244,7 @@ class _SettingMeta(type):
                 name=name, value=value,
                 base_setting=base_setting,
                 **extension_options)
+
 
 # The custom metaclass from registration and the ABC metaclass for abstract
 # classes need to be merged. Note that the order actually matters. The
@@ -346,9 +350,10 @@ class SettingOptions(Options):
         if options is None:
             options = SettingExportOptions()
 
-        attributes = ((self.value_options if options.value_options else []) +
-                      (self.display_options if options.display_options else []) +
-                      (self.control_options if options.control_options else []))
+        attributes = (
+            (self.value_options if options.value_options else []) +
+            (self.display_options if options.display_options else []) +
+            (self.control_options if options.control_options else []))
         return self._set_state_default(data=data,
                                        attributes=attributes,
                                        attribute_mask=[],

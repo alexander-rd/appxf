@@ -124,13 +124,16 @@ class GridFrame(tkinter.Frame):
                     row_weight=widget.get_total_row_weight(),
                     column_weight=widget.get_total_column_weight())
         elif isinstance(
-            widget, tuple(self.classes_horizontal_stretch_setting)):
+                widget,
+                tuple(self.classes_horizontal_stretch_setting)):
             default_setting = self.item_horizontal_stretch_setting
         elif isinstance(
-            widget, tuple(self.classes_full_stretch_setting)):
+                widget,
+                tuple(self.classes_full_stretch_setting)):
             default_setting = self.item_full_stretch_setting
         elif isinstance(
-            widget, tuple(self.classes_right_aligned_setting)):
+                widget,
+                tuple(self.classes_right_aligned_setting)):
             default_setting = self.item_right_aligned_setting
         else:
             default_setting = self.item_centered_setting

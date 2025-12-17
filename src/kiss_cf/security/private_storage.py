@@ -1,9 +1,8 @@
 ''' Secure Storage for private (non-shared) usage '''
-
-from typing import Any
 from kiss_cf.storage import StorageToBytes, Storage
 
 from .security import Security
+
 
 class SecurePrivateStorage(StorageToBytes):
     ''' Add private key encryption to any bytes based storage
@@ -41,11 +40,11 @@ class SecurePrivateStorage(StorageToBytes):
     @classmethod
     def get_factory(cls, base_storage_factory: Storage.Factory,
                     security: Security) -> Storage.Factory:
-        return super().get_factory(base_storage=base_storage_factory,
-                                   storage_get_fun = lambda name: SecurePrivateStorage.get(
-                                       base_storage=base_storage_factory(name),
-                                       security=security
-                                   ))
+        return super().get_factory(
+            base_storage=base_storage_factory,
+            storage_get_fun=lambda name: SecurePrivateStorage.get(
+                base_storage=base_storage_factory(name),
+                security=security))
 
     # Define mandatory Storage functions by relying on base_storage.
     def exists(self) -> bool:

@@ -1,10 +1,8 @@
-
 from __future__ import annotations
-from datetime import datetime
 import os.path
-from typing import Any
 
-from .storage_to_bytes import StorageToBytes, Storage, CompactSerializer, Serializer
+from .storage_to_bytes import StorageToBytes, Storage
+from .storage_to_bytes import CompactSerializer, Serializer
 
 
 class LocalStorage(StorageToBytes):
@@ -39,10 +37,11 @@ class LocalStorage(StorageToBytes):
     def get_factory(cls, path: str,
                     serializer: type[Serializer] = CompactSerializer
                     ) -> Storage.Factory:
-        return super().get_factory(location=path,
-                                   storage_get_fun=lambda name: LocalStorage.get(
-                                        file=name, path=path,
-                                        serializer=serializer))
+        return super().get_factory(
+            location=path,
+            storage_get_fun=lambda name: LocalStorage.get(
+                file=name, path=path,
+                serializer=serializer))
 
     def _get_file_path(self, create_dir: bool):
         if self._meta:

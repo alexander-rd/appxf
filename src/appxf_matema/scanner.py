@@ -4,7 +4,6 @@
 import os
 import fnmatch
 from pathlib import Path
-from appxf import logging
 from .case_data import CaseData
 
 
@@ -33,7 +32,7 @@ class Scanner():
         for path in self.path:
             for dirpath, dirnames, filenames in os.walk(path):
                 for filename in fnmatch.filter(filenames, "manual_*.py"):
-                    # strip first level of path (./tests/) since this should not be
-                    # relevant in database:
+                    # Strip first level of path (./tests/) since this should
+                    # not be relevant in database:
                     self.database.new(dirpath, filename)
         self.database.store()

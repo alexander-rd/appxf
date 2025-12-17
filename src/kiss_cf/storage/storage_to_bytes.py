@@ -26,6 +26,7 @@ class StorageToBytes(Storage, ABC):
     # To allow meta files to specify the serialization type, the following
     # dictionary is used:
     _meta_serializer_dict: dict[str, type[Serializer]] = {}
+
     # This dict will be the SAME even in derived classses. The following
     # interface will allow the setting:
     @classmethod
@@ -56,6 +57,7 @@ class StorageToBytes(Storage, ABC):
     @abstractmethod
     def load_raw(self) -> bytes:
         ''' Load interface to the actual storage '''
+
 
 # define serializer for MetaData:
 StorageToBytes.set_meta_serializer('meta', JsonSerializer)
