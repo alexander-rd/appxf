@@ -1,13 +1,20 @@
 
 import inspect
 
-
 class CaseParser:
-    def __init__(self, frame_index):
+    def __init__(self, stack_index: int = 0):
+        # caller should not be aware of this __init__ adding a level of stack:
+        stack_index += 1
         stack = inspect.stack()
-        caller_frame = stack[frame_index]
+        self._frame = stack[stack_index].frame
+        self.parsed: bool = False
 
-        self.module = inspect.getmodule(caller_frame[0])
+    # TODO: this class is not safe to use. Just parse defines the attributes
+    # others rely on such that things will crash if no one calls parse() before
+    # accessing them.
+
+    def parse(self):
+        self.module = inspect.getmodule(self._frame)
 
         if self.module:
             self.caller_module_name = self.module.__name__
@@ -39,7 +46,8 @@ class CaseParser:
             self.caller_module_functions = []
             self.caller_module_function_map = {}
 
-        self.report()
+        self.parsed = True
+        # self.report()
 
     def report(self):
         print(

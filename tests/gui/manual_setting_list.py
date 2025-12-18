@@ -1,3 +1,6 @@
+'''
+Test case is less about ... TBD
+'''
 import tkinter
 
 from appxf import logging
@@ -41,9 +44,5 @@ class FrameForTesting(FrameWindow):
 gui_logger = logging.getLogger('kiss_cf.gui')
 gui_logger.setLevel(logging.logging.WARNING)
 
-tester = ManualCaseRunner('''
-Test case is less about
-''')  # noqa: E501
-
-tester.run(
+ManualCaseRunner().run(
     FrameForTesting, setting_dict)
