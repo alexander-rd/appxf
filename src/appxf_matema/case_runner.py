@@ -1,387 +1,249 @@
 
 import argparse
-import datetime
 import inspect
 import json
-import markdown
-import os
 import subprocess
-import re
-import tkinter
 import sys
+import tkinter
+
+from functools import cached_property
 
 from appxf import logging
-from tkhtmlview import HTMLLabel
 from appxf_matema.case_parser import CaseParser
-
-# IMPORTANT: appxf modules must not be imported. This manual-test support
-# module is all about supporting manual testing. Test case executions will
-# become obsolete if relevant covered lines change. Hence, if this module
-# coveres any additional appxf line, all manual test cases would become
-# dependent on those lines.
-#
-# Exceptions may be the manual-test modules.
-
-# Manual tests are not pytests but general setup (like start of logging) is
-# configured in conftest. To enable reuse and import the root path of the
-# module is added to the system path:
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../../'))
-
-
-# TODO: store test results somehow:
-# - invalidate when included library parts changed
-
-# TODO: provide a script to execute all manual tests that are open
-
-# TODO: find a way to start/stop the testing window together with a debug
-# window to show states.
-
-class CaseRunnerGui:
-    '''GUI container for manual test case runner.
-
-    Encapsulates the tkinter window and related UI components.
-    '''
-    def __init__(
-            self,
-            tk_root: tkinter.Tk,
-            extra_button_frame: tkinter.Frame,
-            observations_text: tkinter.Text
-            ):
-        self.tk = tk_root
-        self.extra_button_frame = extra_button_frame
-        self.observations_text = observations_text
-
+from appxf_matema.case_info import CaseInfo
+from appxf_matema.git_info import GitInfo
+from appxf_matema.case_runner_gui import CaseRunnerGui
 
 class ManualCaseRunner:
+    ''' Interface Wrapper for Test Cases
+
+    The interfaces include:
+     * MaTeMa input arguments and output result writing (via TBD CaseInfo)
+     * spawning test case processes (via --process_* CLI arguments)
+     * spawning the GUI
+     * handling test case execution: setup(), teardown(), test()
+        * includes logging and coverage activation
+    '''
     log = logging.getLogger(__name__ + '.ManualCaseRunner')
 
     def __init__(self,
-                 explanation: str = '',
-                 logging_context: str = ''):
-        # For any manual test case, the construction of THIS object is the
-        # entry point also when ran from MaTeMa since it creates a new process
-        # to run the case. Hence, logging must be activated.
-        #
-        # Using logging_context = '' will activate any logging since settings
-        # for '' will be inherited from anything on top.
-        logging.activate_logging(logging_context, directory='.testing/log')
-        self.log.debug(f'Started {__class__.__name__}')
+                 logging_context: str = '',
+                 disable_parsing: bool = False,
+                 parent: tkinter.Tk | None = None):
+        self._parent = parent
+        self._disable_parsing = disable_parsing
+        # Note: using logging_context = '' will activate any logging since
+        # settings for '' will be inherited from anything on top.
+        self._logging_context = logging_context
 
-        # Get the module that instantiated the case runner. Frame 0 will be the
-        # CaseParser __init__, frame 1 is this __init__ and frame 2 will be
-        # within the module that called this Case Runner.
-        self.case_parser = CaseParser(frame_index=2)
+        # # Initialize self states
+        self._logging_activated: bool = False
 
-        if not explanation:
-            explanation = self.case_parser.caller_module_docstring
+        self._case_parser: CaseParser | None = None
 
-        self.explanation = explanation.strip() if explanation else ''
-        # remove single newlines (wither a full paragraph \n\n or no paragraph
-        # at all). The regexp is for \n neither preceeded (?<!\n) nor followed
-        # (?!\n) by a newline:
-        self.explanation = re.sub(
-            r'(?<!\n)\n(?!\n)', '', self.explanation)
+        # only dip into processing if there are command line arguments (either
+        # from a MaTeMa call or from a call via CaseRunner (process_*).
+        if len(sys.argv) > 1:
+            # initialize case info and parser from here. Stack index should be:
+            #   0) this __init__
+            #   1) the module calling CaseRunner
+            self.ensure_case_parser()
+            self._handle_cli_arguments()
+        # in any other case, this is just a manual call of the test case where
+        # NO additional processing is expected. Eventually, there is a run()
+        # call, later.
 
-        # argument parsing:
+    # Note: the following cannot be provided as public property since the
+    # parser must be instantiated properly
+    @cached_property
+    def case_info(self) -> CaseInfo:
+        return CaseInfo(parser=self.case_parser)
+
+    @cached_property
+    def git_info(self) -> GitInfo:
+        return GitInfo()
+
+    @cached_property
+    def gui(self):
+        return CaseRunnerGui(
+            case_info=self.case_info,
+            git_info=self.git_info,
+            parent=self._parent)
+
+    @cached_property
+    def argparse_result(self):
         parser = argparse.ArgumentParser(
             prog=f'{sys.argv[0]}',
             description=(
-                'This CaseRunner from the APPXF manual test module '
+                'This CaseRunner from APPXF MaTeMa '
                 'was called via above mentioned python script.'
             ))
         parser.add_argument(
             '--result-file',
             required=False, default='',
             help='File to store test results in JSON format.')
-        self._add_arguments_from_caller(parser)
-        self.argparse_result = parser.parse_args()
+        return parser.parse_args()
 
-        # timestamp:
-        self.timestamp = datetime.datetime.now(datetime.timezone.utc)
-        self._get_git_user_info()
+    @property
+    def case_parser(self):
+        if not self._case_parser:
+            raise RuntimeError(
+                'You have to call ensure_case_parser() before using '
+                'anything dependentet on the case_parser (like case_info).'
+                'Rationale: you have to provide the required stack index'
+                'to identify the right test case module.'
+            )
+        # TODO: theoretically, I can traverse the whole stack until I find the
+        # first module named "manual_*" but this would make the naming
+        # convention also valid for CaseRunner
+        return self._case_parser
 
-    def _add_arguments_from_caller(self, parser: argparse.ArgumentParser):
-        for function, summary in (
-                self.case_parser.caller_module_function_map.items()
-        ):
-            if function.startswith('process_'):
-                parser.add_argument(
-                    f'--{function}',
-                    action='store_true',
-                    help=summary)
+    def ensure_case_parser(self, stack_index: int = 1):
+        if not self._disable_parsing:
+            self._case_parser=CaseParser(stack_index=stack_index+1)
+            self._case_parser.parse()
 
-    def _get_git_user_info(self):
-        try:
-            self.git_name = subprocess.check_output(
-                ["git", "config", "user.name"],
-                text=True).strip()
-        except subprocess.CalledProcessError:
-            self.git_name = 'Unknown GIT User'
-        try:
-            self.git_email = subprocess.check_output(
-                ["git", "config", "user.email"],
-                text=True).strip()
-        except subprocess.CalledProcessError:
-            self.git_email = 'Unknown GIT Email'
+    def _handle_cli_arguments(self):
+        # We do not parse process calls from here because process calls shall
+        # only be active when used with run() and this call is still pending.
 
-    def _get_main_window(self) -> CaseRunnerGui:
-        """Build and return the main control window GUI
-        without calling mainloop.
-        """
-        root = tkinter.Tk()
-        root.title('APPXF Manual Test Case Runner')
+        # TODO: MaTeMa handling is not yet defined. Steps are only outlined,
+        # below.
 
-        # Test case explanations:
-        instruction_label = tkinter.Label(
-            root, text='Test Instructions:',
-            padx=0, pady=0)
-        instruction_label.pack(anchor='w', padx=5, pady=0)
-        instruction_frame = tkinter.Frame(
-            root, bd=1, relief='sunken')
-        instruction_frame.pack(fill='x', padx=5, pady=0)
-        instruction_widget = self._get_markdown_label(
-            parent=instruction_frame,
-            markdown_text=self.explanation,
-            width=80)
-        instruction_widget.pack(
-            fill='x')
+        # 1) parse arguments to get MaTeMa settings
+        # 2) Parse file to get further information
+        # 3) Initialize the GUI
+        # 4) Initialize test (with logging and coverage)
+        #     - will depend on parsing results
+        pass
 
-        # Identification label:
-        observations_label = tkinter.Label(
-            root, text='Obervations:',
-            padx=0, pady=0)
-        observations_label.pack(anchor='w', padx=5, pady=0)
+    def _handle_process_calls(self) -> bool:
+        ''' execute process call and return true if existent '''
+        process_arg = None
+        for arg in sys.argv:
+            if arg.startswith('--process_'):
+                process_arg = arg
+                break
+        if process_arg:
+            function = self.case_info.get_symbol_from_case_module(process_arg[2:])
+            function()
+            return True
+        return False
 
-        observations_info_frame = tkinter.Frame(
-            root, bd=1, relief='sunken')
-        observations_info_frame.pack(fill='x', padx=5, pady=0)
-        observations_info_timestamp_label = tkinter.Label(
-            observations_info_frame,
-            text=(
-                f'UTC Timestamp: {self.timestamp}',
-            ),
-            justify=tkinter.LEFT,
-        )
-        observations_info_timestamp_label.pack(
-            anchor='w', padx=0, pady=0)
-        observations_info_author_label = tkinter.Label(
-            observations_info_frame,
-            text=(
-                'Author (GIT name <email>): '
-                f'{self.git_name} '
-                f'<{self.git_email}>'
-            ),
-            justify=tkinter.LEFT,
-        )
-        observations_info_author_label.pack(anchor='w', padx=0, pady=0)
+    def ensure_logging(self):
+        if self._logging_activated:
+            return
+        logging.activate_logging(self._logging_context, directory='.testing/log')
+        self.log.debug(f'Enabled logging via {__class__.__name__}')
 
-        # Test results:
-        observations_text = tkinter.Text(
-                root, width=80, height=15)
-        observations_text.insert('1.0', 'Enter observations...')
-        observations_text.pack(anchor='w', fill='x', padx=5, pady=0)
-
-        # an empty button frame between observations nad fail/OK buttons.
-        extra_button_frame = tkinter.Frame(root)
-        extra_button_frame.pack()
-
-        # Button Frame
-        button_frame = tkinter.Frame(root)
-        button_frame.pack()
-
-        # Create the CaseRunnerGui object that will be passed to
-        # button callbacks
-        gui = CaseRunnerGui(root, extra_button_frame, observations_text)
-
-        # OK Button:
-        button_ok = tkinter.Button(
-            button_frame,
-            text="OK",
-            command=lambda: self.button_ok(gui),
-        )
-        button_ok.pack(side=tkinter.LEFT)
-        # Failed Button:
-        button_failed = tkinter.Button(
-            button_frame,
-            text="Fail",
-            command=lambda: self.button_failed(gui),
-        )
-        button_failed.pack(side=tkinter.LEFT)
-
-        # TODO: for toplevel, we might want to reopen it.
-
-        # TODO: also for frame tests, we might want to open on demand
-
-        # TODO: needed is a debug window to check some states before/after
-        # execution of the window
-
-        return gui
-
-    def _get_markdown_label(self,
-                            parent,
-                            markdown_text: str,
-                            width: int = 400) -> tkinter.Widget:
-        ''' Get label displaying markdown formatted text '''
-        # Convert markdown to HTML
-        html = markdown.markdown(markdown_text)
-        # print(f'Input: {markdown}')
-        # print(f'HTML: {html}')
-        # adjust font sizes via adding code to paragraphs:
-        html = re.sub('<p>', '<p style="font-size: 11px;">', html)
-        # print(f'HTML2: {html}')
-
-        # Create HTMLLabel with fixed width
-        widget = HTMLLabel(parent, html=html,
-                           width=width)
-
-        # Ensure text wraps within width
-        # widget.fit_height()  # Adjust height to content
-        widget.after(100, lambda: widget.fit_height())
-
-        return widget
-
-    def button_ok(self, gui: CaseRunnerGui):
-        self._write_result_file('ok', gui)
-        gui.tk.destroy()
-
-    def button_failed(self, gui: CaseRunnerGui):
-        self._write_result_file('failed', gui)
-        gui.tk.destroy()
 
     def _write_result_file(self, result: str, gui: CaseRunnerGui = None):
         if self.argparse_result.result_file:
             comment = ''
             if gui:
-                comment = gui.observations_text.get('1.0', tkinter.END)
+                comment = self.gui.get_observations_text()
             with open(
                 self.argparse_result.result_file,
                 'w', encoding='utf-8'
             ) as file:
                 json.dump({
-                    'timestamp': f'{self.timestamp}',
+                    'timestamp': f'{self.case_info.timestamp}',
                     'author': (
-                        f'{self.git_name} '
-                        f'<{self.git_email}>'
+                        f'{self.git_info.user_name} '
+                        f'<{self.git_info.user_email}>'
                     ),
-                    'description': self.explanation,
+                    'description': self.case_info.explanation,
                     'comment': comment,
                     'result': result
                 }, file, indent=2)
 
-    def _start_case_runner(self, gui: CaseRunnerGui, *args, **kwargs):
+    def run(self,
+            item: type[tkinter.BaseWidget] | None = None,
+            *args, **kwargs):
+        # ensure parsing is initialized, stack indexing from here is:
+        #  0) this run()
+        #  1) the calling module
+        self.ensure_case_parser(stack_index=1)
+
+        # Parse for process calls and execute them. If there was a process
+        # call, there is nothing more to handle.
+        if self._handle_process_calls():
+            return
+
+        if item is None:
+            # test case is running by provided functions process_*() or test()
+            # or even by instances created directly within the module.
+            pass
+        elif issubclass(item, tkinter.Toplevel):
+            self._run_toplevel(item, *args, **kwargs)
+        elif issubclass(item, tkinter.Frame):
+            self._run_frame(item, *args, **kwargs)
+        else:
+            raise TypeError(
+                f'Provided item class {item.__class__} '
+                'is not supported. Supported are: TopLevel, Frame.'
+            )
+
+        self._parse_process_hooks()
+        self._start_case_runner()
+
+    def _start_case_runner(self, *args, **kwargs):
         '''Handle startup and teardown for case runner execution.
 
         Calls setup() function from the tested module if it exists, executes
         the main function with GUI, then calls teardown() if it exists.
         '''
+        if hasattr(self.case_parser.module, 'setup_once'):
+            setup_func = getattr(self.case_parser.module, 'setup_once')
+            setup_func()
         # Call setup() if it exists in the tested module
         if hasattr(self.case_parser.module, 'setup'):
             setup_func = getattr(self.case_parser.module, 'setup')
             setup_func()
         try:
             # Execute the main case runner function
-            gui.tk.mainloop()
+            self.gui.tk.mainloop()
         finally:
             # Call teardown() if it exists in the tested module
             if hasattr(self.case_parser.module, 'teardown'):
                 teardown_func = getattr(self.case_parser.module, 'teardown')
                 teardown_func()
 
-    def run(self, tkinter_class: type[tkinter.BaseWidget], *args, **kwargs):
-        gui = self._get_main_window()
-        if issubclass(tkinter_class, tkinter.Toplevel):
-            self._run_toplevel(gui, tkinter_class, *args, **kwargs)
-        elif issubclass(tkinter_class, tkinter.Frame):
-            self._run_frame(gui, tkinter_class, *args, **kwargs)
-        else:
-            raise TypeError(
-                f'Provided tkinter class {tkinter_class.__class__} '
-                'is not supported. Supported are: TopLevel, Frame.'
-            )
+    def _parse_process_hooks(self):
+        ''' Parse module for process hooks and add to test case GUI
 
-        self._start_case_runner(gui)
-
-    def run_by_file_parsing(self):
-        '''Execute process functions via command-line arguments or
-        button interface.
-
-        Checks if any --process_* arguments were passed. If yes, executes the
-        corresponding function. If no, creates buttons for each process_*
-        function that spawn Python subprocesses with the appropriate
-        --process_* flag.
-
-        Only one --process_* argument is expected at a time. If multiple are
-        passed, only the first is executed (unexpected but handled gracefully).
+        Creates buttons for each process_* function. CaseRunner will spawn a
+        new python process, executing this function whenever the button is
+        pressed.
         '''
-        # Find the first --process_* argument that was passed via command line
-        process_arg = None
-        for arg in vars(self.argparse_result):
-            if (
-                arg.startswith('process_') and
-                getattr(self.argparse_result, arg)
-            ):
-                process_arg = arg
-                break
+        for function_name, summary in (
+                self.case_parser.caller_module_function_map.items()
+        ):
+            if function_name.startswith('process_'):
+                self.gui.add_process_button(
+                    command=self._get_process_hook(function_name, summary),
+                    label=summary if summary else function_name)
 
-        if process_arg:
-            # Execute the requested function with setup/teardown
-            if hasattr(self.case_parser.module, process_arg):
-                function = getattr(self.case_parser.module, process_arg)
-                function()
-        else:
-            # No process argument passed: create buttons for
-            # process_* functions
-            gui = self._get_main_window()
-            for function_name, summary in (
-                    self.case_parser.caller_module_function_map.items()
-            ):
-                if function_name.startswith('process_'):
-                    self._add_subprocess_button(
-                        gui,
-                        function_name,
-                        summary,
-                        self.case_parser.caller_module_path,
-                    )
-            gui.tk.update()
+            # update the window:
+            self.gui.wm.update()
 
-            self._start_case_runner(gui)
-
-    def _add_subprocess_button(
-        self,
-        gui: CaseRunnerGui,
-        process_function_name: str,
-        process_function_label: str,
-        module_path: str,
-    ):
-        '''Add a button that spawns a subprocess to execute a
-        process function.'''
-        def spawn_process():
+    def _get_process_hook(self, function_name: str, summary: str):
+        def run_process():
             subprocess.run(
-                [
-                    sys.executable,
-                    module_path,
-                    f'--{process_function_name}'
+                [sys.executable,
+                    self.case_parser.caller_module_path,
+                    f'--{function_name}'
                 ],
                 check=False,
-            )
-
-        if not process_function_label:
-            process_function_label = process_function_name
-
-        button = tkinter.Button(
-            gui.extra_button_frame,
-            text=process_function_label,
-            command=spawn_process,
-        )
-        button.pack(side=tkinter.LEFT)
+                )
+        return run_process
 
     def _run_frame(
         self,
-        gui: CaseRunnerGui,
         frame_type: type[tkinter.Frame],
         *args, **kwargs,
     ):
-        test_window = tkinter.Toplevel(gui.tk)
+        test_window = tkinter.Toplevel(self.gui.tk)
 
         test_window.rowconfigure(0, weight=1)
         test_window.columnconfigure(0, weight=1)
@@ -391,51 +253,12 @@ class ManualCaseRunner:
         test_frame.grid(row=0, column=0, sticky='NSWE')
 
         # place test frame right to control window
-        self.place_toplevel(gui.tk, test_window)
+        self.gui.place_toplevel(test_window)
 
     def _run_toplevel(
         self,
-        gui: CaseRunnerGui,
         toplevel_type: type[tkinter.Toplevel],
         *args, **kwargs,
     ):
-        # print out caller docstring
-        stack = inspect.stack()
-        try:
-            # Find the caller's frame
-            caller_frame = stack[1]
-            caller_module = inspect.getmodule(caller_frame[0])
-            if caller_module and caller_module.__doc__:
-                print("Caller Module Docstring:")
-                print(caller_module.__doc__)
-            else:
-                print("No docstring available for the caller module.")
-        finally:
-            del stack  # Clean up to avoid reference cycles
-
-        # window handling
-        test_window = toplevel_type(gui.tk, *args, **kwargs)
-        # test_window.grab_set()
-        self.place_toplevel(gui.tk, test_window)
-
-    def place_toplevel(self, root: tkinter.Tk, toplevel: tkinter.Toplevel):
-        '''Place a toplevel to the right of the control window.'''
-        root.update()
-        toplevel.update()
-        geom = '%dx%d+%d+%d' % (
-            toplevel.winfo_width(),
-            toplevel.winfo_height(),
-            root.winfo_x() + root.winfo_width() + 10,
-            root.winfo_y(),
-        )
-        toplevel.geometry(geom)
-
-
-class ManualTestFrame(tkinter.Toplevel):
-    def __init__(self, parent, frame_type, *args, **kwargs):
-        root = tkinter.Tk()
-        root.rowconfigure(0, weight=1)
-        root.columnconfigure(0, weight=1)
-
-        test_frame = frame_type(root, *args, **kwargs)
-        test_frame.grid(row=1, column=0, sticky='NSWE')
+        test_window = toplevel_type(self.gui.tk, *args, **kwargs)
+        self.gui.place_toplevel(test_window)

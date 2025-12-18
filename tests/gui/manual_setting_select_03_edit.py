@@ -1,12 +1,11 @@
+'''
+TBD
+'''
 from appxf_matema.case_runner import ManualCaseRunner
 from kiss_cf.gui.setting_dict import SettingDictSingleFrame
 from kiss_cf.setting import Setting, SettingDict
 
 # Scope: SettingSelect edit options functionality
-
-tester = ManualCaseRunner('''
-TBD
-''')  # noqa: E501
 
 settingOne = Setting.new('select::text',
     select_map={'Long Broken Text': '''Lorem ipsum dolor sit amet,
@@ -44,4 +43,4 @@ settingTwo = Setting.new('select::int',
 
 setting = SettingDict(settings={'SelectString': settingOne, 'Integer': settingTwo})
 
-tester.run(SettingDictSingleFrame, setting)
+ManualCaseRunner().run(SettingDictSingleFrame, setting)

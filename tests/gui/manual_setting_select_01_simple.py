@@ -1,10 +1,4 @@
-from appxf_matema.case_runner import ManualCaseRunner
-from kiss_cf.setting import Setting
-from kiss_cf.gui import SettingSelectFrame
-
-# Scope: SettingSelect functionality by single SettingFrame
-
-tester = ManualCaseRunner('''
+'''
 Frame shall only show the label and the dropdown. The edit button must not be
 presented. The dropdown must be empty at startup (nothing selected) and contain
 three options.
@@ -12,7 +6,12 @@ Hovering: must show the long selected value.
 Resizing: should only affect the right entry part. Check resizing of the tooltip
 based on the "Long Single Line", the tooltip width shall be the width of the
 frame up to a certain maximum.
-''')  # noqa: E501
+'''
+from appxf_matema.case_runner import ManualCaseRunner
+from kiss_cf.setting import Setting
+from kiss_cf.gui import SettingSelectFrame
+
+# Scope: SettingSelect functionality by single SettingFrame
 
 setting = Setting.new('select::text',
     select_map={'Long Broken Text': '''Lorem ipsum dolor sit amet,
@@ -71,6 +70,6 @@ voluptua.''',
              }, name='Dropdown',
     mutable_items=False, mutable_list=False)
 
-tester.run(
+ManualCaseRunner() .run(
     SettingSelectFrame,
     setting)

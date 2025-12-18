@@ -1,15 +1,13 @@
+'''
+Resizing: First main frame has a border and is the only thing that must resize.
+Switch Button: It toggle buttons to switch to start/second. Switching must NOT resize the window.
+'''
 import tkinter
 from appxf_matema.case_runner import ManualCaseRunner
 from kiss_cf.gui.application import KissApplication
 
-tester = ManualCaseRunner('''
-Resizing: First main frame has a border and is the only thing that must resize.
-Switch Button: It toggle buttons to switch to start/second. Switching must NOT resize the window.
-''')  # noqa: E501
-
 app = KissApplication()
 app.title('KissApplication Dummy')
-
 
 class DummyFrame(tkinter.Frame):
     def __init__(self, *args, **kwargs):
@@ -32,5 +30,4 @@ app.register_frame('start', DummyFrame, (), next_frame='second')
 app.register_frame('second', DummyFrame, (), next_frame='start')
 app.show_frame('start')
 
-tester.place_toplevel(app)
-tester.mainloop()
+ManualCaseRunner().run()

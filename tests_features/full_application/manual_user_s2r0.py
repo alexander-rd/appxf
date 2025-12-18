@@ -16,7 +16,7 @@ from tests._fixtures import test_sandbox
 from tests._fixtures.app_harness import AppHarness
 from tests._fixtures.app_harness_gui import AppHarnessGui
 
-def setup():
+def setup_once():
     sandbox_path = test_sandbox.init_test_sandbox_for_caller_module(cleanup=False)
     app_user = AppHarness(sandbox_path, 'user',
                           registry_enabled=True)
@@ -39,4 +39,4 @@ def process_app_user():
     AppHarnessGui(app_user).start()
 
 # New starter:
-ManualCaseRunner().run_by_file_parsing()
+ManualCaseRunner().run()

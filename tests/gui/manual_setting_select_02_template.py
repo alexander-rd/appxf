@@ -24,8 +24,6 @@ from appxf_matema.case_runner import ManualCaseRunner
 from kiss_cf.setting import Setting
 from kiss_cf.gui import FrameWindow, SettingSelectDetailFrame
 
-tester = ManualCaseRunner(__doc__)
-
 setting = Setting.new('select::text',
     select_map={'01 One': 'Template text 01 to be adapted.',
                 '02 Two': 'Template text 02 to be adapted.',
@@ -47,6 +45,6 @@ class WindowForTesting(FrameWindow):
     def _handle_ok(self):
         print(f'Current Text:\n{setting.base_setting.value}')
 
-tester.run(WindowForTesting)
+ManualCaseRunner().run(WindowForTesting)
 
 print(f'Final Text:\n{setting.base_setting.value}')

@@ -41,7 +41,7 @@ from tests._fixtures import test_sandbox
 from tests._fixtures.app_harness import AppHarness
 from tests._fixtures.app_harness_gui import AppHarnessGui
 
-def setup():
+def setup_once():
     sandbox_path = test_sandbox.init_test_sandbox_for_caller_module(cleanup=True)
     # setup user
     app_user = AppHarness(
