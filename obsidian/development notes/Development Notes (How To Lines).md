@@ -30,8 +30,8 @@ flake8 --count src
 git diff --name-only HEAD~1
 
 ## Branching
-git checkout -b \<ticket-number\>_short_title
-git push -u origin \<branch-name\>
+`git checkout -b \<ticket-number\>_short_title`
+`git push -u origin \<branch-name\>`
 # (checkout branch)
 
 # merging
