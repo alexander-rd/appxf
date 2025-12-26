@@ -31,7 +31,7 @@ class GridSetting(NamedTuple):
         return value
 
 
-class GridFrame(tkinter.Frame):
+class GridFrame(tkinter.LabelFrame):
     ''' Class to support general APPXF frames
 
     Widgets/Frames are distinguished into the following categories for default
@@ -93,6 +93,25 @@ class GridFrame(tkinter.Frame):
                  row_spread: bool = False,
                  column_spread: bool = False,
                  **kwargs):
+
+        # add debug visuals:
+        if 'debug' in kwargs:
+            if kwargs['debug'] == 'named_frames':
+                if 'text' not in kwargs:
+                    kwargs['text'] = type(self).__name__
+                else:
+                    kwargs['text'] = type(self).__name__ + f' ({kwargs["text"]})'
+            elif kwargs['debug']:
+                kwargs['borderwidth'] = 1
+                kwargs['relief'] = 'solid'
+
+        # adapt visuals of LabelFrame to appearance of normal frame if there is
+        # not text/label defined:
+        if 'text' not in kwargs:
+            kwargs['borderwidth'] = 0
+            kwargs['relief'] = 'flat'
+            kwargs['highlightthickness'] = 0
+
         super().__init__(parent, **kwargs)
         self.row_spread: bool = row_spread
         self.column_spread: bool = column_spread
@@ -117,7 +136,7 @@ class GridFrame(tkinter.Frame):
         if setting is None:
             setting = GridSetting()
 
-        if isinstance(widget, tkinter.Frame):
+        if isinstance(widget, tkinter.Frame) or isinstance(widget, tkinter.LabelFrame):
             default_setting = self.frame_setting
             if isinstance(widget, GridFrame):
                 default_setting = default_setting._replace(

@@ -176,7 +176,7 @@ class ManualCaseRunner:
             pass
         elif issubclass(item, tkinter.Toplevel):
             self._run_toplevel(item, *args, **kwargs)
-        elif issubclass(item, tkinter.Frame):
+        elif issubclass(item, tkinter.Frame) or issubclass(item, tkinter.LabelFrame):
             self._run_frame(item, *args, **kwargs)
         else:
             raise TypeError(

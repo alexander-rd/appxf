@@ -31,9 +31,13 @@ def get_single_setting_frame(parent: tkinter.BaseWidget,
             parent=parent,
             setting=setting,
             **kwargs)
-
     if isinstance(setting, SettingBool):
         return SettingFrameBool(
+            parent=parent,
+            setting=setting,
+            **kwargs)
+    if isinstance(setting, SettingDict):
+        return SettingDictSingleFrame(
             parent=parent,
             setting=setting,
             **kwargs)
@@ -91,7 +95,10 @@ class SettingDictSingleFrame(SettingFrameBase):
                  setting: SettingInput,
                  **kwargs):
 
-        super().__init__(parent, **kwargs)
+        if setting.options.name or False:
+            super().__init__(parent, **kwargs, text=setting.options.name)
+        else:
+            super().__init__(parent, **kwargs)
         setting = input_type_to_setting_dict(setting)
 
         # strip properties from the dict that are not mutable:
