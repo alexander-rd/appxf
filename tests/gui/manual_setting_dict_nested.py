@@ -1,19 +1,35 @@
 '''
-__Resizing:__ should only affect the right entry part.
+__Display:__ Check if the nested dict displays properly with all elements
+clearly visible, operational and reasonably separated. There are three nested
+dicts. Dict A, dict B and a boolean are on the first level. Within B, there is
+a nested Deict C. All Dicts have a string and an integer.
 
-__Validation:__ This entry is for a boolean. Latest after loosing focus on entry, wrong values *must* turn the entry red.
+__Resizing:__ should only affect the right entry part.
 '''
 
 from kiss_cf.setting import Setting
-from kiss_cf.gui import SettingFrameDefault
+from kiss_cf.gui import SettingFrameDefault, SettingDictSingleFrame
 from appxf_matema.case_runner import ManualCaseRunner
 
 inner_A = Setting.new(
     'dict', {
         'string A': ('str', 'test A'),
         'int A': ('int', 1)
-    },
-    name='Inner A')
+    })
+inner_B_C = Setting.new(
+    'dict', {
+        'string C': ('str', 'test C'),
+        'int C': ('int', 2),
+    })
+inner_B = Setting.new(
+    'dict', {
+        'string B': ('str', 'test B'),
+        'int B': ('int', 2),
+        'dict C:': inner_B_C,
+        'bool B': ('bool', True),
+    })
+outer = Setting.new('dict', {'dict A': inner_A, 'dict B': inner_B})
+
 
 ManualCaseRunner().run(
-    SettingFrameDefault, inner_A)
+    SettingDictSingleFrame, outer)
