@@ -45,6 +45,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         # update value options - None: SettingDict does not have any own
         # validity except what is fixed (like keys being strings)
 
+        # update display options:
         display_columns: int = 1
 
         # update control options:
