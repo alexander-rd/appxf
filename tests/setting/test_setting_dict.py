@@ -145,8 +145,8 @@ def test_setting_dict_invalid_setitem(name, settings, error_parts):
     if not isinstance(settings, dict):
         # those cases are only for __init__and value assignments
         return
-    with pytest.raises(AppxfSettingError) as exc_info:
-        for key, value in settings.items():
+    for key, value in settings.items():
+        with pytest.raises(AppxfSettingError) as exc_info:
             setting_dict[key] = value
     print(exc_info.value)
     print(exc_info.value.__cause__)

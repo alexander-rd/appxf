@@ -6,6 +6,7 @@ from copy import deepcopy
 from appxf import logging
 from kiss_cf.setting import Setting, SettingSelect
 
+from . import GridFrame
 from .common import ButtonFrame, FrameWindow
 from .setting_base import SettingFrameBase, SettingFrameDefault
 
@@ -191,9 +192,9 @@ class SettingSelectDetailFrame(SettingFrameBase):
         self.dropdown_frame = _DropdownWithButtons(self, setting=self.setting)
         self.dropdown_frame.place(self.dropdown_frame, row=0, column=0)
 
-        self.setting_frame = SettingFrameDefault(
+        self.setting_frame = GridFrame.get_frame(
             self,
-            setting=setting.base_setting,
+            setting.base_setting,
             read_only=(not setting.options.custom_value))
         self.place(self.setting_frame, row=1, column=0)
 
@@ -300,6 +301,7 @@ class SettingSelectWindow(FrameWindow):
 
 
 class SettingSelectFrame(_DropdownOnly):
+    supports = [SettingSelect]
     log = logging.getLogger(__name__ + '.SettingSelectFrame')
 
     def __init__(self, parent,

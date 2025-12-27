@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 import tkinter
 
 from appxf import logging
-from kiss_cf.setting import Setting
+from kiss_cf.setting import Setting, SettingBool
 
 from .common import GridFrame, GridSetting
 
@@ -29,6 +29,7 @@ class SettingFrameBase(GridFrame, ABC):
 
 class SettingFrameDefault(SettingFrameBase):
     '''Frame holding a single property.'''
+    supports = [Setting]
     log = logging.getLogger(__name__ + '.PropertyWidget')
 
     def __init__(self, parent,
@@ -139,6 +140,7 @@ class SettingFrameDefault(SettingFrameBase):
 
 class SettingFrameBool(SettingFrameBase):
     '''CheckBox frame for a single boolean.'''
+    supports = [SettingBool]
     log = logging.getLogger(__name__ + '.BoolCheckBoxWidget')
 
     def __init__(self, parent,

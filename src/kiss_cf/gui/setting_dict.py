@@ -8,12 +8,10 @@ import tkinter
 import math
 
 from appxf import logging
-from kiss_cf.setting import SettingBool, Setting, SettingDict, SettingSelect
+from kiss_cf.setting import Setting, SettingDict
 
-from .common import AppxfGuiError, FrameWindow
-from .setting_base import SettingFrameBase, SettingFrameBool
-from .setting_base import SettingFrameDefault
-from .setting_select import SettingSelectFrame
+from .common import AppxfGuiError, FrameWindow, GridFrame
+from .setting_base import SettingFrameBase
 
 # TODO: There is a matter of style open for displaying settings in a column.
 # Should the labels be aligned or should the space rather be used for entries.
@@ -21,40 +19,6 @@ from .setting_select import SettingSelectFrame
 
 SettingInput: TypeAlias = (Setting | SettingDict |
                            dict[str, Any] | Iterable[Setting])
-
-
-def get_single_setting_frame(parent: tkinter.BaseWidget,
-                             setting: Setting,
-                             **kwargs) -> SettingFrameBase:
-    if isinstance(setting, SettingSelect):
-        return SettingSelectFrame(
-            parent=parent,
-            setting=setting,
-            **kwargs)
-    if isinstance(setting, SettingBool):
-        return SettingFrameBool(
-            parent=parent,
-            setting=setting,
-            **kwargs)
-    if isinstance(setting, SettingDict):
-        return SettingDictSingleFrame(
-            parent=parent,
-            setting=setting,
-            **kwargs)
-    return SettingFrameDefault(
-            parent=parent,
-            setting=setting,
-            **kwargs)
-
-    if isinstance(setting, SettingBool):
-        return SettingFrameBool(
-            parent=parent,
-            setting=setting,
-            **kwargs)
-    return SettingFrameDefault(
-            parent=parent,
-            setting=setting,
-            **kwargs)
 
 
 def input_type_to_setting_dict(setting: SettingInput) -> SettingDict:
@@ -89,7 +53,8 @@ class SettingDictSingleFrame(SettingFrameBase):
     using backup() on the properties before starting this frame and
     providing a cancel button that uses restore() on the config.
     '''
-    log = logging.getLogger(__name__ + '.SettingDictFrame')
+    supports = [SettingDict]
+    log = logging.getLogger(__name__ + '.SettingDictSingleFrame')
 
     def __init__(self, parent: tkinter.BaseWidget,
                  setting: SettingInput,
@@ -127,7 +92,7 @@ class SettingDictSingleFrame(SettingFrameBase):
         if 'frame_type' in gui_options:
             setting_frame = gui_options['frame_type'](
                 self, setting, gui_options)
-        setting_frame = get_single_setting_frame(self, setting, **gui_options)
+        setting_frame = GridFrame.get_frame(self, setting, **gui_options)
         self.place(setting_frame, row=len(self.frame_list), column=0)
         # apply row weight from underlying frame:
         self.rowconfigure(
