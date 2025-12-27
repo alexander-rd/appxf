@@ -65,6 +65,44 @@ class GridFrame(tkinter.LabelFrame):
 
     log = logging.getLogger(f'{__name__}.GridFrame')
 
+    # Registry mapping APPXF object types to GridFrame subclasses
+    _registry: dict[type, type['GridFrame']] = {}
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        # If a subclass defines a class attribute 'supports', register it
+        supports = getattr(cls, 'supports', None)
+        if supports:
+            # allow single type or iterable
+            if isinstance(supports, type):
+                types = (supports,)
+            else:
+                types = tuple(supports)
+            for t in types:
+                if not isinstance(t, type):
+                    raise TypeError('GridFrame.supports must contain types')
+                if t in GridFrame._registry:
+                    raise AppxfGuiError(
+                        f'GridFrame for type {t} already registered: '
+                        f'{GridFrame._registry[t]} vs {cls}')
+                GridFrame._registry[t] = cls
+
+    @classmethod
+    def get_frame(cls, parent: tkinter.BaseWidget, appxf_object, **kwargs):
+        '''Get frame matching the type of an object.
+
+        Frame selection is based on class registration. Valid frame classes
+        must (1) derive from GridFrame, (2) define the supported classes as
+        class attribute "supports" and (3) must loaded since the registration
+        happens upon class definition.'''
+        obj_type = type(appxf_object)
+        for candidate in obj_type.__mro__:
+            frame_cls = cls._registry.get(candidate)
+            if frame_cls:
+                # try common constructor signatures:
+                return frame_cls(parent, appxf_object, **kwargs)
+        raise AppxfGuiError(f'No registered frame for object of type {obj_type.__name__}')
+
     # Note that the weights are read from it's Frame contents. If it contains
     # widgets, they may sum up to zero. If they contain nothing, the frame
     # weight will be 1.
