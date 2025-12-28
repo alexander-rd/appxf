@@ -206,7 +206,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         # What is left is not a tuple (type, value) nor a Setting class/object.
         # The key must exist and the value is applied to the existing Setting's
         # value:
-        if key in self._value:
+        if key in self._value.keys():
             self._value[key].value = value
         # Or, the new Setting object is created:
         else:
