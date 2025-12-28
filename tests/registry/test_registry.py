@@ -1,8 +1,8 @@
 import pytest
 from unittest.mock import patch
 
-from kiss_cf.storage import Storage
-from kiss_cf.registry import Registry
+from kiss_cf.storage import Storage, CompactSerializer
+from kiss_cf.registry import Registry, KissRegistryError
 
 from tests._fixtures import appxf_objects
 import tests._fixtures.test_sandbox
@@ -131,6 +131,40 @@ def test_registry_user_init(admin_user_initialized_registry_pair):
     # general roles
     assert 'new' in user_registry.get_roles()
     assert len(user_registry.get_roles()) == 3
+
+def test_registry_get_admin_keys(admin_initialized_registry):
+    registry: Registry = admin_initialized_registry
+    admin_val_keys = registry.get_validation_keys('admin')
+    admin_enc_keys = registry.get_encryption_keys('admin')
+
+    key_data_bytes = registry.get_admin_key_bytes()
+
+    # manual unpacking:
+    key_data: list[tuple] = CompactSerializer.deserialize(key_data_bytes)
+
+    assert len(key_data) == 1, 'There should only be one admin key pair'
+    assert len(key_data[0]) == 2, 'There should only be the USER ID,  a validataion and an encryption key'
+    assert key_data[0][0] == admin_val_keys[0], 'Second in tuple should be validataion key'
+    assert key_data[0][1] == admin_enc_keys[0], 'Third in tuple should be encryption key'
+
+    # also include the error message when using the set_admin_key_bytes on the admin instance.
+    with pytest.raises(KissRegistryError) as exc_info:
+        registry.set_admin_key_bytes(key_data_bytes)
+    assert 'Cannot set admin keys' in str(exc_info.value)
+    assert 'initialized registry' in str(exc_info.value)
+
+def test_registry_set_admin_keys(fresh_registry):
+    registry: Registry = fresh_registry
+    assert len(registry._user_db.get_users()) == 0
+    # manually build admin key data just using the users public keys:
+    data = [(registry._security.get_signing_public_key(),
+             registry._security.get_encryption_public_key())]
+    data_bytes = CompactSerializer.serialize(data)
+
+    registry.set_admin_key_bytes(data_bytes)
+    assert len(registry._user_db.get_users()) == 1
+    assert registry.get_validation_keys('admin') == [data[0][0]]
+    assert registry.get_encryption_keys('admin') == [data[0][1]]
 
 def test_registry_existing_user(admin_user_initialized_registry_pair):
     admin_registry: Registry = admin_user_initialized_registry_pair[0]

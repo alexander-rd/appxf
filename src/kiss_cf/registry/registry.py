@@ -2,7 +2,7 @@
 # allow class name being used before being fully defined (like in same class):
 from __future__ import annotations
 
-from kiss_cf.storage import sync, Storage
+from kiss_cf.storage import sync, Storage, CompactSerializer
 from kiss_cf.config import Config
 from kiss_cf.security import Security, SecurePrivateStorage
 
@@ -147,10 +147,6 @@ class Registry(RegistryBase):
         self._loaded = True
         return self._loaded
 
-    def set_admin_keys(self, keys: list[tuple[bytes, bytes]]):
-        for key_set in keys:
-            self._user_db.add_new(key_set[0], key_set[1], ['user', 'admin'])
-
     def initialize_as_admin(self):
         ''' Initialize databse
 
@@ -166,6 +162,44 @@ class Registry(RegistryBase):
 
         # No update of remote USER_DB - there is no one who would need that
         # with only the admin being registered.
+
+    def get_admin_key_bytes(self) -> bytes:
+        ''' Get admin keys as bytes
+
+        Admin keys are required for new users to (1) encrypt their user data
+        (registration request) and (2) verify signature of receiving
+        registration data (registration response).
+        '''
+        self._ensure_loaded()
+        admin_users = self._user_db.get_users(role='admin')
+        # construct data as tuples
+        data = [(self._user_db.get_validation_key(id),
+                 self._user_db.get_encryption_key(id))
+                 for id in admin_users]
+        return CompactSerializer.serialize(data)
+
+    def set_admin_key_bytes(self, data: bytes):
+        ''' Set admin keys from bytes obtained via get_admin_key_bytes()
+
+        Admin keys are required for new users to (1) encrypt their user data
+        (registration request) and (2) verify signature of receiving
+        registration data (registration response).
+        '''
+        # Block usage if the user is already registered. In such a case, it
+        # must not be possible to add admins.
+        if self.is_initialized():
+            raise KissRegistryError(
+                'Cannot set admin keys on initialized registry.')
+
+        # get original data that was a list of tuples (user_id, encryption_key,
+        # signing_key)
+        key_list: list[tuple] = CompactSerializer.deserialize(data)  # type: ignore
+
+        # add admin keys:
+        for key_tuple in key_list:
+            self._user_db.add_new(
+                key_tuple[0], key_tuple[1],
+                roles = ['admin'])
 
     def sync_with_remote(self, mode: str):
         ''' Sync local registry with remote location.
@@ -354,19 +388,36 @@ class Registry(RegistryBase):
     def get_encryption_keys(self, roles: list[str] | str) -> list[bytes]:
         ''' Return list of (public) encryption keys for defined role(s)
         '''
+        self._ensure_loaded()
         return self._user_db.get_encryption_keys(roles)
 
-    def get_encryption_key(self, user_id: int = -1) -> bytes:
+    def get_validation_keys(self, roles: list[str] | str) -> list[bytes]:
+        ''' Return list of (public) validation keys for defined role(s)
+        '''
+        self._ensure_loaded()
+        return self._user_db.get_validation_keys(roles)
+
+    def get_encryption_key(self, user_id: int = 0) -> bytes:
         ''' Provide encryption key (bytes) for user ID
 
-        If no ID is provided or a negative ID, the encryption key for the
-        current user will be returned.
+        If no ID is provided or 0, the encryption key for the current user will
+        be returned.
         '''
         self._ensure_loaded()
         if user_id >= 0:
             return self._user_db.get_encryption_key(user_id)
-        else:
-            return self._user_db.get_encryption_key(self.user_id)
+        return self._user_db.get_encryption_key(self.user_id)
+
+    def get_validation_key(self, user_id: int = 0) -> bytes:
+        ''' Provide encryption key (bytes) for user ID
+
+        If no ID is provided or 0, the encryption key for the current user will
+        be returned.
+        '''
+        self._ensure_loaded()
+        if user_id >= 0:
+            return self._user_db.get_validation_key(user_id)
+        return self._user_db.get_validation_key(self.user_id)
 
 # TODO: can we register the same user twice? How would we know? We
 # would need to double-check the keys (which we did not want to use as

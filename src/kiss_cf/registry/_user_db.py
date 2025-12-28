@@ -62,8 +62,21 @@ class UserDatabase(Storable):
             roles=['user', 'admin'])
         return user_id
 
-    def get_users(self) -> list[int]:
-        return list(self._user_db.keys())
+    def get_users(self, role: str | None = None) -> set[int]:
+        ''' get users IDs as set
+
+        Keyword Arguments:
+            role {str} -- only users having role, '' ignores (default: '')
+        '''
+        if role:
+            role = role.lower()
+            if role not in self._role_map:
+                # requested roles does not exist, hence, no users exist:
+                return set()
+            # role exists, return IDs for the role
+            return self._role_map[role]
+        # no role filtering, return all IDs from the user DB
+        return set(self._user_db.keys())
 
     def add_new(self,
                 validation_key: bytes,
@@ -178,27 +191,32 @@ class UserDatabase(Storable):
     def get_validation_key(self, user_id: int) -> bytes:
         return self._get_user_entry(user_id)['validation_key']
 
+    def get_validation_keys(self, roles: list[str] | str) -> list[bytes]:
+        # resolve input ambiguity:
+        if isinstance(roles, str):
+            roles = [roles.lower()]
+        # accumulate user ID's according to role:
+        role_users = set()
+        for this_role in roles:
+            role_users.update(self.get_users(this_role))
+        # return encryption keys for role users:
+        return [self._user_db[user]['validation_key']
+                for user in role_users]
+
     def get_encryption_key(self, user_id: int) -> bytes:
         return self._get_user_entry(user_id)['encryption_key']
 
     def get_encryption_keys(self, roles: list[str] | str) -> list[bytes]:
-        keys: list[bytes] = []
+        # resolve input ambiguity:
         if isinstance(roles, str):
             roles = [roles.lower()]
-        else:
-            roles = [role.lower() for role in roles]
-
+        # accumulate user ID's according to role:
+        role_users = set()
         for this_role in roles:
-            keys += [
-                self._user_db[user]['encryption_key']
-                for user in self._user_db.keys()
-                if self.has_role(user, this_role)
-                ]
-        # TODO: the above may cycle multiple times over the same users. It
-        # would be more efficient to collect user ID's from _role_map and then
-        # accumulate the keys from that.
-        keys = list(set(keys))
-        return keys
+            role_users.update(self.get_users(this_role))
+        # return encryption keys for role users:
+        return [self._user_db[user]['encryption_key']
+                for user in role_users]
 
     def get_roles(self, user_id: int | None = None) -> list[str]:
         if user_id is None:
