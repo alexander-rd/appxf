@@ -207,7 +207,8 @@ class SettingSelectDetailFrame(SettingFrameBase):
                                  lambda event: self._handle_save_option())
 
     def _handle_dropdown_update(self):
-        self.log.debug(f'Setting [{self.setting.options.name}] updated')
+        # TODO: value should not be printed here if it's a password.
+        self.log.debug(f'Setting [{self.setting.options.name}] updated: {self.setting.base_setting.value}')
         self.setting_frame.update()
 
     def _handle_delete_option(self):

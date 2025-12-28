@@ -166,6 +166,12 @@ class SettingDictSingleFrame(SettingFrameBase):
             valid &= setting_frame.is_valid()
         return valid
 
+    def update(self):
+        # forward update to maintained setting frames:
+        for setting_frame in self.frame_list:
+            setting_frame.update()
+        super().update()
+
 
 class SettingDictColumnFrame(SettingFrameBase):
     def __init__(self, parent: tkinter.BaseWidget,
