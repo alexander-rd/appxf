@@ -344,7 +344,7 @@ class RegistrationAdmin:
         from kiss_cf.registry._registration_request import RegistrationRequest
 
         try:
-            request = RegistrationRequest.from_request(request_bytes)
+            request = self._registry.get_request_data(request_bytes)
         except (ValueError, KeyError) as e:
             self.log.error('Failed to parse registration request: %s', e)
             messagebox.showerror(
