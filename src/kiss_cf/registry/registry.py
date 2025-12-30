@@ -258,13 +258,25 @@ class Registry(RegistryBase):
         Bytes are sent to an admin outside of this tools scope. For example, as
         a file via Email.
         '''
-        return self.get_request().get_request_bytes()
+        bytes_raw = self.get_request().get_request_bytes()
+        bytes_encrypted, key_blob_map = self._security.hybrid_encrypt(
+            data=bytes_raw,
+            public_key_list=self._user_db.get_encryption_keys(roles='admin')
+            )
+        request = {
+            'request': bytes_encrypted,
+            'key_blob_map': key_blob_map}
+
+        return CompactSerializer.serialize(request)
 
     def get_request(self) -> RegistrationRequest:
         ''' Get registration request '''
-        # TODO: add encryption which will require the AMDIN_DB
+        # TODO: registry should not expose raw data since it is not encrypted.
+        # the idea was that registration is secure.. ..such that insecure
+        # interfaces should be removed.
 
-        # TODO: add warning message when _loaded is True
+        # TODO: add warning message when _loaded
+        # is True
         if self._user_config_section:
             user_data = dict(self._config.section('USER'))
         else:
@@ -283,7 +295,17 @@ class Registry(RegistryBase):
     # RegistrationRequest and RegistrationResponse.
 
     def get_request_data(self, request: bytes | None) -> RegistrationRequest:
-        return RegistrationRequest.from_request(request)
+        if request is None:
+            return self.get_request()
+        # TODO: get rid of this double-nonsense having two functions returning
+        # data
+        request_encrypted: dict = CompactSerializer.deserialize(request)
+
+        bytes_decrypted = self._security.hybrid_decrypt(
+            data=request_encrypted['request'],
+            encrypted_key_map=request_encrypted['key_blob_map'])
+
+        return RegistrationRequest.from_request(bytes_decrypted)
 
     def add_user_from_request(self,
                               request: RegistrationRequest,

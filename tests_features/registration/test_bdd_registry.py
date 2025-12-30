@@ -108,6 +108,10 @@ def empty_value_in_configuration(env, role, config_section):
 def register_application(env, role_user, role_admin):
     app_user: AppHarness = env['app_' + role_user]
     app_admin: AppHarness = env['app_' + role_admin]
+    # Share admin keys:
+    admin_keys = app_admin.perform_registration_get_admin_keys()
+    app_user.perform_registration_load_admin_keys(admin_keys)
+    # Request/Response cycle:
     request = app_user.perform_registration_get_request()
     response = app_admin.perform_registration_from_request(request_bytes=request)
     app_user.perform_registration_set_response(response_bytes=response)

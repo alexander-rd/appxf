@@ -351,8 +351,10 @@ class Security():
 
     def hybrid_encrypt(self,
                        data: bytes,
-                       public_key_list: list[bytes] = []
+                       public_key_list: list[bytes] | None = None
                        ) -> tuple[bytes, dict[bytes, bytes]]:
+        if public_key_list is None:
+            public_key_list = []
 
         public_key_set = set(public_key_list)
         public_key_set.add(self.get_encryption_public_key())
