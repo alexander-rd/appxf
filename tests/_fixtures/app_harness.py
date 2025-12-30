@@ -227,6 +227,12 @@ class AppHarness:
 
         self.config.store()
 
+    def perform_registration_get_admin_keys(self) -> bytes:
+        return self.registry.get_admin_key_bytes()
+
+    def perform_registration_load_admin_keys(self, admin_key_bytes: bytes):
+        self.registry.set_admin_key_bytes(admin_key_bytes)
+
     def perform_registration_get_request(self) -> bytes:
         ''' Perform registration procedure: get registration bytes
 

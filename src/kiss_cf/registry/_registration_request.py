@@ -19,9 +19,6 @@ class RegistrationRequestData(TypedDict):
     user_data: dict[str, Any]
     signing_key: bytes
     encryption_key: bytes
-    test_blob: str
-    test_signature: bytes
-    test_encrypted: bytes
 
 
 class RegistrationRequest:
@@ -53,7 +50,8 @@ class RegistrationRequest:
 
         Arguments:
             user_data -- USER section of configuration
-            security -- User's Security object
+            security -- User's security object to obtain
+                singing/encryption keys.
 
         Returns:
             constructed RegistrationRequest class
@@ -63,9 +61,6 @@ class RegistrationRequest:
             'user_data': user_data,
             'signing_key': security.get_signing_public_key(),
             'encryption_key': security.get_encryption_public_key(),
-            'test_blob': 'hello',
-            'test_signature': security.sign(b'hello'),
-            'test_encrypted': b'hello',
             }
         # TODO: no option to test encryption key (on this path) since there is
         # no encryption based on the private key.
@@ -90,5 +85,4 @@ class RegistrationRequest:
 
     def get_request_bytes(self) -> bytes:
         ''' Get serialized bytes for sending to admin '''
-        # TODO: verify signing key
         return CompactSerializer.serialize(self._data)
