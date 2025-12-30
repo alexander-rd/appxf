@@ -10,6 +10,8 @@ from tkinter import filedialog, messagebox
 
 from appxf import logging
 from kiss_cf.registry import Registry
+from kiss_cf.gui.common import GridFrame, GridTk, GridToplevel
+from kiss_cf.gui.common import ButtonFrame
 
 # TODO: This file is in DRAFT STATUS, mostly generated with GitHub copilot and
 # needs a detailed review. Currently, getting the GUI and behavior right is
@@ -71,71 +73,70 @@ class RegistrationUser:
 
     def _build_user_gui(self):
         '''Build user registration GUI with three frames.'''
-        # Create root window (Tk) or toplevel depending on parent
+        # Create root window (Tk) or toplevel (Toplevel) depending on parent
         if self._parent is None:
-            self._gui_root = tkinter.Tk()
-            self._gui_root.title('Registry - User Registration')
+            self._gui_root = GridTk(
+                title='Registry - User Registration',
+                buttons=[])
         else:
-            self._gui_root = tkinter.Toplevel(self._parent)
-            self._gui_root.title('User Registration')
+            self._gui_root = GridToplevel(
+                self._parent,
+                title='User Registration',
+                buttons = [])
+        if self._gui_root.frame is None:
+            raise RuntimeError('This should not happen')
 
-        self._gui_root.rowconfigure(0, weight=1)
-        self._gui_root.rowconfigure(1, weight=0)
-        self._gui_root.rowconfigure(2, weight=0)
-        self._gui_root.columnconfigure(0, weight=1)
+        # Build two main labeled frames using GridFrame
+        # Admin Keys frame (row 0)
+        admin_frame = GridFrame(self._gui_root, text='Admin Keys')
+        self._gui_root.frame.place(admin_frame, row=0, column=0)
+        #admin_frame.grid(row=0, column=0, sticky='EWNS', padx=5, pady=5)
 
-        # Frame 1: Registration Request Data (User Data)
-        # request_frame_label = tkinter.Label(
-        #     self._gui_root, text='Registration Request Data')
-        # request_frame_label.grid(
-        #     row=0, column=0, sticky='NW', padx=5, pady=5)
+        # Button row for Admin Keys
+        admin_buttons = ButtonFrame(admin_frame, buttons=['Load Admin Keys', 'Initialize as Admin', ''])
+        admin_frame.place(widget=admin_buttons, row=0, column=0)
 
-        # request_data = SettingDict()
-        # Placeholder: in real usage this would come from the registry's
-        # user config
-        # request_frame = SettingDictSingleFrame(
-        #     self._gui_root, setting=request_data)
-        # request_frame.grid(row=0, column=0, sticky='NSWE', padx=5, pady=5)
+        # Status text (unlabeled) to display admin status
+        self._admin_status_var = tkinter.StringVar(value='')
+        admin_status_label = tkinter.Label(admin_frame, textvariable=self._admin_status_var, anchor='w')
+        admin_frame.place(widget=admin_status_label, row=1, column=0)
 
-        # sep1 = tkinter.ttk.Separator(self._gui_root, orient='horizontal')
-        # sep1.grid(row=1, column=0, sticky='WE')
+        # Registration frame (row 1)
+        registration_frame = GridFrame(self._gui_root, text='Registration')
+        self._gui_root.frame.place(registration_frame, row=1, column=0)
+        #registration_frame.grid(row=1, column=0, sticky='EWNS', padx=5, pady=5)
 
-        # Frame 3: Action Buttons
-        button_frame = tkinter.Frame(self._gui_root)
-        button_frame.grid(row=1, column=0, sticky='E', padx=5, pady=5)
+        # Buttons for registration: Write Request and Load Response
+        registration_buttons = ButtonFrame(registration_frame, buttons=['Write Request', 'Load Response', ''])
+        registration_frame.place(widget=registration_buttons, row=0, column=0)
 
-        def generate_request_handler(event=None):
-            self._on_generate_request()
+        # Hook up events from button frames to wrapper methods that update status
+        admin_buttons.bind('<<Load Admin Keys>>', lambda event: self._on_load_admin_keys())
+        admin_buttons.bind('<<Initialize as Admin>>', lambda event: self._on_initialize_as_admin())
 
-        def initialize_as_admin_handler(event=None):
-            self._on_initialize_as_admin()
-            if self._registry.is_initialized():
-                self._gui_root.destroy()
+        registration_buttons.bind('<<Write Request>>', lambda event: self._on_generate_request())
+        registration_buttons.bind('<<Load Response>>', lambda event: self._on_load_response())
 
-        def load_response(event=None):
-            self.on_load_response()
-            if self._registry.is_initialized():
-                self._gui_root.destroy()
+        # call status updater at init
+        self._update_admin_status()
 
-        init_admin_button = tkinter.Button(
-            button_frame, text='Initialize as Admin',
-            command=initialize_as_admin_handler)
-        init_admin_button.pack(side=tkinter.LEFT, padx=5)
+    def _update_admin_status(self):
+        '''Update admin status text. Dummy implementation for now.'''
+        if self._registry._user_db.exists():
+            status = 'Admin keys are already loaded to encrypt your user data.'
+        else:
+            status = 'You have to load admin keys to encrypt the user data in your request.'
+        self._admin_status_var.set(status)
 
-        generate_button = tkinter.Button(
-            button_frame, text='Generate Request',
-            command=generate_request_handler)
-        generate_button.pack(side=tkinter.RIGHT, padx=5)
-
-        load_resp_button = tkinter.Button(
-            button_frame, text='Load Response', command=load_response)
-        load_resp_button.pack(side=tkinter.RIGHT, padx=5)
-
-        if self._parent is None:
-            self._gui_root.mainloop()
+    def _check_init_status(self):
+        if (
+                self._registry.is_initialized()
+                and self._gui_root is not None
+            ):
+            self._gui_root.destroy()
 
     def _on_generate_request(self):
-        '''Handle Generate Request action.'''
+        '''Handle Generate/Write Request action.'''
         self.log.debug('_on_generate_request called')
 
         # Ask user for a file location to save the registration request bytes.
@@ -164,16 +165,18 @@ class RegistrationUser:
                 e,
             )
             messagebox.showerror(
-                'Error', f'Failed to write file: {e}'
+                'Error', f'Failed to write file: {e}',
+                parent=self._gui_root,
             )
             return
 
         self.log.info('Registration request saved to %s', file_path)
         messagebox.showinfo(
-            'Saved', f'Registration request saved to {file_path}'
+            'Saved', f'Registration request saved to {file_path}',
+            parent=self._gui_root,
         )
 
-    def on_load_response(self):
+    def _on_load_response(self):
         '''Handle Load Response button press:
         apply registration response.'''
         file_path = filedialog.askopenfilename(
@@ -196,14 +199,7 @@ class RegistrationUser:
             )
 
             # Close GUI if registration completed
-            if (
-                self._registry.is_initialized()
-                and self._gui_root is not None
-            ):
-                try:
-                    self._gui_root.destroy()
-                except Exception:  # pylint: disable=broad-except
-                    pass
+            self._check_init_status()
 
         except (OSError, IOError) as e:
             self.log.error('Failed to read response file: %s', e)
@@ -223,3 +219,29 @@ class RegistrationUser:
     def _on_initialize_as_admin(self):
         ''' Handling initialization as admin '''
         self._registry.initialize_as_admin()
+        self._check_init_status()
+
+    def _on_load_admin_keys(self):
+        '''Load admin key bytes from file and apply to registry.'''
+        file_path = filedialog.askopenfilename(
+            parent=self._gui_root,
+            title='Select Admin Keys File',
+            initialdir=self._root_dir,
+            initialfile='admin.keys',
+            defaultextension='')
+        if not file_path:
+            return
+        try:
+            with open(file_path, 'rb') as fh:
+                key_bytes = fh.read()
+            self._registry.set_admin_key_bytes(key_bytes)
+            self._update_admin_status()
+            self._check_init_status()
+        except Exception as e:
+            self.log.error('Failed to load admin keys: %s', e)
+            try:
+                messagebox.showerror('Error', f'Failed to load admin keys: {e}', parent=self._gui_root)
+            except Exception:
+                pass
+            return
+        self.log.info('Admin keys loaded from %s', file_path)

@@ -7,7 +7,7 @@ from appxf import logging
 from kiss_cf.setting import Setting, SettingSelect
 
 from . import GridFrame
-from .common import ButtonFrame, FrameWindow
+from .common import ButtonFrame, GridToplevel
 from .setting_base import SettingFrameBase, SettingFrameDefault
 
 
@@ -236,9 +236,10 @@ class SettingSelectDetailFrame(SettingFrameBase):
             new_option_setting = Setting.new(str,
                                              value=self.setting.input,
                                              name='Option Name')
-            popup = FrameWindow(parent=self,
-                                title='Save setting as ...',
-                                closing=['Cancel', 'OK'])
+            popup = GridToplevel(
+                parent=self,
+                title='Save setting as ...',
+                closing=['Cancel', 'OK'])
             popup_frame = SettingFrameDefault(
                 parent=popup,
                 setting=new_option_setting)
@@ -272,7 +273,7 @@ class SettingSelectDetailFrame(SettingFrameBase):
 # concept on "actions".
 
 
-class SettingSelectWindow(FrameWindow):
+class SettingSelectWindow(GridToplevel):
     log = logging.getLogger(__name__ + '.SettingSelectEditWindow')
 
     def __init__(self, parent, setting: SettingSelect, **kwargs):

@@ -127,7 +127,7 @@ class GridFrame(tkinter.LabelFrame):
         sticky='', padx=5, pady=5, row_weight=0, column_weight=0)
 
     def __init__(self,
-                 parent: tkinter.BaseWidget,
+                 parent: tkinter.BaseWidget | tkinter.Tk,
                  row_spread: bool = False,
                  column_spread: bool = False,
                  **kwargs):
@@ -279,14 +279,14 @@ class GridFrame(tkinter.LabelFrame):
 
 
 class ButtonFrame(GridFrame):
-    ''' Window to display a frame with configurable buttons
+    ''' GridFrame with configurable buttons
 
     All buttons will generate an event <<name>> according to their button
     label.
     '''
     log = logging.getLogger(__name__ + '.ButtonFrame')
 
-    def __init__(self, parent: tkinter.BaseWidget,
+    def __init__(self, parent: tkinter.BaseWidget | tkinter.Tk,
                  buttons: Iterable[str],
                  spread: bool = False,
                  **kwargs):
@@ -333,72 +333,73 @@ class ButtonFrame(GridFrame):
         self.last_event = f'<<{button}>>'
         self.event_generate(f'<<{button}>>')
 
+class _CommonWindow:
+    '''Mixin providing common functions for Toplevel and Tk variants
 
-class FrameWindow(tkinter.Toplevel):
-    ''' Window to display a frame with configurable buttons
-
-    Purpose of this class is to apply reuse to Close/Cancel button scenarios.
-    It shall also encourage to separate reusable frames which are then provided
-    as windows via this class.
-
-    All buttons will generate an event <<name>> according to their button label
-    and will write the last event into .last_event. Note that the window
-    manager may close the window (like hitting 'X') which will be the event
-    WM_DELETE_WINDOW in case the window was closed.
+    Provided are:
+     * placing the ONE frame
+     * button handling (including keypress options)
     '''
-    def __init__(self, parent: tkinter.BaseWidget,
-                 title: str,
-                 buttons: Iterable[str] = ('Cancel', 'OK'),
-                 closing: str | list[str] = 'Cancel',
-                 key_enter_as_button: str = '',
-                 **kwargs):
-        '''_summary_
+    # window needs to be added separately since type
+    # resolution for self does not work well - enabling type
+    # hints during implementation and safer implementation was
+    # prioritized over a clean interface for this purely
+    # internal helper mixin:
+    window: tkinter.Tk | tkinter.Toplevel
+    frame: None | GridFrame
+    button_frame: ButtonFrame
 
-        Arguments:
-            parent -- any valid tkinter parent
-            buttons -- The bottom row will contain buttons (left to right)
-                labeled with those strings.
-            closing -- Button labels that are intended to close the window.
+    def _init_common(self,
+                     title: str,
+                     buttons: Iterable[str],
+                     closing: str | list[str],
+                     key_enter_as_button: str):
+        ''' Common initialization
 
-        Keyword Arguments:
-            sticky -- apply alignments '', 'E' or 'W' to adjust the layout
-                Buttons are aligned in a grid, in the center of the
-                cells as default. (default: {['']})
-            key_enter_as_button -- handle pressing of the Enter key equal to
-                pressing the button name (default: {['']})
+        To be called after __init__() of deriving class.
         '''
-        super().__init__(parent, **kwargs)
+        # resolving input ambiguity
         if isinstance(closing, str):
             closing = [closing]
 
-        self.title(title)
-        # there will only be a single columnn:
-        self.columnconfigure(0, weight=1)
+        self.window.title(title)
 
-        # first row -- plae empty frame
+        # there will only be a single column
+        self.window.columnconfigure(0, weight=1)
+
+        # first row -- during init, we already set an empty GridFrame, ready to
+        # be filled:
         self.frame = None
+        self.place_frame(frame=GridFrame(
+            parent=self.window,
+            row_spread=True,
+            column_spread=True))
 
         # second row -- button frame (stretch only if frame does not stretch)
-        self.button_frame = ButtonFrame(self, buttons=buttons, spread=True)
+        self.button_frame = ButtonFrame(self.window, buttons=buttons, spread=True)
         self.button_frame.grid(row=1, column=0, sticky='EWS')
 
-        # add "Enter" handles
+        # bind Enter keys
         if key_enter_as_button:
-            self.bind('<Return>',
-                      self.button_frame.handle_button_press(
-                          key_enter_as_button))
-            self.bind('<KP_Enter>',
-                      self.button_frame.handle_button_press(
-                          key_enter_as_button))
+            self.bind(
+                '<Return>',
+                lambda event, b=key_enter_as_button: self.button_frame.handle_button_press(b))
+            self.bind(
+                '<KP_Enter>',
+                lambda event, b=key_enter_as_button: self.button_frame.handle_button_press(b))
 
         # Buttons to close the window:
         for button in closing:
             self.button_frame.bind(
-                f'<<{button}>>', lambda event: self.destroy(), add=True)
-        # Closing via window manager:
-        self.protocol('WM_DELETE_WINDOW',
-                      lambda: self.button_frame.handle_button_press(
-                          closing[0] if closing else 'WM_DELETE_WINDOW'))
+                f'<<{button}>>',
+                lambda event: self.window.destroy(),
+                add=True)
+
+        # Closing via window manager
+        self.window.protocol(
+            'WM_DELETE_WINDOW',
+            lambda: self.button_frame.handle_button_press(
+            closing[0] if closing else 'WM_DELETE_WINDOW'))
 
     @property
     def last_event(self) -> str | None:
@@ -412,16 +413,47 @@ class FrameWindow(tkinter.Toplevel):
     def place_frame(self, frame: GridFrame):
         if self.frame is not None:
             self.frame.destroy()
-            self.frame = None
+        self.frame = frame
         frame.grid(row=0, column=0, sticky='EWNS')
         frame_row_weight = frame.get_total_row_weight()
-        self.rowconfigure(0, weight=frame_row_weight)
+        self.window.rowconfigure(0, weight=frame_row_weight)
         # reconfigure the button row
-        self.rowconfigure(1, weight=(0 if frame_row_weight else 1))
+        self.window.rowconfigure(1, weight=(0 if frame_row_weight else 1))
 
     # any bind on this window shall be intended for the underlying button frame
     def bind(self,
              sequence: str | None = None,
              func: Callable[[tkinter.Event], object] | None = None,
              add: bool | None = None):
-        self.button_frame.bind(sequence=sequence, func=func, add=add)
+        return self.button_frame.bind(sequence=sequence, func=func, add=add)
+
+
+class GridToplevel(tkinter.Toplevel, _CommonWindow):
+    '''Toplevel holding one GridFrame and configurable buttons.'''
+    def __init__(self, parent: tkinter.BaseWidget,
+                 title: str,
+                 buttons: Iterable[str] = ('Cancel', 'OK'),
+                 closing: str | list[str] = 'Cancel',
+                 key_enter_as_button: str = '',
+                 **kwargs):
+        super().__init__(parent, **kwargs)
+        # TODO: better solution would be nice, but seems difficult:
+        self.window = self
+
+        self._init_common(title=title, buttons=buttons,
+                          closing=closing, key_enter_as_button=key_enter_as_button)
+
+
+class GridTk(tkinter.Tk, _CommonWindow):
+    '''Root window variant of Toplevel to be used when no parent is given.'''
+    def __init__(self, title: str = '',
+                 buttons: Iterable[str] = ('Cancel', 'OK'),
+                 closing: str | list[str] = 'Cancel',
+                 key_enter_as_button: str = '',
+                 **kwargs):
+        super().__init__(**kwargs)
+        # TODO: better solution would be nice, but seems difficult:
+        self.window = self
+        # apply the same common setup
+        self._init_common(title=title, buttons=buttons,
+                          closing=closing, key_enter_as_button=key_enter_as_button)

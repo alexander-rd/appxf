@@ -10,7 +10,7 @@ import math
 from appxf import logging
 from kiss_cf.setting import Setting, SettingDict
 
-from .common import AppxfGuiError, FrameWindow, GridFrame
+from .common import AppxfGuiError, GridToplevel, GridFrame
 from .setting_base import SettingFrameBase
 
 # TODO: There is a matter of style open for displaying settings in a column.
@@ -239,7 +239,7 @@ class SettingDictColumnFrame(SettingFrameBase):
         return valid
 
 
-class SettingDictWindow(FrameWindow):
+class SettingDictWindow(GridToplevel):
     ''' Display dialog for Settings or Setting dicts '''
     log = logging.getLogger(__name__ + '.SettingDictWindow')
 
