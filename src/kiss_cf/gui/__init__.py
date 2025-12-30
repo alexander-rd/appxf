@@ -8,6 +8,7 @@ from .setting_select import SettingSelectFrame, SettingSelectDetailFrame
 from .setting_dict import SettingDictColumnFrame, SettingDictSingleFrame, SettingDictWindow
 
 from .application import KissApplication
-from .config_gui import ConfigMenu
-from .login_gui import Login
-from .registration_gui import RegistrationUser, RegistrationAdmin
+from .config import ConfigMenu
+from .login import Login
+from .registration_user import RegistrationUser
+from .registration_admin import RegistrationAdmin
