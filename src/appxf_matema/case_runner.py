@@ -126,6 +126,7 @@ class ManualCaseRunner:
                 break
         if process_arg:
             function = self.case_info.get_symbol_from_case_module(process_arg[2:])
+            self.ensure_logging()
             function()
             return True
         return False
@@ -135,6 +136,7 @@ class ManualCaseRunner:
             return
         logging.activate_logging(self._logging_context, directory='.testing/log')
         self.log.debug(f'Enabled logging via {__class__.__name__}')
+        self._logging_activated = True
 
 
     def _write_result_file(self, result: str, gui: CaseRunnerGui = None):
@@ -175,8 +177,10 @@ class ManualCaseRunner:
             # or even by instances created directly within the module.
             pass
         elif issubclass(item, tkinter.Toplevel):
+            self.ensure_logging()
             self._run_toplevel(item, *args, **kwargs)
         elif issubclass(item, tkinter.Frame) or issubclass(item, tkinter.LabelFrame):
+            self.ensure_logging()
             self._run_frame(item, *args, **kwargs)
         else:
             raise TypeError(

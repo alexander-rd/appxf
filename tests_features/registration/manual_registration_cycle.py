@@ -71,4 +71,4 @@ def process_app_admin():
     app_admin.perform_login_unlock()
     AppHarnessGui(app_admin).start()
 
-ManualCaseRunner().run()
+ManualCaseRunner(logging_context='kiss_cf').run()
