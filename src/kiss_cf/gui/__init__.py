@@ -1,7 +1,7 @@
 
 
 # flake8: noqa F401
-from .common import GridFrame, ButtonFrame, FrameWindow, AppxfGuiError
+from .common import GridFrame, ButtonFrame, GridToplevel, GridTk, AppxfGuiError
 
 from .setting_base import SettingFrameDefault
 from .setting_select import SettingSelectFrame, SettingSelectDetailFrame

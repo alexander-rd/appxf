@@ -6,7 +6,7 @@ import tkinter
 from appxf import logging
 from appxf_matema.case_runner import ManualCaseRunner
 from kiss_cf.setting import Setting
-from kiss_cf.gui import FrameWindow, SettingDictColumnFrame
+from kiss_cf.gui import GridToplevel, SettingDictColumnFrame
 
 # Use Case: Create a bunch of settings let the user edit and handle results
 # upon button press.
@@ -24,7 +24,7 @@ setting_dict = {
 
 # This test case put's everything into it's own frame. The tester will need to
 # monitor console output upon hitting "OK" button.
-class FrameForTesting(FrameWindow):
+class FrameForTesting(GridToplevel):
     def __init__(self, parent: tkinter.BaseWidget, setting):
         super().__init__(parent=parent,
                          title='Testing Setting Lists')

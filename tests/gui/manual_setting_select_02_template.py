@@ -22,7 +22,7 @@ import tkinter
 
 from appxf_matema.case_runner import ManualCaseRunner
 from kiss_cf.setting import Setting
-from kiss_cf.gui import FrameWindow, SettingSelectDetailFrame
+from kiss_cf.gui import GridToplevel, SettingSelectDetailFrame
 
 setting = Setting.new('select::text',
     select_map={'01 One': 'Template text 01 to be adapted.',
@@ -35,7 +35,7 @@ setting = Setting.new('select::text',
     mutable_items = True,
     custom_value = True)
 
-class WindowForTesting(FrameWindow):
+class WindowForTesting(GridToplevel):
     def __init__(self, parent: tkinter.BaseWidget):
         super().__init__(parent=parent,
                          title='Testing Templated Text via SettingSelect')
