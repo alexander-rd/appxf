@@ -163,12 +163,9 @@ class RegistrationUser:
                 file_path,
                 e,
             )
-            try:
-                messagebox.showerror(
-                    'Error', f'Failed to write file: {e}'
-                )
-            except Exception:  # pylint: disable=bare-except
-                pass
+            messagebox.showerror(
+                'Error', f'Failed to write file: {e}'
+            )
             return
 
         self.log.info('Registration request saved to %s', file_path)

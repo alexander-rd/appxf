@@ -85,49 +85,17 @@ class RegistrationAdmin:
             self._admin_window, text='Actions', padx=10, pady=10)
         section1_frame.pack(fill='x', padx=10, pady=10)
 
-        # def on_generate_admin_keys():
-        #     '''Stub: Generate admin encryption keys.'''
-        #     # TODO: implement admin key generation
-        #     self.log.debug('Generate admin keys called')
-        #     messagebox.showinfo(
-        #         'TODO',
-        #         'Admin key generation not yet implemented',
-        #         parent=self._admin_window)
-
-        def on_load_request():
-            '''Load a registration request file.'''
-            file_path = filedialog.askopenfilename(
-                parent=self._admin_window,
-                title='Select Registration Request File',
-                initialdir=self._root_dir,
-                initialfile='registration.request',
-                defaultextension='')
-            if not file_path:
-                return
-            try:
-                with open(file_path, 'rb') as fh:
-                    request_bytes = fh.read()
-                # Parse and populate UI
-                self._load_request_ui(request_bytes)
-                self.log.info('Request loaded from %s', file_path)
-            except (OSError, IOError) as e:
-                self.log.error('Failed to read request file: %s', e)
-                messagebox.showerror(
-                    'Error',
-                    f'Failed to read file: {e}',
-                    parent=self._admin_window)
-
-        # gen_keys_btn = tkinter.Button(
-        #     section1_frame,
-        #     text='Generate Admin Keys',
-        #     command=on_generate_admin_keys,
-        # )
-        # gen_keys_btn.pack(side=tkinter.LEFT, padx=5)
+        gen_keys_btn = tkinter.Button(
+            section1_frame,
+            text='Generate Admin Keys',
+            command=lambda: self._on_export_admin_keys(),
+        )
+        gen_keys_btn.pack(side=tkinter.LEFT, padx=5)
 
         load_req_btn = tkinter.Button(
             section1_frame,
             text='Load Registration Request',
-            command=on_load_request,
+            command=lambda: self._on_load_registration_request(),
         )
         load_req_btn.pack(side=tkinter.LEFT, padx=5)
 
@@ -309,6 +277,63 @@ class RegistrationAdmin:
 
         if self._parent is None:
             self._admin_window.mainloop()
+
+    def _on_export_admin_keys(self):
+        '''Export admin keys to a file for distribution to new users.
+
+        This calls `Registry.get_admin_key_bytes()` and writes the returned
+        bytes to a file chosen by the admin.
+        '''
+        self.log.debug('_on_export_admin_keys called')
+
+        # Ask user where to save admin key bytes
+        file_path = filedialog.asksaveasfilename(
+            parent=self._admin_window,
+            title='Save Admin Keys',
+            initialdir=self._root_dir,
+            initialfile='admin.keys',
+            defaultextension='.keys',
+        )
+        if not file_path:
+            self.log.debug('Save admin keys cancelled by user')
+            return
+
+        key_bytes = self._registry.get_admin_key_bytes()
+
+        try:
+            with open(file_path, 'wb') as fh:
+                fh.write(key_bytes)
+        except (OSError, IOError) as e:
+            self.log.error('Failed to write admin keys to %s: %s', file_path, e)
+            messagebox.showerror(
+                'Error', f'Failed to write file: {e}',
+                parent=self._admin_window)
+            return
+
+        self.log.info('Admin keys saved to %s', file_path)
+
+    def _on_load_registration_request(self):
+        '''Load a registration request file and populate UI.'''
+        file_path = filedialog.askopenfilename(
+            parent=self._admin_window,
+            title='Select Registration Request File',
+            initialdir=self._root_dir,
+            initialfile='registration.request',
+            defaultextension='')
+        if not file_path:
+            return
+        try:
+            with open(file_path, 'rb') as fh:
+                request_bytes = fh.read()
+            # Parse and populate UI
+            self._load_request_ui(request_bytes)
+            self.log.info('Request loaded from %s', file_path)
+        except (OSError, IOError) as e:
+            self.log.error('Failed to read request file: %s', e)
+            messagebox.showerror(
+                'Error',
+                f'Failed to read file: {e}',
+                parent=self._admin_window)
 
     def _load_request_ui(self, request_bytes: bytes):
         '''Load and parse registration request, populate UI fields.
