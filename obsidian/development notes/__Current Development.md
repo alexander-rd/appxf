@@ -21,3 +21,4 @@
 	* But how does the GUI then access the data for display? The admin must be able to display user data from a request.
 	* >> Registry allows to unpack a user request into a user entry that can be displayed. This will be a setting dict (USER ID + USER CONFIG + USER ROLES)
 * If (like above) the requst_data interace cannot be protected, then at least the double-funciton get_request and get_request_data shall be unified.
+* Check external usage of `registry._user_db` registry has to provide interfaces to avoid this access.
