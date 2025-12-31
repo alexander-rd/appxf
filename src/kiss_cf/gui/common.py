@@ -329,7 +329,12 @@ class ButtonFrame(GridFrame):
             button_number += 1
 
     def handle_button_press(self, button: str):
-        self.log.debug(f'Button press: {button}')
+        ''' Handle button press by releasing an event
+
+        The event name just place << >> brackets around the button name. A
+        button "smile" would generate <<smile>>.
+        '''
+        self.log.debug('Button press: %s', button)
         self.last_event = f'<<{button}>>'
         self.event_generate(f'<<{button}>>')
 
