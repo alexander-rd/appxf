@@ -122,7 +122,7 @@ class RegistrationUser:
 
     def _update_admin_status(self):
         '''Update admin status text. Dummy implementation for now.'''
-        if self._registry._user_db.exists():
+        if self._registry.has_admin_keys():
             status = 'Admin keys are already loaded to encrypt your user data.'
         else:
             status = 'You have to load admin keys to encrypt the user data in your request.'

@@ -62,7 +62,7 @@ class UserDatabase(Storable):
             roles=['user', 'admin'])
         return user_id
 
-    def get_users(self, role: str | None = None) -> set[int]:
+    def get_users(self, role: str = '') -> set[int]:
         ''' get users IDs as set
 
         Keyword Arguments:
@@ -219,6 +219,11 @@ class UserDatabase(Storable):
                 for user in role_users]
 
     def get_roles(self, user_id: int | None = None) -> list[str]:
+        ''' Get list of roles
+
+        Keyword Arguments:
+        user_id -- Return roles for this user ID or, if None, return all roles
+        '''
         if user_id is None:
             # admin and user will always be present given that _role_map is
             # intialized with those two roles and those two roles are never
