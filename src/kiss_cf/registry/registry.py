@@ -79,10 +79,10 @@ class Registry(RegistryBase):
             registry=self)
 
         # Note: USER_DB cannot be synced from __init__ since security module
-        # will not yet be unlocked
+        # may not yet be unlocked.
 
     # TODO: response_config_sections likely needs an explicit setter to have
-    # the options to define configuration settings after defining the user
+    # the option to define configuration settings after defining the user
     # registry. Also, this list may need to be a mapping since different roles
     # may receive different subsets of configuration data. But this should be
     # reconsidered since this part of the configuration sharing may be handled
@@ -99,6 +99,15 @@ class Registry(RegistryBase):
         '''
         return self._user_id.id
 
+    def is_initialized(self) -> bool:
+        return (self._loaded or (
+                self._user_id.exists() and
+                self._user_db.exists()
+                ))
+
+    # #########################/
+    # USER DB basic interfaces
+    # /
     def get_roles(self, user_id: int | None = None) -> list[str]:
         ''' get roles as list of strings
 
@@ -119,12 +128,6 @@ class Registry(RegistryBase):
             user_id = self._user_id.id
         return self._user_db.get_roles(user_id)
 
-    def is_initialized(self) -> bool:
-        return (self._loaded or (
-                self._user_id.exists() and
-                self._user_db.exists()
-                ))
-
     def get_users(self, role: str = '') -> set[int]:
         ''' get users IDs as set
 
@@ -132,6 +135,44 @@ class Registry(RegistryBase):
             role {str} -- only users having role, '' ignores (default: '')
         '''
         return self._user_db.get_users(role=role)
+
+    def get_encryption_keys(self, roles: list[str] | str) -> list[bytes]:
+        ''' Return list of (public) encryption keys for defined role(s)
+        '''
+        self._ensure_loaded()
+        return self._user_db.get_encryption_keys(roles)
+
+    def get_validation_keys(self, roles: list[str] | str) -> list[bytes]:
+        ''' Return list of (public) validation keys for defined role(s)
+        '''
+        self._ensure_loaded()
+        return self._user_db.get_validation_keys(roles)
+
+    def get_encryption_key(self, user_id: int = 0) -> bytes:
+        ''' Provide encryption key (bytes) for user ID
+
+        If no ID is provided or 0, the encryption key for the current user will
+        be returned.
+        '''
+        self._ensure_loaded()
+        if user_id >= 0:
+            return self._user_db.get_encryption_key(user_id)
+        return self._user_db.get_encryption_key(self.user_id)
+
+    def get_validation_key(self, user_id: int = 0) -> bytes:
+        ''' Provide encryption key (bytes) for user ID
+
+        If no ID is provided or 0, the encryption key for the current user will
+        be returned.
+        '''
+        self._ensure_loaded()
+        if user_id >= 0:
+            return self._user_db.get_validation_key(user_id)
+        return self._user_db.get_validation_key(self.user_id)
+
+    # ###################/
+    # USER DB Operations
+    # /
 
     # TODO: ensure_loaded is only used once. This instance could just use
     # try_load.
@@ -142,17 +183,26 @@ class Registry(RegistryBase):
             KissRegistryUnitialized('Registry is not initialized.')
 
     def try_load(self) -> bool:
+        '''Load USER ID and/or USER DB
+
+        Returns: True if both can be loaded
+        '''
+        # registry is generally not available if security is not unlocked (even
+        # though USER ID may be available):
         if not self._security.is_user_unlocked():
             return False
-        if not self.is_initialized():
-            return False
-        if not self._user_id.exists():
-            return False
-        self._user_id.load()
-        if not self._user_db.exists():
-            return False
-        self._user_db.load()
-        self._loaded = True
+
+        user_id_loaded = False
+        if self._user_id.exists():
+            self._user_id.load()
+            user_id_loaded = True
+
+        user_db_loaded = False
+        if self._user_db.exists():
+            self._user_db.load()
+            user_db_loaded = True
+
+        self._loaded = user_id_loaded and user_db_loaded
         return self._loaded
 
     def initialize_as_admin(self):
@@ -214,57 +264,6 @@ class Registry(RegistryBase):
         '''
         admin_keys = self._user_db.get_users(role='admin')
         return bool(admin_keys)
-
-    def sync_with_remote(self, mode: str):
-        ''' Sync local registry with remote location.
-
-        A sync should happen at every startup and/or before any sync of shared
-        data. Additionally, sync is executed when admin adds a new member or
-        when user adds the registration response.
-
-        The following prerequisites must be met for the sync to be successful:
-          * the user has unlocked the Security object
-          * the user is registered (is_initialized())
-        '''
-        print(f' -- {mode} from user={self.user_id}')
-        # TODO: receiving after getting registration response on user side
-        # cannot work since try_load() includes trying to load the user_db
-        # which is not existent yet? .. .. is it not? It could be if the
-        # registration response would already include it, not? But it does not
-        # include it. So.. ..what is the original purpose of try_load() OR what
-        # is the purpose of the below try_load() protection?
-        #
-        # AFTER the response, I should already know my roles, not? Or does the
-        # user only know it's ID and can access the user_db by ID since it will
-        # find the decryption key?
-        #
-        # ANALYSIS - what is required to RECEIVE data from SharedStorage?
-        #
-        # (1) To decrypt, I need my private key in my security object >> not a
-        #     problem.
-        #
-        # (2) To check the signature, I need to verify the payload with MY COPY
-        #     of the public key which is only available in the user_db.
-        #
-        # >> For the first sync, all admin public keys should be sent.
-        if self.try_load():
-            is_admin = self._user_db.has_role(self._user_id.id, 'admin')
-            if mode == 'receiving':
-                print(' -- receiving')
-                # receiving is ALWAYS overwriting local USER_DB
-                sync(storage_a=self._remote_user_db_storage,
-                     storage_b=self._local_user_db_storage,
-                     only_a_to_b=True)
-                # reload after sync
-                self._user_db.load()
-            elif mode == 'sending':
-                if is_admin:
-                    print(' -- sending')
-                    sync(storage_a=self._local_user_db_storage,
-                         storage_b=self._remote_user_db_storage,
-                         only_a_to_b=True)
-            else:
-                raise KissRegistryError(f'Mode {mode} is unknown.')
 
     def get_request_bytes(self) -> bytes:
         ''' Get registration request bytes
@@ -421,39 +420,58 @@ class Registry(RegistryBase):
 
         # TODO: clarfify how it is checked that everything worked
 
-    def get_encryption_keys(self, roles: list[str] | str) -> list[bytes]:
-        ''' Return list of (public) encryption keys for defined role(s)
+    def sync_with_remote(self, mode: str):
+        ''' Sync local registry with remote location.
+
+        A sync should happen at every startup and/or before any sync of shared
+        data. Additionally, sync is executed when admin adds a new member or
+        when user adds the registration response.
+
+        The following prerequisites must be met for the sync to be successful:
+          * the user has unlocked the Security object
+          * the user is registered (is_initialized())
         '''
-        self._ensure_loaded()
-        return self._user_db.get_encryption_keys(roles)
+        print(f' -- {mode} from user={self.user_id}')
+        # TODO: receiving after getting registration response on user side
+        # cannot work since try_load() includes trying to load the user_db
+        # which is not existent yet? .. .. is it not? It could be if the
+        # registration response would already include it, not? But it does not
+        # include it. So.. ..what is the original purpose of try_load() OR what
+        # is the purpose of the below try_load() protection?
+        #
+        # AFTER the response, I should already know my roles, not? Or does the
+        # user only know it's ID and can access the user_db by ID since it will
+        # find the decryption key?
+        #
+        # ANALYSIS - what is required to RECEIVE data from SharedStorage?
+        #
+        # (1) To decrypt, I need my private key in my security object >> not a
+        #     problem.
+        #
+        # (2) To check the signature, I need to verify the payload with MY COPY
+        #     of the public key which is only available in the user_db.
+        #
+        # >> For the first sync, all admin public keys should be sent.
+        if self.try_load():
+            is_admin = self._user_db.has_role(self._user_id.id, 'admin')
+            if mode == 'receiving':
+                print(' -- receiving')
+                # receiving is ALWAYS overwriting local USER_DB
+                sync(storage_a=self._remote_user_db_storage,
+                     storage_b=self._local_user_db_storage,
+                     only_a_to_b=True)
+                # reload after sync
+                self._user_db.load()
+            elif mode == 'sending':
+                if is_admin:
+                    print(' -- sending')
+                    sync(storage_a=self._local_user_db_storage,
+                         storage_b=self._remote_user_db_storage,
+                         only_a_to_b=True)
+            else:
+                raise KissRegistryError(f'Mode {mode} is unknown.')
 
-    def get_validation_keys(self, roles: list[str] | str) -> list[bytes]:
-        ''' Return list of (public) validation keys for defined role(s)
-        '''
-        self._ensure_loaded()
-        return self._user_db.get_validation_keys(roles)
 
-    def get_encryption_key(self, user_id: int = 0) -> bytes:
-        ''' Provide encryption key (bytes) for user ID
-
-        If no ID is provided or 0, the encryption key for the current user will
-        be returned.
-        '''
-        self._ensure_loaded()
-        if user_id >= 0:
-            return self._user_db.get_encryption_key(user_id)
-        return self._user_db.get_encryption_key(self.user_id)
-
-    def get_validation_key(self, user_id: int = 0) -> bytes:
-        ''' Provide encryption key (bytes) for user ID
-
-        If no ID is provided or 0, the encryption key for the current user will
-        be returned.
-        '''
-        self._ensure_loaded()
-        if user_id >= 0:
-            return self._user_db.get_validation_key(user_id)
-        return self._user_db.get_validation_key(self.user_id)
 
 # TODO: can we register the same user twice? How would we know? We
 # would need to double-check the keys (which we did not want to use as
