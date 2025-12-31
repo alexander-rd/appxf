@@ -155,14 +155,14 @@ def test_registry_get_admin_keys(admin_initialized_registry):
 
 def test_registry_set_admin_keys(fresh_registry):
     registry: Registry = fresh_registry
-    assert len(registry._user_db.get_users()) == 0
+    assert len(registry.get_users()) == 0
     # manually build admin key data just using the users public keys:
     data = [(registry._security.get_signing_public_key(),
              registry._security.get_encryption_public_key())]
     data_bytes = CompactSerializer.serialize(data)
 
     registry.set_admin_key_bytes(data_bytes)
-    assert len(registry._user_db.get_users()) == 1
+    assert len(registry.get_users()) == 1
     assert registry.get_validation_keys('admin') == [data[0][0]]
     assert registry.get_encryption_keys('admin') == [data[0][1]]
 

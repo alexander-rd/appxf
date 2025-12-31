@@ -125,6 +125,14 @@ class Registry(RegistryBase):
                 self._user_db.exists()
                 ))
 
+    def get_users(self, role: str = '') -> set[int]:
+        ''' get users IDs as set
+
+        Keyword Arguments:
+            role {str} -- only users having role, '' ignores (default: '')
+        '''
+        return self._user_db.get_users(role=role)
+
     # TODO: ensure_loaded is only used once. This instance could just use
     # try_load.
     def _ensure_loaded(self):
@@ -200,6 +208,12 @@ class Registry(RegistryBase):
             self._user_db.add_new(
                 key_tuple[0], key_tuple[1],
                 roles = ['admin'])
+
+    def has_admin_keys(self):
+        ''' Return True if USER DB has any admin keys
+        '''
+        admin_keys = self._user_db.get_users(role='admin')
+        return bool(admin_keys)
 
     def sync_with_remote(self, mode: str):
         ''' Sync local registry with remote location.
