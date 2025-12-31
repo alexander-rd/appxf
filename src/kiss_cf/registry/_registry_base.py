@@ -25,7 +25,7 @@ class RegistryBase(ABC):
         ''' User is initialized with a user id '''
 
     @abstractmethod
-    def get_roles(self, uid: int | None = None) -> list[str]:
+    def get_roles(self, user_id: int | None = None) -> list[str]:
         ''' Get roles for a user ID
 
         If no user ID is provided, all existing roles are returned. Note that
