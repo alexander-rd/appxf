@@ -6,18 +6,8 @@
 	1) set_admin_keys() already exists (??)
 3) OK - User provides **user data**  and **user keys** with **shared encryption for admins**. Signing does not yet make sense since it cannot be verified against a known bit of information.
 4) OK - Admin reads registration request and proceeds with registration.
-5) Admin provides response encrypted for user and signed from admin. User can verify the signature based on the keys from steps (1) and (2)
-# Alternatives
-## User Request
-### UserRequest is handling encryption
-* (-) UserRequest does not know the Security module, nor does it know the admin keys (from the user DB)
-### Registry is handling encryption
-* (+) It knows all the bits and pieces to do the encryption (Security, UserDB, ...)
-
+5) OK - Admin provides response encrypted for user and signed from admin. User can verify the signature based on the keys from steps (1) and (2)
 # ToDo
-* manual registration cycle test: it seems the app instance remains intact (registry object remains loaded) because the USER_DB is never generat
-	* >> NO.. ..storing the USER_DB after admin key writing is missing. This was just not a problem up to now.
-*  The key_blob_map in the custom processing in registry shall use use_id's instead of the public keys for which the keys were generated.
 * User registration: if admin keys are not yet loaded, the keys to write the request (and load a response) should be grayed out.
 * ?? Designated set of user information (setting dict with user ID, hidden keys,USER CONFIG and ROLES)
 	* Roles is a multi select from the list of existing roles. That's a very specific extended setting.
@@ -39,3 +29,7 @@
 * loading request/response raised errors - keep them an add messages OR other resolution
 * add purging of USER_DB when loading admin keys
 * USER_DB should never store() itself for efficiency reasons. This is safe since USER_DB is only private. Instead, registry has to manage stores after bulk operations.
+* GENERAL REVIEW of registry
+* I'm using the wrong order: the original data should be signed, not the encrypted data. Rationale is that only the recipient shall be able to read the signature (which, at least, contains information on who signed the data)
+
+* encrypt_to_file only used once in security.. ..can be removed!

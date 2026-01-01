@@ -13,34 +13,42 @@ class PublicEncryption(Storable):
                  storage: Storage,
                  security: Security,
                  registry: RegistryBase,
-                 # TODO: align default role nomenclature "user" versus "USER"
-                 to_roles: str = 'USER',
+                 to_roles: str = 'user',
                  **kwargs):
         super().__init__(storage, **kwargs)
         self._security = security
         self._registry = registry
         self._to_roles = to_roles
-        self._keys: dict[bytes, bytes] = {}
+        self._key_blob_dict: dict[int, bytes] = {}
 
     def get_state(self) -> dict[Any, Any]:
-        return self._keys
+        return self._key_blob_dict
 
     def set_state(self, data: dict[bytes, bytes]):
-        self._keys = data
+        self._key_blob_dict = data
 
-    # TODO: adapt encrypt() to rewrite public keys as integer user ID's from
-    # registry. Upon decrypt() check if user ID is valid and abort already
-    # there, otherwise: present security only with the one public key that
-    # matters.
 
     def encrypt(self, data: bytes) -> bytes:
-        pub_key_list = self._registry.get_encryption_keys(self._to_roles)
-        data, keys = self._security.hybrid_encrypt(data, pub_key_list)
-        self._keys = keys
+        pub_key_dict = self._registry.get_encryption_key_dict(self._to_roles)
+        # always add own key:
+        if self._registry.user_id not in pub_key_dict:
+            pub_key_dict[self._registry.user_id] = (
+                self._security.get_encryption_public_key())
+
+        data, key_blob_dict = self._security.hybrid_encrypt(data, pub_key_dict)
+        self._key_blob_dict = key_blob_dict
         self.store()
         return data
 
     def decrypt(self, data: bytes) -> bytes:
         self.load()
-        data = self._security.hybrid_decrypt(data, self._keys)
+        # identify key blob
+        if self._registry.user_id not in self._key_blob_dict:
+            raise ValueError(
+                f'Current user id {self._registry.user_id} is not included'
+                f'in available key blobs. Available: '
+                f'{self._key_blob_dict.keys()}')
+        key_blob = self._key_blob_dict[self._registry.user_id]
+
+        data = self._security.hybrid_decrypt(data=data, key_blob=key_blob)
         return data

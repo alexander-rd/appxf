@@ -208,17 +208,20 @@ class UserDatabase(Storable):
     def get_encryption_key(self, user_id: int) -> bytes:
         return self._get_user_entry(user_id)['encryption_key']
 
-    def get_encryption_keys(self, roles: list[str] | str) -> list[bytes]:
+    def get_encryption_key_dict(
+            self,
+            roles: list[str] | str
+            ) -> dict[int, bytes]:
         # resolve input ambiguity:
         if isinstance(roles, str):
             roles = [roles.lower()]
         # accumulate user ID's according to role:
-        role_users = set()
+        role_users: set[int] = set()
         for this_role in roles:
             role_users.update(self.get_users(this_role))
         # return encryption keys for role users:
-        return [self._user_db[user]['encryption_key']
-                for user in role_users]
+        return {user: self._user_db[user]['encryption_key']
+                for user in role_users}
 
     def get_roles(self, user_id: int | None = None) -> list[str]:
         ''' Get list of roles
