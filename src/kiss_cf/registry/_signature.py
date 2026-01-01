@@ -39,7 +39,7 @@ class Signature(Storable):
         ''' Verify loaded signature
 
         load() has to be executed, before.'''
-        return self._security.verify(
+        return self._security.verify_signature(
             data=data,
             signature=self.signature,
             public_key_bytes=self.pub_key)

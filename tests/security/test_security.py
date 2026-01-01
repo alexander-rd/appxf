@@ -122,17 +122,21 @@ def test_security_sign_verify(sandbox_path):
     signature = sec.sign(data)
     signatureFalse = sec.sign(data + b'x')
 
-    assert sec.verify(data, signature)
-    assert not sec.verify(data, signatureFalse)
+    assert sec.verify_signature(data, signature, sec.get_signing_public_key())
+    # verificytion on false signature
+    assert not sec.verify_signature(data, signatureFalse, sec.get_signing_public_key())
+    # verification on false public key (using encryption public key)
+    assert not sec.verify_signature(data, signature, sec.get_encryption_public_key())
 
 # Hybrid encrypt/decrypt cycle:
 def test_security_hybrid_encrypt_decrypt(sandbox_path):
     sec = appxf_objects.get_security_unlocked(sandbox_path, TEST_PASSWORD)
 
     data = b'To be encrypted'
-    data_encrpted, key_map = sec.hybrid_encrypt(data)
+    data_encrpted, key_blob_map = sec.hybrid_encrypt(
+        data, {1: sec.get_encryption_public_key()})
 
-    data_decrypted = sec.hybrid_decrypt(data_encrpted, key_map)
+    data_decrypted = sec.hybrid_decrypt(data_encrpted, key_blob_map[1])
 
     assert data != data_encrpted
     assert data == data_decrypted

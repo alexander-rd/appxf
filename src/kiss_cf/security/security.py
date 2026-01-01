@@ -16,9 +16,9 @@ from cryptography.fernet import Fernet
 # asynchronous encryption:
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from typing import Any, Iterable
 
-
-class KissSecurityException(Exception):
+class AppxfSecurityException(Exception):
     ''' General security related errors. '''
 
 
@@ -51,8 +51,8 @@ class Security():
                  **kwargs):
         '''Get security context.
 
-        The salt used to generate secret keys from password is set with
-        something but you should provide your own salt. Any string does.
+        The salt is used during password handling. It is a measure against
+        rainbow table attacks. Any string will do it.
         '''
         super().__init__(**kwargs)
         self._salt = salt
@@ -74,10 +74,10 @@ class Security():
         This code might catch later version adaptions.
         '''
         if 'version' not in self._key_dict.keys():
-            raise KissSecurityException(
+            raise AppxfSecurityException(
                 'Not a KISS security file: no version information')
         if self._key_dict['version'] != 1:
-            raise KissSecurityException(
+            raise AppxfSecurityException(
                 f'Keys stored in version {self._key_dict["version"]}, '
                 f'expected is version 1')
 
@@ -94,7 +94,8 @@ class Security():
         '''Check if user secret key is initialized.
 
         If this returns false, you need to get a password to provide to
-        init_user(). The class login.Login also provides a GUI for this.
+        security.init_user(). Recommended is using an APPXF provided user
+        interface.
         '''
         return os.path.exists(self._file)
 
@@ -102,8 +103,7 @@ class Security():
         '''Return if user security context is unlocked.
 
         If this returns true, encrypt_to_file and decrypt_to_file can be used.
-        You can use the GUI from login.Login to unlock a user or you use
-        Security.unlock_user() directly.
+        Use Security.unlock_user() directly or an APPXF provided user interface.
         '''
         return bool(self._key_dict['symmetric_key'])
 
@@ -120,7 +120,7 @@ class Security():
         '''
         # Do not overwrite existing keys:
         if self.is_user_initialized():
-            raise KissSecurityException('Keys are already initialized.')
+            raise AppxfSecurityException('Keys are already initialized.')
         self._derived_key = self._derive_key(password)
         self._key_dict['symmetric_key'] = self._generate_key()
         self._write_keys()
@@ -133,7 +133,7 @@ class Security():
         which should be cought to handle wrong passwords.
         '''
         if not self.is_user_initialized():
-            raise Exception(
+            raise AppxfSecurityException(
                 'User is not initialized. Run init_user() '
                 f'if file {self._file} was lost.')
         self._derived_key = self._derive_key(password)
@@ -141,18 +141,32 @@ class Security():
 
     def _get_symmetric_key(self):
         if not self.is_user_unlocked():
-            raise Exception(
+            raise AppxfSecurityException(
                 'Trying to access symmetric keys before '
                 'succeeding with unlock_user()')
         return self._key_dict['symmetric_key']
 
-    def encrypt_to_file(self, data, file):
+    def encrypt_to_file(self, data: bytes, file: str | list[str]):
+        ''' Encrypt data bytes to file
+
+        The private symmetric key is used to write encrypted bytes to a file.
+
+        Keyword arguments:
+        data -- the bytes to encrypt
+        '''
         self._encrypt_to_file(self._get_symmetric_key(), data, file)
 
-    def encrypt_to_bytes(self, data) -> bytes:
+    def encrypt_to_bytes(self, data: bytes) -> bytes:
+        ''' Encrypt data bytes
+
+        The private symmetric key is used to encrypted bytes.
+        file -- path of the file as string, list of strings is also possible
+            to avoid caller using os.path() to join them.
+        '''
         return self._encrypt_to_bytes(self._get_symmetric_key(), data)
 
-    def _encrypt_to_file(self, key, data, file):
+    @classmethod
+    def _encrypt_to_file(cls, key: bytes, data: bytes, file: list[str] | str):
         # get file where file is allowed to be a list of strings to avoid
         # caller needing to use os.path:
         if not isinstance(file, list):
@@ -164,27 +178,41 @@ class Security():
             os.makedirs(file_dir)
 
         with open(file, 'wb') as f:
-            f.write(self._encrypt_to_bytes(key, data))
+            f.write(cls._encrypt_to_bytes(key, data))
 
-    def _encrypt_to_bytes(self, key, data) -> bytes:
+    @classmethod
+    def _encrypt_to_bytes(cls, key: bytes, data: bytes) -> bytes:
         return Fernet(key).encrypt(data)
 
-    def decrypt_from_file(self, file) -> bytes:
+    def decrypt_from_file(self, file: list[str] | str) -> bytes:
+        ''' Load data from file and decrypt
+
+        Loads bytes from file and decrypts it based on the symmetric key.
+
+        Keyword arguments
+        file -- path of the file as string, list of strings is also possible
+            to avoid caller using os.path() to join them.
+        '''
         return self._decrypt_from_file(self._get_symmetric_key(), file)
 
     def decrypt_from_bytes(self, data: bytes) -> bytes:
+        ''' Decrypt from data bytes
+
+        Decrypts data bytes based on the symmetric key.
+        '''
         return self._decrypt_from_bytes(self._get_symmetric_key(), data)
 
-    def _decrypt_from_file(self, key, file) -> bytes:
+    def _decrypt_from_file(self, key: bytes, file: list[str] | str) -> bytes:
+        # get file where file is allowed to be a list of strings to avoid
+        # caller needing to use os.path:
         if not isinstance(file, list):
             file = [file]
-        # read encrypted data
         with open(os.path.join(*file), 'rb') as f:
             data_encrypted = f.read()
-
         return self._decrypt_from_bytes(key, data_encrypted)
 
-    def _decrypt_from_bytes(self, key: bytes, data: bytes) -> bytes:
+    @classmethod
+    def _decrypt_from_bytes(cls, key: bytes, data: bytes) -> bytes:
         # Note that Fernet will also validate the data on decryption. If the
         # algorithm is changed, it needs to be ensured that the decryption is
         # validated before returning it back to the caller (like using a hash
@@ -192,16 +220,26 @@ class Security():
         return Fernet(key).decrypt(data)
 
     def get_signing_public_key(self) -> bytes:
+        ''' Get public key to verify signatures.
+
+        Note that the signing public key remains private to the security
+        module and only sign() is exposed.
+        '''
         if not self.is_user_unlocked():
-            raise Exception(
+            raise AppxfSecurityException(
                 'Trying to access public key before '
                 'succeeding with unlock_user()')
         self._ensure_signing_keys_exist()
         return self._key_dict['signing_pub_key']
 
     def get_encryption_public_key(self) -> bytes:
+        ''' Get public key to encrypt data for this user
+
+        Note that the private keys for decryption remains private to the
+        security module and only hybrid_decrypt() is exposed.
+        '''
         if not self.is_user_unlocked():
-            raise Exception(
+            raise AppxfSecurityException(
                 'Trying to access public key before '
                 'succeeding with unlock_user()')
         self._ensure_encryption_keys_exist()
@@ -215,7 +253,7 @@ class Security():
             return
         if (not self._key_dict['signing_pub_key'] or
                 not self._key_dict['signing_priv_key']):
-            raise KissSecurityException(
+            raise AppxfSecurityException(
                 'Only public or private validation key are set. '
                 'This should not happen.'
                 )
@@ -228,7 +266,7 @@ class Security():
             return
         if (not self._key_dict['encryption_pub_key'] or
                 not self._key_dict['encryption_priv_key']):
-            raise KissSecurityException(
+            raise AppxfSecurityException(
                 'Only public or private encryption key are set. '
                 'This should not happen.'
                 )
@@ -256,26 +294,20 @@ class Security():
         self._key_dict['encryption_priv_key'] = private_key
         self._write_keys()
 
-    # TODO COMMIT: serialized public keys are far too large
     @classmethod
     def _serialize_public_key(cls, key: rsa.RSAPublicKey) -> bytes:
         return key.public_bytes(
             encoding=serialization.Encoding.DER,
             format=serialization.PublicFormat.SubjectPublicKeyInfo)
         # Note: In a minor test, PEM encoding took 426 bytes. DER encoding took
-        # 264 bytes.
-
-        # TODO COMMIT: reconsider the key map using the public keys to index.
-        # With 100 users to encrypt for, the size is 25kB already for public
-        # keys. An alternative are ID's maintained in the user_db. But ID's
-        # would be one more indirection.
+        # 264 bytes. Key size is 2048 bit or 256 byte.
 
     @classmethod
     def _deserialize_public_key(cls, key_bytes: bytes) -> rsa.RSAPublicKey:
         # key = serialization.load_pem_public_key(key_bytes)
         key = serialization.load_der_public_key(key_bytes)
         if not isinstance(key, rsa.RSAPublicKey):
-            raise KissSecurityException(
+            raise AppxfSecurityException(
                 f'Unexpected key class {key.__class__.__name__}. '
                 f'Expected RSAPrivateKey.')
         return key
@@ -291,13 +323,20 @@ class Security():
     def _deserialize_private_key(cls, key_bytes: bytes) -> rsa.RSAPrivateKey:
         key = serialization.load_pem_private_key(key_bytes, password=None)
         if not isinstance(key, rsa.RSAPrivateKey):
-            raise KissSecurityException(
+            raise AppxfSecurityException(
                 f'Unexpected key class {key.__class__.__name__}. '
                 f'Expected RSAPrivateKey.')
         return key
 
     def sign(self, data: bytes) -> bytes:
-        '''Sign a data byte stream'''
+        '''Sign data bytes
+
+        The data is signed with the private signing key. Others typically check
+        the signature the public verification keys stored in the user registry.
+
+        Keyword arguments:
+        data -- the to be signed data
+        '''
         self._ensure_signing_keys_exist()
         private_key = Security._deserialize_private_key(
             self._key_dict['signing_priv_key'])
@@ -309,12 +348,18 @@ class Security():
                         ),
             hashes.SHA256())
 
-    # TODO: verification might not require a login and functionality should be
-    # available as class function.
-    def verify(self, data, signature, public_key_bytes=None) -> bool:
-        if not public_key_bytes:
-            self._ensure_signing_keys_exist()
-            public_key_bytes = self._key_dict['signing_pub_key']
+    @classmethod
+    def verify_signature(cls, data, signature, public_key_bytes: bytes) -> bool:
+        ''' Verify signature and return boolean outcome
+
+        If you need to verify your own signature, you need to call:
+        verify_signature(data, signature, security.get_signing_public_key())
+
+        Keyword arguments:
+        data -- the data which was signed
+        signature -- the signature
+        public_key_bytes -- public key {bytes} to be used for verification
+        '''
         public_key = Security._deserialize_public_key(public_key_bytes)
 
         try:
@@ -349,41 +394,62 @@ class Security():
                 label=None)
             )
 
-    def hybrid_encrypt(self,
+    @classmethod
+    def hybrid_encrypt(cls,
                        data: bytes,
-                       public_key_list: list[bytes] | None = None
-                       ) -> tuple[bytes, dict[bytes, bytes]]:
-        if public_key_list is None:
-            public_key_list = []
+                       public_keys: Iterable[bytes] | dict[Any, bytes] | None = None,
+                       ) -> tuple[bytes, dict[Any, bytes]]:
+        ''' Hybrid encryption returning encrypted data and key blob dict
 
-        public_key_set = set(public_key_list)
-        public_key_set.add(self.get_encryption_public_key())
+        The data will be encrypted with a generated symmetric key. This
+        password will be encrypted with the provided public keys to result in
+        key blobs. The key blobs are returned in a dictionary that is indexed
+        by either the public keys (if public keys are provided by a list) or by
+        the keys used when public keys are provided via a dictionary.
 
-        symmetric_key = self._generate_key()
-        data_encrypted = self._encrypt_to_bytes(symmetric_key, data)
+        Keyword arguments:
+        data -- the data to encrypt
+        public_key_list -- either a list of public keys OR a dictionary of
+            public keys where the dictionary keys will be used to index the
+            key blobs
 
-        encrypted_key_map = {}
-        for key in public_key_set:
-            key_encrypted = self._encrypt_with_public_key_to_bytes(
-                symmetric_key, key)
-            encrypted_key_map[key] = key_encrypted
+        Returns: a tuple of the encrypted bytes and a dictionary mapping the
+            dict keys or public keys to the key blobs.
+        '''
+        symmetric_key = cls._generate_key()
+        data_encrypted = cls._encrypt_to_bytes(symmetric_key, data)
 
-        return data_encrypted, encrypted_key_map
+        key_blob_dict = {}
+        if isinstance(public_keys, dict):
+            for label, key in public_keys.items():
+                key_encrypted = cls._encrypt_with_public_key_to_bytes(
+                    symmetric_key, key)
+                key_blob_dict[label] = key_encrypted
+        else:
+            # ensure unique list of public keys:
+            public_keys = set(*public_keys)
+            for key in public_keys:
+                key_encrypted = cls._encrypt_with_public_key_to_bytes(
+                    symmetric_key, key)
+                key_blob_dict[key] = key_encrypted
 
-    # TODO UPGRADE: double-check interface consistency (order of keys and data)
-    def hybrid_decrypt(self, data: bytes,
-                       encrypted_key_map: dict[bytes, bytes]):
-        # get encrypted symmetric key:
-        if self.get_encryption_public_key() not in encrypted_key_map.keys():
-            # TODO: more refined exception
-            raise KissSecurityException(
-                'Key list did not contain the public key for this Security '
-                'object')
+        return data_encrypted, key_blob_dict
 
-        symmetric_key_encrypted = encrypted_key_map[
-            self.get_encryption_public_key()]
+    def hybrid_decrypt(self, data: bytes, key_blob: bytes):
+        ''' Hybrid decryption returning decrypted data
+
+        PRECONDITION: From hybrid_encrypt(), you obtain a dictionary of key
+        blobs. The correct key blob for THIS call must be identified from the
+        caller. It is either the one matching your get_public_encryption_key()
+        OR it is the one matching whatever keys you used for a dictionary of
+        public keys.
+
+        Your private assymetric encyption key will be used to decrypt the
+        symmetric key from the key_blob. Afterwards, the data will be decrypted
+        by this symmeric key.
+        '''
         symmetric_key = self._decrypt_with_private_key_from_byes(
-            symmetric_key_encrypted)
+            key_blob)
 
         return self._decrypt_from_bytes(symmetric_key, data)
 
@@ -404,7 +470,8 @@ class Security():
                 )
         return base64.urlsafe_b64encode(kdf.derive(bytes(pwd, 'utf-8')))
 
-    def _generate_key(self):
+    @classmethod
+    def _generate_key(cls):
         '''Generate key to encrypt/decrypt synchronously.
 
         As of now, this just forwards to Fernet's generate_key(). See here:

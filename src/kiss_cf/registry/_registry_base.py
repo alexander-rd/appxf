@@ -13,7 +13,7 @@ class RegistryBase(ABC):
 
     @property
     @abstractmethod
-    def user_id(self):
+    def user_id(self) -> int:
         ''' Get user ID
 
         Method will raise KissExceptionUserId if registry is not completed.
@@ -34,5 +34,5 @@ class RegistryBase(ABC):
         '''
 
     @abstractmethod
-    def get_encryption_keys(self, roles: list[str] | str) -> list[bytes]:
+    def get_encryption_key_dict(self, roles: list[str] | str) -> dict[int, bytes]:
         ''' Get list of encryption keys from list of roles '''

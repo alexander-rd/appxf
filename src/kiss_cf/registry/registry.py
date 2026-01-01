@@ -3,7 +3,7 @@
 from __future__ import annotations
 from appxf import logging
 
-from kiss_cf.storage import sync, Storage, JsonSerializer
+from kiss_cf.storage import sync, Storage, CompactSerializer
 from kiss_cf.config import Config
 from kiss_cf.security import Security, SecurePrivateStorage
 
@@ -134,9 +134,8 @@ class Registry(RegistryBase):
         Keyword arguments:
         data -- bytes of data that were signed
         signature -- signature of data
-        public_key -- identifies the user
-        roles -- the identified user (public_key) must have one of the roles
-            in this list
+        signing_user -- the user which signed
+        roles -- the signing user must have one of the roles in this list
         '''
         self._ensure_loaded()
         # TODO: NOT IN get_users() is probably inefficient. There should be
@@ -161,7 +160,7 @@ class Registry(RegistryBase):
         # verify signature:
         public_key = self._user_db.get_validation_key(user_id=signing_user)
         if (
-            not self._security.verify(
+            not self._security.verify_signature(
                 data=data,
                 signature=signature,
                 public_key_bytes=public_key)
@@ -209,7 +208,11 @@ class Registry(RegistryBase):
         ''' Return list of (public) encryption keys for defined role(s)
         '''
         self._ensure_loaded()
-        return self._user_db.get_encryption_keys(roles)
+        return list(self._user_db.get_encryption_key_dict(roles).values())
+
+    def get_encryption_key_dict(self, roles: list[str] | str) -> dict[int, bytes]:
+        self._ensure_loaded()
+        return self._user_db.get_encryption_key_dict(roles)
 
     def get_validation_keys(self, roles: list[str] | str) -> list[bytes]:
         ''' Return list of (public) validation keys for defined role(s)
@@ -304,7 +307,7 @@ class Registry(RegistryBase):
                  self._user_db.get_validation_key(id),
                  self._user_db.get_encryption_key(id))
                  for id in admin_users]
-        return JsonSerializer.serialize(data)
+        return CompactSerializer.serialize(data)
 
     def set_admin_key_bytes(self, data: bytes):
         ''' Set admin keys from bytes obtained via get_admin_key_bytes()
@@ -321,7 +324,11 @@ class Registry(RegistryBase):
 
         # get original data that was a list of tuples (user_id, encryption_key,
         # signing_key)
-        key_list: list[tuple] = JsonSerializer.deserialize(data)  # type: ignore
+        key_list: list[tuple] = CompactSerializer.deserialize(data)  # type: ignore
+
+        # TODO: theoretically, the USER DB should be completely purged before
+        # importing admin keys.. ..just in case admin keys were already loaded
+        # before.
 
         # add admin keys:
         for key_tuple in key_list:
@@ -343,15 +350,15 @@ class Registry(RegistryBase):
         a file via Email.
         '''
         bytes_raw = self._get_request().get_request_bytes()
-        bytes_encrypted, key_blob_map = self._security.hybrid_encrypt(
+        bytes_encrypted, key_blob_dict = self._security.hybrid_encrypt(
             data=bytes_raw,
-            public_key_list=self._user_db.get_encryption_keys(roles='admin')
+            public_keys=self._user_db.get_encryption_key_dict(roles='admin')
             )
         request = {
             'request': bytes_encrypted,
-            'key_blob_map': key_blob_map}
+            'key_blob_dict': key_blob_dict}
 
-        return JsonSerializer.serialize(request)
+        return CompactSerializer.serialize(request)
 
     def _get_request(self) -> RegistrationRequest:
         ''' Get registration request '''
@@ -384,11 +391,18 @@ class Registry(RegistryBase):
             return self._get_request()
         # TODO: get rid of this double-nonsense having two functions returning
         # data
-        request_encrypted: dict = JsonSerializer.deserialize(request)
+        request_encrypted: dict = CompactSerializer.deserialize(request)
+
+        key_blob_dict: dict = request_encrypted['key_blob_dict']
+        if self.user_id not in key_blob_dict:
+            raise KissRegistryError(
+                f'Own USER ID {self.user_id} not available in user request'
+                f'key_blob_dict. Available are: {key_blob_dict.keys()}')
+        key_blob = key_blob_dict[self.user_id]
 
         bytes_decrypted = self._security.hybrid_decrypt(
             data=request_encrypted['request'],
-            encrypted_key_map=request_encrypted['key_blob_map'])
+            key_blob=key_blob)
 
         return RegistrationRequest.from_request(bytes_decrypted)
 
@@ -451,27 +465,27 @@ class Registry(RegistryBase):
         # reused?
         response_bytes = response.get_response_bytes()
         # encryption
-        response_bytes_encrypted, key_blob_map = self._security.hybrid_encrypt(
+        response_bytes_encrypted, key_blob_dict = self._security.hybrid_encrypt(
             response_bytes,
-            public_key_list=[self.get_encryption_key(user_id)])
+            public_keys={user_id: self.get_encryption_key(user_id)})
         # signing
         signature = self._security.sign(response_bytes_encrypted)
 
         response_data = {
             'response_encrypted': response_bytes_encrypted,
-            'key_blob_map': key_blob_map,
+            'key_blob': key_blob_dict[user_id],
             'signing_user': self.user_id,
             'signature': signature,
         }
 
-        return JsonSerializer.serialize(response_data)
+        return CompactSerializer.serialize(response_data)
 
     def set_response_bytes(self, response_bytes: bytes):
         ''' Set registration response '''
         if self.is_initialized():
             self.log.warning('User is already initialized with ID %i.', self.user_id)
 
-        response_data: dict = JsonSerializer.deserialize(response_bytes)
+        response_data: dict = CompactSerializer.deserialize(response_bytes)
 
         # check signature
         response_encrypted: bytes = response_data['response_encrypted']
@@ -487,7 +501,7 @@ class Registry(RegistryBase):
 
         response_bytes = self._security.hybrid_decrypt(
             data=response_encrypted,
-            encrypted_key_map=response_data['key_blob_map'])
+            key_blob=response_data['key_blob'])
 
         response = RegistrationResponse.from_response_bytes(response_bytes)
 
