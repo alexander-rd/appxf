@@ -1,8 +1,9 @@
 
 # allow class name being used before being fully defined (like in same class):
 from __future__ import annotations
+from appxf import logging
 
-from kiss_cf.storage import sync, Storage, CompactSerializer
+from kiss_cf.storage import sync, Storage, JsonSerializer
 from kiss_cf.config import Config
 from kiss_cf.security import Security, SecurePrivateStorage
 
@@ -29,6 +30,8 @@ class KissRegistryUnknownConfigSection(Exception):
 class Registry(RegistryBase):
     ''' User registry maintains the application user's ID and all user
         configurations the user is permitted to see. '''
+    log = logging.getLogger(__name__ + '.Registry')
+
 
     def __init__(self,
                  local_storage_factory: Storage.Factory,
@@ -104,6 +107,72 @@ class Registry(RegistryBase):
                 self._user_id.exists() and
                 self._user_db.exists()
                 ))
+
+    # #########################/
+    # Security Support
+    # /
+    def sign(self, data: bytes):
+        '''Sign bytes of data and return public signing key AND signature '''
+        signing_key = self._security.get_signing_public_key()
+        signature = self._security.sign(data)
+        return signing_key, signature
+    # TODO: do we really need this sign - it just wraps around the security
+    # object
+
+    def verify_signature(self,
+                         data: bytes,
+                         signing_user: int,
+                         signature: bytes,
+                         roles: list[str] | None = None):
+        ''' Return if signature is verified
+
+        The check includes (in this order):
+         * The public signing key must be known
+         * The user matching the signing key must have matching role
+         * The signature for the data must be verified
+
+        Keyword arguments:
+        data -- bytes of data that were signed
+        signature -- signature of data
+        public_key -- identifies the user
+        roles -- the identified user (public_key) must have one of the roles
+            in this list
+        '''
+        self._ensure_loaded()
+        # TODO: NOT IN get_users() is probably inefficient. There should be
+        # some "exist user?"
+        if signing_user not in self._user_db.get_users():
+            # TODO: message
+            raise KissRegistryError()
+
+        # verify roles
+        if roles:
+            if isinstance(roles, str):
+                roles = [roles]
+            has_role = False
+            for role in roles:
+                if self._user_db.has_role(signing_user, role):
+                    has_role = True
+                    break
+            if not has_role:
+                # TODO: message
+                raise KissRegistryError()
+
+        # verify signature:
+        public_key = self._user_db.get_validation_key(user_id=signing_user)
+        if (
+            not self._security.verify(
+                data=data,
+                signature=signature,
+                public_key_bytes=public_key)
+            ):
+            # TODO: message
+            raise KissRegistryError()
+
+        # TODO: either we raise errors and have NO return, or we have a return
+        # and skip the errors. Compromise: return false hand apply warnings as
+        # logging. - As of now, the return has no value (will always be true).
+        return True
 
     # #########################/
     # USER DB basic interfaces
@@ -231,10 +300,11 @@ class Registry(RegistryBase):
         self._ensure_loaded()
         admin_users = self._user_db.get_users(role='admin')
         # construct data as tuples
-        data = [(self._user_db.get_validation_key(id),
+        data = [(id,
+                 self._user_db.get_validation_key(id),
                  self._user_db.get_encryption_key(id))
                  for id in admin_users]
-        return CompactSerializer.serialize(data)
+        return JsonSerializer.serialize(data)
 
     def set_admin_key_bytes(self, data: bytes):
         ''' Set admin keys from bytes obtained via get_admin_key_bytes()
@@ -251,12 +321,13 @@ class Registry(RegistryBase):
 
         # get original data that was a list of tuples (user_id, encryption_key,
         # signing_key)
-        key_list: list[tuple] = CompactSerializer.deserialize(data)  # type: ignore
+        key_list: list[tuple] = JsonSerializer.deserialize(data)  # type: ignore
 
         # add admin keys:
         for key_tuple in key_list:
-            self._user_db.add_new(
-                key_tuple[0], key_tuple[1],
+            self._user_db.add(
+                key_tuple[0],
+                key_tuple[1], key_tuple[2],
                 roles = ['admin'])
 
     def has_admin_keys(self):
@@ -271,7 +342,7 @@ class Registry(RegistryBase):
         Bytes are sent to an admin outside of this tools scope. For example, as
         a file via Email.
         '''
-        bytes_raw = self.get_request().get_request_bytes()
+        bytes_raw = self._get_request().get_request_bytes()
         bytes_encrypted, key_blob_map = self._security.hybrid_encrypt(
             data=bytes_raw,
             public_key_list=self._user_db.get_encryption_keys(roles='admin')
@@ -280,13 +351,14 @@ class Registry(RegistryBase):
             'request': bytes_encrypted,
             'key_blob_map': key_blob_map}
 
-        return CompactSerializer.serialize(request)
+        return JsonSerializer.serialize(request)
 
-    def get_request(self) -> RegistrationRequest:
+    def _get_request(self) -> RegistrationRequest:
         ''' Get registration request '''
         # TODO: registry should not expose raw data since it is not encrypted.
         # the idea was that registration is secure.. ..such that insecure
-        # interfaces should be removed.
+        # interfaces should be removed. As of current scan, 31.12.2025, this
+        # function is only used in testing.
 
         # TODO: add warning message when _loaded
         # is True
@@ -309,10 +381,10 @@ class Registry(RegistryBase):
 
     def get_request_data(self, request: bytes | None) -> RegistrationRequest:
         if request is None:
-            return self.get_request()
+            return self._get_request()
         # TODO: get rid of this double-nonsense having two functions returning
         # data
-        request_encrypted: dict = CompactSerializer.deserialize(request)
+        request_encrypted: dict = JsonSerializer.deserialize(request)
 
         bytes_decrypted = self._security.hybrid_decrypt(
             data=request_encrypted['request'],
@@ -373,12 +445,49 @@ class Registry(RegistryBase):
                 section: dict(self._config.section(section))
                 for section in self._response_config_sections
                 })
-        return response.get_response_bytes()
+
+        # TODO: Is it possible to get this reused from SharedStorage? Or could,
+        # at least, the Signature and PublicEncryption dta structured be
+        # reused?
+        response_bytes = response.get_response_bytes()
+        # encryption
+        response_bytes_encrypted, key_blob_map = self._security.hybrid_encrypt(
+            response_bytes,
+            public_key_list=[self.get_encryption_key(user_id)])
+        # signing
+        signature = self._security.sign(response_bytes_encrypted)
+
+        response_data = {
+            'response_encrypted': response_bytes_encrypted,
+            'key_blob_map': key_blob_map,
+            'signing_user': self.user_id,
+            'signature': signature,
+        }
+
+        return JsonSerializer.serialize(response_data)
 
     def set_response_bytes(self, response_bytes: bytes):
         ''' Set registration response '''
+        if self.is_initialized():
+            self.log.warning('User is already initialized with ID %i.', self.user_id)
 
-        # TODO: add warning if already loaded
+        response_data: dict = JsonSerializer.deserialize(response_bytes)
+
+        # check signature
+        response_encrypted: bytes = response_data['response_encrypted']
+        if (
+            not self.verify_signature(
+                data=response_encrypted,
+                signature=response_data['signature'],
+                signing_user=response_data['signing_user'],
+                roles = ['admin'])
+            ):
+            # TODO: message
+            raise KissRegistryError()
+
+        response_bytes = self._security.hybrid_decrypt(
+            data=response_encrypted,
+            encrypted_key_map=response_data['key_blob_map'])
 
         response = RegistrationResponse.from_response_bytes(response_bytes)
 

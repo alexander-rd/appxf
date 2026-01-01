@@ -151,6 +151,8 @@ class UserDatabase(Storable):
                 self._role_map[role] = set()
             self._role_map[role].add(user_id)
 
+        self.store()
+
     def remove_user(self, user_id: int):
         ''' Remove user by deleting all role assignments
 

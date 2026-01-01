@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch
 
-from kiss_cf.storage import Storage, CompactSerializer
+from kiss_cf.storage import Storage, JsonSerializer
 from kiss_cf.registry import Registry, KissRegistryError
 
 from tests._fixtures import appxf_objects
@@ -68,9 +68,14 @@ def admin_user_initialized_registry_pair(request):
     # initialize admin:
     admin_registry.initialize_as_admin()
 
+    # transfer admin keys
+    admin_key_bytes = admin_registry.get_admin_key_bytes()
+    user_registry.set_admin_key_bytes(admin_key_bytes)
+
     # initialize user via admin:
-    request = user_registry.get_request()
-    print(f'Size of user request: {len(request.get_request_bytes())}')
+    request_bytes = user_registry.get_request_bytes()
+    print(f'Size of user request: {len(request_bytes)}')
+    request = admin_registry.get_request_data(request_bytes)
     user_id = admin_registry.add_user_from_request(request=request, roles=['user', 'new'])
     response = admin_registry.get_response_bytes(user_id)
     print(f'Size of response: {len(response)}')
@@ -140,12 +145,13 @@ def test_registry_get_admin_keys(admin_initialized_registry):
     key_data_bytes = registry.get_admin_key_bytes()
 
     # manual unpacking:
-    key_data: list[tuple] = CompactSerializer.deserialize(key_data_bytes)
+    key_data: list[tuple] = JsonSerializer.deserialize(key_data_bytes)
 
     assert len(key_data) == 1, 'There should only be one admin key pair'
-    assert len(key_data[0]) == 2, 'There should only be the USER ID,  a validataion and an encryption key'
-    assert key_data[0][0] == admin_val_keys[0], 'Second in tuple should be validataion key'
-    assert key_data[0][1] == admin_enc_keys[0], 'Third in tuple should be encryption key'
+    assert len(key_data[0]) == 3, 'There should only be the USER ID, a validataion and an encryption key'
+    assert key_data[0][0] == registry.user_id, 'First in tuple should be user ID'
+    assert key_data[0][1] == admin_val_keys[0], 'Second in tuple should be validataion key'
+    assert key_data[0][2] == admin_enc_keys[0], 'Third in tuple should be encryption key'
 
     # also include the error message when using the set_admin_key_bytes on the admin instance.
     with pytest.raises(KissRegistryError) as exc_info:
@@ -157,14 +163,16 @@ def test_registry_set_admin_keys(fresh_registry):
     registry: Registry = fresh_registry
     assert len(registry.get_users()) == 0
     # manually build admin key data just using the users public keys:
-    data = [(registry._security.get_signing_public_key(),
+    data = [(1,
+             registry._security.get_signing_public_key(),
              registry._security.get_encryption_public_key())]
-    data_bytes = CompactSerializer.serialize(data)
+    data_bytes = JsonSerializer.serialize(data)
 
     registry.set_admin_key_bytes(data_bytes)
     assert len(registry.get_users()) == 1
-    assert registry.get_validation_keys('admin') == [data[0][0]]
-    assert registry.get_encryption_keys('admin') == [data[0][1]]
+    assert registry.get_users(role='admin') == {data[0][0]}
+    assert registry.get_validation_keys('admin') == [data[0][1]]
+    assert registry.get_encryption_keys('admin') == [data[0][2]]
 
 def test_registry_existing_user(admin_user_initialized_registry_pair):
     admin_registry: Registry = admin_user_initialized_registry_pair[0]
@@ -177,7 +185,7 @@ def test_registry_existing_user(admin_user_initialized_registry_pair):
     assert 'new' in user_roles
     assert 2 == len(user_roles)
 
-    request = user_registry.get_request()
+    request = user_registry._get_request()
     assert user_id == admin_registry.add_user_from_request(
         request, 'user')
 
@@ -191,11 +199,11 @@ def test_registy_inconsistent_user(admin_user_initialized_registry_pair):
     user_registry: Registry = admin_user_initialized_registry_pair[1]
 
     # request differs in encryption key:
-    request = user_registry.get_request()
+    request = user_registry._get_request()
     request._data['encryption_key'] = request.encryption_key + b'.'
     assert admin_registry.add_user_from_request(request, 'user') < 0
     # request differs in signing key:
-    request = user_registry.get_request()
+    request = user_registry._get_request()
     request._data['signing_key'] = request.signing_key + b'.'
     assert admin_registry.add_user_from_request(request, 'user') < 0
 
