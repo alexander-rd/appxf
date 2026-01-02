@@ -184,7 +184,8 @@ def test_registry_existing_user(admin_user_initialized_registry_pair):
     assert 'new' in user_roles
     assert 2 == len(user_roles)
 
-    request = user_registry._get_request()
+    request_bytes = user_registry.get_request_bytes()
+    request = user_registry.get_request_data(request_bytes)
     assert user_id == admin_registry.add_user_from_request(
         request, 'user')
 
@@ -198,11 +199,13 @@ def test_registy_inconsistent_user(admin_user_initialized_registry_pair):
     user_registry: Registry = admin_user_initialized_registry_pair[1]
 
     # request differs in encryption key:
-    request = user_registry._get_request()
+    request_bytes = user_registry.get_request_bytes()
+    request = user_registry.get_request_data(request_bytes)
     request._data['encryption_key'] = request.encryption_key + b'.'
     assert admin_registry.add_user_from_request(request, 'user') < 0
     # request differs in signing key:
-    request = user_registry._get_request()
+    request_bytes = user_registry.get_request_bytes()
+    request = user_registry.get_request_data(request_bytes)
     request._data['signing_key'] = request.signing_key + b'.'
     assert admin_registry.add_user_from_request(request, 'user') < 0
 
