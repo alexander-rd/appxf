@@ -194,20 +194,8 @@ class UserDatabase(Storable):
             return False
         return user_id in self._role_map[role]
 
-    def get_validation_key(self, user_id: int) -> bytes:
+    def get_verification_key(self, user_id: int) -> bytes:
         return self._get_user_entry(user_id)['validation_key']
-
-    def get_validation_keys(self, roles: list[str] | str) -> list[bytes]:
-        # resolve input ambiguity:
-        if isinstance(roles, str):
-            roles = [roles.lower()]
-        # accumulate user ID's according to role:
-        role_users = set()
-        for this_role in roles:
-            role_users.update(self.get_users(this_role))
-        # return encryption keys for role users:
-        return [self._user_db[user]['validation_key']
-                for user in role_users]
 
     def get_encryption_key(self, user_id: int) -> bytes:
         return self._get_user_entry(user_id)['encryption_key']
