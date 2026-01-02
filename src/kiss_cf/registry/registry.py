@@ -320,9 +320,9 @@ class Registry(RegistryBase):
         # signing_key)
         key_list: list[tuple] = CompactSerializer.deserialize(data)  # type: ignore
 
-        # TODO: theoretically, the USER DB should be completely purged before
-        # importing admin keys.. ..just in case admin keys were already loaded
-        # before.
+        # purge existing USER DB
+        for user_id in self._user_db.get_users():
+            self._user_db.purge_user(user_id)
 
         # add admin keys:
         for key_tuple in key_list:

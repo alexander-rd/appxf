@@ -143,7 +143,7 @@ class UserDatabase(Storable):
     def remove_user(self, user_id: int):
         ''' Remove user by deleting all role assignments
 
-        The user's signing key remains existent in case there is still shared
+        The user's public keys remain existent in case there is still shared
         data from this user that might need signature validation.
         '''
         for role in self._role_map:
@@ -154,14 +154,31 @@ class UserDatabase(Storable):
                     not role == 'admin'):
                 del self._role_map[role]
 
+    # TODO: When USER DB starts maintaining user information (USER CONFIG),
+    # either remove or purge need to delete this information. To allow the
+    # admin to "remember" old users before purging, I believe this removal
+    # should happen on puring, not on removing. Since the user is not assigned
+    # to any roles and assuming that USER information is only synced with
+    # corresponding roles, other users will not have access to this informatin
+    # anymore.
+
     def purge_user(self, user_id: int):
         ''' Like remove_user but also deleting the public keys
 
         Using this should ensure that there is no data present anymore that
         needs to be authenticated against this user's signing key.
         '''
-        pass
-        # TODO: implementation is missing
+
+        if user_id not in self._user_db:
+            self.log.warning(
+                'Trying to purge USER ID %i which does not exist',
+                user_id)
+            return
+        # ensure steps from remove() - role_map being cleared
+        self.remove_user(user_id)
+        # remove from user map and remember USER ID to be re-used:
+        del self._user_db[user_id]
+        self._unused_id_list.append(user_id)
 
     def is_registered(self, user_id):
         return user_id in self._user_db
