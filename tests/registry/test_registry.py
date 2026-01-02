@@ -96,16 +96,15 @@ def test_registry_init(fresh_registry):
 
     assert not registry.is_initialized()
     # no one should be registered
-    assert not registry.get_encryption_keys('admin')
-    assert not registry.get_encryption_keys('user')
+    assert not registry.get_users()
 
 
 def test_registry_admin_init(admin_initialized_registry):
     registry: Registry = admin_initialized_registry
     assert registry.is_initialized()
 
-    assert len(registry.get_encryption_keys('admin')) == 1
-    assert len(registry.get_encryption_keys('user')) == 1
+    assert len(registry.get_users('admin')) == 1
+    assert len(registry.get_users('user')) == 1
     # user ID for initialized admin should be 0
     assert 'admin' in registry.get_roles(1)
     assert 'user' in registry.get_roles(1)
@@ -139,8 +138,8 @@ def test_registry_user_init(admin_user_initialized_registry_pair):
 
 def test_registry_get_admin_keys(admin_initialized_registry):
     registry: Registry = admin_initialized_registry
-    admin_val_keys = registry.get_validation_keys('admin')
-    admin_enc_keys = registry.get_encryption_keys('admin')
+    admin_val_keys = registry._user_db.get_validation_keys('admin')
+    admin_enc_keys = list(registry._user_db.get_encryption_key_dict('admin').values())
 
     key_data_bytes = registry.get_admin_key_bytes()
 
@@ -171,8 +170,8 @@ def test_registry_set_admin_keys(fresh_registry):
     registry.set_admin_key_bytes(data_bytes)
     assert len(registry.get_users()) == 1
     assert registry.get_users(role='admin') == {data[0][0]}
-    assert registry.get_validation_key(1) == data[0][1]
-    assert registry.get_encryption_key(1) == data[0][2]
+    assert registry._user_db.get_validation_key(1) == data[0][1]
+    assert registry._user_db.get_encryption_key(1) == data[0][2]
 
 def test_registry_existing_user(admin_user_initialized_registry_pair):
     admin_registry: Registry = admin_user_initialized_registry_pair[0]
