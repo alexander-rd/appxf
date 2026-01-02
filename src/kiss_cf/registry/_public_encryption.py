@@ -11,12 +11,10 @@ from ._registry_base import RegistryBase
 class PublicEncryption(Storable):
     def __init__(self,
                  storage: Storage,
-                 security: Security,
                  registry: RegistryBase,
                  to_roles: str = 'user',
                  **kwargs):
         super().__init__(storage, **kwargs)
-        self._security = security
         self._registry = registry
         self._to_roles = to_roles
         self._key_blob_dict: dict[int, bytes] = {}
@@ -27,28 +25,13 @@ class PublicEncryption(Storable):
     def set_state(self, data: dict[bytes, bytes]):
         self._key_blob_dict = data
 
-
     def encrypt(self, data: bytes) -> bytes:
-        pub_key_dict = self._registry.get_encryption_key_dict(self._to_roles)
-        # always add own key:
-        if self._registry.user_id not in pub_key_dict:
-            pub_key_dict[self._registry.user_id] = (
-                self._security.get_encryption_public_key())
-
-        data, key_blob_dict = self._security.hybrid_encrypt(data, pub_key_dict)
+        data, key_blob_dict = self._registry.hybrid_encrypt(data, self._to_roles)
         self._key_blob_dict = key_blob_dict
         self.store()
         return data
 
     def decrypt(self, data: bytes) -> bytes:
         self.load()
-        # identify key blob
-        if self._registry.user_id not in self._key_blob_dict:
-            raise ValueError(
-                f'Current user id {self._registry.user_id} is not included'
-                f'in available key blobs. Available: '
-                f'{self._key_blob_dict.keys()}')
-        key_blob = self._key_blob_dict[self._registry.user_id]
+        return self._registry.hybrid_decrypt(data, self._key_blob_dict)
 
-        data = self._security.hybrid_decrypt(data=data, key_blob=key_blob)
-        return data

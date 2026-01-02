@@ -57,7 +57,6 @@ class SecureSharedStorage(StorageToBytes):
             security=security)
         self._public_encryption = PublicEncryption(
             storage=base_storage.get_meta('keys'),
-            security=security,
             registry=registry)
 
     # TODO: update documentation below. Put elsewhere??
