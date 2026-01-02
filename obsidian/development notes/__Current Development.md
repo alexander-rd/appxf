@@ -17,19 +17,13 @@
 	* But how does the GUI then access the data for display? The admin must be able to display user data from a request.
 	* >> Registry allows to unpack a user request into a user entry that can be displayed. This will be a setting dict (USER ID + USER CONFIG + USER ROLES)
 * If (like above) the requst_data interace cannot be protected, then at least the double-funciton get_request and get_request_data shall be unified.
-* It's kind of the first time another instance is using security.hybrid_encrypt() as well as signing. I should review interface usage and "which module does what"
-	* Security: only basic algorithm definitions
-	* Registry: uses role based signature verification as well as hybrid encryption
-	* SharedStorage: does the same as above together with Signature and PublicEncryption classes.
-	* !! Public Encryption <-> Hybrid Encryption
-	* !! Signing keys are often called "validation keys". If at all, they are "verification" keys.
-		* signing (private) <-> verification (public)
-		* encryption (public) <-> decryption (private)
-		* >> For signign, the keys obtain specified names dependent on their function. for encryption, this is not the case.
 * loading request/response raised errors - keep them an add messages OR other resolution
-* add purging of USER_DB when loading admin keys
-* USER_DB should never store() itself for efficiency reasons. This is safe since USER_DB is only private. Instead, registry has to manage stores after bulk operations.
+* **add purging of USER_DB** when loading admin keys
+* **USER_DB should never store() itself for efficiency reasons.** This is safe since USER_DB is only private. Instead, registry has to manage stores after bulk operations.
 * GENERAL REVIEW of registry
-* I'm using the wrong order: the original data should be signed, not the encrypted data. Rationale is that only the recipient shall be able to read the signature (which, at least, contains information on who signed the data)
 
-* encrypt_to_file only used once in security.. ..can be removed!
+Tickets:
+* Data should be signed before encryption as a general rule of thumb.
+	* To flatten the data structures, I would embed the signature as fixed bytes into the data bytes to render: "data-bytes + signature -> structure -> pack to bytes" into "new_bytes = data-bytes + signature-bytes"
+	* Affects: SharedStorage, Registry registration response
+	* Includes a second look at the file structure for shared storage and must consider the use cases for purging users from the user databse.

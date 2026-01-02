@@ -95,14 +95,11 @@ class Registry(RegistryBase):
 
     @property
     def user_id(self):
-        ''' Get user ID
-
-        Method will raise KissExceptionUserId if registry is not completed.
-        See: is_initialized().
-        '''
+        # Documentation in RegistryBase
         return self._user_id.id
 
     def is_initialized(self) -> bool:
+        # Documentation in RegistryBase
         return (self._loaded or (
                 self._user_id.exists() and
                 self._user_db.exists()
@@ -177,12 +174,7 @@ class Registry(RegistryBase):
     # USER DB basic interfaces
     # /
     def get_roles(self, user_id: int | None = None) -> list[str]:
-        ''' get roles as list of strings
-
-        uid -- a valid positive user ID - OR -
-               0 for the roles of current user - OR -
-               None for all known roles
-        '''
+        # Documentation in RegistryBase
         if user_id is None:
             return self._user_db.get_roles()
         if user_id < 0:
@@ -211,6 +203,7 @@ class Registry(RegistryBase):
         return list(self._user_db.get_encryption_key_dict(roles).values())
 
     def get_encryption_key_dict(self, roles: list[str] | str) -> dict[int, bytes]:
+        # Documentation in RegistryBase
         self._ensure_loaded()
         return self._user_db.get_encryption_key_dict(roles)
 
@@ -350,10 +343,7 @@ class Registry(RegistryBase):
         a file via Email.
         '''
         bytes_raw = self._get_request().get_request_bytes()
-        bytes_encrypted, key_blob_dict = self._security.hybrid_encrypt(
-            data=bytes_raw,
-            public_keys=self._user_db.get_encryption_key_dict(roles='admin')
-            )
+        bytes_encrypted, key_blob_dict = self.hybrid_encrypt(bytes_raw, 'admin')
         request = {
             'request': bytes_encrypted,
             'key_blob_dict': key_blob_dict}
@@ -393,16 +383,9 @@ class Registry(RegistryBase):
         # data
         request_encrypted: dict = CompactSerializer.deserialize(request)
 
-        key_blob_dict: dict = request_encrypted['key_blob_dict']
-        if self.user_id not in key_blob_dict:
-            raise KissRegistryError(
-                f'Own USER ID {self.user_id} not available in user request'
-                f'key_blob_dict. Available are: {key_blob_dict.keys()}')
-        key_blob = key_blob_dict[self.user_id]
-
-        bytes_decrypted = self._security.hybrid_decrypt(
+        bytes_decrypted = self.hybrid_decrypt(
             data=request_encrypted['request'],
-            key_blob=key_blob)
+            key_blob_dict=request_encrypted['key_blob_dict'])
 
         return RegistrationRequest.from_request(bytes_decrypted)
 
@@ -460,9 +443,10 @@ class Registry(RegistryBase):
                 for section in self._response_config_sections
                 })
 
-        # TODO: Is it possible to get this reused from SharedStorage? Or could,
-        # at least, the Signature and PublicEncryption dta structured be
-        # reused?
+        # The hybrid encryption interface from registry CANNOT be reused here
+        # because the response is encrypted ONLY for the corresponding
+        # registered user which only get's it's USER ID after consuming the
+        # response.
         response_bytes = response.get_response_bytes()
         # encryption
         response_bytes_encrypted, key_blob_dict = self._security.hybrid_encrypt(
@@ -542,6 +526,52 @@ class Registry(RegistryBase):
         # TODO: sync (or restart?)
 
         # TODO: clarfify how it is checked that everything worked
+
+    # ###################
+    # Security functions
+    # /
+
+    # They are wrapping the Security methods with additional registry steps.
+
+    def hybrid_encrypt(
+            self,
+            data: bytes,
+            roles: str | list[str]
+            ) -> tuple[bytes, dict[int, bytes]]:
+        # Documentation in RegistryBase
+
+        # input ambiguity:
+        if isinstance(roles, str):
+            roles = [roles]
+        # ensure admin can always read data:
+        if 'admin' not in roles:
+            roles.append('admin')
+
+        pub_key_dict = self.get_encryption_key_dict(roles)
+        # always add own key (if registry is initialized.. ..hybrid_encrypt is
+        # also used for the registration request):
+        if self.is_initialized() and self.user_id not in pub_key_dict:
+            pub_key_dict[self.user_id] = (
+                self._security.get_encryption_public_key())
+
+        return self._security.hybrid_encrypt(data, pub_key_dict)
+
+    def hybrid_decrypt(
+            self,
+            data: bytes,
+            key_blob_dict: dict[int, bytes]
+            ) -> bytes:
+        # Documentation in RegistryBase
+
+        # identify key blob
+        if self.user_id not in key_blob_dict:
+            raise KissRegistryError(
+                f'Current user id {self.user_id} is not included'
+                f'in available key blobs. Available: '
+                f'{list(key_blob_dict.keys())}')
+        key_blob = key_blob_dict[self.user_id]
+
+        return self._security.hybrid_decrypt(data=data, key_blob=key_blob)
 
     def sync_with_remote(self, mode: str):
         ''' Sync local registry with remote location.
