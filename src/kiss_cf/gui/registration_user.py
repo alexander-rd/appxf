@@ -44,7 +44,8 @@ class RegistrationUser:
         self._registry = registry
         self._root_dir = root_dir
         self._parent = parent
-        self._gui_root: tkinter.Tk | tkinter.Toplevel | None = None
+        self._gui_root: GridTk | GridToplevel | None = None
+        self._registration_buttons: ButtonFrame | None = None
 
         # Build GUI now
         self._build_user_gui()
@@ -107,25 +108,32 @@ class RegistrationUser:
         #registration_frame.grid(row=1, column=0, sticky='EWNS', padx=5, pady=5)
 
         # Buttons for registration: Write Request and Load Response
-        registration_buttons = ButtonFrame(registration_frame, buttons=['Write Request', 'Load Response', ''])
-        registration_frame.place(widget=registration_buttons, row=0, column=0)
+        self._registration_buttons = ButtonFrame(registration_frame, buttons=['Write Request', 'Load Response', ''])
+        registration_frame.place(widget=self._registration_buttons, row=0, column=0)
 
         # Hook up events from button frames to wrapper methods that update status
         admin_buttons.bind('<<Load Admin Keys>>', lambda event: self._on_load_admin_keys())
         admin_buttons.bind('<<Initialize as Admin>>', lambda event: self._on_initialize_as_admin())
 
-        registration_buttons.bind('<<Write Request>>', lambda event: self._on_generate_request())
-        registration_buttons.bind('<<Load Response>>', lambda event: self._on_load_response())
+        self._registration_buttons.bind('<<Write Request>>', lambda event: self._on_generate_request())
+        self._registration_buttons.bind('<<Load Response>>', lambda event: self._on_load_response())
 
         # call status updater at init
         self._update_admin_status()
 
     def _update_admin_status(self):
         '''Update admin status text. Dummy implementation for now.'''
+        if self._registration_buttons is None:
+            return
+
         if self._registry.has_admin_keys():
             status = 'Admin keys are already loaded to encrypt your user data.'
+            self._registration_buttons.set_button_active('Write Request', True)
+            self._registration_buttons.set_button_active('Load Response', True)
         else:
             status = 'You have to load admin keys to encrypt the user data in your request.'
+            self._registration_buttons.set_button_active('Write Request', False)
+            self._registration_buttons.set_button_active('Load Response', False)
         self._admin_status_var.set(status)
 
     def _check_init_status(self):
