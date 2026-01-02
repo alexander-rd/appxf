@@ -65,8 +65,15 @@ class Security():
 
         Encryption is based on user's password (derived key)
         '''
+        # dump data
         data = pickle.dumps(self._key_dict)
-        self._encrypt_to_file(self._derived_key, data, self._file)
+        # ensure path exists
+        file_dir = os.path.dirname(self._file)
+        if not os.path.exists(file_dir):
+            os.makedirs(file_dir)
+        # write file
+        with open(self._file, 'wb') as f:
+            f.write(self._encrypt_to_bytes(self._derived_key, data))
 
     def _verify_version(self):
         ''' Verify correct version
@@ -86,7 +93,9 @@ class Security():
 
         Encryption is based on user's password (derived key)
         '''
-        data = self._decrypt_from_file(self._derived_key, self._file)
+        with open(self._file, 'rb') as f:
+            data_encrypted = f.read()
+        data = self._decrypt_from_bytes(self._derived_key, data_encrypted)
         self._key_dict = pickle.loads(data)
         self._verify_version()
 
@@ -146,16 +155,6 @@ class Security():
                 'succeeding with unlock_user()')
         return self._key_dict['symmetric_key']
 
-    def encrypt_to_file(self, data: bytes, file: str | list[str]):
-        ''' Encrypt data bytes to file
-
-        The private symmetric key is used to write encrypted bytes to a file.
-
-        Keyword arguments:
-        data -- the bytes to encrypt
-        '''
-        self._encrypt_to_file(self._get_symmetric_key(), data, file)
-
     def encrypt_to_bytes(self, data: bytes) -> bytes:
         ''' Encrypt data bytes
 
@@ -166,34 +165,9 @@ class Security():
         return self._encrypt_to_bytes(self._get_symmetric_key(), data)
 
     @classmethod
-    def _encrypt_to_file(cls, key: bytes, data: bytes, file: list[str] | str):
-        # get file where file is allowed to be a list of strings to avoid
-        # caller needing to use os.path:
-        if not isinstance(file, list):
-            file = [file]
-        file = os.path.join(*file)
-        # ensure path exists
-        file_dir = os.path.dirname(file)
-        if not os.path.exists(file_dir):
-            os.makedirs(file_dir)
-
-        with open(file, 'wb') as f:
-            f.write(cls._encrypt_to_bytes(key, data))
-
-    @classmethod
     def _encrypt_to_bytes(cls, key: bytes, data: bytes) -> bytes:
         return Fernet(key).encrypt(data)
 
-    def decrypt_from_file(self, file: list[str] | str) -> bytes:
-        ''' Load data from file and decrypt
-
-        Loads bytes from file and decrypts it based on the symmetric key.
-
-        Keyword arguments
-        file -- path of the file as string, list of strings is also possible
-            to avoid caller using os.path() to join them.
-        '''
-        return self._decrypt_from_file(self._get_symmetric_key(), file)
 
     def decrypt_from_bytes(self, data: bytes) -> bytes:
         ''' Decrypt from data bytes
@@ -201,15 +175,6 @@ class Security():
         Decrypts data bytes based on the symmetric key.
         '''
         return self._decrypt_from_bytes(self._get_symmetric_key(), data)
-
-    def _decrypt_from_file(self, key: bytes, file: list[str] | str) -> bytes:
-        # get file where file is allowed to be a list of strings to avoid
-        # caller needing to use os.path:
-        if not isinstance(file, list):
-            file = [file]
-        with open(os.path.join(*file), 'rb') as f:
-            data_encrypted = f.read()
-        return self._decrypt_from_bytes(key, data_encrypted)
 
     @classmethod
     def _decrypt_from_bytes(cls, key: bytes, data: bytes) -> bytes:
