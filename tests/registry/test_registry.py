@@ -210,6 +210,37 @@ def test_registy_inconsistent_user(admin_user_initialized_registry_pair):
     assert admin_registry.add_user_from_request(request, 'user') < 0
 
 
+def test_verify_signature_membership_and_roles(admin_user_initialized_registry_pair):
+    admin_registry: Registry = admin_user_initialized_registry_pair[0]
+    user_registry: Registry = admin_user_initialized_registry_pair[1]
+
+    data = b'important bytes'
+
+    # admin signs data, registry should validate for admin user
+    _, sig_admin = admin_registry.sign(data)
+    assert admin_registry.verify_signature(
+        data=data,
+        signing_user=admin_registry.user_id,
+        signature=sig_admin
+    )
+
+    # unknown signing user should be rejected
+    assert not admin_registry.verify_signature(
+        data=data,
+        signing_user=99999,
+        signature=sig_admin
+    )
+
+    # user signs data but does not have admin role -> role check should fail
+    _, sig_user = user_registry.sign(data)
+    assert not admin_registry.verify_signature(
+        data=data,
+        signing_user=user_registry.user_id,
+        signature=sig_user,
+        roles=['admin']
+    )
+
+
 # TODO: test case adding a second user and information being transferred to
 # first user.
 
