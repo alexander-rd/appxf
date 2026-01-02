@@ -18,7 +18,6 @@
 	* >> Registry allows to unpack a user request into a user entry that can be displayed. This will be a setting dict (USER ID + USER CONFIG + USER ROLES)
 * If (like above) the requst_data interace cannot be protected, then at least the double-funciton get_request and get_request_data shall be unified.
 * loading request/response raised errors - keep them an add messages OR other resolution
-* I think, there is no need to provide the maintained KEYS from registry to anywhere.. ..registry supports signature verification and hybrid encryption.. ..so, no need for the keys to leave the registry.
 * GENERAL REVIEW of registry
 
 Tickets:

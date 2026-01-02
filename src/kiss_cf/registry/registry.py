@@ -155,7 +155,7 @@ class Registry(RegistryBase):
                 raise KissRegistryError()
 
         # verify signature:
-        public_key = self._user_db.get_validation_key(user_id=signing_user)
+        public_key = self._user_db.get_verification_key(user_id=signing_user)
         if (
             not self._security.verify_signature(
                 data=data,
@@ -259,7 +259,7 @@ class Registry(RegistryBase):
         admin_users = self._user_db.get_users(role='admin')
         # construct data as tuples
         data = [(id,
-                 self._user_db.get_validation_key(id),
+                 self._user_db.get_verification_key(id),
                  self._user_db.get_encryption_key(id))
                  for id in admin_users]
         return CompactSerializer.serialize(data)

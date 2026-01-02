@@ -138,8 +138,8 @@ def test_registry_user_init(admin_user_initialized_registry_pair):
 
 def test_registry_get_admin_keys(admin_initialized_registry):
     registry: Registry = admin_initialized_registry
-    admin_val_keys = registry._user_db.get_validation_keys('admin')
-    admin_enc_keys = list(registry._user_db.get_encryption_key_dict('admin').values())
+    admin_val_key = registry._user_db.get_verification_key(1)
+    admin_enc_key = registry._user_db.get_encryption_key(1)
 
     key_data_bytes = registry.get_admin_key_bytes()
 
@@ -149,8 +149,8 @@ def test_registry_get_admin_keys(admin_initialized_registry):
     assert len(key_data) == 1, 'There should only be one admin key pair'
     assert len(key_data[0]) == 3, 'There should only be the USER ID, a validataion and an encryption key'
     assert key_data[0][0] == registry.user_id, 'First in tuple should be user ID'
-    assert key_data[0][1] == admin_val_keys[0], 'Second in tuple should be validataion key'
-    assert key_data[0][2] == admin_enc_keys[0], 'Third in tuple should be encryption key'
+    assert key_data[0][1] == admin_val_key, 'Second in tuple should be validataion key'
+    assert key_data[0][2] == admin_enc_key, 'Third in tuple should be encryption key'
 
     # also include the error message when using the set_admin_key_bytes on the admin instance.
     with pytest.raises(KissRegistryError) as exc_info:
@@ -170,7 +170,7 @@ def test_registry_set_admin_keys(fresh_registry):
     registry.set_admin_key_bytes(data_bytes)
     assert len(registry.get_users()) == 1
     assert registry.get_users(role='admin') == {data[0][0]}
-    assert registry._user_db.get_validation_key(1) == data[0][1]
+    assert registry._user_db.get_verification_key(1) == data[0][1]
     assert registry._user_db.get_encryption_key(1) == data[0][2]
 
 def test_registry_existing_user(admin_user_initialized_registry_pair):
