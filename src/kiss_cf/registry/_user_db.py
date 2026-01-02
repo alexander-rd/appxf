@@ -43,15 +43,6 @@ class UserDatabase(Storable):
     # TODO: next_id / unused_id_list should rather be re-created than stored
     # and loaded (more prone for errors)
 
-    # serialized get_state/set_state to transfer an initial user_db from admin
-    # to new user:
-    def get_state_serialized(self) -> bytes:
-        return CompactSerializer.serialize(self.get_state())
-
-    def set_serialized_state(self, data: bytes):
-        self.set_state(CompactSerializer.deserialize(data))
-        self.store()
-
     def init_user_db(self,
                      validation_key: bytes,
                      encryption_key: bytes) -> int:
@@ -106,7 +97,6 @@ class UserDatabase(Storable):
             if match_found == 2:
                 self.log.info(f'new user already existing with ID {user_id}')
                 self.set_roles(user_id, roles)
-                self.store()
                 return user_id
             # if keys exist but are inconsistent:
             if match_found == 1:
@@ -127,7 +117,6 @@ class UserDatabase(Storable):
                  validation_key=validation_key,
                  encryption_key=encryption_key,
                  roles=roles)
-        self.store()
         return user_id
 
     def add(self,
@@ -150,8 +139,6 @@ class UserDatabase(Storable):
             if role not in self._role_map.keys():
                 self._role_map[role] = set()
             self._role_map[role].add(user_id)
-
-        self.store()
 
     def remove_user(self, user_id: int):
         ''' Remove user by deleting all role assignments
@@ -253,14 +240,6 @@ class UserDatabase(Storable):
             if role not in current_roles:
                 self._role_map[role].add(user_id)
         self._user_db[user_id]['roles'] = roles
-        self.store()
-
-    def get_user_config(self, user_id: int):
-        # TODO: implementation and define return value. Might be a dictionary
-        # or a Config object.
-        #  1) It shall only contain a USER section
-        #  2) It shall be usable with a config editor (read only)
-        pass
 
     # Adding logging to store/load
     def store(self, **kwargs):

@@ -19,7 +19,7 @@
 * If (like above) the requst_data interace cannot be protected, then at least the double-funciton get_request and get_request_data shall be unified.
 * loading request/response raised errors - keep them an add messages OR other resolution
 * **add purging of USER_DB** when loading admin keys
-* **USER_DB should never store() itself for efficiency reasons.** This is safe since USER_DB is only private. Instead, registry has to manage stores after bulk operations.
+* I think, there is no need to provide the maintained KEYS from registry to anywhere.. ..registry supports signature verification and hybrid encryption.. ..so, no need for the keys to leave the registry.
 * GENERAL REVIEW of registry
 
 Tickets:
