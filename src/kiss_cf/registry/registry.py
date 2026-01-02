@@ -279,6 +279,7 @@ class Registry(RegistryBase):
         self._user_id.id = self._user_db.init_user_db(
             validation_key=self._security.get_signing_public_key(),
             encryption_key=self._security.get_encryption_public_key())
+        self._user_db.store()
         self._loaded = True
         # Note: writing into USER_ID and into USER_DB automatically stores
         # them.
@@ -329,6 +330,7 @@ class Registry(RegistryBase):
                 key_tuple[0],
                 key_tuple[1], key_tuple[2],
                 roles = ['admin'])
+        self._user_db.store()
 
     def has_admin_keys(self):
         ''' Return True if USER DB has any admin keys
@@ -411,6 +413,7 @@ class Registry(RegistryBase):
             validation_key=request.signing_key,
             encryption_key=request.encryption_key,
             roles=roles)
+        self._user_db.store()
 
         # Note: add_new automatically stored the new user DB and sync can be
         # skipped if add_new failed:

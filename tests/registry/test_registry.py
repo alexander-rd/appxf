@@ -171,8 +171,8 @@ def test_registry_set_admin_keys(fresh_registry):
     registry.set_admin_key_bytes(data_bytes)
     assert len(registry.get_users()) == 1
     assert registry.get_users(role='admin') == {data[0][0]}
-    assert registry.get_validation_keys('admin') == [data[0][1]]
-    assert registry.get_encryption_keys('admin') == [data[0][2]]
+    assert registry.get_validation_key(1) == data[0][1]
+    assert registry.get_encryption_key(1) == data[0][2]
 
 def test_registry_existing_user(admin_user_initialized_registry_pair):
     admin_registry: Registry = admin_user_initialized_registry_pair[0]
