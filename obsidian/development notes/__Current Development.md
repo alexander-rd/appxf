@@ -8,7 +8,6 @@
 4) OK - Admin reads registration request and proceeds with registration.
 5) OK - Admin provides response encrypted for user and signed from admin. User can verify the signature based on the keys from steps (1) and (2)
 # ToDo
-* loading request/response raised errors - keep them an add messages OR other resolution
 * GENERAL REVIEW of registry
 
 Tickets:

@@ -120,7 +120,8 @@ class Registry(RegistryBase):
                          data: bytes,
                          signing_user: int,
                          signature: bytes,
-                         roles: list[str] | None = None):
+                         roles: list[str] | None = None
+                         ) -> bool:
         ''' Return if signature is verified
 
         The check includes (in this order):
@@ -138,8 +139,11 @@ class Registry(RegistryBase):
         # TODO: NOT IN get_users() is probably inefficient. There should be
         # some "exist user?"
         if signing_user not in self._user_db.get_users():
-            # TODO: message
-            raise KissRegistryError()
+            self.log.warning(
+                'Signing user %i is not available in USER DB.',
+                signing_user
+            )
+            return False
 
         # verify roles
         if roles:
@@ -151,8 +155,12 @@ class Registry(RegistryBase):
                     has_role = True
                     break
             if not has_role:
-                # TODO: message
-                raise KissRegistryError()
+                self.log.warning(
+                    'Signing user %i does not have expected roles %s'
+                    'they only have %s',
+                    signing_user, str(roles), str(self.get_roles(signing_user))
+                    )
+                return False
 
         # verify signature:
         public_key = self._user_db.get_verification_key(user_id=signing_user)
@@ -162,12 +170,10 @@ class Registry(RegistryBase):
                 signature=signature,
                 public_key_bytes=public_key)
             ):
-            # TODO: message
-            raise KissRegistryError()
+            self.log.warning('Signature from user %i could not be verified.',
+                             signing_user)
+            return False
 
-        # TODO: either we raise errors and have NO return, or we have a return
-        # and skip the errors. Compromise: return false hand apply warnings as
-        # logging. - As of now, the return has no value (will always be true).
         return True
 
     # #########################/
@@ -426,8 +432,7 @@ class Registry(RegistryBase):
                 signing_user=response_data['signing_user'],
                 roles = ['admin'])
             ):
-            # TODO: message
-            raise KissRegistryError()
+            raise KissRegistryError('Signature could not be verified')
 
         response_bytes = self._security.hybrid_decrypt(
             data=response_encrypted,
@@ -447,6 +452,13 @@ class Registry(RegistryBase):
         # set_state does not automatically store the user_db, hence a manual
         # call:
         self._user_db.store()
+
+        self.log.info(
+            'Registration response assigned USER ID %i'
+            'and included config section %s.',
+            response.user_id, str(response.config_sections.keys())
+            )
+
         # get full user database
         self.sync_with_remote(mode='receiving')
 
@@ -459,19 +471,6 @@ class Registry(RegistryBase):
         # data locally! >> Classical conflict resolution.
         #
         # >> See comment on #7, 07.12.2025.
-
-        # TODO: check incoming information and log (1) the retrieved ID and (2)
-        # and incoming config sections that are updated and (3) the admin that
-        # did this (public singing key).
-
-        # TODO: verify the response matching the keys.
-
-        # TODO: update user config (admin might have done adaptions)
-
-        # TODO: update configuration with incoming information
-        # TODO: sync (or restart?)
-
-        # TODO: clarfify how it is checked that everything worked
 
     # ###################
     # Security functions
