@@ -93,6 +93,10 @@ class Registry(RegistryBase):
     # user registry without shared storage? == A share of credentials without
     # any mode of updating them later?
 
+    # #########################/
+    # Some Basics
+    # /
+
     @property
     def user_id(self):
         # Documentation in RegistryBase
@@ -104,6 +108,35 @@ class Registry(RegistryBase):
                 self._user_id.exists() and
                 self._user_db.exists()
                 ))
+
+    def _ensure_loaded(self):
+        if self._loaded:
+            return None
+        if not self.try_load():
+            KissRegistryUnitialized('Registry is not initialized.')
+
+    def try_load(self) -> bool:
+        '''Load USER ID and/or USER DB
+
+        Returns: True if both can be loaded
+        '''
+        # registry is generally not available if security is not unlocked (even
+        # though USER ID may be available):
+        if not self._security.is_user_unlocked():
+            return False
+
+        user_id_loaded = False
+        if self._user_id.exists():
+            self._user_id.load()
+            user_id_loaded = True
+
+        user_db_loaded = False
+        if self._user_db.exists():
+            self._user_db.load()
+            user_db_loaded = True
+
+        self._loaded = user_id_loaded and user_db_loaded
+        return self._loaded
 
     # #########################/
     # Security Support
@@ -202,40 +235,9 @@ class Registry(RegistryBase):
         '''
         return self._user_db.get_users(role=role)
 
-    # ###################/
-    # USER DB Operations
+    # #########################/
+    # Admin Init OR Admin Keys
     # /
-
-    # TODO: ensure_loaded is only used once. This instance could just use
-    # try_load.
-    def _ensure_loaded(self):
-        if self._loaded:
-            return None
-        if not self.try_load():
-            KissRegistryUnitialized('Registry is not initialized.')
-
-    def try_load(self) -> bool:
-        '''Load USER ID and/or USER DB
-
-        Returns: True if both can be loaded
-        '''
-        # registry is generally not available if security is not unlocked (even
-        # though USER ID may be available):
-        if not self._security.is_user_unlocked():
-            return False
-
-        user_id_loaded = False
-        if self._user_id.exists():
-            self._user_id.load()
-            user_id_loaded = True
-
-        user_db_loaded = False
-        if self._user_db.exists():
-            self._user_db.load()
-            user_db_loaded = True
-
-        self._loaded = user_id_loaded and user_db_loaded
-        return self._loaded
 
     def initialize_as_admin(self):
         ''' Initialize databse
@@ -304,6 +306,10 @@ class Registry(RegistryBase):
         '''
         admin_keys = self._user_db.get_users(role='admin')
         return bool(admin_keys)
+
+    # ######################################/
+    # Request/Response
+    # /
 
     def get_request_bytes(self) -> bytes:
         ''' Get registration request bytes
@@ -519,6 +525,10 @@ class Registry(RegistryBase):
         key_blob = key_blob_dict[self.user_id]
 
         return self._security.hybrid_decrypt(data=data, key_blob=key_blob)
+
+    # #########################/
+    # Remote Sync Handling
+    # /
 
     def sync_with_remote(self, mode: str):
         ''' Sync local registry with remote location.
