@@ -196,45 +196,6 @@ class Registry(RegistryBase):
         '''
         return self._user_db.get_users(role=role)
 
-    def get_encryption_keys(self, roles: list[str] | str) -> list[bytes]:
-        ''' Return list of (public) encryption keys for defined role(s)
-        '''
-        self._ensure_loaded()
-        return list(self._user_db.get_encryption_key_dict(roles).values())
-
-    def get_encryption_key_dict(self, roles: list[str] | str) -> dict[int, bytes]:
-        # Documentation in RegistryBase
-        self._ensure_loaded()
-        return self._user_db.get_encryption_key_dict(roles)
-
-    def get_validation_keys(self, roles: list[str] | str) -> list[bytes]:
-        ''' Return list of (public) validation keys for defined role(s)
-        '''
-        self._ensure_loaded()
-        return self._user_db.get_validation_keys(roles)
-
-    def get_encryption_key(self, user_id: int = 0) -> bytes:
-        ''' Provide encryption key (bytes) for user ID
-
-        If no ID is provided or 0, the encryption key for the current user will
-        be returned.
-        '''
-        self._ensure_loaded()
-        if user_id >= 0:
-            return self._user_db.get_encryption_key(user_id)
-        return self._user_db.get_encryption_key(self.user_id)
-
-    def get_validation_key(self, user_id: int = 0) -> bytes:
-        ''' Provide encryption key (bytes) for user ID
-
-        If no ID is provided or 0, the encryption key for the current user will
-        be returned.
-        '''
-        self._ensure_loaded()
-        if user_id >= 0:
-            return self._user_db.get_validation_key(user_id)
-        return self._user_db.get_validation_key(self.user_id)
-
     # ###################/
     # USER DB Operations
     # /
@@ -454,7 +415,7 @@ class Registry(RegistryBase):
         # encryption
         response_bytes_encrypted, key_blob_dict = self._security.hybrid_encrypt(
             response_bytes,
-            public_keys={user_id: self.get_encryption_key(user_id)})
+            public_keys={user_id: self._user_db.get_encryption_key(user_id)})
         # signing
         signature = self._security.sign(response_bytes_encrypted)
 
@@ -542,6 +503,7 @@ class Registry(RegistryBase):
             roles: str | list[str]
             ) -> tuple[bytes, dict[int, bytes]]:
         # Documentation in RegistryBase
+        self._ensure_loaded()
 
         # input ambiguity:
         if isinstance(roles, str):
@@ -550,7 +512,7 @@ class Registry(RegistryBase):
         if 'admin' not in roles:
             roles.append('admin')
 
-        pub_key_dict = self.get_encryption_key_dict(roles)
+        pub_key_dict = self._user_db.get_encryption_key_dict(roles)
         # always add own key (if registry is initialized.. ..hybrid_encrypt is
         # also used for the registration request):
         if self.is_initialized() and self.user_id not in pub_key_dict:
@@ -565,6 +527,7 @@ class Registry(RegistryBase):
             key_blob_dict: dict[int, bytes]
             ) -> bytes:
         # Documentation in RegistryBase
+        self._ensure_loaded()
 
         # identify key blob
         if self.user_id not in key_blob_dict:

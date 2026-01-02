@@ -38,10 +38,6 @@ class RegistryBase(ABC):
         '''
 
     @abstractmethod
-    def get_encryption_key_dict(self, roles: list[str] | str) -> dict[int, bytes]:
-        ''' Get list of encryption keys from list of roles '''
-
-    @abstractmethod
     def hybrid_encrypt(
             self,
             data: bytes,
