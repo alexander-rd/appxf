@@ -305,7 +305,14 @@ class Registry(RegistryBase):
         Bytes are sent to an admin outside of this tools scope. For example, as
         a file via Email.
         '''
-        bytes_raw = self._get_request().get_request_bytes()
+        # construct request object
+        if self._user_config_section:
+            user_data = dict(self._config.section('USER'))
+        else:
+            user_data = {}
+        request_object = RegistrationRequest.new(user_data, self._security)
+
+        bytes_raw = request_object.get_request_bytes()
         bytes_encrypted, key_blob_dict = self.hybrid_encrypt(bytes_raw, 'admin')
         request = {
             'request': bytes_encrypted,
@@ -313,37 +320,12 @@ class Registry(RegistryBase):
 
         return CompactSerializer.serialize(request)
 
-    def _get_request(self) -> RegistrationRequest:
-        ''' Get registration request '''
-        # TODO: registry should not expose raw data since it is not encrypted.
-        # the idea was that registration is secure.. ..such that insecure
-        # interfaces should be removed. As of current scan, 31.12.2025, this
-        # function is only used in testing.
+    # TODO: registry should not expose raw data since it is not encrypted.
+    # the idea was that registration is secure.. ..such that insecure
+    # interfaces should be removed. As of current scan, 31.12.2025, this
+    # function is only used in testing.
 
-        # TODO: add warning message when _loaded
-        # is True
-        if self._user_config_section:
-            user_data = dict(self._config.section('USER'))
-        else:
-            user_data = {}
-        return RegistrationRequest.new(user_data, self._security)
-
-    # TODO: At least one get_request* function can be stripped.
-    # get_request_data() and get_request() can be mapped into one
-    # get_request_object() which has an optional bytes argument (for
-    # transformation from bytes) if no argument is given, it would return the
-    # current object.
-    #
-    # Even further, the get_request_bytes can then also be stripped since
-    # whoever then works directly with the object. >> Making the object public.
-    # (then, please consistent with response object) >> Possibly calling
-    # RegistrationRequest and RegistrationResponse.
-
-    def get_request_data(self, request: bytes | None) -> RegistrationRequest:
-        if request is None:
-            return self._get_request()
-        # TODO: get rid of this double-nonsense having two functions returning
-        # data
+    def get_request_data(self, request: bytes) -> RegistrationRequest:
         request_encrypted: dict = CompactSerializer.deserialize(request)
 
         bytes_decrypted = self.hybrid_decrypt(
