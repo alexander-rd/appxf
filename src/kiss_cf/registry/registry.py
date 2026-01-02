@@ -169,9 +169,9 @@ class Registry(RegistryBase):
         roles -- the signing user must have one of the roles in this list
         '''
         self._ensure_loaded()
-        # TODO: NOT IN get_users() is probably inefficient. There should be
-        # some "exist user?"
-        if signing_user not in self._user_db.get_users():
+
+        # user must exist
+        if not self._user_db.is_registered(signing_user):
             self.log.warning(
                 'Signing user %i is not available in USER DB.',
                 signing_user
