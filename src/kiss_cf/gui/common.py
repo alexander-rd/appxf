@@ -314,7 +314,8 @@ class ButtonFrame(GridFrame):
         self.last_event = None
 
         # add buttons:
-        self.button_frame_list: list[tkinter.Frame] = []
+        self._button_widgets: dict[str, tkinter.Widget] = {}
+
         button_number = 0
         for button in buttons:
             if button:
@@ -323,6 +324,8 @@ class ButtonFrame(GridFrame):
                     text=button,
                     command=functools.partial(
                         self.handle_button_press, button))
+                # register in lookup dict
+                self._button_widgets[button] = this_widget
             else:
                 this_widget = GridFrame(self)
             self.place(widget=this_widget, row=0, column=button_number)
@@ -337,6 +340,21 @@ class ButtonFrame(GridFrame):
         self.log.debug('Button press: %s', button)
         self.last_event = f'<<{button}>>'
         self.event_generate(f'<<{button}>>')
+
+    def set_button_active(self, button: str, active: bool):
+        '''Enable or disable button(s) with given label.
+
+        Raises AppxfGuiError if no such button exists.
+        '''
+        widget = self._button_widgets.get(button)
+        if not widget:
+            raise AppxfGuiError(f'No button with name {button}')
+        state = 'normal' if active else 'disabled'
+        try:
+            widget.config(state=state)
+        except tkinter.TclError:
+            # If a widget type doesn't support state, ignore it silently
+            self.log.debug('Could not set state for widget %s', w)
 
 class _CommonWindow:
     '''Mixin providing common functions for Toplevel and Tk variants
@@ -431,6 +449,9 @@ class _CommonWindow:
              func: Callable[[tkinter.Event], object] | None = None,
              add: bool | None = None):
         return self.button_frame.bind(sequence=sequence, func=func, add=add)
+
+    def set_button_active(self, button: str, active: bool):
+        return self.button_frame.set_button_active(button, active)
 
 
 class GridToplevel(tkinter.Toplevel, _CommonWindow):
