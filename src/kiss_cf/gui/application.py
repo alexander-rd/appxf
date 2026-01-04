@@ -109,7 +109,7 @@ class KissApplication(tkinter.Tk):
             name -- Name to be used in content selection menu
             cls -- Frame class to be displayed
         '''
-        if not issubclass(cls, tkinter.Frame):
+        if not issubclass(cls, (tkinter.Frame, tkinter.LabelFrame)):
             raise TypeError(f'Provided class [cls] must be a subclass of '
                             f'tkinter\'s Frame but is: {cls}')
         if name in self._frames.keys():
