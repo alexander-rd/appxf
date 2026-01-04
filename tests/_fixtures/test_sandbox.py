@@ -12,14 +12,20 @@ import inspect
 from pathlib import Path
 
 ### Reading configuration from pyproject.toml
-toml_data = toml.load(open('pyproject.toml'))
-# get current project version:
-project_version = toml_data['project']['version']
-# get sandbox root directory for testing:
-test_sandbox_root = toml_data['tool']['appxf']['test-sandbox-root']
-print(f'Configuration from pyproject.toml:\n'
+try:
+    toml_data = toml.load(open('pyproject.toml'))
+    # get current project version:
+    project_version = toml_data['project']['version']
+    # get sandbox root directory for testing:
+    test_sandbox_root = toml_data['tool']['appxf']['test-sandbox-root']
+    print(f'Configuration from pyproject.toml:\n'
       f'Testing sandbox root: {test_sandbox_root}\n'
       f'Project version: {project_version}')
+except FileNotFoundError:
+    print('Warning: no pyproject.toml was found.')
+    project_version = ''
+    test_sandbox_root = '.testing'
+
 
 def init_test_sandbox_from_fixture(
     request: pytest.FixtureRequest,
