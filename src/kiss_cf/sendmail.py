@@ -119,11 +119,15 @@ def send(email: list[Email] | Email,
                 log.debug(f'Sending to: {target}')
 
             if debug_send_email:
-                server.sendmail(
+                senderr = server.sendmail(
                     this_msg['From'],
                     list(target),
                     this_msg.as_string())
-                log.debug('Emails sent')
+                if senderr:
+                    log.debug('Emails sending with error:')
+                    log.debug(str(senderr))
+                else:
+                    log.debug('Emails sent succesfully')
             else:
                 log.debug('NOT sending Emails (debug_send_email)')
 
