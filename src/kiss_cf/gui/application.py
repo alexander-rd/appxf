@@ -139,6 +139,9 @@ class KissApplication(tkinter.Tk):
         self._main_frame = frame
         self._main_frame_name = name
         self._main_frame.tkraise()
+        # Update window size to fit the frame's minimum content
+        self.update_idletasks()
+        self.geometry(f"{self._main_frame.winfo_reqwidth()}x{self._main_frame.winfo_reqheight()}")
 
     def _create_frame(self, name):
         ''' Create frame from stored class
