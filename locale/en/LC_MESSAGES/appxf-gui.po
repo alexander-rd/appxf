@@ -33,7 +33,7 @@ msgstr ""
 
 #: src/kiss_cf/gui/registration_user.py:101
 msgid "Load Admin Keys"
-msgstr ""
+msgstr "REPLACED"
 
 #: src/kiss_cf/gui/registration_user.py:110
 msgid "Registration"
