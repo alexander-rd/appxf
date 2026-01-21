@@ -5,15 +5,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-01-21 09:30+0100\n"
+"POT-Creation-Date: 2026-01-21 11:38+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
-
 
 #: src/kiss_cf/gui/registration_user.py:84
 msgid "Registry - User Registration"
@@ -23,67 +23,69 @@ msgstr "Registry - Benutzerregistrierung"
 msgid "User Registration"
 msgstr "Benutzerregistrierung"
 
-#: src/kiss_cf/gui/registration_user.py:96
-msgid "Admin Keys"
-msgstr "Admin Schlüssel"
-
-#: src/kiss_cf/gui/registration_user.py:101
-msgid "Initialize as Admin"
-msgstr "Als Admin initialisieren"
-
-#: src/kiss_cf/gui/registration_user.py:101
+#: src/kiss_cf/gui/registration_user.py:95
 msgid "Load Admin Keys"
 msgstr "Admin Schlüssel laden"
 
-#: src/kiss_cf/gui/registration_user.py:110
-msgid "Registration"
-msgstr "Registrierung"
+#: src/kiss_cf/gui/registration_user.py:96
+msgid "Initialize as Admin"
+msgstr "Als Admin initialisieren"
 
-#: src/kiss_cf/gui/registration_user.py:115
-msgid "Load Response"
-msgstr "Lade Antwort"
-
-#: src/kiss_cf/gui/registration_user.py:115
+#: src/kiss_cf/gui/registration_user.py:97
 msgid "Write Request"
 msgstr "Anfrage Speichern"
 
-#: src/kiss_cf/gui/registration_user.py:134
+#: src/kiss_cf/gui/registration_user.py:98
+msgid "Load Response"
+msgstr "Lade Antwort"
+
+#: src/kiss_cf/gui/registration_user.py:102
+msgid "Admin Keys"
+msgstr "Admin Schlüssel"
+
+#: src/kiss_cf/gui/registration_user.py:116
+msgid "Registration"
+msgstr "Registrierung"
+
+#: src/kiss_cf/gui/registration_user.py:140
 msgid "Admin keys are already loaded to encrypt your user data."
-msgstr "Admin Schlüssel sind bereits geladen um deine Benutzerdaten zu verschlüsseln."
+msgstr ""
+"Admin Schlüssel sind bereits geladen um deine Benutzerdaten zu verschlüsseln."
 
-#: src/kiss_cf/gui/registration_user.py:138
+#: src/kiss_cf/gui/registration_user.py:144
 msgid "You have to load admin keys to encrypt the user data in your request."
-msgstr "Admin Schlüssel müssen geladen werden um deine Benutzerdaten bei der Registrierungsanfrage zu verschlüsseln"
+msgstr ""
+"Admin Schlüssel müssen geladen werden um deine Benutzerdaten bei der "
+"Registrierungsanfrage zu verschlüsseln"
 
-#: src/kiss_cf/gui/registration_user.py:157
+#: src/kiss_cf/gui/registration_user.py:163
 msgid "Save Registration Request"
 msgstr "Anfrage zur Registrierung speichern"
 
-#: src/kiss_cf/gui/registration_user.py:180
+#: src/kiss_cf/gui/registration_user.py:186
 msgid "Failed to write file: {}"
 msgstr "Schreiben der Datei fehlgeschlagen: {}"
 
-#: src/kiss_cf/gui/registration_user.py:187
-msgid "Anfrage zur Registrierung gespeichert als: {}"
-msgstr ""
+#: src/kiss_cf/gui/registration_user.py:193
+msgid "Registration request saved to {}"
+msgstr "Anfrage zur Registrierung speichern"
 
-#: src/kiss_cf/gui/registration_user.py:196
+#: src/kiss_cf/gui/registration_user.py:202
 msgid "Select Registration Response File"
 msgstr ""
 
-#: src/kiss_cf/gui/registration_user.py:220
+#: src/kiss_cf/gui/registration_user.py:226
 msgid "Failed to read file: {}"
 msgstr ""
 
-#: src/kiss_cf/gui/registration_user.py:227
+#: src/kiss_cf/gui/registration_user.py:233
 msgid "Failed to apply response: {}"
 msgstr ""
 
-#: src/kiss_cf/gui/registration_user.py:240
+#: src/kiss_cf/gui/registration_user.py:246
 msgid "Select Admin Keys File"
 msgstr ""
 
-#: src/kiss_cf/gui/registration_user.py:255
+#: src/kiss_cf/gui/registration_user.py:261
 msgid "Failed to load admin keys: {}"
 msgstr ""
-
