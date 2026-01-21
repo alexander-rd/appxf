@@ -5,8 +5,12 @@
 set -e
 
 echo "Scanning code for translatable strings..."
-# Extract POT from all Python files in src/
-pygettext3 -d appxf-gui -o locale/appxf-gui.pot $(find src -name "*.py")
+# Extract POT from all Python files in src/ with context support
+# _:1c,2 means: first arg is context, second is message
+xgettext --language=Python --keyword=_ --keyword=_:1c,2 \
+    --from-code=UTF-8 --output=locale/appxf-gui.pot \
+    --package-name=appxf-gui \
+    $(find src -name "*.py")
 echo ".. done."
 
 echo -e "\nUpdating PO files from POT..."
