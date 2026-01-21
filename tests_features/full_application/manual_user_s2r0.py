@@ -15,10 +15,6 @@ from tests._fixtures import test_sandbox
 from tests._fixtures.app_harness import AppHarness
 from tests._fixtures.app_harness_gui import AppHarnessGui
 
-# Overwrite language selection for testing:
-import os
-os.environ["LANGUAGE"] = "de"
-
 def setup_once():
     sandbox_path = test_sandbox.init_test_sandbox_for_caller_module(cleanup=False)
     app_user = AppHarness(sandbox_path, 'user',
