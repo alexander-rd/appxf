@@ -15,7 +15,7 @@ from kiss_cf.gui.common import ButtonFrame
 
 import gettext
 
-gettext.install('kiss_cf')
+gettext.install('appxf-gui')
 
 # TODO: This file is in DRAFT STATUS, mostly generated with GitHub copilot and
 # needs a detailed review. Currently, getting the GUI and behavior right is
@@ -91,6 +91,12 @@ class RegistrationUser:
         if self._gui_root.frame is None:
             raise RuntimeError('This should not happen')
 
+        # Define translated button labels for consistent referencing
+        self._button_load_admin_keys = _('Load Admin Keys')
+        self._button_initialize_as_admin = _('Initialize as Admin')
+        self._button_write_request = _('Write Request')
+        self._button_load_response = _('Load Response')
+
         # Build two main labeled frames using GridFrame
         # Admin Keys frame (row 0)
         admin_frame = GridFrame(self._gui_root, text=_('Admin Keys'))
@@ -98,7 +104,7 @@ class RegistrationUser:
         #admin_frame.grid(row=0, column=0, sticky='EWNS', padx=5, pady=5)
 
         # Button row for Admin Keys
-        admin_buttons = ButtonFrame(admin_frame, buttons=[_('Load Admin Keys'), _('Initialize as Admin'), ''])
+        admin_buttons = ButtonFrame(admin_frame, buttons=[self._button_load_admin_keys, self._button_initialize_as_admin, ''])
         admin_frame.place(widget=admin_buttons, row=0, column=0)
 
         # Status text (unlabeled) to display admin status
@@ -112,15 +118,15 @@ class RegistrationUser:
         #registration_frame.grid(row=1, column=0, sticky='EWNS', padx=5, pady=5)
 
         # Buttons for registration: Write Request and Load Response
-        self._registration_buttons = ButtonFrame(registration_frame, buttons=[_('Write Request'), _('Load Response'), ''])
+        self._registration_buttons = ButtonFrame(registration_frame, buttons=[self._button_write_request, self._button_load_response, ''])
         registration_frame.place(widget=self._registration_buttons, row=0, column=0)
 
         # Hook up events from button frames to wrapper methods that update status
-        admin_buttons.bind('<<Load Admin Keys>>', lambda event: self._on_load_admin_keys())
-        admin_buttons.bind('<<Initialize as Admin>>', lambda event: self._on_initialize_as_admin())
+        admin_buttons.bind(f'<<{self._button_load_admin_keys}>>', lambda event: self._on_load_admin_keys())
+        admin_buttons.bind(f'<<{self._button_initialize_as_admin}>>', lambda event: self._on_initialize_as_admin())
 
-        self._registration_buttons.bind('<<Write Request>>', lambda event: self._on_generate_request())
-        self._registration_buttons.bind('<<Load Response>>', lambda event: self._on_load_response())
+        self._registration_buttons.bind(f'<<{self._button_write_request}>>', lambda event: self._on_generate_request())
+        self._registration_buttons.bind(f'<<{self._button_load_response}>>', lambda event: self._on_load_response())
 
         # call status updater at init
         self._update_admin_status()
@@ -132,12 +138,12 @@ class RegistrationUser:
 
         if self._registry.has_admin_keys():
             status = _('Admin keys are already loaded to encrypt your user data.')
-            self._registration_buttons.set_button_active('Write Request', True)
-            self._registration_buttons.set_button_active('Load Response', True)
+            self._registration_buttons.set_button_active(self._button_write_request, True)
+            self._registration_buttons.set_button_active(self._button_load_response, True)
         else:
             status = _('You have to load admin keys to encrypt the user data in your request.')
-            self._registration_buttons.set_button_active('Write Request', False)
-            self._registration_buttons.set_button_active('Load Response', False)
+            self._registration_buttons.set_button_active(self._button_write_request, False)
+            self._registration_buttons.set_button_active(self._button_load_response, False)
         self._admin_status_var.set(status)
 
     def _check_init_status(self):
