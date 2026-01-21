@@ -13,9 +13,11 @@ from kiss_cf.registry import Registry
 from kiss_cf.gui.common import GridFrame, GridTk, GridToplevel
 from kiss_cf.gui.common import ButtonFrame
 
+# Translation setup - no language is defined to apply the system language by
+# default:
 import gettext
-
-gettext.install('appxf-gui')
+translation = gettext.translation('appxf-gui', localedir='locale', fallback=True)
+_ = translation.pgettext
 
 # TODO: This file is in DRAFT STATUS, mostly generated with GitHub copilot and
 # needs a detailed review. Currently, getting the GUI and behavior right is
@@ -81,25 +83,25 @@ class RegistrationUser:
         # Create root window (Tk) or toplevel (Toplevel) depending on parent
         if self._parent is None:
             self._gui_root = GridTk(
-                title=_('Registry - User Registration'),
+                title=_('window', 'Registry - User Registration'),
                 buttons=[])
         else:
             self._gui_root = GridToplevel(
                 self._parent,
-                title=_('User Registration'),
+                title=_('window', 'User Registration'),
                 buttons = [])
         if self._gui_root.frame is None:
             raise RuntimeError('This should not happen')
 
         # Define translated button labels for consistent referencing
-        self._button_load_admin_keys = _('Load Admin Keys')
-        self._button_initialize_as_admin = _('Initialize as Admin')
-        self._button_write_request = _('Write Request')
-        self._button_load_response = _('Load Response')
+        self._button_load_admin_keys = _('button', 'Load Admin Keys')
+        self._button_initialize_as_admin = _('button', 'Initialize as Admin')
+        self._button_write_request = _('button', 'Write Request')
+        self._button_load_response = _('button', 'Load Response')
 
         # Build two main labeled frames using GridFrame
         # Admin Keys frame (row 0)
-        admin_frame = GridFrame(self._gui_root, text=_('Admin Keys'))
+        admin_frame = GridFrame(self._gui_root, text=_('label', 'Admin Keys'))
         self._gui_root.frame.place(admin_frame, row=0, column=0)
         #admin_frame.grid(row=0, column=0, sticky='EWNS', padx=5, pady=5)
 
@@ -113,7 +115,7 @@ class RegistrationUser:
         admin_frame.place(widget=admin_status_label, row=1, column=0)
 
         # Registration frame (row 1)
-        registration_frame = GridFrame(self._gui_root, text=_('Registration'))
+        registration_frame = GridFrame(self._gui_root, text=_('label', 'Registration'))
         self._gui_root.frame.place(registration_frame, row=1, column=0)
         #registration_frame.grid(row=1, column=0, sticky='EWNS', padx=5, pady=5)
 
@@ -137,11 +139,11 @@ class RegistrationUser:
             return
 
         if self._registry.has_admin_keys():
-            status = _('Admin keys are already loaded to encrypt your user data.')
+            status = _('status', 'Admin keys are already loaded to encrypt your user data.')
             self._registration_buttons.set_button_active(self._button_write_request, True)
             self._registration_buttons.set_button_active(self._button_load_response, True)
         else:
-            status = _('You have to load admin keys to encrypt the user data in your request.')
+            status = _('status', 'You have to load admin keys to encrypt the user data in your request.')
             self._registration_buttons.set_button_active(self._button_write_request, False)
             self._registration_buttons.set_button_active(self._button_load_response, False)
         self._admin_status_var.set(status)
@@ -160,7 +162,7 @@ class RegistrationUser:
         # Ask user for a file location to save the registration request bytes.
         file_path = filedialog.asksaveasfilename(
             parent=self._gui_root,
-            title=_('Save Registration Request'),
+            title=_('dialog', 'Save Registration Request'),
             initialdir=self._root_dir,
             initialfile='registration.request',
             defaultextension='',
@@ -183,14 +185,14 @@ class RegistrationUser:
                 e,
             )
             messagebox.showerror(
-                'Error', _('Failed to write file: {}').format(e),
+                'Error', _('error', 'Failed to write file: {}').format(e),
                 parent=self._gui_root,
             )
             return
 
         self.log.info('Registration request saved to %s', file_path)
         messagebox.showinfo(
-            'Saved', _('Registration request saved to {}').format(file_path),
+            'Saved', _('info', 'Registration request saved to {}').format(file_path),
             parent=self._gui_root,
         )
 
@@ -199,7 +201,7 @@ class RegistrationUser:
         apply registration response.'''
         file_path = filedialog.askopenfilename(
             parent=self._gui_root,
-            title=_('Select Registration Response File'),
+            title=_('dialog', 'Select Registration Response File'),
             initialdir=self._root_dir,
             initialfile='registration.response',
             defaultextension='')
@@ -223,14 +225,14 @@ class RegistrationUser:
             self.log.error('Failed to read response file: %s', e)
             messagebox.showerror(
                 'Error',
-                _('Failed to read file: {}').format(e),
+                _('error', 'Failed to read file: {}').format(e),
                 parent=self._gui_root,
             )
         except (ValueError, KeyError) as e:
             self.log.error('Failed to apply response: %s', e)
             messagebox.showerror(
                 'Error',
-                _('Failed to apply response: {}').format(e),
+                _('error', 'Failed to apply response: {}').format(e),
                 parent=self._gui_root,
             )
 
@@ -243,7 +245,7 @@ class RegistrationUser:
         '''Load admin key bytes from file and apply to registry.'''
         file_path = filedialog.askopenfilename(
             parent=self._gui_root,
-            title=_('Select Admin Keys File'),
+            title=_('dialog', 'Select Admin Keys File'),
             initialdir=self._root_dir,
             initialfile='admin.keys',
             defaultextension='')
@@ -258,7 +260,7 @@ class RegistrationUser:
         except Exception as e:
             self.log.error('Failed to load admin keys: %s', e)
             try:
-                messagebox.showerror('Error', _('Failed to load admin keys: {}').format(e), parent=self._gui_root)
+                messagebox.showerror('Error', _('error', 'Failed to load admin keys: {}').format(e), parent=self._gui_root)
             except Exception:
                 pass
             return
