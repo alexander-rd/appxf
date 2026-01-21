@@ -1,3 +1,4 @@
+* Focus: I have to make the translations available WITHIN the solawi dollinger tool (shipping it)
 * Demo-Application
 	* System localization
 	* Enforced localization
@@ -7,4 +8,7 @@
 	* sudo apt update && sudo apt install -y gettext
 	* msgfmt --check --statistics
 	* General translation idea (for DEV)
+		* General concept explained: https://phrase.com/blog/posts/translate-python-gnu-gettext/
 	* Stub on public translation feature
+	* Use this for testing:
+	  PYTHONPATH=. LANGUAGE=en python tests_features/full_application/manual_user_s2r0.py
