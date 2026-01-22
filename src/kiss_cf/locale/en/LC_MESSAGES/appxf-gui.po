@@ -29,7 +29,7 @@ msgstr ""
 #: src/kiss_cf/gui/registration_user.py:97
 msgctxt "button"
 msgid "Load Admin Keys"
-msgstr "REPLACED"
+msgstr ""
 
 #: src/kiss_cf/gui/registration_user.py:98
 msgctxt "button"
@@ -49,7 +49,7 @@ msgstr ""
 #: src/kiss_cf/gui/registration_user.py:104
 msgctxt "label"
 msgid "Admin Keys"
-msgstr "REPLACED"
+msgstr ""
 
 #: src/kiss_cf/gui/registration_user.py:118
 msgctxt "label"
@@ -99,7 +99,7 @@ msgstr ""
 #: src/kiss_cf/gui/registration_user.py:248
 msgctxt "dialog"
 msgid "Select Admin Keys File"
-msgstr "REPLACED"
+msgstr ""
 
 #: src/kiss_cf/gui/registration_user.py:263
 msgctxt "error"
@@ -114,7 +114,7 @@ msgstr ""
 #: src/kiss_cf/gui/login.py:91 src/kiss_cf/gui/login.py:160
 msgctxt "label"
 msgid "Password:"
-msgstr "REPLACED"
+msgstr ""
 
 #: src/kiss_cf/gui/login.py:95
 msgctxt "label"
