@@ -3,26 +3,16 @@
 Exception UserAbortError is defined to terminate the application on
 Login.check().
 '''
-import gettext
-import importlib.resources
 import tkinter
 import tkinter.ttk
 
 from appxf import logging
 
-
 # from kiss_cf.config import Config
 from kiss_cf.setting import SettingDict
 from kiss_cf.gui.setting_dict import SettingDictSingleFrame
 from kiss_cf.security import Security
-
-# Translation setup. No language is defined in translation() to apply the
-# system language by default.
-translation = gettext.translation(
-    domain='appxf-gui',
-    localedir=str(importlib.resources.files("kiss_cf") / "locale"),
-    fallback=True)
-_ = translation.pgettext
+from kiss_cf.gui.locale import _
 
 
 class UserAbortError(Exception):

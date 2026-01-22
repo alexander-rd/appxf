@@ -5,8 +5,6 @@
 - RegistrationAdmin is the admin perspective for reviewing requests, assigning
   roles, and generating responses.
 '''
-import gettext
-import importlib.resources
 import tkinter
 from tkinter import filedialog, messagebox
 
@@ -14,14 +12,7 @@ from appxf import logging
 from kiss_cf.registry import Registry
 from kiss_cf.gui.common import GridFrame, GridTk, GridToplevel
 from kiss_cf.gui.common import ButtonFrame
-
-# Translation setup. No language is defined in translation() to apply the
-# system language by default.
-translation = gettext.translation(
-    domain='appxf-gui',
-    localedir=str(importlib.resources.files("kiss_cf") / "locale"),
-    fallback=True)
-_ = translation.pgettext
+from kiss_cf.gui.locale import _
 
 # TODO: This file is in DRAFT STATUS, mostly generated with GitHub copilot and
 # needs a detailed review. Currently, getting the GUI and behavior right is
