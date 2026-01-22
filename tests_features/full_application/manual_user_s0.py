@@ -28,4 +28,4 @@ def process_app_user():
     app_user = AppHarness(sandbox_path, 'user')
     AppHarnessGui(app_user).start()
 
-ManualCaseRunner().run_by_file_parsing()
+ManualCaseRunner().run()
