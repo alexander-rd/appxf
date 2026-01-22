@@ -16,6 +16,9 @@ classifiers = [
     "Programming Language :: Python :: 3"
 ]
 
+[project.entry-points.pyinstaller40]
+hook-dirs = "kiss_cf.pyinstaller:get_hook_dirs"
+
 [tool.appxf]
 # The testing sandbox is the root directory where files are placed that are
 # needed or generated during test case. Each test case should use individual

@@ -3,14 +3,26 @@
 Exception UserAbortError is defined to terminate the application on
 Login.check().
 '''
+import gettext
+import importlib.resources
 import tkinter
 import tkinter.ttk
 
 from appxf import logging
+
+
 # from kiss_cf.config import Config
 from kiss_cf.setting import SettingDict
 from kiss_cf.gui.setting_dict import SettingDictSingleFrame
 from kiss_cf.security import Security
+
+# Translation setup. No language is defined in translation() to apply the
+# system language by default.
+translation = gettext.translation(
+    domain='appxf-gui',
+    localedir=str(importlib.resources.files("kiss_cf") / "locale"),
+    fallback=True)
+_ = translation.pgettext
 
 
 class UserAbortError(Exception):
@@ -70,7 +82,7 @@ class Login():
         is not stored.
         '''
         guiRoot = tkinter.Tk()
-        guiRoot.title(self._app_name)
+        guiRoot.title(_('window', 'Login - Initialize'))
         guiRoot.rowconfigure(0, weight=1)
         guiRoot.columnconfigure(1, weight=1)
 
@@ -82,11 +94,11 @@ class Login():
         sep.grid(row=1, column=0, columnspan=2, sticky='WE')
 
         pwdLabel = tkinter.Label(guiRoot, justify='right')
-        pwdLabel.config(text='Passwort:')
+        pwdLabel.config(text=_('label', 'Password:'))
         pwdLabel.grid(row=2, column=0, padx=5, pady=5, sticky='E')
 
         pwdRepLabel = tkinter.Label(guiRoot, justify='right')
-        pwdRepLabel.config(text='Passwort wiederholen:')
+        pwdRepLabel.config(text=_('label', 'Repeat Password:'))
         pwdRepLabel.grid(row=3, column=0, padx=5, pady=5, sticky='E')
 
         pwdEntry = tkinter.Entry(guiRoot, show="*", width=20)
@@ -132,7 +144,7 @@ class Login():
                 self._user_config.store()
                 self.log.debug('OK, quit')
                 guiRoot.destroy()
-        okButton = tkinter.Button(guiRoot, text='OK', command=okButtonFunction)
+        okButton = tkinter.Button(guiRoot, text=_('button', 'OK'), command=okButtonFunction)
         okButton.grid(row=4, column=1, padx=5, pady=5, sticky='E')
 
         guiRoot.bind('<Return>', okButtonFunction)
@@ -145,13 +157,13 @@ class Login():
 
     def __run_login_gui(self):
         guiRoot = tkinter.Tk()
-        guiRoot.title(self._app_name)
+        guiRoot.title(_('window', 'Login'))
         guiRoot.rowconfigure(1, weight=1)
         guiRoot.columnconfigure(1, weight=1)
         guiRoot.columnconfigure(2, weight=1)
 
         pwdLabel = tkinter.Label(guiRoot, justify='right')
-        pwdLabel.config(text='Passwort:')
+        pwdLabel.config(text=_('label', 'Password:'))
         pwdLabel.grid(row=2, column=1, padx=5, pady=5, sticky='E')
 
         pwdEntry = tkinter.Entry(guiRoot, show="*", width=20)
@@ -166,7 +178,7 @@ class Login():
                                exc_info=True)
                 self.log.warning('Password wrong, but we continue.')
 
-        okButton = tkinter.Button(guiRoot, text="OK", command=okButtonFunction)
+        okButton = tkinter.Button(guiRoot, text=_('button', 'OK'), command=okButtonFunction)
         okButton.grid(row=3, column=2, padx=5, pady=5, sticky='E')
 
         guiRoot.bind('<Return>', okButtonFunction)
