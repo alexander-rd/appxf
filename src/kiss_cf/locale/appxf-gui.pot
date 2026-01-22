@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: appxf-gui\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-22 22:44+0100\n"
+"POT-Creation-Date: 2026-01-22 22:51+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,117 +17,117 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/kiss_cf/gui/registration_user.py:90
+#: src/kiss_cf/gui/registration_user.py:81
 msgctxt "window"
 msgid "Registry - User Registration"
 msgstr ""
 
-#: src/kiss_cf/gui/registration_user.py:95
+#: src/kiss_cf/gui/registration_user.py:86
 msgctxt "window"
 msgid "User Registration"
 msgstr ""
 
-#: src/kiss_cf/gui/registration_user.py:101
+#: src/kiss_cf/gui/registration_user.py:92
 msgctxt "button"
 msgid "Load Admin Keys"
 msgstr ""
 
-#: src/kiss_cf/gui/registration_user.py:102
+#: src/kiss_cf/gui/registration_user.py:93
 msgctxt "button"
 msgid "Initialize as Admin"
 msgstr ""
 
-#: src/kiss_cf/gui/registration_user.py:103
+#: src/kiss_cf/gui/registration_user.py:94
 msgctxt "button"
 msgid "Write Request"
 msgstr ""
 
-#: src/kiss_cf/gui/registration_user.py:104
+#: src/kiss_cf/gui/registration_user.py:95
 msgctxt "button"
 msgid "Load Response"
 msgstr ""
 
-#: src/kiss_cf/gui/registration_user.py:108
+#: src/kiss_cf/gui/registration_user.py:99
 msgctxt "label"
 msgid "Admin Keys"
 msgstr ""
 
-#: src/kiss_cf/gui/registration_user.py:122
+#: src/kiss_cf/gui/registration_user.py:113
 msgctxt "label"
 msgid "Registration"
 msgstr ""
 
-#: src/kiss_cf/gui/registration_user.py:146
+#: src/kiss_cf/gui/registration_user.py:137
 msgctxt "status"
 msgid "Admin keys are already loaded to encrypt your user data."
 msgstr ""
 
-#: src/kiss_cf/gui/registration_user.py:150
+#: src/kiss_cf/gui/registration_user.py:141
 msgctxt "status"
 msgid "You have to load admin keys to encrypt the user data in your request."
 msgstr ""
 
-#: src/kiss_cf/gui/registration_user.py:169
+#: src/kiss_cf/gui/registration_user.py:160
 msgctxt "dialog"
 msgid "Save Registration Request"
 msgstr ""
 
-#: src/kiss_cf/gui/registration_user.py:192
+#: src/kiss_cf/gui/registration_user.py:183
 msgctxt "error"
 msgid "Failed to write file: {}"
 msgstr ""
 
-#: src/kiss_cf/gui/registration_user.py:199
+#: src/kiss_cf/gui/registration_user.py:190
 msgctxt "info"
 msgid "Registration request saved to {}"
 msgstr ""
 
-#: src/kiss_cf/gui/registration_user.py:208
+#: src/kiss_cf/gui/registration_user.py:199
 msgctxt "dialog"
 msgid "Select Registration Response File"
 msgstr ""
 
-#: src/kiss_cf/gui/registration_user.py:232
+#: src/kiss_cf/gui/registration_user.py:223
 msgctxt "error"
 msgid "Failed to read file: {}"
 msgstr ""
 
-#: src/kiss_cf/gui/registration_user.py:239
+#: src/kiss_cf/gui/registration_user.py:230
 msgctxt "error"
 msgid "Failed to apply response: {}"
 msgstr ""
 
-#: src/kiss_cf/gui/registration_user.py:252
+#: src/kiss_cf/gui/registration_user.py:243
 msgctxt "dialog"
 msgid "Select Admin Keys File"
 msgstr ""
 
-#: src/kiss_cf/gui/registration_user.py:267
+#: src/kiss_cf/gui/registration_user.py:258
 msgctxt "error"
 msgid "Failed to load admin keys: {}"
 msgstr ""
 
-#: src/kiss_cf/gui/login.py:85
+#: src/kiss_cf/gui/login.py:75
 msgctxt "window"
 msgid "Login - Initialize"
 msgstr ""
 
-#: src/kiss_cf/gui/login.py:97 src/kiss_cf/gui/login.py:166
+#: src/kiss_cf/gui/login.py:87 src/kiss_cf/gui/login.py:156
 msgctxt "label"
 msgid "Password:"
 msgstr ""
 
-#: src/kiss_cf/gui/login.py:101
+#: src/kiss_cf/gui/login.py:91
 msgctxt "label"
 msgid "Repeat Password:"
 msgstr ""
 
-#: src/kiss_cf/gui/login.py:147 src/kiss_cf/gui/login.py:181
+#: src/kiss_cf/gui/login.py:137 src/kiss_cf/gui/login.py:171
 msgctxt "button"
 msgid "OK"
 msgstr ""
 
-#: src/kiss_cf/gui/login.py:160
+#: src/kiss_cf/gui/login.py:150
 msgctxt "window"
 msgid "Login"
 msgstr ""
