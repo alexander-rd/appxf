@@ -47,7 +47,7 @@ jobs:
       run: ./build_linux.sh
       if: runner.os == 'Linux'
     - name: Upload (linux)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: build_linux
         path: dist/*
@@ -59,7 +59,7 @@ jobs:
       run: ./build_windows.bat
       if: runner.os == 'Windows'
     - name: Upload (windows)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: build_windows
         path: dist/*
