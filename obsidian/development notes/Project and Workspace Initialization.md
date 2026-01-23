@@ -4,6 +4,7 @@
 sudo apt-get install tox
 sudo apt install python3.12-venv
 sudo apt-get install flake8
+sudo apt install gettext
 ```
 # VENV
 install pyenv and make python versions available: https://help.clouding.io/hc/en-us/articles/13555555842588-How-to-install-different-versions-of-Python-on-Ubuntu (Needs refinements/updates: exact lines on which versions to install; actually using pyenv)
