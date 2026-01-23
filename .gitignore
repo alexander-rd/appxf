@@ -4,7 +4,6 @@ __pycache__/
 *$py.class
 *.drawio.bkp
 cov_*
-src/kiss_cf/locale/*/LC_MESSAGES/*.mo
 /manual_tests
 pytest-env
 data
