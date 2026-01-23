@@ -44,7 +44,7 @@ msgstr "Anfrage Speichern"
 #: src/kiss_cf/gui/registration_user.py:100
 msgctxt "button"
 msgid "Load Response"
-msgstr "Lade Antwort"
+msgstr "Antwort Laden"
 
 #: src/kiss_cf/gui/registration_user.py:104
 msgctxt "label"

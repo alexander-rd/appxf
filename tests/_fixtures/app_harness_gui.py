@@ -1,8 +1,8 @@
 ''' Provide a GUI for the application harness '''
+import os
 from kiss_cf.gui import KissApplication, ConfigMenu, Login
 from kiss_cf.gui import RegistrationUser, RegistrationAdmin
 from tests._fixtures.app_harness import AppHarness
-import tkinter
 
 
 class AppHarnessGui():
@@ -66,11 +66,22 @@ class AppHarnessGui():
         # (even if sync may update it):
         self.harness.config.load()
 
-        # ensure registry being initialized
+        # ensure registry being initialized while including a hidden feature:
+        # not showing admin keys section if admin keys are available:
         if self.harness.registry_enabled and not self.harness.registry.is_initialized():
+            admin_keys_path = os.path.join(self.harness.app_path, 'admin.keys')
+            hide_admin_keys = False
+            if os.path.exists(admin_keys_path):
+                if not self.harness.registry.has_admin_keys():
+                    with open(admin_keys_path, 'rb') as f:
+                        admin_keys_data = f.read()
+                        self.harness.registry.set_admin_key_bytes(
+                            admin_keys_data)
+                hide_admin_keys = True
             registration = RegistrationUser(
                 registry = self.harness.registry,
-                root_dir = self.harness.root_path)
+                root_dir = self.harness.root_path,
+                hide_admin_keys=hide_admin_keys)
             if not registration.check():
                 return
 

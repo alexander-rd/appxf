@@ -51,4 +51,4 @@ def process_app_userB():
 #Storage.reset()
 #Storage.switch_context('invalid')
 
-ManualCaseRunner().run_by_file_parsing()
+ManualCaseRunner().run()
