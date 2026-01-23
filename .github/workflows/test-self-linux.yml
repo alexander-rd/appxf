@@ -22,10 +22,7 @@ jobs:
           python-version: ${{ inputs.python-version }}
           caller-is-kiss-cf: 'yes'
 
-      - id: install_tox
-        run: pip install tox tox-gh-actions
-        shell: bash
-
-      - id: tox_test_execution
-        run: tox
-        shell: bash
+      - id: run_tox
+        uses: alexander-rd/kiss_cf/.github/actions/run-tox@main
+        with:
+          python-version: ${{ matrix.python-version }}
