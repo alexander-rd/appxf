@@ -6,22 +6,16 @@
 |Application|
 start
 :<b>workflows/test.yml</b>;
-:<b>actions/setup/action.yml</b>(os, python version)
+:<b>actions/setup/action.yml</b>(python version)
 Plus secrets when required;
 
 |APPXF|
-:<b>appxf/.github/actions/setup.yml</b>(os, python-version)
+:<b>appxf/.github/actions/setup.yml</b>(python-version)
 Plus kiss_cf token as long as not appxf;
-:Berechnung
- > Mengen Lebensmittel pro Depot
- > Mengen Gesamt als <b>Ernteliste</b>;
 
-:Aufarbeiten in
- > <b>Packliste "Kisten"</b>
- > <b>Packliste "Abholstelle"</b>
- > <b>Lieferliste</b>;
+|Application|
+:<b>Install and run tox</b>;
 end
-
 @enduml
 ```
 ## Current Setup

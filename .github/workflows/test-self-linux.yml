@@ -11,14 +11,21 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: ['3.10', '3.12']
+        python-version: ['3.12']
 
     runs-on: ${{ matrix.os }}
 
     steps:
-      - id: call_test
-        uses: alexander-rd/kiss_cf/.github/test@main
+      - id: call_setup
+        uses: alexander-rd/kiss_cf/.github/actions/setup@main
         with:
-          os: ${{ matrix.os }}
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ inputs.python-version }}
           caller-is-kiss-cf: 'yes'
+
+      - id: install_tox
+        run: pip install tox tox-gh-actions
+        shell: bash
+
+      - id: tox_test_execution
+        run: tox
+        shell: bash
