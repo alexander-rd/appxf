@@ -58,9 +58,10 @@ class SettingDictSingleFrame(SettingFrameBase):
 
     def __init__(self, parent: tkinter.BaseWidget,
                  setting: SettingInput,
+                 frame_label: bool = True,
                  **kwargs):
 
-        if setting.options.name or False:
+        if frame_label and setting.options.name:
             super().__init__(parent, **kwargs, text=setting.options.name)
         else:
             super().__init__(parent, **kwargs)
@@ -178,6 +179,7 @@ class SettingDictColumnFrame(SettingFrameBase):
                  setting: SettingInput,
                  columns: int,
                  kiss_options: dict | None = None,
+                 frame_label: bool = True,
                  **kwargs):
         # kwargs is NOT passed down to THIS frame. It will be passed down to
         # the column frames. This is hopefully more likely what a user might
@@ -213,7 +215,7 @@ class SettingDictColumnFrame(SettingFrameBase):
         for prop_dict in prop_dict_list:
             self.columnconfigure(len(self.frame_list), weight=1)
             this_frame = SettingDictSingleFrame(
-                self, prop_dict, **kwargs)
+                self, prop_dict, frame_label=False, **kwargs)
             self.place(this_frame, row=0, column=len(self.frame_list))
             self.frame_list.append(this_frame)
             if this_frame.get_total_row_weight() > max_row_weight_over_columns:
@@ -276,11 +278,12 @@ class SettingDictWindow(GridToplevel):
         columns = kiss_options.get('columns', 1)
         if columns <= 1:
             self.dict_frame = SettingDictSingleFrame(
-                self, self.property_dict, row_spread=True, **kiss_options)
+                self, self.property_dict,
+                frame_label=False, row_spread=True, **kiss_options)
         else:
             self.dict_frame = SettingDictColumnFrame(
-                self, self.property_dict,
-                columns, kiss_options, row_spread=True)
+                self, self.property_dict, columns, kiss_options,
+                frame_label=False, row_spread=True)
         self.place_frame(self.dict_frame)
         self.update()
         self.dict_frame.adjust_left_columnwidth()
