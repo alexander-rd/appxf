@@ -6,15 +6,19 @@
 |Application|
 start
 :<b>workflows/test.yml</b>;
-:<b>actions/setup/action.yml</b>(python version)
-Plus secrets when required;
-
 |APPXF|
-:<b>appxf/.github/actions/setup.yml</b>(python-version)
+:<b>actions/setup/action.yml</b>(python version)
 Plus kiss_cf token as long as not appxf;
 
 |Application|
-:<b>Install and run tox</b>;
+:<b>actions/setup/action.yml</b>(python version)
+Only required for application 
+specific installations;
+
+|APPXF|
+:<b>appxf/.github/actions/test.yml</b>(python-version)
+Install, cache and run tox.;
+|Application|
 end
 @enduml
 ```
