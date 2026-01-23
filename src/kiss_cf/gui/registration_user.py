@@ -32,6 +32,7 @@ class RegistrationUser:
                  registry: Registry,
                  root_dir: str = './',
                  parent: tkinter.BaseWidget | None = None,
+                 hide_admin_keys: bool = False,
                  **kwargs):
         '''Initialize RegistrationUser and build GUI.
 
@@ -47,6 +48,13 @@ class RegistrationUser:
         self._parent = parent
         self._gui_root: GridTk | GridToplevel | None = None
         self._registration_buttons: ButtonFrame | None = None
+        self._hide_admin_keys = hide_admin_keys
+
+        if self._hide_admin_keys and not self._registry.has_admin_keys:
+            raise ValueError(
+                'hide_admin_keys is True but registry has no admin keys loaded. '
+                'Make sure you load admin keys before calling user registration '
+                'when hiding the admin keys section.')
 
         # Build GUI now
         self._build_user_gui()
@@ -74,7 +82,7 @@ class RegistrationUser:
             self._gui_root.mainloop()
 
     def _build_user_gui(self):
-        '''Build user registration GUI with three frames.'''
+        '''Build user registration GUI'''
         # Create root window (Tk) or toplevel (Toplevel) depending on parent
         if self._parent is None:
             self._gui_root = GridTk(
@@ -94,33 +102,33 @@ class RegistrationUser:
         self._button_write_request = _('button', 'Write Request')
         self._button_load_response = _('button', 'Load Response')
 
-        # Build two main labeled frames using GridFrame
-        # Admin Keys frame (row 0)
-        admin_frame = GridFrame(self._gui_root, text=_('label', 'Admin Keys'))
-        self._gui_root.frame.place(admin_frame, row=0, column=0)
-        #admin_frame.grid(row=0, column=0, sticky='EWNS', padx=5, pady=5)
+        current_row = 0
+        if not self._hide_admin_keys:
+            admin_frame = GridFrame(self._gui_root, text=_('label', 'Admin Keys'))
+            self._gui_root.frame.place(admin_frame, row=0, column=0)
+            current_row += 1
 
-        # Button row for Admin Keys
-        admin_buttons = ButtonFrame(admin_frame, buttons=[self._button_load_admin_keys, self._button_initialize_as_admin, ''])
-        admin_frame.place(widget=admin_buttons, row=0, column=0)
+            # Button row for Admin Keys
+            admin_buttons = ButtonFrame(admin_frame, buttons=[self._button_load_admin_keys, self._button_initialize_as_admin, ''])
+            admin_frame.place(widget=admin_buttons, row=0, column=0)
 
-        # Status text (unlabeled) to display admin status
-        self._admin_status_var = tkinter.StringVar(value='')
-        admin_status_label = tkinter.Label(admin_frame, textvariable=self._admin_status_var, anchor='w')
-        admin_frame.place(widget=admin_status_label, row=1, column=0)
+            # Status text (unlabeled) to display admin status
+            self._admin_status_var = tkinter.StringVar(value='')
+            admin_status_label = tkinter.Label(admin_frame, textvariable=self._admin_status_var, anchor='w')
+            admin_frame.place(widget=admin_status_label, row=1, column=0)
+
+            # Hook up events from button frames to wrapper methods that update status
+            admin_buttons.bind(f'<<{self._button_load_admin_keys}>>', lambda event: self._on_load_admin_keys())
+            admin_buttons.bind(f'<<{self._button_initialize_as_admin}>>', lambda event: self._on_initialize_as_admin())
 
         # Registration frame (row 1)
         registration_frame = GridFrame(self._gui_root, text=_('label', 'Registration'))
-        self._gui_root.frame.place(registration_frame, row=1, column=0)
-        #registration_frame.grid(row=1, column=0, sticky='EWNS', padx=5, pady=5)
+        self._gui_root.frame.place(registration_frame, row=current_row, column=0)
+        current_row += 1
 
         # Buttons for registration: Write Request and Load Response
         self._registration_buttons = ButtonFrame(registration_frame, buttons=[self._button_write_request, self._button_load_response, ''])
         registration_frame.place(widget=self._registration_buttons, row=0, column=0)
-
-        # Hook up events from button frames to wrapper methods that update status
-        admin_buttons.bind(f'<<{self._button_load_admin_keys}>>', lambda event: self._on_load_admin_keys())
-        admin_buttons.bind(f'<<{self._button_initialize_as_admin}>>', lambda event: self._on_initialize_as_admin())
 
         self._registration_buttons.bind(f'<<{self._button_write_request}>>', lambda event: self._on_generate_request())
         self._registration_buttons.bind(f'<<{self._button_load_response}>>', lambda event: self._on_load_response())
@@ -141,7 +149,8 @@ class RegistrationUser:
             status = _('status', 'You have to load admin keys to encrypt the user data in your request.')
             self._registration_buttons.set_button_active(self._button_write_request, False)
             self._registration_buttons.set_button_active(self._button_load_response, False)
-        self._admin_status_var.set(status)
+        if not self._hide_admin_keys:
+            self._admin_status_var.set(status)
 
     def _check_init_status(self):
         if (
@@ -186,10 +195,6 @@ class RegistrationUser:
             return
 
         self.log.info('Registration request saved to %s', file_path)
-        messagebox.showinfo(
-            'Saved', _('info', 'Registration request saved to {}').format(file_path),
-            parent=self._gui_root,
-        )
 
     def _on_load_response(self):
         '''Handle Load Response button press:

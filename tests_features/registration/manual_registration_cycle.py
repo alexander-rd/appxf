@@ -36,6 +36,7 @@ application.
 __Step 8:__ Even if the admin closes the application and reloads the request
 and adds the user again, it will be added with the same user ID.
 '''
+import os
 from appxf_matema.case_runner import ManualCaseRunner
 from tests._fixtures import test_sandbox
 from tests._fixtures.app_harness import AppHarness
@@ -61,6 +62,7 @@ def process_app_user():
     app_user = AppHarness(sandbox_path, 'user',
                           registry_enabled=True)
     app_user.perform_login_unlock()
+
     AppHarnessGui(app_user).start()
 
 def process_app_admin():
