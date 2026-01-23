@@ -76,7 +76,9 @@ class Login():
         guiRoot.rowconfigure(0, weight=1)
         guiRoot.columnconfigure(1, weight=1)
 
-        userConfig = SettingDictSingleFrame(guiRoot, setting=self._user_config)
+        userConfig = SettingDictSingleFrame(
+            guiRoot, setting=self._user_config,
+            frame_label=False)
         userConfig.grid(row=0, column=0, sticky='NSWE', columnspan=2)
         left_min_size_config = userConfig.get_left_col_min_width()
 
