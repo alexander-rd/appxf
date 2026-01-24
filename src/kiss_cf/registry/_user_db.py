@@ -35,9 +35,12 @@ class UserDatabase(Storable):
         # The role_map maps roles to lists of ID's to quickly collect lists of
         # keys.
         self._role_map: dict[str, Set] = {'admin': set(), 'user': set()}
+        # The validation_key_map maps validation keys to user IDs for efficient
+        # lookup.
+        self._validation_key_map: dict[bytes, int] = {}
 
     attributes = ['_version', '_next_id', '_unused_id_list',
-                  '_user_db', '_role_map']
+                  '_user_db', '_role_map', '_validation_key_map']
     # TODO: should apply custom get_state to apply version check
 
     # TODO: next_id / unused_id_list should rather be re-created than stored
@@ -68,6 +71,12 @@ class UserDatabase(Storable):
             return self._role_map[role]
         # no role filtering, return all IDs from the user DB
         return set(self._user_db.keys())
+
+    def get_user_by_validation_key(self, key: bytes) -> int | None:
+        '''get user ID from validation key
+
+        Returns None if no user is found'''
+        return self._validation_key_map.get(key)
 
     def add_new(self,
                 validation_key: bytes,
@@ -133,6 +142,8 @@ class UserDatabase(Storable):
                           )
         # entry = UserEntry2(id=user_id, validation_key=validation_key)
         self._user_db[user_id] = entry
+        # Update validation key mapping
+        self._validation_key_map[validation_key] = user_id
 
         for role in roles:
             # ensure role is present
@@ -176,6 +187,10 @@ class UserDatabase(Storable):
             return
         # ensure steps from remove() - role_map being cleared
         self.remove_user(user_id)
+        # remove from validation key map
+        validation_key = self._user_db[user_id]['validation_key']
+        if validation_key in self._validation_key_map:
+            del self._validation_key_map[validation_key]
         # remove from user map and remember USER ID to be re-used:
         del self._user_db[user_id]
         self._unused_id_list.append(user_id)
