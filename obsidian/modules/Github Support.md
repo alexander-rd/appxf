@@ -11,13 +11,13 @@ start
 Plus kiss_cf token as long as not appxf;
 
 |Application|
-:<b>actions/setup/action.yml</b>(python version)
-Only required for application 
+:<b>actions/setup/action.yml</b>
+(optional) for application 
 specific installations;
 
 |APPXF|
-:<b>appxf/.github/actions/test.yml</b>(python-version)
-Install, cache and run tox.;
+:<b>.github/actions/run-tox</b>
+Install, cache venv and run tox.;
 |Application|
 end
 @enduml
