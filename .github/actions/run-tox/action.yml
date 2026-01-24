@@ -1,12 +1,6 @@
 name: Run Tox
 description: Install requirements and run tox with caching
 
-inputs:
-  python-version:
-    description: 'Python version for cache key'
-    type: string
-    required: true
-
 runs:
   using: "composite"
 
@@ -19,9 +13,9 @@ runs:
       uses: actions/cache@v3
       with:
         path: .tox
-        key: tox-${{ runner.os }}-${{ inputs.python-version }}-${{ hashFiles('**/requirements*.txt', 'pyproject.toml', 'tox.ini') }}
+        key: tox-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/requirements*.txt', 'pyproject.toml', 'tox.ini') }}
         restore-keys: |
-          tox-${{ runner.os }}-${{ inputs.python-version }}
+          tox-${{ runner.os }}-${{ env.PYTHON_VERSION }}
 
     - name: Run tox
       run: tox
