@@ -461,7 +461,7 @@ class Security():
             self,
             data: bytes,
             public_keys: Iterable[bytes] | dict[Any, bytes] | None = None,
-        ) -> tuple[bytes, dict[Any, bytes]]:
+        ) -> bytes:
         ''' Hybrid encryption with signed data
 
         Functions like hybrid_encrypt() but applies signature on data and packs
@@ -475,10 +475,13 @@ class Security():
         }
         signed_data_bytes = CompactSerializer.serialize(signed_data)
 
-        return self.hybrid_encrypt(
+        encrypted_data_bytes, key_blob_dict = self.hybrid_encrypt(
             data = signed_data_bytes,
-            public_keys=public_keys
-        )
+            public_keys=public_keys)
+        return CompactSerializer.serialize({
+            'data': encrypted_data_bytes,
+            'key_blob_dict': key_blob_dict})
+
 
     def hybrid_signed_decrypt(
             self,
@@ -500,7 +503,12 @@ class Security():
 
         Returns: a tuple of the decrypted data and the author's public key
         '''
-        signed_data_bytes = self.hybrid_decrypt(data, key_blob)
+        encrypted_data = CompactSerializer.deserialize(data)
+        encrypted_data_bytes = encrypted_data['data']
+        key_blob_dict = encrypted_data['key_blob_dict']
+
+        signed_data_bytes = self.hybrid_decrypt(
+            encrypted_data_bytes, key_blob_dict, blob_identifier)
         signed_data: dict = CompactSerializer.deserialize(signed_data_bytes)
         data = signed_data['data']
         author_pub_key = signed_data['author']
