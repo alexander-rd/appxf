@@ -46,5 +46,5 @@ runs:
       uses: actions/upload-artifact@v4
       with:
         name: build_${{ runner.os }}
-        path: build/dist.zip
+        path: build/dist
         retention-days: 2

@@ -21,7 +21,6 @@ from typing import List, Optional
 BUILD_DIR = Path('./build')
 ENV_PATH = BUILD_DIR / '.env'
 DIST_PATH = BUILD_DIR / 'dist'
-ZIP_FILE = BUILD_DIR / 'dist.zip'
 
 
 def elapsed_time(start: float) -> str:
@@ -216,22 +215,6 @@ def save_build_info(verbose: bool = False) -> None:
 
     print(f'  Build information saved to {info_file}')
 
-
-def create_zip() -> None:
-    '''Create a zip file of the dist directory at ./build/dist.zip'''
-    # Remove existing zip if it exists
-    if ZIP_FILE.exists():
-        ZIP_FILE.unlink()
-
-    # Create zip file
-    shutil.make_archive(
-        str(ZIP_FILE.with_suffix('')),
-        'zip',
-        DIST_PATH
-    )
-
-    print(f'  Created {ZIP_FILE}')
-
 def main():
     '''Main entry point'''
     parser = argparse.ArgumentParser(
@@ -247,7 +230,6 @@ Examples:
 Build outputs:
   - Virtual environment: ./build/.env
   - Distribution files: ./build/dist/
-  - Zip archive: ./build/dist.zip
         '''
     )
 
@@ -386,10 +368,6 @@ Build outputs:
         # Save build info
         with _StepLogger('Saving build information'):
             save_build_info(verbose=args.verbose)
-
-        # Create zip (always)
-        with _StepLogger('Creating zip archive'):
-            create_zip()
 
         print(f'\n{"="*60}')
         print(f'Build completed successfully! (Total time: {elapsed_time(start_total)})')
