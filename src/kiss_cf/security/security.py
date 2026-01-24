@@ -433,6 +433,30 @@ class Security():
 
         return self._decrypt_from_bytes(symmetric_key, data)
 
+    # TODO #42: Interfaces are inconsistent between hybrid_encrypt() above and
+    # hybrid_signed_encrypt() below. The story is that hybrid_encrypt() was
+    # designed for SecureSharedStorage which is using meta files to store
+    # encryption and signature details. The functions below are designed to
+    # support registration request/response as well as manual configuration
+    # updates in registry. Having both interfaces increases overall code
+    # complexity and one should be removed. Most important arguments:
+    #
+    #  * having a meta file for SecureSharedStorage allows to update key_blobs
+    #    without re-writing the original data which could be large.
+    #  * having a meta file makes the job for file snychronization more
+    #    complicated since removed passwords may imply removing the data from a
+    #    user location.
+    #  * having a byte stream approach (bytes in, bytes out) makes the overall
+    #    file handling concept more simple and only the sync and original meta
+    #    file remains.
+    #
+    # As it currently looks like, the decision is mainly influenced by the
+    # final synchronization mechanism (meta files) AND weighting "rewriting
+    # (large) data files" against "less complexity in SharedStorage file
+    # handling"
+    #
+    # All this goes along with switching to "signing before encryption".
+
     def hybrid_signed_encrypt(
             self,
             data: bytes,
@@ -440,7 +464,8 @@ class Security():
         ) -> tuple[bytes, dict[Any, bytes]]:
         ''' Hybrid encryption with signed data
 
-        Functions like hybrid_encrypt() but applies signature on data.
+        Functions like hybrid_encrypt() but applies signature on data and packs
+        everything to bytes.
         '''
         signature = self.sign(data)
         signed_data = {
@@ -458,7 +483,7 @@ class Security():
     def hybrid_signed_decrypt(
             self,
             data: bytes,
-            key_blob: bytes
+            blob_identifier: Any = None
         ) -> tuple[bytes, bytes]:
         '''Hybrid decryption with signature verification
 
