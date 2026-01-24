@@ -541,7 +541,7 @@ class Registry(RegistryBase):
         return self._security.hybrid_decrypt(
             data=data,
             key_blob_dict=key_blob_dict,
-            dict_key=self.user_id)
+            blob_identifier=self.user_id)
 
     # ############################/
     # Manual Configuration Updates
