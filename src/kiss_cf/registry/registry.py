@@ -599,16 +599,22 @@ class Registry(RegistryBase):
             )
 
         # TODO: check if author_key is KNOWN and an ADMIN
-        #if not author_key in self._user_db.get_verification_key_dict().values():
-        #    raise KissRegistryError(
-        #        'Author of manual configuration update is unknown.')
-        data_dict: dict = CompactSerializer.deserialize(data_bytes)
+        author_id = self._user_db.get_user_by_validation_key(author_key)
+        if author_id is None:
+            raise KissRegistryError(
+                'Author of manual configuration update is unknown.')
+        if not self._user_db.has_role(author_id, 'admin'):
+            raise KissRegistryError(
+                'Author of manual configuration update is not an admin.')
 
+        # unpack data
+        data_dict: dict = CompactSerializer.deserialize(data_bytes)
+        # apply to config sections
         for section in data_dict.get('config_sections', {}):
             self._config.section(section).update(
                 data_dict['config_sections'][section])
             self._config.section(section).store()
-
+        # update user db
         if 'user_db' in data_dict:
             self._user_db.set_state(data_dict['user_db'])
             self._user_db.store()
