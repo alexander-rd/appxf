@@ -406,7 +406,7 @@ class Security():
             self,
             data: bytes,
             key_blob_dict: dict[Any, bytes],
-            dict_key: Any = None
+            blob_identifier: Any = None
         ) -> bytes:
         ''' Hybrid decryption returning decrypted data
 
@@ -420,13 +420,13 @@ class Security():
         symmetric key from the key_blob. Afterwards, the data will be decrypted
         by this symmeric key.
         '''
-        if dict_key is None:
-            dict_key = self.get_encryption_public_key()
-        if dict_key not in key_blob_dict:
+        if blob_identifier is None:
+            blob_identifier = self.get_encryption_public_key()
+        if blob_identifier not in key_blob_dict:
             raise AppxfSecurityException(
-                f'Key blobs do not include one for identity: {dict_key}. '
+                f'Key blobs do not include one for identity: {blob_identifier}. '
                 f'Available are: {list(key_blob_dict.keys())}')
-        key_blob = key_blob_dict[dict_key]
+        key_blob = key_blob_dict[blob_identifier]
 
         symmetric_key = self._decrypt_with_private_key_from_byes(
             key_blob)

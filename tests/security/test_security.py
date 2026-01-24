@@ -136,7 +136,8 @@ def test_security_hybrid_encrypt_decrypt(sandbox_path):
     data_encrpted, key_blob_map = sec.hybrid_encrypt(
         data, {1: sec.get_encryption_public_key()})
 
-    data_decrypted = sec.hybrid_decrypt(data_encrpted, key_blob_map, dict_key=1)
+    data_decrypted = sec.hybrid_decrypt(
+        data_encrpted, key_blob_map, blob_identifier=1)
 
     assert data != data_encrpted
     assert data == data_decrypted
