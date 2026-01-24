@@ -18,9 +18,15 @@ runs:
   steps:
   # COMMON steps
     - name: set up python ${{ inputs.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ inputs.python-version }}
+    # Make python version available: ${{ env.PYTHON_VERSION }} or $PYTHON_VERSION
+    - name: Capture Python version
+      run: |
+        PYVER=$(python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+        echo "PYTHON_VERSION=$PYVER" >> "$GITHUB_ENV"
+      shell: bash
 
     - name: upgrade python (Win+Linux)
       run: python -m pip install --upgrade pip
