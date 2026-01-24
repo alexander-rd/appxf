@@ -405,9 +405,8 @@ class Registry(RegistryBase):
         Bytes are sent back to user outside of this tool's scope. For example,
         as file via Email. See: get_request_bytes().
         '''
-        if not self._loaded:
-            raise KissRegistryUnitialized(
-                'registry is not yet loaded, cannot construct a response')
+        self._ensure_loaded()
+
         # check sections existing before applying
         for section in self._response_config_sections:
             if section not in self._config.sections:
@@ -462,7 +461,10 @@ class Registry(RegistryBase):
 
         response_bytes = self._security.hybrid_decrypt(
             data=response_encrypted,
-            key_blob=response_data['key_blob'])
+            key_blob_dict={
+                self._security.get_encryption_public_key():
+                    response_data['key_blob']
+                })
 
         response = RegistrationResponse.from_response_bytes(response_bytes)
 
@@ -536,15 +538,73 @@ class Registry(RegistryBase):
         # Documentation in RegistryBase
         self._ensure_loaded()
 
-        # identify key blob
-        if self.user_id not in key_blob_dict:
-            raise KissRegistryError(
-                f'Current user id {self.user_id} is not included'
-                f'in available key blobs. Available: '
-                f'{list(key_blob_dict.keys())}')
-        key_blob = key_blob_dict[self.user_id]
+        return self._security.hybrid_decrypt(
+            data=data,
+            key_blob_dict=key_blob_dict,
+            dict_key=self.user_id)
 
-        return self._security.hybrid_decrypt(data=data, key_blob=key_blob)
+    # ############################/
+    # Manual Configuration Updates
+    # /
+
+    def get_manual_update_bytes(
+        self,
+        sections: list[str] | None = None,
+        include_user_db: bool = True
+        ) -> bytes:
+        ''' get manual configuration update bytes
+
+        Bytes are likely stored into a file and can be sent to registered users
+        where they can apply this to set_manual_update_bytes().
+        '''
+        self._ensure_loaded()
+
+        if sections is None:
+            sections = self._response_config_sections
+
+        # check sections existing before applying
+        for section in self._response_config_sections:
+            if section not in self._config.sections:
+                raise KissRegistryUnknownConfigSection(
+                    f'Section {section} does not exist.')
+
+        # construct data
+        data = {
+            'config_sections': {
+                section: dict(self._config.section(section))
+                for section in self._response_config_sections
+                }
+        }
+        if include_user_db:
+            data['user_db'] = self._user_db.get_state()
+        data_bytes = CompactSerializer.serialize(data)
+
+        # sign and encrypt:
+        return self._security.hybrid_signed_encrypt(
+            data=data_bytes,
+            public_keys=self._user_db.get_encryption_key_dict(
+                roles=self._user_db.get_roles())
+            )
+
+        signature = self._security.sign(data_bytes)
+        signed_data = {'data': data_bytes}
+
+        response_bytes_encrypted, key_blob_dict = self._security.hybrid_encrypt(
+            response_bytes,
+            public_keys={
+                user_id: self._user_db.get_encryption_key(user_id)
+                for user_id in self._user_db.get_users()})
+        # signing
+        signature = self._security.sign(response_bytes_encrypted)
+
+        response_data = {
+            'response_encrypted': response_bytes_encrypted,
+            'key_blob': key_blob_dict[self.user_id],
+            'signing_user': self.user_id,
+            'signature': signature,
+        }
+
+        return CompactSerializer.serialize(response_data)
 
     # #########################/
     # Remote Sync Handling
