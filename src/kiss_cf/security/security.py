@@ -23,6 +23,10 @@ from kiss_cf.storage import CompactSerializer
 class AppxfSecurityException(Exception):
     ''' General security related errors. '''
 
+class AppxfSecuritySignatureError(Exception):
+    ''' Signature verification failed. '''
+    def __init__(self, msg='Signature verification failed', *args, **kwargs):
+        super().__init__(msg, *args, **kwargs)
 
 def _get_default_key_dict():
     return {
@@ -467,6 +471,7 @@ class Security():
         Functions like hybrid_encrypt() but applies signature on data and packs
         everything to bytes.
         '''
+        # sign and pack into signed data
         signature = self.sign(data)
         signed_data = {
             'data': data,
@@ -475,13 +480,13 @@ class Security():
         }
         signed_data_bytes = CompactSerializer.serialize(signed_data)
 
+        # encrypt signed data
         encrypted_data_bytes, key_blob_dict = self.hybrid_encrypt(
             data = signed_data_bytes,
             public_keys=public_keys)
         return CompactSerializer.serialize({
             'data': encrypted_data_bytes,
             'key_blob_dict': key_blob_dict})
-
 
     def hybrid_signed_decrypt(
             self,
@@ -497,26 +502,29 @@ class Security():
         IMPORTANT to ensure AUTHENTICITY: The CALLER HAS TO VERIFY the PUBLIC
         KEY being authorized to provide the data.
 
-        Raises AppxfSecurityException if signature verification fails. This
-        exception should be caught, adding information on the context of the
-        call.
+        Raises AppxfSecuritySignatureError if signature verification fails.
+        This exception should be caught, adding information on the context of
+        the call.
 
         Returns: a tuple of the decrypted data and the author's public key
         '''
+        # unpack encrypted and signed data:
         encrypted_data = CompactSerializer.deserialize(data)
         encrypted_data_bytes = encrypted_data['data']
         key_blob_dict = encrypted_data['key_blob_dict']
 
+        # decrypt to signed data:
         signed_data_bytes = self.hybrid_decrypt(
             encrypted_data_bytes, key_blob_dict, blob_identifier)
         signed_data: dict = CompactSerializer.deserialize(signed_data_bytes)
+
+        # unpack signed data and verify signature:
         data = signed_data['data']
         author_pub_key = signed_data['author']
         signature = signed_data['signature']
-
         if not Security.verify_signature(
                 data, signature, author_pub_key):
-            raise AppxfSecurityException('Signature verification failed')
+            raise AppxfSecuritySignatureError()
 
         return data, author_pub_key
 
