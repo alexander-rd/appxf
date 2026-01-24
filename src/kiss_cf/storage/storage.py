@@ -200,7 +200,7 @@ class Storage(ABC):
                      ) -> Storage | list[Storage]:
             ''' Factory to construct Storage objects '''
 
-    # TODO: the interace is not very awesome. (1) The storage_get_fun would be
+    # TODO: the interface is not very awesome. (1) The storage_get_fun would be
     # better to get removed. There is just a problem with getting the right
     # arguments to call the implementing storage classes get(). (2) The
     # base_storage argument is a bit of a special case but may be OK.

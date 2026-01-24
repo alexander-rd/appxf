@@ -3,7 +3,7 @@
 from __future__ import annotations
 from appxf import logging
 
-from kiss_cf.storage import sync, Storage, CompactSerializer
+from kiss_cf.storage import sync, CompactSerializer, StorageToBytes
 from kiss_cf.config import Config
 from kiss_cf.security import Security, SecurePrivateStorage
 
@@ -28,33 +28,50 @@ class KissRegistryUnknownConfigSection(Exception):
 
 
 class Registry(RegistryBase):
-    ''' User registry maintains the application user's ID and all user
-        configurations the user is permitted to see. '''
+    '''Registry maintaining user ID and roles
+
+    The registry supports a registration procedure where users:
+     * securely share user details
+     * obtain a user ID and roles
+     * securely obtain (initial) configuration data
+
+    The registry is a prerequisite for two use cases:
+     * Users sharing data securely via some remote storage
+     * Admins updating access credentials for users (manual and automated)
+    '''
     log = logging.getLogger(__name__ + '.Registry')
 
 
     def __init__(self,
-                 local_storage_factory: Storage.Factory,
-                 remote_storage_factory: Storage.Factory,
+                 local_storage_factory: StorageToBytes.Factory,
                  security: Security,
                  config: Config,
                  user_config_section: str = 'USER',
                  response_config_sections: list[str] | None = None,
+                 remote_storage_factory: StorageToBytes.Factory | None = None,
                  **kwargs):
         ''' Create Registry Handler
 
-        local_storage_factory: The local storage is where your view on the user
-            database is stored for offline usage. This is typically
-            LocalStorage and Registry stores data via SecurePrivateStorage.
-        remote_storage_factory: The remote storage is where the overall user
-            database is stored for all users to sync with. A typical use case
-            is FtpStorage while also LocalStorage may be used. Registry employs
-            a SecureSharedStorage on top for stored files.
-        security: a local login Security object is required to employ the
-            SecurePrivate and SecureShared storage as mentioned above.
-        config: The registration procedure allows to convey certain parts of
-            the application configuration which may be required to access the
-            remote storage mentioned above.
+        Keyword Arguments:
+            local_storage_factory -- The local storage is where your view on
+                the user database is stored for offline usage. This is
+                typically LocalStorage and Registry stores data via
+                SecurePrivateStorage.
+            security -- a local login Security object is required to employ the
+                SecurePrivate storage for the local use database and
+                SecureShared storage for remote_storage (see below).
+            config -- The registration procedure allows to convey certain parts
+                of the application configuration which may be required to
+                access the remote storage mentioned above.
+            user_config_section -- The name of the user configuration section
+                from [config] which is shared during registration.
+            response_config_sections -- A list of configuration section names
+                which are exported during registration and during manual
+                configuration updates.
+            remote_storage_factory -- The remote storage is where the overall
+                user database is stored for all users to sync with. A typical
+                use case is FtpStorage while also LocalStorage may be used.
+                Registry employs a SecureSharedStorage on top for stored files.
         '''
         super().__init__(**kwargs)
         self._loaded = False
@@ -76,10 +93,13 @@ class Registry(RegistryBase):
             security=security)
         self._user_db = UserDatabase(self._local_user_db_storage)
         # Matching remote storage
-        self._remote_user_db_storage = SecureSharedStorage(
-            base_storage=remote_storage_factory('USER_DB'),
-            security=security,
-            registry=self)
+        if self._remote_storage_factory is None:
+            self._remote_user_db_storage = None
+        else:
+            self._remote_user_db_storage = SecureSharedStorage(
+                base_storage=self._remote_storage_factory('USER_DB'),
+                security=security,
+                registry=self)
 
         # Note: USER_DB cannot be synced from __init__ since security module
         # may not yet be unlocked.
@@ -541,6 +561,10 @@ class Registry(RegistryBase):
           * the user has unlocked the Security object
           * the user is registered (is_initialized())
         '''
+        if self._remote_user_db_storage is None:
+            self.log.debug('No remote storage for sync defined, skipping sync.')
+            return
+
         print(f' -- {mode} from user={self.user_id}')
         # TODO: receiving after getting registration response on user side
         # cannot work since try_load() includes trying to load the user_db
