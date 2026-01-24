@@ -141,3 +141,18 @@ def test_security_hybrid_encrypt_decrypt(sandbox_path):
 
     assert data != data_encrpted
     assert data == data_decrypted
+
+# Hybrid SIGNED encrypt/decrypt cycle:
+def test_security_hybrid_signed_encrypt_decrypt(sandbox_path):
+    sec = appxf_objects.get_security_unlocked(sandbox_path, TEST_PASSWORD)
+
+    data = b'To be encrypted'
+    data_encrypted_bytes = sec.hybrid_signed_encrypt(
+        data, {1: sec.get_encryption_public_key()})
+
+    data_decrypted, author_key = sec.hybrid_signed_decrypt(
+        data_encrypted_bytes, blob_identifier=1)
+
+    assert data != data_encrypted_bytes
+    assert data == data_decrypted
+    assert author_key == sec.get_signing_public_key()
