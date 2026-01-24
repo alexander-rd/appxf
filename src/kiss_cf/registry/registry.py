@@ -547,7 +547,7 @@ class Registry(RegistryBase):
     # Manual Configuration Updates
     # /
 
-    def get_manual_update_bytes(
+    def get_manual_config_update_bytes(
         self,
         sections: list[str] | None = None,
         include_user_db: bool = True
@@ -557,10 +557,9 @@ class Registry(RegistryBase):
         Bytes are likely stored into a file and can be sent to registered users
         where they can apply this to set_manual_update_bytes().
         '''
-        self._ensure_loaded()
-
         if sections is None:
             sections = self._response_config_sections
+        self._ensure_loaded()
 
         # check sections existing before applying
         for section in self._response_config_sections:
@@ -586,25 +585,33 @@ class Registry(RegistryBase):
                 roles=self._user_db.get_roles())
             )
 
-        signature = self._security.sign(data_bytes)
-        signed_data = {'data': data_bytes}
+    def set_manual_config_update_bytes(self, data: bytes):
+        ''' update configuration and user db
 
-        response_bytes_encrypted, key_blob_dict = self._security.hybrid_encrypt(
-            response_bytes,
-            public_keys={
-                user_id: self._user_db.get_encryption_key(user_id)
-                for user_id in self._user_db.get_users()})
-        # signing
-        signature = self._security.sign(response_bytes_encrypted)
+        Bytes are obtained from get_manual_config_update_bytes() on admin side.
+        '''
+        self._ensure_loaded()
 
-        response_data = {
-            'response_encrypted': response_bytes_encrypted,
-            'key_blob': key_blob_dict[self.user_id],
-            'signing_user': self.user_id,
-            'signature': signature,
-        }
+        # decrypt and verify signature:
+        data_bytes, author_key = self._security.hybrid_signed_decrypt(
+            data=data,
+            blob_identifier=self.user_id,
+            )
 
-        return CompactSerializer.serialize(response_data)
+        # TODO: check if author_key is KNOWN and an ADMIN
+        #if not author_key in self._user_db.get_verification_key_dict().values():
+        #    raise KissRegistryError(
+        #        'Author of manual configuration update is unknown.')
+        data_dict: dict = CompactSerializer.deserialize(data_bytes)
+
+        for section in data_dict.get('config_sections', {}):
+            self._config.section(section).update(
+                data_dict['config_sections'][section])
+            self._config.section(section).store()
+
+        if 'user_db' in data_dict:
+            self._user_db.set_state(data_dict['user_db'])
+            self._user_db.store()
 
     # #########################/
     # Remote Sync Handling
