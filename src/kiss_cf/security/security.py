@@ -18,6 +18,8 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from typing import Any, Iterable
 
+from kiss_cf.storage import CompactSerializer
+
 class AppxfSecurityException(Exception):
     ''' General security related errors. '''
 
@@ -400,7 +402,12 @@ class Security():
 
         return data_encrypted, key_blob_dict
 
-    def hybrid_decrypt(self, data: bytes, key_blob: bytes):
+    def hybrid_decrypt(
+            self,
+            data: bytes,
+            key_blob_dict: dict[Any, bytes],
+            dict_key: Any = None
+        ) -> bytes:
         ''' Hybrid decryption returning decrypted data
 
         PRECONDITION: From hybrid_encrypt(), you obtain a dictionary of key
@@ -413,10 +420,72 @@ class Security():
         symmetric key from the key_blob. Afterwards, the data will be decrypted
         by this symmeric key.
         '''
+        if dict_key is None:
+            dict_key = self.get_encryption_public_key()
+        if dict_key not in key_blob_dict:
+            raise AppxfSecurityException(
+                f'Key blobs do not include one for identity: {dict_key}. '
+                f'Available are: {list(key_blob_dict.keys())}')
+        key_blob = key_blob_dict[dict_key]
+
         symmetric_key = self._decrypt_with_private_key_from_byes(
             key_blob)
 
         return self._decrypt_from_bytes(symmetric_key, data)
+
+    def hybrid_signed_encrypt(
+            self,
+            data: bytes,
+            public_keys: Iterable[bytes] | dict[Any, bytes] | None = None,
+        ) -> tuple[bytes, dict[Any, bytes]]:
+        ''' Hybrid encryption with signed data
+
+        Functions like hybrid_encrypt() but applies signature on data.
+        '''
+        signature = self.sign(data)
+        signed_data = {
+            'data': data,
+            'author': self.get_signing_public_key(),
+            'signature': signature
+        }
+        signed_data_bytes = CompactSerializer.serialize(signed_data)
+
+        return self.hybrid_encrypt(
+            data = signed_data_bytes,
+            public_keys=public_keys
+        )
+
+    def hybrid_signed_decrypt(
+            self,
+            data: bytes,
+            key_blob: bytes
+        ) -> tuple[bytes, bytes]:
+        '''Hybrid decryption with signature verification
+
+        Functions like hybrid_decrypt() while it expects bytes generated from
+        hybrid_signed_encryption() for which it verifies the data based on the
+        the signature against the INCLUDED public key.
+
+        IMPORTANT to ensure AUTHENTICITY: The CALLER HAS TO VERIFY the PUBLIC
+        KEY being authorized to provide the data.
+
+        Raises AppxfSecurityException if signature verification fails. This
+        exception should be caught, adding information on the context of the
+        call.
+
+        Returns: a tuple of the decrypted data and the author's public key
+        '''
+        signed_data_bytes = self.hybrid_decrypt(data, key_blob)
+        signed_data: dict = CompactSerializer.deserialize(signed_data_bytes)
+        data = signed_data['data']
+        author_pub_key = signed_data['author']
+        signature = signed_data['signature']
+
+        if not Security.verify_signature(
+                data, signature, author_pub_key):
+            raise AppxfSecurityException('Signature verification failed')
+
+        return data, author_pub_key
 
     def _derive_key(self, pwd):
         '''Derive key from password.
