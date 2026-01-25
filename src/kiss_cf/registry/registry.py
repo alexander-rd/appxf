@@ -19,11 +19,14 @@ from .shared_storage import SecureSharedStorage
 class AppxfRegistryError(Exception):
     ''' General registry error '''
 
+
 class AppxfRegistryUnknownUser(Exception):
     ''' Unknown user '''
 
+
 class AppxfRegistryUnitialized(Exception):
     ''' Trying to use an uninitialized registry '''
+
 
 # TODO: manual config update would add such a missing section as "to be
 # removed". Maybe the registration step should behave likewise and this
@@ -31,9 +34,35 @@ class AppxfRegistryUnitialized(Exception):
 class AppxfRegistryUnknownConfigSection(Exception):
     ''' A referenced config section does not exist '''
 
+
 class AppxfRegistryRoleError(Exception):
     ''' Operation failed due to user roles '''
 
+
+# TODO: When it comes to shared storage, any change of roles (changed, new
+# users, removed users) must rewrite the key blobs for all stored files. >>
+# Assuming there may be many files in one location, having one key file per
+# location may be an alternative to one file per storage instance. Also
+# consider discussion in #42 merging the keys INTO the stored files. Adding one
+# file per location could add a trust layer:
+#  * each role in a location maintains a symmetric role-key
+#  * when enabling a file for a role, the file-individual key is encrypted with
+#    the role-key
+#  * the role-keys are encrypted for each user individually
+#
+# Consequences:
+#  * (+) effort of user updates do only scale with number of locations (not
+#    files) and number of roles for that user.
+#  * (-) any new file version would apply a new file-individual key - HOWEVER -
+#    the role key could be intercepted allowing access to even new file
+#    versions. Compromise can be to +regularly+ update those role keys but this
+#    update scales with number of users per role.
+#  * (!) It needs a more detailed analysis to clearly see the resulting efforts
+#    between the alternatives.
+#
+# Updated #42 with a recommendation to document user stories (journeys, use
+# cases) to have a top-level less technical view and collect non-functional
+# context.
 
 class Registry(RegistryBase):
     '''Registry maintaining user ID and roles
@@ -271,6 +300,12 @@ class Registry(RegistryBase):
             self._user_db.purge_user(user_id)
         else:
             self._user_db.remove_user(user_id)
+        self._user_db.store()
+
+    def set_roles(self, user_id: int, roles: list[str] | str):
+        ''' Set roles for user ID '''
+        self._ensure_loaded()
+        self._user_db.set_roles(user_id, roles)
         self._user_db.store()
 
     # #########################/
