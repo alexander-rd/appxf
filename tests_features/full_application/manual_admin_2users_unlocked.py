@@ -33,7 +33,8 @@ def setup_once():
 
 def launch_app(user: str):
     sandbox_path = test_sandbox.init_test_sandbox_for_caller_module(cleanup=False)
-    app_user = AppHarness(sandbox_path, user)
+    app_user = AppHarness(sandbox_path, user, registry_enabled=True)
+    app_user.perform_login_unlock()
     AppHarnessGui(app_user).start()
 
 def process_app_admin():

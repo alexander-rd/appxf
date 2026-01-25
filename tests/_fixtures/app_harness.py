@@ -282,6 +282,9 @@ class AppHarness:
         self.config.load()
 
     def perform_registration(self, app_admin: AppHarness):
+        admin_bytes = app_admin.perform_registration_get_admin_keys()
+        self.perform_registration_load_admin_keys(admin_key_bytes=admin_bytes)
+
         request_bytes = self.perform_registration_get_request()
         response_bytes = app_admin.perform_registration_from_request(request_bytes=request_bytes)
         self.perform_registration_set_response(response_bytes=response_bytes)

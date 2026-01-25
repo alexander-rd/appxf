@@ -18,6 +18,7 @@ from kiss_cf.gui.locale import _
 # needs a detailed review. Currently, getting the GUI and behavior right is
 # prioritized since it may considerably impact this implementation.
 
+log = logging.getLogger(__name__)
 
 class RegistrationUser:
     '''User-side registration GUI
@@ -265,3 +266,4 @@ class RegistrationUser:
                 pass
             return
         self.log.info('Admin keys loaded from %s', file_path)
+

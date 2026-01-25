@@ -8,6 +8,7 @@ from appxf.logging import logging
 from kiss_cf.config import Config
 from kiss_cf.registry import Registry
 
+from kiss_cf.gui import manual_config_update
 from kiss_cf.gui.setting_dict import SettingDictWindow
 from kiss_cf.gui.locale import _
 from kiss_cf.gui.registration_admin import RegistrationAdmin
@@ -72,10 +73,10 @@ class ConfigMenu(tkinter.Menu):
 
         # Adding options for USERs
         def load_config_update():
-            pass
-            # TODO: open file browser to select a config file update, load
-            # binary and try to apply to registry
-
+            manual_config_update.handle_manual_config_update_load(
+                parent=self._parent,
+                registry=self._registry,
+                initial_path=self._root_path)
             # TODO: Unfortunately, if anything in this operation goes wrong,
             # there is no communication path, yet. If input would contain a
             # frame with status, that one could be used for updates.
@@ -87,9 +88,10 @@ class ConfigMenu(tkinter.Menu):
 
         if 'admin' in self._registry.get_roles(user_id=0):
             def write_config_update():
-                pass
-                # TODO: open file browser to select a config file update, load
-                # binary and try to apply to registry
+                manual_config_update.handle_manual_config_update_write(
+                    parent=self._parent,
+                    registry=self._registry,
+                    initial_path=self._root_path)
 
                 # TODO: An option is missing to set the
                 # to-be-exported-sections. Actually, credentials that are not
