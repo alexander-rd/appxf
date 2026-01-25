@@ -16,16 +16,23 @@ from ._registry_base import RegistryBase
 from .shared_storage import SecureSharedStorage
 
 
-class KissRegistryError(Exception):
+class AppxfRegistryError(Exception):
     ''' General registry error '''
 
+class AppxfRegistryUnknownUser(Exception):
+    ''' Unknown user '''
 
-class KissRegistryUnitialized(Exception):
+class AppxfRegistryUnitialized(Exception):
     ''' Trying to use an uninitialized registry '''
 
+# TODO: manual config update would add such a missing section as "to be
+# removed". Maybe the registration step should behave likewise and this
+# exception is obsolete.
+class AppxfRegistryUnknownConfigSection(Exception):
+    ''' A referenced config section does not exist '''
 
-class KissRegistryUnknownConfigSection(Exception):
-    ''' Trying to use an uninitialized registry '''
+class AppxfRegistryRoleError(Exception):
+    ''' Operation failed due to user roles '''
 
 
 class Registry(RegistryBase):
@@ -134,7 +141,7 @@ class Registry(RegistryBase):
         if self._loaded:
             return None
         if not self.try_load():
-            KissRegistryUnitialized('Registry is not initialized.')
+            AppxfRegistryUnitialized('Registry is not initialized.')
 
     def try_load(self) -> bool:
         '''Load USER ID and/or USER DB
@@ -303,7 +310,7 @@ class Registry(RegistryBase):
         # Block usage if the user is already registered. In such a case, it
         # must not be possible to add admins.
         if self.is_initialized():
-            raise KissRegistryError(
+            raise AppxfRegistryError(
                 'Cannot set admin keys on initialized registry.')
 
         # get original data that was a list of tuples (user_id, encryption_key,
@@ -377,7 +384,7 @@ class Registry(RegistryBase):
         admin uses get_response_bytes() to send data back to user.
         '''
         if not self._loaded:
-            raise KissRegistryUnitialized(
+            raise AppxfRegistryUnitialized(
                 'registry is not yet loaded, cannot add user')
         # ensure synced state before update - exception being that the admin is
         # still the only existant user in which case, there is nothing to get
@@ -411,7 +418,7 @@ class Registry(RegistryBase):
         # check sections existing before applying
         for section in self._response_config_sections:
             if section not in self._config.sections:
-                raise KissRegistryUnknownConfigSection(
+                raise AppxfRegistryUnknownConfigSection(
                     f'Section {section} does not exist.')
         response = RegistrationResponse.new(
             user_id=user_id,
@@ -458,7 +465,7 @@ class Registry(RegistryBase):
                 signing_user=response_data['signing_user'],
                 roles = ['admin'])
             ):
-            raise KissRegistryError('Signature could not be verified')
+            raise AppxfRegistryError('Signature could not be verified')
 
         response_bytes = self._security.hybrid_decrypt(
             data=response_encrypted,
@@ -565,7 +572,9 @@ class Registry(RegistryBase):
             sections = self._response_config_sections
         self._ensure_loaded()
 
-        # TODO: block export if user is not admin.
+        if 'admin' not in self.get_roles(user_id=0):
+            raise AppxfRegistryRoleError(
+                'Only admin users can generate manual configuration updates.')
 
         data = {
                 'config_sections': {},
@@ -605,10 +614,10 @@ class Registry(RegistryBase):
         # TODO: check if author_key is KNOWN and an ADMIN
         author_id = self._user_db.get_user_by_validation_key(author_key)
         if author_id is None:
-            raise KissRegistryError(
+            raise AppxfRegistryError(
                 'Author of manual configuration update is unknown.')
         if not self._user_db.has_role(author_id, 'admin'):
-            raise KissRegistryError(
+            raise AppxfRegistryError(
                 'Author of manual configuration update is not an admin.')
 
         # unpack data
@@ -685,7 +694,7 @@ class Registry(RegistryBase):
                          storage_b=self._remote_user_db_storage,
                          only_a_to_b=True)
             else:
-                raise KissRegistryError(f'Mode {mode} is unknown.')
+                raise AppxfRegistryError(f'Mode {mode} is unknown.')
 
 
 

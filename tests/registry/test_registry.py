@@ -3,7 +3,7 @@ import pytest
 from unittest.mock import patch
 
 from kiss_cf.storage import Storage, CompactSerializer
-from kiss_cf.registry import Registry, KissRegistryError
+from kiss_cf.registry import Registry, AppxfRegistryError, AppxfRegistryRoleError
 
 from tests._fixtures import appxf_objects
 import tests._fixtures.test_sandbox
@@ -154,7 +154,7 @@ def test_registry_get_admin_keys(admin_initialized_registry):
     assert key_data[0][2] == admin_enc_key, 'Third in tuple should be encryption key'
 
     # also include the error message when using the set_admin_key_bytes on the admin instance.
-    with pytest.raises(KissRegistryError) as exc_info:
+    with pytest.raises(AppxfRegistryError) as exc_info:
         registry.set_admin_key_bytes(key_data_bytes)
     assert 'Cannot set admin keys' in str(exc_info.value)
     assert 'initialized registry' in str(exc_info.value)
@@ -329,3 +329,13 @@ def test_registry_manual_config_update(
     assert 'test_section' not in user_registry._config.sections
     assert 'fixed_section' in user_registry._config.sections
     assert user_registry._config.section('fixed_section')['test'] == 'fixed'
+
+def test_registry_manual_config_update_get_errors(
+        admin_user_initialized_registry_pair
+        ):
+    user_registry: Registry = admin_user_initialized_registry_pair[1]
+
+    # non-admin user should not be allowed to generate updates
+    with pytest.raises(AppxfRegistryRoleError) as exc_info:
+        user_registry.get_manual_config_update_bytes()
+    assert 'Only admin users' in str(exc_info.value)
