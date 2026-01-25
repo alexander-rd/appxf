@@ -18,7 +18,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from typing import Any, Iterable
 
-from kiss_cf.storage import CompactSerializer
+from kiss_cf.storage import CompactSerializer, Storage, LocalStorage
 
 class AppxfSecurityException(Exception):
     ''' General security related errors. '''
@@ -39,11 +39,6 @@ def _get_default_key_dict():
     }
 
 
-# TODO: it would be helpful being able to construct a security object in RAM
-# for unit testing. Currently, any testing on SecurePrivate or SecureShared or
-# involving Security/Registry would have to use the file system.
-
-
 class Security():
     '''Maintaining consistent encryption.
 
@@ -51,18 +46,27 @@ class Security():
     secret_key's
     '''
 
+    # TODO: allowing a path as storage would be nice such that users do not
+    # have to deal with LocalStorage when needing a Security object.
     def __init__(self,
                  salt: str,
-                 file: str = './data/security/keys',
+                 storage: Storage | str | None = None,
                  **kwargs):
         '''Get security context.
 
         The salt is used during password handling. It is a measure against
         rainbow table attacks. Any string will do it.
         '''
+        if storage is None:
+            storage = LocalStorage(
+                file='keys', path='./data/security')
+        elif isinstance(storage, str):
+            storage = LocalStorage.get(
+                file='keys', path=storage)
+
         super().__init__(**kwargs)
         self._salt = salt
-        self._file = file
+        self._storage = storage
         self._derived_key = b''
         self._key_dict = _get_default_key_dict()
 
@@ -73,13 +77,9 @@ class Security():
         '''
         # dump data
         data = pickle.dumps(self._key_dict)
-        # ensure path exists
-        file_dir = os.path.dirname(self._file)
-        if not os.path.exists(file_dir):
-            os.makedirs(file_dir)
         # write file
-        with open(self._file, 'wb') as f:
-            f.write(self._encrypt_to_bytes(self._derived_key, data))
+        self._storage.store_raw(
+            self._encrypt_to_bytes(self._derived_key, data))
 
     def _verify_version(self):
         ''' Verify correct version
@@ -99,8 +99,7 @@ class Security():
 
         Encryption is based on user's password (derived key)
         '''
-        with open(self._file, 'rb') as f:
-            data_encrypted = f.read()
+        data_encrypted = self._storage.load_raw()
         data = self._decrypt_from_bytes(self._derived_key, data_encrypted)
         self._key_dict = pickle.loads(data)
         self._verify_version()
@@ -112,7 +111,7 @@ class Security():
         security.init_user(). Recommended is using an APPXF provided user
         interface.
         '''
-        return os.path.exists(self._file)
+        return self._storage.exists()
 
     def is_user_unlocked(self):
         '''Return if user security context is unlocked.
@@ -141,7 +140,7 @@ class Security():
         self._write_keys()
 
     def unlock_user(self, password):
-        '''Unlock encryp/decrypt for user context by password.
+        '''Unlock encrypt/decrypt for user context by password.
 
         Loads the user's secret key. See init_user() on how it is stored. If
         the key is not correct, the underlying algorihms throws an exception
@@ -149,8 +148,7 @@ class Security():
         '''
         if not self.is_user_initialized():
             raise AppxfSecurityException(
-                'User is not initialized. Run init_user() '
-                f'if file {self._file} was lost.')
+                'User is not initialized. Run init_user().')
         self._derived_key = self._derive_key(password)
         self._load_keys()
 

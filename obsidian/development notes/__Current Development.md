@@ -1,5 +1,4 @@
-* finalize the new hybrid_signed_encrypt() implementation
-* utilize in registry
+* unit test for manual user config update (or feature BDD test)
 * add something to user interface
 	* Where?
 		* Top level menu

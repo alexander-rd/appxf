@@ -1,3 +1,4 @@
+import os
 import pytest
 from unittest.mock import patch
 
@@ -21,8 +22,7 @@ def fresh_registry(request):
     path = None
     # For debugging, you may want to use real files:
     path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(request)
-    print(path)
-    #path = env_base['dir']
+    path = os.path.join(path, 'default')
     return appxf_objects.get_fresh_registry(
         path=path,
         security=appxf_objects.get_security_unlocked(path),
@@ -41,25 +41,26 @@ def admin_user_initialized_registry_pair(request):
     # Usually, testing uses RAM objects (quicker)
     path = None
     # For debugging, you may want to use real files:
-    path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(request)
+    path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(
+        request)
 
     Storage.switch_context('admin')
+    admin_path=os.path.join(path, 'admin')
     admin_config = appxf_objects.get_dummy_user_config()
-    print(f'FANCY INIT obtained config for admin: {admin_config}')
     admin_registry = appxf_objects.get_fresh_registry(
-        path=path,
-        security=appxf_objects.get_security_unlocked(path),
+        path=admin_path,
+        security=appxf_objects.get_security_unlocked(admin_path),
         config=admin_config,
         local_name='local_registry_admin',
         remote_name='remote_registry')
     # Note: admin and user have their own config and security objects since
     # both are not file based.
     Storage.switch_context('user')
+    user_path = os.path.join(path, 'user')
     user_config = appxf_objects.get_dummy_user_config()
-    print(f'FANCY INIT obtained config for admin: {user_config}')
     user_registry = appxf_objects.get_fresh_registry(
-        path=path,
-        security=appxf_objects.get_security_unlocked(path),
+        path=user_path,
+        security=appxf_objects.get_security_unlocked(user_path),
         config=user_config,
         local_name='local_registry_user',
         remote_name='remote_registry')
@@ -245,3 +246,54 @@ def test_verify_signature_membership_and_roles(admin_user_initialized_registry_p
 # first user.
 
 # TODO: test case of adding a second admin
+
+def test_registry_manual_config_update(
+    admin_user_initialized_registry_pair, request):
+    admin_registry: Registry = admin_user_initialized_registry_pair[0]
+    user_registry: Registry = admin_user_initialized_registry_pair[1]
+
+    # Use cases to check:
+    #  * adding a NEW config section
+    #  * modifying an EXISTING config section
+    #  * removing a config section
+    #  * (no changes on an existing config section)
+    #  * update of USER DB
+
+    # Adding a second user for USER DB update tests (no path >> RAM storage)
+    sandbox_path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(request)
+    Storage.switch_context('new_user')
+    new_user_path = os.path.join(sandbox_path, 'new_user')
+    new_user_registry = appxf_objects.get_fresh_registry(
+        path=new_user_path,
+        security=appxf_objects.get_security_unlocked(new_user_path),
+        config=appxf_objects.get_dummy_user_config())
+    Storage.switch_context('admin')
+    admin_key_bytes = admin_registry.get_admin_key_bytes()
+    Storage.switch_context('new_user')
+    new_user_registry.set_admin_key_bytes(admin_key_bytes)
+    request_bytes = new_user_registry.get_request_bytes()
+    Storage.switch_context('admin')
+    request = admin_registry.get_request_data(request_bytes)
+    new_user_id = admin_registry.add_user_from_request(request=request, roles=['user', 'new'])
+    response_bytes = admin_registry.get_response_bytes(new_user_id)
+    Storage.switch_context('new_user')
+    new_user_registry.set_response_bytes(response_bytes)
+    print(f'New user ID: {new_user_id}')
+    Storage.switch_context('')
+
+    # Adding sections for testing - all at admin side to transfer to user
+    # before more testing
+    Storage.switch_context('admin')
+    admin_registry._config.add_section('test_section')
+    admin_registry._config.section('test_section')['test'] = (str, '42')
+    admin_registry._config.add_section('fixed_section')
+    admin_registry._config.section('fixed_section')['test'] = (str, 'fixed')
+    admin_registry._user_db.add_new(
+        validation_key=b'123',
+        encryption_key=b'456',
+        roles='')
+
+    config_list = ['test_section', 'fixed_section']
+
+    update_bytes = admin_registry.get_manual_config_update_bytes(
+        sections=config_list)

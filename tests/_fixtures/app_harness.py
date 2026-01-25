@@ -53,7 +53,7 @@ class AppHarness:
 
         # SECURITY
         self.file_sec = os.path.join(self.app_path, 'data/user/security')
-        self.security = Security(salt=self.salt, file=self.file_sec)
+        self.security = Security(salt=self.salt, storage=self.file_sec)
 
         # CONFIG::LOCAL USER
         self.path_user_config = os.path.join(self.app_path, 'data/user/config')
