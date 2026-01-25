@@ -4,7 +4,7 @@
 import os
 
 from kiss_cf.storage import LocalStorage, RamStorage
-from kiss_cf.security import Security, SecurityMock
+from kiss_cf.security import Security
 from kiss_cf.registry import Registry
 from kiss_cf.config import Config
 
@@ -20,14 +20,16 @@ def get_dummy_user_config() -> Config:
     return config
 
 ### Security Objects
-def get_security(path: str | None = None) -> Security:
+def get_security(path: str | bytes | None = None) -> Security:
     if path is None:
-        # use security mock
-        sec = SecurityMock()
+        storage = RamStorage()
+    elif isinstance(path, bytes):
+        storage = RamStorage(ram_area=str(path))
     else:
-        sec = Security(
-            salt='test',
-            file=os.path.join(path, 'user'))
+        storage = path
+    sec = Security(
+        salt='test',
+        storage=storage)
     return sec
 
 def get_security_initialized(

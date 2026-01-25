@@ -50,7 +50,7 @@ def test_security_init(sandbox_path):
     sec = appxf_objects.get_security(sandbox_path)
     sec.init_user(TEST_PASSWORD)
     # file should now be present:
-    assert os.path.exists(os.path.join(sandbox_path, 'user'))
+    assert os.path.exists(os.path.join(sandbox_path, 'keys'))
     # and user should be initialized:
     assert sec.is_user_initialized()
     # user is unlocked after initialization
