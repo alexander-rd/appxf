@@ -357,7 +357,18 @@ def test_manual_update_set_error_unknown_user(
     # user does not know about new_user at all:
     with pytest.raises(AppxfRegistryUnknownUser) as exc_info:
         user_registry.set_manual_config_update_bytes(update_bytes)
-    assert 'Author of manual configuration update is unknown' in str(exc_info.value)
+    assert 'is unknown' in str(exc_info.value)
+
+    # NOW we remove admin role from "new user" in admin and try to apply a
+    # manual update from "new user" who is still admin locally to original
+    # admin:
+    admin_registry.set_roles(3, ['user'])
+    assert admin_registry.get_roles(3) == ['user']
+    update_bytes = new_user_registry.get_manual_config_update_bytes()
+    with pytest.raises(AppxfRegistryRoleError) as exc_info:
+        admin_registry.set_manual_config_update_bytes(update_bytes)
+    assert 'is not an admin' in str(exc_info.value)
+
 
 # if author_id is None:
 #     raise AppxfRegistryUnknownUser(
