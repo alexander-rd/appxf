@@ -111,6 +111,15 @@ class Config():
         self.log.info(f'added section: {section}')
         return self._sections[section]
 
+    def remove_section(self, section: str):
+        ''' Remove section '''
+        if section in self._sections:
+            del self._sections[section]
+            self.log.info('removed section: %s', section)
+        else:
+            raise KissConfigError(
+                f'Cannot remove section, it does not exist: {section}')
+
     def store(self):
         ''' Store all sections '''
         for section in self._sections.values():

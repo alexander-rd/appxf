@@ -5,6 +5,7 @@ from appxf import logging
 
 from kiss_cf.storage import sync, CompactSerializer, StorageToBytes
 from kiss_cf.config import Config
+from kiss_cf.setting import SettingDict
 from kiss_cf.security import Security, SecurePrivateStorage
 
 from ._registration_request import RegistrationRequest
@@ -482,7 +483,7 @@ class Registry(RegistryBase):
         self._user_db.store()
 
         self.log.info(
-            'Registration response assigned USER ID %i'
+            'Registration response assigned USER ID %i '
             'and included config section %s.',
             response.user_id, str(response.config_sections.keys())
             )
@@ -554,26 +555,29 @@ class Registry(RegistryBase):
         ) -> bytes:
         ''' get manual configuration update bytes
 
-        Bytes are likely stored into a file and can be sent to registered users
-        where they can apply this to set_manual_update_bytes().
+        Config sections are exported with their full state. Settings would be
+        added or removed and all options (like visibility) are included.
+        Sections that are included in the section list but are not existing any
+        more in the config object are removed on the receiving side. However,
+        FILES FOR CONFIG sections ARE NOT DELETED.
         '''
         if sections is None:
             sections = self._response_config_sections
         self._ensure_loaded()
 
-        # check sections existing before applying
-        for section in self._response_config_sections:
-            if section not in self._config.sections:
-                raise KissRegistryUnknownConfigSection(
-                    f'Section {section} does not exist.')
+        # TODO: block export if user is not admin.
 
-        # construct data
         data = {
-            'config_sections': {
-                section: dict(self._config.section(section))
-                for section in self._response_config_sections
-                }
-        }
+                'config_sections': {},
+                'obsolete_config_sections': []
+            }
+        for section in sections:
+            if section not in self._config.sections:
+                data['obsolete_config_sections'].append(section)
+                continue
+            data['config_sections'][section] = self._config.section(
+                section
+                ).get_state(options=SettingDict.FullExport)
         if include_user_db:
             data['user_db'] = self._user_db.get_state()
         data_bytes = CompactSerializer.serialize(data)
@@ -610,9 +614,14 @@ class Registry(RegistryBase):
         # unpack data
         data_dict: dict = CompactSerializer.deserialize(data_bytes)
         # apply to config sections
-        for section in data_dict.get('config_sections', {}):
-            self._config.section(section).update(
-                data_dict['config_sections'][section])
+        for section in data_dict.get('obsolete_config_sections', []):
+            if section in self._config.sections:
+                self._config.remove_section(section)
+        for section, section_state in data_dict.get('config_sections', {}).items():
+            if section not in self._config.sections:
+                self._config.add_section(section)
+            self._config.section(section).set_state(
+                section_state, options=SettingDict.FullExport)
             self._config.section(section).store()
         # update user db
         if 'user_db' in data_dict:
