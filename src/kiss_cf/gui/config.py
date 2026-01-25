@@ -77,9 +77,9 @@ class ConfigMenu(tkinter.Menu):
                 parent=self._parent,
                 registry=self._registry,
                 initial_path=self._root_path)
-            # TODO: Unfortunately, if anything in this operation goes wrong,
-            # there is no communication path, yet. If input would contain a
-            # frame with status, that one could be used for updates.
+            # TODO #43: Unfortunately, if anything in this operation goes
+            # wrong, there is no communication path, yet. If input would
+            # contain a frame with status, that one could be used for updates.
 
         self.add_command(
             label=_('menu', 'Load Config Update'),
@@ -93,7 +93,7 @@ class ConfigMenu(tkinter.Menu):
                     registry=self._registry,
                     initial_path=self._root_path)
 
-                # TODO: An option is missing to set the
+                # TODO #44: An option is missing to set the
                 # to-be-exported-sections. Actually, credentials that are not
                 # required for particular roles should NOT be exported to them.
                 # .. BUT .. config sections have no such information attached.

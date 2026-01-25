@@ -14,3 +14,5 @@
 	* ToDo numbers
 	* Coverage Numbers
 * Tracing (documentation to code)
+* Diff branch against head and filter any new TODO. Intend is to enable a review before conclusions.
+	* Fallback: scan branch in github
