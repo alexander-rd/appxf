@@ -89,7 +89,7 @@ def admin_user_initialized_registry_pair(request):
     Storage.switch_context('')
     Storage.reset()
 
-def test_registry_init(fresh_registry):
+def test_init(fresh_registry):
     registry: Registry = fresh_registry
     # exactly adming and user should be present
     assert 'admin' in registry.get_roles()
@@ -101,7 +101,7 @@ def test_registry_init(fresh_registry):
     assert not registry.get_users()
 
 
-def test_registry_admin_init(admin_initialized_registry):
+def test_admin_init(admin_initialized_registry):
     registry: Registry = admin_initialized_registry
     assert registry.is_initialized()
 
@@ -114,7 +114,7 @@ def test_registry_admin_init(admin_initialized_registry):
     assert 'admin' in registry.get_roles(0)
     assert 'user' in registry.get_roles(0)
 
-def test_registry_user_init(admin_user_initialized_registry_pair):
+def test_user_init(admin_user_initialized_registry_pair):
     admin_registry: Registry = admin_user_initialized_registry_pair[0]
     user_registry: Registry = admin_user_initialized_registry_pair[1]
     #assert user_registry.is_initialized()
@@ -138,7 +138,7 @@ def test_registry_user_init(admin_user_initialized_registry_pair):
     assert 'new' in user_registry.get_roles()
     assert len(user_registry.get_roles()) == 3
 
-def test_registry_get_admin_keys(admin_initialized_registry):
+def test_get_admin_keys(admin_initialized_registry):
     registry: Registry = admin_initialized_registry
     admin_val_key = registry._user_db.get_verification_key(1)
     admin_enc_key = registry._user_db.get_encryption_key(1)
@@ -160,7 +160,7 @@ def test_registry_get_admin_keys(admin_initialized_registry):
     assert 'Cannot set admin keys' in str(exc_info.value)
     assert 'initialized registry' in str(exc_info.value)
 
-def test_registry_set_admin_keys(fresh_registry):
+def test_set_admin_keys(fresh_registry):
     registry: Registry = fresh_registry
     assert len(registry.get_users()) == 0
     # manually build admin key data just using the users public keys:
@@ -175,7 +175,7 @@ def test_registry_set_admin_keys(fresh_registry):
     assert registry._user_db.get_verification_key(1) == data[0][1]
     assert registry._user_db.get_encryption_key(1) == data[0][2]
 
-def test_registry_existing_user(admin_user_initialized_registry_pair):
+def test_existing_user(admin_user_initialized_registry_pair):
     admin_registry: Registry = admin_user_initialized_registry_pair[0]
     user_registry: Registry = admin_user_initialized_registry_pair[1]
     user_id = user_registry.user_id
@@ -242,13 +242,7 @@ def test_verify_signature_membership_and_roles(admin_user_initialized_registry_p
         roles=['admin']
     )
 
-
-# TODO: test case adding a second user and information being transferred to
-# first user.
-
-# TODO: test case of adding a second admin
-
-def test_registry_manual_config_update(
+def test_manual_config_update(
     admin_user_initialized_registry_pair, request):
     admin_registry: Registry = admin_user_initialized_registry_pair[0]
     user_registry: Registry = admin_user_initialized_registry_pair[1]
@@ -268,10 +262,10 @@ def test_registry_manual_config_update(
         path=new_user_path,
         security=appxf_objects.get_security_unlocked(new_user_path),
         config=appxf_objects.get_dummy_user_config())
-    appxf_objects.register_fresh_registry(
-        fresh_registry=new_user_registry,
+    appxf_objects.perform_registration(
+        registry=new_user_registry,
         admin_registry=admin_registry,
-        fresh_scope='new_user', admin_scope='admin')
+        storage_scope='new_user', admin_storage_scope='admin')
 
     # Adding sections for testing - all at admin side to transfer to user
     # before more testing
@@ -345,10 +339,10 @@ def test_manual_update_set_error_unknown_user(
         path=new_user_path,
         security=appxf_objects.get_security_unlocked(new_user_path),
         config=appxf_objects.get_dummy_user_config())
-    appxf_objects.register_fresh_registry(
-        fresh_registry=new_user_registry,
+    appxf_objects.perform_registration(
+        registry=new_user_registry,
         admin_registry=admin_registry,
-        fresh_scope='new_user', admin_scope='admin',
+        storage_scope='new_user', admin_storage_scope='admin',
         roles=['user', 'admin'])
 
     update_bytes = new_user_registry.get_manual_config_update_bytes(
@@ -368,11 +362,3 @@ def test_manual_update_set_error_unknown_user(
     with pytest.raises(AppxfRegistryRoleError) as exc_info:
         admin_registry.set_manual_config_update_bytes(update_bytes)
     assert 'is not an admin' in str(exc_info.value)
-
-
-# if author_id is None:
-#     raise AppxfRegistryUnknownUser(
-#         'Author of manual configuration update is unknown.')
-# if not self._user_db.has_role(author_id, 'admin'):
-#     raise AppxfRegistryRoleError(
-#         'Author of manual configuration update is not an admin.')

@@ -5,7 +5,9 @@
 * Flake runs are clean
 * MO/PO files are updated (all translations available)
 * TODO's are assigned to a ticket
-
+* Functions are documented
+	* How much depends on exposure
+	* Minimum for public functions: Purpose (summary) and type annotation (including returns)
 ## Monitoring
 * Health dashboard would report
 	* Flake8 status
