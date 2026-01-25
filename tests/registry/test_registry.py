@@ -288,12 +288,44 @@ def test_registry_manual_config_update(
     admin_registry._config.section('test_section')['test'] = (str, '42')
     admin_registry._config.add_section('fixed_section')
     admin_registry._config.section('fixed_section')['test'] = (str, 'fixed')
-    admin_registry._user_db.add_new(
-        validation_key=b'123',
-        encryption_key=b'456',
-        roles='')
 
-    config_list = ['test_section', 'fixed_section']
+    section_list = ['test_section', 'fixed_section']
 
+    # Handling an empty update
     update_bytes = admin_registry.get_manual_config_update_bytes(
-        sections=config_list)
+        sections=[], include_user_db=False)
+    user_registry.set_manual_config_update_bytes(update_bytes)
+    assert admin_registry.get_users() == {1, 2 , 3}
+    assert user_registry.get_users() == {1, 2}
+    assert 'USER' in user_registry._config.sections
+    assert 'test_section' not in user_registry._config.sections
+    assert 'fixed_section' not in user_registry._config.sections
+
+    # Update sections and USER DB
+    update_bytes = admin_registry.get_manual_config_update_bytes(
+        sections=section_list)
+    user_registry.set_manual_config_update_bytes(update_bytes)
+    assert user_registry.get_users() == {1, 2, 3}
+    assert 'test_section' in user_registry._config.sections
+    assert user_registry._config.section('test_section')['test'] == '42'
+    assert 'fixed_section' in user_registry._config.sections
+    assert user_registry._config.section('fixed_section')['test'] == 'fixed'
+
+    # Change value
+    admin_registry._config.section('test_section')['test'] = 'changed'
+    update_bytes = admin_registry.get_manual_config_update_bytes(
+        sections=section_list)
+    user_registry.set_manual_config_update_bytes(update_bytes)
+    assert 'test_section' in user_registry._config.sections
+    assert user_registry._config.section('test_section')['test'] == 'changed'
+    assert 'fixed_section' in user_registry._config.sections
+    assert user_registry._config.section('fixed_section')['test'] == 'fixed'
+
+    # Remove section
+    admin_registry._config.remove_section('test_section')
+    update_bytes = admin_registry.get_manual_config_update_bytes(
+        sections=section_list)
+    user_registry.set_manual_config_update_bytes(update_bytes)
+    assert 'test_section' not in user_registry._config.sections
+    assert 'fixed_section' in user_registry._config.sections
+    assert user_registry._config.section('fixed_section')['test'] == 'fixed'

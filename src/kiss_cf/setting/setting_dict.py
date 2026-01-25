@@ -88,6 +88,19 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         # the exceptions to True was then selected for transprency to avoid
         # silent "misbehavior" just because of a type in JSON files.
 
+    FullExport = ExportOptions(
+        name=True,
+        type=True,
+        value_options=True,
+        display_options=True,
+        control_options=True,
+        export_defaults=True,
+        exception_on_missing_key=False,
+        exception_on_new_key=False,
+        remove_missing_keys=True,
+        add_new_keys=True)
+
+
     def __init__(self,
                  settings: Mapping[str, Any] | None = None,
                  storage: Storage | None = None,
