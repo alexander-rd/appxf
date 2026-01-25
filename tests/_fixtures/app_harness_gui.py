@@ -32,24 +32,13 @@ class AppHarnessGui():
         # within the menus.
 
         # --- Config Menu --- #
-        configMenu = ConfigMenu(app, self.harness.config)
+        configMenu = ConfigMenu(
+            parent=app,
+            config=self.harness.config,
+            registry=self.harness.registry,
+            root_path=self.harness.root_path)
         # gui_root.frame_menu.add_separator()
         app.frame_menu.add_cascade(label='Config', menu=configMenu)
-
-        # --- Registration Menu --- #
-        if (self.harness.registry_enabled and
-            self.harness.registry.is_initialized() and
-            'admin' in self.harness.registry.get_roles(user_id=0)
-            ):
-            def show_registration():
-                registration = RegistrationAdmin(
-                    registry=self.harness.registry,
-                    root_dir=self.harness.root_path,
-                    user_config=self.harness.config.section('USER'))
-                registration.show()
-            app.frame_menu.add_command(
-                label='Registration',
-                command=show_registration)
 
         app.mainloop()
 
