@@ -3,7 +3,7 @@ name: Test Windows
 # gernetes independent badges.
 
 on:
-#  - push
+  - push
   - pull_request
 
 jobs:
