@@ -3,7 +3,8 @@ import pytest
 from unittest.mock import patch
 
 from kiss_cf.storage import Storage, CompactSerializer
-from kiss_cf.registry import Registry, AppxfRegistryError, AppxfRegistryRoleError
+from kiss_cf.registry import Registry, AppxfRegistryError, \
+    AppxfRegistryUnknownUser, AppxfRegistryRoleError
 
 from tests._fixtures import appxf_objects
 import tests._fixtures.test_sandbox
@@ -267,19 +268,10 @@ def test_registry_manual_config_update(
         path=new_user_path,
         security=appxf_objects.get_security_unlocked(new_user_path),
         config=appxf_objects.get_dummy_user_config())
-    Storage.switch_context('admin')
-    admin_key_bytes = admin_registry.get_admin_key_bytes()
-    Storage.switch_context('new_user')
-    new_user_registry.set_admin_key_bytes(admin_key_bytes)
-    request_bytes = new_user_registry.get_request_bytes()
-    Storage.switch_context('admin')
-    request = admin_registry.get_request_data(request_bytes)
-    new_user_id = admin_registry.add_user_from_request(request=request, roles=['user', 'new'])
-    response_bytes = admin_registry.get_response_bytes(new_user_id)
-    Storage.switch_context('new_user')
-    new_user_registry.set_response_bytes(response_bytes)
-    print(f'New user ID: {new_user_id}')
-    Storage.switch_context('')
+    appxf_objects.register_fresh_registry(
+        fresh_registry=new_user_registry,
+        admin_registry=admin_registry,
+        fresh_scope='new_user', admin_scope='admin')
 
     # Adding sections for testing - all at admin side to transfer to user
     # before more testing
@@ -330,7 +322,7 @@ def test_registry_manual_config_update(
     assert 'fixed_section' in user_registry._config.sections
     assert user_registry._config.section('fixed_section')['test'] == 'fixed'
 
-def test_registry_manual_config_update_get_errors(
+def test_manual_update_get_errors(
         admin_user_initialized_registry_pair
         ):
     user_registry: Registry = admin_user_initialized_registry_pair[1]
@@ -339,3 +331,37 @@ def test_registry_manual_config_update_get_errors(
     with pytest.raises(AppxfRegistryRoleError) as exc_info:
         user_registry.get_manual_config_update_bytes()
     assert 'Only admin users' in str(exc_info.value)
+
+def test_manual_update_set_error_unknown_user(
+    admin_user_initialized_registry_pair, request):
+    admin_registry: Registry = admin_user_initialized_registry_pair[0]
+    user_registry: Registry = admin_user_initialized_registry_pair[1]
+
+    # Adding a second admin
+    sandbox_path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(request)
+    Storage.switch_context('new_user')
+    new_user_path = os.path.join(sandbox_path, 'new_user')
+    new_user_registry = appxf_objects.get_fresh_registry(
+        path=new_user_path,
+        security=appxf_objects.get_security_unlocked(new_user_path),
+        config=appxf_objects.get_dummy_user_config())
+    appxf_objects.register_fresh_registry(
+        fresh_registry=new_user_registry,
+        admin_registry=admin_registry,
+        fresh_scope='new_user', admin_scope='admin',
+        roles=['user', 'admin'])
+
+    update_bytes = new_user_registry.get_manual_config_update_bytes(
+        sections=[], include_user_db=False)
+
+    # user does not know about new_user at all:
+    with pytest.raises(AppxfRegistryUnknownUser) as exc_info:
+        user_registry.set_manual_config_update_bytes(update_bytes)
+    assert 'Author of manual configuration update is unknown' in str(exc_info.value)
+
+# if author_id is None:
+#     raise AppxfRegistryUnknownUser(
+#         'Author of manual configuration update is unknown.')
+# if not self._user_db.has_role(author_id, 'admin'):
+#     raise AppxfRegistryRoleError(
+#         'Author of manual configuration update is not an admin.')

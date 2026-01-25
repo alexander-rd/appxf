@@ -159,7 +159,7 @@ class UserDatabase(Storable):
         '''
         for role in self._role_map:
             if user_id in self._role_map[role]:
-                self._role_map[role].remove(id)
+                self._role_map[role].remove(user_id)
             if (not self._role_map[role] and
                     not role == 'user' and
                     not role == 'admin'):

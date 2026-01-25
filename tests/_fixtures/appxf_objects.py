@@ -3,7 +3,7 @@
 
 import os
 
-from kiss_cf.storage import LocalStorage, RamStorage
+from kiss_cf.storage import LocalStorage, RamStorage, Storage
 from kiss_cf.security import Security
 from kiss_cf.registry import Registry
 from kiss_cf.config import Config
@@ -87,3 +87,30 @@ def get_registry_admin_initialized(path: str,
                              remote_name=remote_name)
     reg.initialize_as_admin()
     return reg
+
+def register_fresh_registry(
+        fresh_registry: Registry,
+        admin_registry: Registry,
+        fresh_scope: str = 'user',
+        admin_scope: str = 'admin',
+        roles: list[str] | None = None):
+    if roles is None:
+        roles = ['user']
+
+    # Ensure admin keys are available:
+    Storage.switch_context(admin_scope)
+    admin_key_bytes = admin_registry.get_admin_key_bytes()
+    Storage.switch_context(fresh_scope)
+    fresh_registry.set_admin_key_bytes(admin_key_bytes)
+    # Get request and register:
+    request_bytes = fresh_registry.get_request_bytes()
+    Storage.switch_context(admin_scope)
+    request = admin_registry.get_request_data(request_bytes)
+    new_user_id = admin_registry.add_user_from_request(request=request, roles=roles)
+    print(f'{admin_scope} (user ID {admin_registry.user_id}) registered '
+          f'{fresh_scope} with USER ID {new_user_id} and roles {roles}')
+    response_bytes = admin_registry.get_response_bytes(new_user_id)
+    # Apply response to fresh registry
+    Storage.switch_context(fresh_scope)
+    fresh_registry.set_response_bytes(response_bytes)
+    Storage.switch_context('')

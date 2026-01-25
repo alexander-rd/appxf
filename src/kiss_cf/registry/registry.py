@@ -263,6 +263,16 @@ class Registry(RegistryBase):
         '''
         return self._user_db.get_users(role=role)
 
+    def remove_user(self, user_id: int, purge: bool = False):
+        ''' Remove user from user database
+        '''
+        self._ensure_loaded()
+        if purge:
+            self._user_db.purge_user(user_id)
+        else:
+            self._user_db.remove_user(user_id)
+        self._user_db.store()
+
     # #########################/
     # Admin Init OR Admin Keys
     # /
@@ -614,10 +624,10 @@ class Registry(RegistryBase):
         # TODO: check if author_key is KNOWN and an ADMIN
         author_id = self._user_db.get_user_by_validation_key(author_key)
         if author_id is None:
-            raise AppxfRegistryError(
+            raise AppxfRegistryUnknownUser(
                 'Author of manual configuration update is unknown.')
         if not self._user_db.has_role(author_id, 'admin'):
-            raise AppxfRegistryError(
+            raise AppxfRegistryRoleError(
                 'Author of manual configuration update is not an admin.')
 
         # unpack data
