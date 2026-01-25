@@ -36,7 +36,6 @@ application.
 __Step 8:__ Even if the admin closes the application and reloads the request
 and adds the user again, it will be added with the same user ID.
 '''
-import os
 from appxf_matema.case_runner import ManualCaseRunner
 from tests._fixtures import test_sandbox
 from tests._fixtures.app_harness import AppHarness
