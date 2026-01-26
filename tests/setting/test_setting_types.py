@@ -300,6 +300,7 @@ class TestSettingEmail(BaseSettingTest):
     simple_input = SettingCase(input='some@thing.de', value='some@thing.de')
     valid_input = [
         SettingCase(input='some@thing.it'),
+        SettingCase(input='with-minus@domain.net'),
     ]
 
 class TestSettingBool(BaseSettingTest):
