@@ -3,11 +3,13 @@
 from __future__ import annotations
 from typing import Type, Any
 from dataclasses import dataclass
+from email_validator import validate_email, EmailNotValidError
 
 import base64
 import binascii
 import re
 import configparser
+
 
 from .setting import Setting, _BaseTypeT
 
@@ -69,17 +71,12 @@ class SettingEmail(SettingString):
     def _validated_conversion(self, value: Any) -> tuple[bool, str]:
         if not super()._validated_conversion(value)[0]:
             return False, self.get_default()
-        # Check Email based on regexp, taken from here:
-        # https://stackabuse.com/python-validate-email-address-with-regular-expressions-regex/
-        regex = (r'([A-Za-z0-9]+[.-_])*'
-                 r'[A-Za-z0-9]+@'
-                 r'[A-Za-z0-9-]+'
-                 r'(\.[A-Z|a-z]{2,})+')
-        # fallback to generic regexp handling
-        regex = re.compile(regex)
-        if not re.fullmatch(regex, value):
+        # use email-validator package
+        try:
+            validate_email(value, check_deliverability=False)
+            return True, value
+        except EmailNotValidError:
             return False, self.get_default()
-        return True, value
 
 
 class SettingPassword(SettingString):
