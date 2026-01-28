@@ -57,21 +57,14 @@ class RegistrationUser:
                 'Make sure you load admin keys before calling user registration '
                 'when hiding the admin keys section.')
 
-        # Build GUI now
-        self._build_user_gui()
-
-        # TODO: How check(), __init__ and _show_user_gui work together does not
-        # seem to be nice. In particular, the GUI woulid be build even though
-        # the check may not require it, consuming time while not required.
-        # However, it is not clear if this GUI may be required when the user
-        # wants to (needs to?) generate a request even though the user is
-        # already registered. Upon problems in config data? Upon re-generation
-        # of keys??
-
     def check(self) -> bool:
         ''' Check and return registration status, using GUI when needed '''
         if not self._registry.is_initialized():
+            self.log.debug('Registration not yet initialized.')
+            self._build_user_gui()
             self._show_user_gui()
+        else:
+            self.log.debug('Registration is initialized.')
         return self._registry.is_initialized()
 
     def _show_user_gui(self):

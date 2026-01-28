@@ -56,6 +56,10 @@ class Security():
 
         The salt is used during password handling. It is a measure against
         rainbow table attacks. Any string will do it.
+
+        If no storage is provided, a LocalStorage for the files system at
+        ./data/security/keys is used. The keys will be encrypted by a key
+        derived from the password.
         '''
         if storage is None:
             storage = LocalStorage(
