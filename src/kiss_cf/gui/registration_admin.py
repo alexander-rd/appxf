@@ -11,7 +11,7 @@ from tkinter import filedialog, messagebox
 from appxf import logging
 from kiss_cf.registry import Registry
 from kiss_cf.setting import Setting, SettingDict
-from kiss_cf.gui.setting_dict import SettingDictSingleFrame
+from kiss_cf.gui.setting_dict import SettingDictSingleFrame, SettingDictColumnFrame
 
 # TODO: This file is in DRAFT STATUS, mostly generated with GitHub copilot and
 # needs a detailed review. Currently, getting the GUI and behavior right is
@@ -114,7 +114,6 @@ class RegistrationAdmin:
             key: Setting.new(self._user_config.get_setting(key).get_type())
             for key in self._user_config.keys()
             })
-        self._user_config.get_setting('email').get_type()
 
         self._user_data_frame = SettingDictSingleFrame(
             section2_frame,
@@ -122,31 +121,18 @@ class RegistrationAdmin:
         self._user_data_frame.pack(fill='both', expand=True)
 
         # ==== SECTION 3: Role Selection ====
-        section3_frame = tkinter.LabelFrame(
-            self._admin_window,
-            text='Assign Roles',
-            padx=10,
-            pady=10,
-        )
-        section3_frame.pack(fill='x', padx=10, pady=5)
-
         # Get available roles from registry
-        try:
-            available_roles = self._registry.get_roles()
-        except (ValueError, KeyError, RuntimeError) as e:
-            self.log.error('Failed to get available roles: %s', e)
-            available_roles = ['user', 'admin']  # Fallback to default roles
+        available_roles = self._registry.get_roles()
+        self._roles_setting_dict = SettingDict({
+            role: (bool, role == 'user')
+            for role in available_roles})
 
-        for role in available_roles:
-            var = tkinter.BooleanVar(
-                value=(role == 'user'),
-            )  # Default: user role
-            checkbox = tkinter.Checkbutton(
-                section3_frame,
-                text=role.capitalize(),
-                variable=var)
-            checkbox.pack(anchor='w', padx=10, pady=2)
-            self._role_vars[role] = var
+        section3_frame = SettingDictColumnFrame(
+            parent=self._admin_window,
+            frame_label='Assign Roles',
+            setting=self._roles_setting_dict,
+            columns=3)
+        section3_frame.pack(fill='x', padx=10, pady=5)
 
         # ==== SECTION 4: Admin Action Buttons ====
         section4_frame = tkinter.Frame(self._admin_window)
@@ -167,14 +153,10 @@ class RegistrationAdmin:
                 return
 
             # Get selected roles from checkboxes
-            selected_roles = [r for r, v in self._role_vars.items() if v.get()]
-            if not selected_roles:
-                messagebox.showwarning(
-                    'No Roles',
-                    'Please select at least one role',
-                    parent=self._admin_window,
-                )
-                return
+            selected_roles = [
+                role for role in self._roles_setting_dict
+                if self._roles_setting_dict[role]]
+            self.log.debug('Selected roles: %s', selected_roles)
 
             try:
                 # Add user to registry with selected roles
@@ -199,10 +181,10 @@ class RegistrationAdmin:
                 )
                 self._current_user_id = user_id
             except (ValueError, KeyError) as e:
-                self.log.error('Failed to add user: %s', e)
+                self.log.exception('Failed to add user.')
                 messagebox.showerror(
                     'Error',
-                    f'Failed to add user: {e}',
+                    f'Failed to add user (see log for details).',
                     parent=self._admin_window,
                 )
 

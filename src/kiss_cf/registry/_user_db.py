@@ -104,7 +104,9 @@ class UserDatabase(Storable):
                 match_found += 1
             # if keys exist with consistent IDs, update roles and conclude
             if match_found == 2:
-                self.log.info(f'new user already existing with ID {user_id}')
+                self.log.info(
+                    'New user already existing with ID %i. Updating roles to %s',
+                     user_id, str(roles))
                 self.set_roles(user_id, roles)
                 return user_id
             # if keys exist but are inconsistent:
@@ -258,6 +260,8 @@ class UserDatabase(Storable):
                 self._role_map[role].remove(user_id)
         for role in roles:
             if role not in current_roles:
+                if role not in self._role_map.keys():
+                    self._role_map[role] = set()
                 self._role_map[role].add(user_id)
         self._user_db[user_id]['roles'] = roles
 

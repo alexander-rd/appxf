@@ -3,7 +3,7 @@
 from __future__ import annotations
 from appxf import logging
 
-from kiss_cf.storage import sync, CompactSerializer, StorageToBytes
+from kiss_cf.storage import sync, CompactSerializer, StorageToBytes, LocalStorage
 from kiss_cf.config import Config
 from kiss_cf.setting import SettingDict
 from kiss_cf.security import Security, SecurePrivateStorage
@@ -75,25 +75,25 @@ class Registry(RegistryBase):
     The registry is a prerequisite for two use cases:
      * Users sharing data securely via some remote storage
      * Admins updating access credentials for users (manual and automated)
+
+    Default storage is consistent with the Security object and the files
+    user_db, user_id are stored in ./data/security.
     '''
     log = logging.getLogger(__name__ + '.Registry')
 
 
     def __init__(self,
-                 local_storage_factory: StorageToBytes.Factory,
                  security: Security,
                  config: Config,
                  user_config_section: str = 'USER',
                  response_config_sections: list[str] | None = None,
+                 default_roles: list[str] | None = None,
+                 local_storage_factory: StorageToBytes.Factory | None = None,
                  remote_storage_factory: StorageToBytes.Factory | None = None,
                  **kwargs):
         ''' Create Registry Handler
 
         Keyword Arguments:
-            local_storage_factory -- The local storage is where your view on
-                the user database is stored for offline usage. This is
-                typically LocalStorage and Registry stores data via
-                SecurePrivateStorage.
             security -- a local login Security object is required to employ the
                 SecurePrivate storage for the local use database and
                 SecureShared storage for remote_storage (see below).
@@ -105,6 +105,11 @@ class Registry(RegistryBase):
             response_config_sections -- A list of configuration section names
                 which are exported during registration and during manual
                 configuration updates.
+            default_roles -- List of roles which are always present.
+            local_storage_factory -- The local storage is where your view on
+                the user database is stored for offline usage. This is
+                typically LocalStorage and Registry stores data via
+                SecurePrivateStorage.
             remote_storage_factory -- The remote storage is where the overall
                 user database is stored for all users to sync with. A typical
                 use case is FtpStorage while also LocalStorage may be used.
@@ -114,12 +119,18 @@ class Registry(RegistryBase):
         self._loaded = False
         self._security = security
         self._config = config
+        if default_roles is None:
+            default_roles = ['admin', 'user']
+        self._default_roles = default_roles
         self._local_storage_factory = local_storage_factory
         self._remote_storage_factory = remote_storage_factory
         self._user_config_section = user_config_section
         if response_config_sections is None:
             response_config_sections = []
         self._response_config_sections = response_config_sections
+        if local_storage_factory is None:
+            local_storage_factory = LocalStorage.get_factory(
+                path='./data/security')
 
         # USER_ID does not need to be secured
         self._user_id = UserId(local_storage_factory('USER_ID'))
@@ -272,7 +283,9 @@ class Registry(RegistryBase):
     def get_roles(self, user_id: int | None = None) -> list[str]:
         # Documentation in RegistryBase
         if user_id is None:
-            return self._user_db.get_roles()
+            roles = list(set(self._user_db.get_roles()) | set(self._default_roles))
+            return list(roles)
+
         if user_id < 0:
             raise ValueError(
                 f'User ID {user_id} is unexpected. '
