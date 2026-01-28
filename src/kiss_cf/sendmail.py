@@ -108,7 +108,11 @@ def send(email: list[Email] | Email,
                       f'CC: {" ".join(cc)}, '
                       f'BCC: {" ".join(bcc)}')
 
-            target = set(to + cc + bcc)
+            target_list = \
+                [a for a in to  if a] +\
+                [a for a in cc  if a] +\
+                [a for a in bcc if a]
+            target = set(target_list)
             if debug_substituttion_email:
                 log.debug(
                     f'Using substitution Email: '
