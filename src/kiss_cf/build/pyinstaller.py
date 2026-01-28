@@ -183,9 +183,6 @@ def build(
 
 def copy_additional_files(files: List[Path]) -> None:
     '''Copy additional files to the dist directory.'''
-    if not files:
-        return
-
     DIST_PATH.mkdir(parents=True, exist_ok=True)
 
     for file_path in files:
