@@ -1,8 +1,8 @@
 
 import pytest
-from kiss_cf.storage import AppxfStorableError, RamStorage, Storage
-from kiss_cf.setting import SettingDict
-from kiss_cf.config import Config, KissConfigError
+from appxf_private.storage import AppxfStorableError, RamStorage, Storage
+from appxf_private.setting import SettingDict
+from appxf_private.config import Config, KissConfigError
 
 @pytest.fixture(autouse=True)
 def setup():

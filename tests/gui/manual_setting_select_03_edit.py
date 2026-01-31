@@ -2,8 +2,8 @@
 TBD
 '''
 from appxf_matema.case_runner import ManualCaseRunner
-from kiss_cf.gui.setting_dict import SettingDictSingleFrame
-from kiss_cf.setting import Setting, SettingDict
+from appxf_private.gui.setting_dict import SettingDictSingleFrame
+from appxf_private.setting import Setting, SettingDict
 
 # Scope: SettingSelect edit options functionality
 

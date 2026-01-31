@@ -6,7 +6,7 @@ which is required to reach initialized applications.
 import os
 import shutil
 import pytest
-from kiss_cf.storage import Storage
+from appxf_private.storage import Storage
 from tests._fixtures.app_harness import AppHarness
 import tests._fixtures.test_sandbox
 from tests._fixtures.test_sandbox import project_version

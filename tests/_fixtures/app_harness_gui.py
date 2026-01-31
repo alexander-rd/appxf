@@ -1,7 +1,7 @@
 ''' Provide a GUI for the application harness '''
 import os
-from kiss_cf.gui import KissApplication, ConfigMenu, Login
-from kiss_cf.gui import RegistrationUser, RegistrationAdmin
+from appxf_private.gui import KissApplication, ConfigMenu, Login
+from appxf_private.gui import RegistrationUser, RegistrationAdmin
 from tests._fixtures.app_harness import AppHarness
 
 

@@ -7,8 +7,8 @@ fixture.
 
 import os
 import pytest
-from kiss_cf.security import SecurePrivateStorage, Security
-from kiss_cf.storage import LocalStorage, Storage
+from appxf_private.security import SecurePrivateStorage, Security
+from appxf_private.storage import LocalStorage, Storage
 
 from tests._fixtures import test_sandbox, appxf_objects
 

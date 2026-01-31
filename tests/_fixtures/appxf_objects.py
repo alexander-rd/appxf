@@ -3,10 +3,10 @@
 
 import os
 
-from kiss_cf.storage import LocalStorage, RamStorage, Storage
-from kiss_cf.security import Security
-from kiss_cf.registry import Registry
-from kiss_cf.config import Config
+from appxf_private.storage import LocalStorage, RamStorage, Storage
+from appxf_private.security import Security
+from appxf_private.registry import Registry
+from appxf_private.config import Config
 
 ### Config Objects
 # Note that Config implementation uses RamStorage if no StorageFactory is

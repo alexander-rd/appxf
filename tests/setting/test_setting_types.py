@@ -15,14 +15,14 @@ import pytest
 from collections.abc import MutableMapping
 from typing import Any, Callable
 
-from kiss_cf.setting import Setting
-from kiss_cf.setting import AppxfSettingError, AppxfSettingConversionError
-from kiss_cf.setting import SettingString, SettingText, SettingEmail, SettingPassword
-from kiss_cf.setting import SettingBool, SettingInt, SettingFloat
-from kiss_cf.setting import SettingBase64
-from kiss_cf.setting import SettingDict
+from appxf_private.setting import Setting
+from appxf_private.setting import AppxfSettingError, AppxfSettingConversionError
+from appxf_private.setting import SettingString, SettingText, SettingEmail, SettingPassword
+from appxf_private.setting import SettingBool, SettingInt, SettingFloat
+from appxf_private.setting import SettingBase64
+from appxf_private.setting import SettingDict
 
-from kiss_cf.setting import setting as setting_module
+from appxf_private.setting import setting as setting_module
 
 
 class SettingCase():
