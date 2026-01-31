@@ -1,4 +1,5 @@
-# KISS Cross-Functionals (kiss_cf)
+This is the old README that was present in the original private repository. It needs to be merged into the new README and planned documentation.
+# APPXF
 
 ![Test Linux](  https://github.com/alexander-rd/kiss_cf/actions/workflows/test-self-linux.yml/badge.svg)
 ![Test Windows](https://github.com/alexander-rd/kiss_cf/actions/workflows/test-self-win.yml/badge.svg)
@@ -8,7 +9,7 @@ data, logging or security to limit the effort writing simple applications.
 
 Solutions to cross-functional concerns have strong impact on non-functional
 requirements or vice versa. The following list was compiled to allow a quick
-decion on whether this toolbox is for you and to guide it's development.
+decision on whether this toolbox is for you and to guide it's development.
 Provided numbers only provide a rough idea.
  * The toolbox aims for **easy application creation**. This includes simple to use
    interfaces and the need for documentation and examples.
@@ -16,20 +17,12 @@ Provided numbers only provide a rough idea.
  * Supported are **desktop applications** that are **shared with a limited number of
    people** (like: 50).
    * Not suited for online applications.
-   * Might not scale well to 1000 or more users.
+   * Does not aim to scale for 1000 or more users.
  * **Data exchange** with other instances is based on one or few (like 3) people
    having writing rights while more (like 50) are just consuming the results.
-   * See security section: you essentially give away your email or database
-     passwords to the people with writing rights.
- * **Update frequency** is expected like 20 times a week and rare (once a month)
-   peak reading are 150 times/h.
-   * Methods provided to exchange data are not suited for continuous data
-     exchange between instances.
- * **Keep it simple, stupid** (KISS) is part of the name for a reason. This
-   toolbox tries not to go too fancy.
-   * The developer (me) might still fall in the trap adding less usefull stuff.
-     Sorry. It's a bit like some management picking slogans on things they are
-     not good at.
+	 * See security section: you essentially give away your email or database passwords to the people with writing rights.
+	 * **Update frequency** is expected like 20 times a week and rare (once a month) peak reading are 150 times/h.
+	 * Methods provided to exchange data are not suited for continuous data exchange between instances.
 
 Cross-Cutting Concerns
 ======================
@@ -79,21 +72,3 @@ mapping from the visible English strings into what you need.
 In cases of mapping to an existing database
 ([OpenOlitor](https://www.docarit.ch/PDFs/openlitor_schema.svg)) field names
 from that database are maintained.
-
-OpenOlitor Database Connection
-------------------------------
-
-[OpenOlitor](https://openolitor.org/) is a web tool for community aided
-agriculture (CSA). An application to support processes in an CSA was the
-originating trigger for this toolbox. kiss_cf makes it a bit easier to retrieve
-data from the mariaDB that is used there.
-
-See [this link to setup python](
-https://mariadb.com/de/resources/blog/how-to-connect-python-programs-to-mariadb/)
-and [this one for the API](
-https://mariadb-corporation.github.io/mariadb-connector-python/index.html).
-
-Developer Documentation
-=======================
-
-* [Test Strategy](doc/TestStrategy.md)
