@@ -1,4 +1,4 @@
-<mxfile host="Electron" modified="2024-03-11T20:46:41.684Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/23.1.5 Chrome/120.0.6099.109 Electron/28.1.0 Safari/537.36" etag="c-hQHLyv2SzjDRUTnZ3f" version="23.1.5" type="device" pages="7">
+<mxfile host="Electron" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.2.5 Chrome/138.0.7204.251 Electron/37.6.1 Safari/537.36" version="28.2.5" pages="7">
   <diagram name="keysAndFiles" id="b520641d-4fe3-3701-9064-5fc419738815">
     <mxGraphModel dx="1364" dy="963" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="none" math="0" shadow="0">
       <root>
@@ -918,7 +918,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="m2daDjJiGA5daosNPSTx" name="SecurityPattern">
-    <mxGraphModel dx="2214" dy="963" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2218" dy="963" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -1279,7 +1279,7 @@
             <mxPoint x="310" y="1070" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-35" value="KISS_CF should enforce this by crashing if any non-admin can write on this location." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+        <mxCell id="NvN8Aw2CbYDaRo8zXkmP-35" value="APPXF should enforce this by crashing if any non-admin can write on this location." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
           <mxGeometry x="-230" y="996" width="160" height="60" as="geometry" />
         </mxCell>
         <mxCell id="NvN8Aw2CbYDaRo8zXkmP-36" value="Problem: time synchronization with FTP source to determine update is based on file writing." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
@@ -1306,7 +1306,7 @@
         <mxCell id="NvN8Aw2CbYDaRo8zXkmP-41" value="Note: we could avoid special signature process for user database if it is placed directly on the admin database storage. Reason: only admins would have writing rights. &lt;br&gt;Consequence would be that we would have to download it on every tool start and not only when it is new. The &quot;is new&quot; detection requires write access to remote location to synchronize local and remote clocks." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" parent="1" vertex="1">
           <mxGeometry x="-430" y="696" width="200" height="130" as="geometry" />
         </mxCell>
-        <mxCell id="LhK6DS5hXO8-BbIWEDqX-1" value="I may really need role specific keys to invalidate a role for a user while NOT invalidating it&#39;s user keys. &amp;gt;&amp;gt; Not true. Validity of key concerning a role is stored in the user database. If one needs to know if the key is valid, they can check the DB.&lt;br&gt;&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+        <mxCell id="LhK6DS5hXO8-BbIWEDqX-1" value="I may really need role specific keys to invalidate a role for a user while NOT invalidating it&#39;s user keys. &amp;gt;&amp;gt; Not true. Validity of key concerning a role is stored in the user database. If one needs to know if the key is valid, they can check the DB.&lt;br&gt;&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;align=left;size=12;horizontal=1;verticalAlign=top;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
           <mxGeometry x="603.5" y="1090" width="230" height="110" as="geometry" />
         </mxCell>
       </root>
