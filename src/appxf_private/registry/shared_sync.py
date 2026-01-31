@@ -6,7 +6,7 @@ from .registry import Registry
 from .shared_storage import SecureSharedStorage
 
 
-class KissSharedSyncError(Exception):
+class AppxfSharedSyncError(Exception):
     ''' General Error in Shared Sync '''
 
 
@@ -65,7 +65,7 @@ class SharedSync():
             # note: "writing" but "not reading" does not exist
             # TODO: add and allow directional sync. For now, not supported:
             if not writing:
-                raise KissSharedSyncError(
+                raise AppxfSharedSyncError(
                     f'Uni-directional sync is not supported, use has roles '
                     f'{user_roles_set} but would need one of '
                     f'{sync_pair.writing}')

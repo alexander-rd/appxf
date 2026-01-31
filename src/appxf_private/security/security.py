@@ -92,7 +92,7 @@ class Security():
         '''
         if 'version' not in self._key_dict.keys():
             raise AppxfSecurityException(
-                'Not a KISS security file: no version information')
+                'Not an APPXF security file: no version information')
         if self._key_dict['version'] != 1:
             raise AppxfSecurityException(
                 f'Keys stored in version {self._key_dict["version"]}, '

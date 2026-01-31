@@ -1,10 +1,6 @@
 from appxf_private.buffer import Buffer, buffered
 from appxf_private.storage import Storage
 
-# Used to test logging:
-# from appxf import logging as kiss_logging
-# kiss_logging.activate_logging()
-
 
 def assert_buffer_contains(buffer: Buffer,
                            what: str,

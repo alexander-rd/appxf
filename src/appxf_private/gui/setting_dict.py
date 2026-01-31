@@ -47,7 +47,7 @@ def input_type_to_setting_dict(setting: SettingInput) -> SettingDict:
 
 
 class SettingDictSingleFrame(SettingFrameBase):
-    '''Frame holding PropertyWidgets for a dictionary of KissProperty.
+    '''Frame holding SettingWidgets for an APPXF SettingDict.
 
     Changes are directly applied to the properties if they are valid. Consider
     using backup() on the properties before starting this frame and
@@ -178,7 +178,7 @@ class SettingDictColumnFrame(SettingFrameBase):
     def __init__(self, parent: tkinter.BaseWidget,
                  setting: SettingInput,
                  columns: int,
-                 kiss_options: dict | None = None,
+                 appxf_options: dict | None = None,
                  frame_label: bool = True,
                  **kwargs):
         # kwargs is NOT passed down to THIS frame. It will be passed down to
@@ -187,11 +187,11 @@ class SettingDictColumnFrame(SettingFrameBase):
         super().__init__(parent)
         setting = input_type_to_setting_dict(setting)
 
-        if kiss_options is None:
-            kiss_options = {}
+        if appxf_options is None:
+            appxf_options = {}
 
         key_list = list(setting.keys())
-        direction = kiss_options.get('column_direction', 'down')
+        direction = appxf_options.get('column_direction', 'down')
         if direction == 'down':
             items_per_col = math.ceil(len(key_list)/columns)
             key_to_sub_dict = [int(i/items_per_col)
@@ -248,7 +248,7 @@ class SettingDictWindow(GridToplevel):
     def __init__(self, parent,
                  title: str,
                  setting: Setting | SettingDict,
-                 kiss_options: dict | None = None,
+                 appxf_options: dict | None = None,
                  **kwargs):
         '''
         Create GUI window to edit a dictionary of properties.
@@ -258,8 +258,8 @@ class SettingDictWindow(GridToplevel):
                          buttons=['Cancel', 'OK'],
                          key_enter_as_button='OK',
                          **kwargs)
-        if kiss_options is None:
-            kiss_options = {}
+        if appxf_options is None:
+            appxf_options = {}
         # Whole class operated on SettingDict and a single setting is just cast
         # up to a SettingDict to handle it (required to obtain store/load
         # behavior for backup&restore upon cancel)
@@ -275,14 +275,14 @@ class SettingDictWindow(GridToplevel):
         # reloaded.
         self.property_dict.store()
 
-        columns = kiss_options.get('columns', 1)
+        columns = appxf_options.get('columns', 1)
         if columns <= 1:
             self.dict_frame = SettingDictSingleFrame(
                 self, self.property_dict,
-                frame_label=False, row_spread=True, **kiss_options)
+                frame_label=False, row_spread=True, **appxf_options)
         else:
             self.dict_frame = SettingDictColumnFrame(
-                self, self.property_dict, columns, kiss_options,
+                self, self.property_dict, columns, appxf_options,
                 frame_label=False, row_spread=True)
         self.place_frame(self.dict_frame)
         self.update()

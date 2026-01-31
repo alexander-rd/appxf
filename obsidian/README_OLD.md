@@ -1,9 +1,6 @@
 This is the old README that was present in the original private repository. It needs to be merged into the new README and planned documentation.
 # APPXF
 
-![Test Linux](  https://github.com/alexander-rd/kiss_cf/actions/workflows/test-self-linux.yml/badge.svg)
-![Test Windows](https://github.com/alexander-rd/kiss_cf/actions/workflows/test-self-win.yml/badge.svg)
-
 This toolbox covers cross functional concerns like configuration, persisting
 data, logging or security to limit the effort writing simple applications.
 
@@ -52,7 +49,7 @@ Where "./" is the location of the binary.
 GUI
 ---
 
-The decision to be made: tkinter or QT. Since the KISS framework does not aim
+The decision to be made: tkinter or QT. Since the APPXF framework does not aim
 for professionals, a quick learning curve is essential such that tkinter was
 chosen as the basis (see also:
 [pythonguis.com](https://www.pythonguis.com/faq/pyqt-vs-tkinter/)). [Tkinter

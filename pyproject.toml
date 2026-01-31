@@ -8,7 +8,7 @@ version = "0.4"
 authors = [
   { name = "Alexander Reinhold", email="mail@alexander-reinhold.de" }
 ]
-description = "KISS Cross Functionals"
+description = "APPXF_Private"
 readme = "README.md"
 requires-python = ">=3.10"
 license_file = "LICENSE"
@@ -37,7 +37,7 @@ legacy_tox_ini = """
         3.12: py312
 
     [testenv]
-    passenv = KISS_*
+    passenv = APPXF_*
     setenv = PYTHONPATH = {toxinidir}
              VIRTUALENV_DOWNLOAD=0
     deps =

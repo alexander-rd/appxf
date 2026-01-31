@@ -1,6 +1,7 @@
 ''' Provide Configuration Handling
 
-The configuration concept is accumulating KissPropertyDict objects as sections.
+The configuration concept is accumulating APPXF SettingDict objects as
+sections.
 '''
 from appxf import logging
 from typing import Any
@@ -37,7 +38,7 @@ from appxf_private.storage import Storage, RamStorage
 # But the file is not section-specific.<
 
 
-class KissConfigError(Exception):
+class AppxfConfigError(Exception):
     ''' General config error '''
 
 
@@ -46,14 +47,14 @@ class Config():
 
     Configuration typically splits into several sets of properties for USER or
     tool access related options. A Config object collects those configuration
-    sections (internally as KissPropertyDict objects) and adds some
+    sections (internally as SettingDict objects) and adds some
     convenience:
       * load/store of all sections
       * store/load into one human readable INI file to assist the tool
         developers. !! Evverything including passwords !!
 
     In an application, it is recommended to initialize the the aplication parts
-    with the KissPropertyDict's. They are shared by value and can be loaded
+    with the APPXF SettingDict's. They are shared by value and can be loaded
     after initialization.
     '''
     log = logging.getLogger(__name__ + '.Config')
@@ -73,7 +74,7 @@ class Config():
     def section(self, section: str) -> SettingDict:
         ''' Access a section '''
         if section not in self._sections:
-            raise KissConfigError(
+            raise AppxfConfigError(
                 f'Cannot access section {section}, it does not exist. '
                 f'Existing are: {self.sections}.')
         return self._sections[section]
@@ -86,7 +87,7 @@ class Config():
         '''Add section if not yet existing.  '''
         # ensure section does not yet exist:
         if section in self._sections:
-            raise KissConfigError(
+            raise AppxfConfigError(
                 f'Cannot add section {section}, it does already exist.')
         # define storage
         if storage_factory is not None:
@@ -117,7 +118,7 @@ class Config():
             del self._sections[section]
             self.log.info('removed section: %s', section)
         else:
-            raise KissConfigError(
+            raise AppxfConfigError(
                 f'Cannot remove section, it does not exist: {section}')
 
     def store(self):

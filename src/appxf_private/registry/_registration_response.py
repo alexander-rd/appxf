@@ -13,7 +13,7 @@ from appxf_private.storage import CompactSerializer
 # TODO: apply DictStorable here bute keep the get_bytes interface.
 
 
-class KissExceptionRegistrationResponse(Exception):
+class AppxfExceptionRegistrationResponse(Exception):
     ''' Error with handling a registration response '''
 
 

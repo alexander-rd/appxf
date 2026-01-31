@@ -3,7 +3,7 @@
 from appxf_private.storage import Storable, Storage
 
 
-class KissExceptionUserId(Exception):
+class AppxfExceptionUserId(Exception):
     ''' Load/Store error for user ID '''
 
 
@@ -20,11 +20,11 @@ class UserId(Storable):
         ''' The USER ID
 
         Will be loaded from file if not yet done. Throws error
-        KissExceptionUserId if file does not exist.
+        AppxfExceptionUserId if file does not exist.
         '''
         # error if still unloaded
         if self._id < 0 and not self._storage.exists():
-            raise KissExceptionUserId('Cannot access USER ID: not yet written')
+            raise AppxfExceptionUserId('Cannot access USER ID: not yet written')
         # ensure loaded
         if self._id < 0:
             self.load()

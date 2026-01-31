@@ -14,11 +14,11 @@ from .meta_data import MetaData
 log = logging.getLogger(__name__)
 
 
-class KissStorageSyncException(Exception):
+class AppxfStorageSyncException(Exception):
     ''' General exception from storage Sync '''
 
 
-class KissChangeOnBothSidesException(Exception):
+class AppxfChangeOnBothSidesException(Exception):
     ''' Files were changed on both storage locations sides when executing
     synchronization. '''
 
@@ -127,7 +127,7 @@ def sync(storage_a: Storage | list[Storage] | Storage.Factory,
             _sync_storage(storage, storage_b(storage.name), only_a_to_b)
     else:
         # TODO: add support again for sync of storage masters
-        raise KissStorageSyncException(
+        raise AppxfStorageSyncException(
             f'Sync between types {type(storage_a)} (A) and {type(storage_b)} '
             f'(B) is not supported. Both must be either a Storage or a '
             f'storage factory')
@@ -187,14 +187,14 @@ def _sync_storage(storage_a: Storage,
         return
     if (not last_uuid_a or
             not last_uuid_b):
-        raise KissStorageSyncException(
+        raise AppxfStorageSyncException(
             f'Storage exists on both locations but at least one SyncData did '
             f'not return a UUID. This should not happen. Workaround is to '
             f'remove the file from one of the locations.'
             f'\nA: {storage_a.id()}\nB: {storage_b.id()}')
     if (meta_a.uuid != last_uuid_a and
             meta_b.uuid != last_uuid_b):
-        raise KissChangeOnBothSidesException(
+        raise AppxfChangeOnBothSidesException(
             f'Storage changed on both sides. Not yet supported.'
             f'\nA: {storage_a.id()}\nB: {storage_b.id()}')
     if meta_a.uuid != last_uuid_a:

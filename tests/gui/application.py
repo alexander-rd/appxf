@@ -4,10 +4,10 @@ Switch Button: It toggle buttons to switch to start/second. Switching must NOT r
 '''
 import tkinter
 from appxf_matema.case_runner import ManualCaseRunner
-from appxf_private.gui.application import KissApplication
+from appxf_private.gui.application import AppxfApplication
 
-app = KissApplication()
-app.title('KissApplication Dummy')
+app = AppxfApplication()
+app.title('AppxfApplication Dummy')
 
 class DummyFrame(tkinter.Frame):
     def __init__(self, *args, **kwargs):

@@ -3,7 +3,7 @@ from appxf_private.storage import Storable, Storage, CompactSerializer
 from typing import Set, TypedDict
 
 
-class KissUserDatabaseException(Exception):
+class AppxfUserDatabaseException(Exception):
     ''' Error in User Database handling '''
 
 
@@ -202,7 +202,7 @@ class UserDatabase(Storable):
 
     def _get_user_entry(self, user_id) -> UserEntry:
         if not self.is_registered(user_id):
-            raise KissUserDatabaseException(f'{user_id} is not registered.')
+            raise AppxfUserDatabaseException(f'{user_id} is not registered.')
         return self._user_db[user_id]
 
     def has_role(self, user_id: int, role: str):
