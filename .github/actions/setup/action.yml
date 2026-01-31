@@ -4,11 +4,11 @@ inputs:
   python-version:
     type: string
     required: true
-  caller-is-kiss-cf:
+  caller-is-appxf:
     type: string
     required: false
     default: 'no'
-  kiss-cf-token:
+  appxf-token:
     required: false
 
 
@@ -42,16 +42,16 @@ runs:
     - name: Checkout appxf_private (if called from using project)
       uses: actions/checkout@v3
       with:
-        repository: alexander-rd/appxf_private
+        repository: alexander-rd/kiss_cf
         path: appxf_private
         # TODO: remove token once repo becomes public
-        token: ${{ inputs.kiss-cf-token }}
-      if: inputs.caller-is-kiss-cf == 'no'
+        token: ${{ inputs.appxf-token }}
+      if: inputs.caller-is-appxf == 'no'
     # install appxf_private repository
     - name: Install appxf_private (if called from using project)
       run: pip install -e./appxf_private
       shell: bash
-      if: inputs.caller-is-kiss-cf == 'no'
+      if: inputs.caller-is-appxf == 'no'
 
   # LINUX specific steps
     - name: Install tkinter

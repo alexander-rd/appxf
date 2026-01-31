@@ -1,5 +1,5 @@
 '''
-Provide GUI classes for KissProperty objects.
+Provide GUI classes for APPXF Setting objects.
 '''
 from abc import ABC, abstractmethod
 import tkinter

@@ -15,7 +15,7 @@
 # An alternative is to switch frames by properly destroying the old one and
 # constructing the new one to display.
 #  - (-) This is more complicated to do and might not be recommended given the
-#    web research. By that base: it is not exactly KISS.
+#    web research. By that base: it is not exactly APPXF.
 #  - (-) It is not possible to link behavior of different views.
 #  - (/) Since the frame is destroyed, opening it again will show a fresh
 #    state. This can be intended or not.
@@ -25,7 +25,7 @@
 # from the beginning but more co plex to implement.
 #
 # Conclusion: We should go with the first alternative but keep the interface
-# compatible to the compromise. This will imply that KissApplication does not
+# compatible to the compromise. This will imply that AppxfApplication does not
 # take a contructed Frame, only the required class.
 
 import tkinter
@@ -39,7 +39,7 @@ class FrameInfo(RecordClass):
     frame: None | tkinter.Frame
 
 
-class KissApplication(tkinter.Tk):
+class AppxfApplication(tkinter.Tk):
     ''' Main Application Window
 
     This Application Window includes:
@@ -66,7 +66,7 @@ class KissApplication(tkinter.Tk):
     '''
 
     def __init__(self, *args, **kwargs):
-        ''' Create Kiss Application Window
+        ''' Create APPXF Application Window
 
         Arguments: just forwarding args/kwargs to tkinter.Tk
         '''

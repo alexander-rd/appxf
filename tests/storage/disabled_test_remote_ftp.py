@@ -4,10 +4,17 @@ from dotenv import load_dotenv
 import os
 from appxf_private.storage.ftp import FtpLocation
 
+# TODO: Test was disables upon transition to public repository. FTP was
+# currently not used in an application and before re-enabling, a better
+# strategy concerning the credentials is required. The .env file with the
+# variables as below was placed into this storage folder of tests (but not
+# checked in). With this solution, any other developer would need to place
+# their own FTP credentials here to be able to execute the test.
+
 load_dotenv()
-host = os.environ.get('KISS_FTP_HOST')
-user = os.environ.get('KISS_FTP_USER')
-passwd = os.environ.get('KISS_FTP_PASSWORD')
+host = os.environ.get('APPXF_FTP_HOST')
+user = os.environ.get('APPXF_FTP_USER')
+passwd = os.environ.get('APPXF_FTP_PASSWORD')
 
 @pytest.fixture
 def remote_connection():

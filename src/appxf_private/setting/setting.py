@@ -305,7 +305,7 @@ class SettingOptions(Options):
     # relevant for settings in SettingDicts.
     visible: bool = True
     # TODO: the visible option was added during implementation of registration
-    # feature (when utiliing the KissApplication frame and getting the config
+    # feature (when utiliing the AppxfApplication frame and getting the config
     # menu displayed) and does not yet have a consistent effect.
 
     # the only display option that applies to all settings because all settings

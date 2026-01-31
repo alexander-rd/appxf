@@ -1,4 +1,4 @@
-from appxf_private.gui import KissApplication, Login
+from appxf_private.gui import AppxfApplication, Login
 from appxf_private.security import Security, SecurePrivateStorage
 from appxf_private.storage import LocalStorage
 from appxf_private.config import Config
@@ -33,5 +33,5 @@ login.check()
 config.load()
 
 # run application main window
-app = KissApplication()
+app = AppxfApplication()
 app.mainloop()
