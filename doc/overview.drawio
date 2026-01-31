@@ -1,6 +1,6 @@
-<mxfile host="Electron" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.7.17 Chrome/128.0.6613.36 Electron/32.0.1 Safari/537.36" version="24.7.17" pages="3">
+<mxfile host="Electron" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.2.5 Chrome/138.0.7204.251 Electron/37.6.1 Safari/537.36" version="28.2.5" pages="3">
   <diagram name="module" id="b520641d-4fe3-3701-9064-5fc419738815">
-    <mxGraphModel dx="1364" dy="843" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="none" math="0" shadow="0">
+    <mxGraphModel dx="1368" dy="963" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="none" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -91,7 +91,7 @@
         <mxCell id="OMR0yY9i_4W5-iC-2M4N-3" value="APPLICATION_GUI &amp;amp; APPLICATION_CMD" style="swimlane;html=1;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#e0e0e0;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;swimlaneFillColor=#ffffff;align=center;rounded=1;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" vertex="1">
           <mxGeometry x="120" y="600" width="720" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="OMR0yY9i_4W5-iC-2M4N-4" value="GUI&#39;s coverering common use case with KISS_CF modules.&lt;div&gt;APPLICATION_CMD does not yet exist.&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="OMR0yY9i_4W5-iC-2M4N-3" vertex="1">
+        <mxCell id="OMR0yY9i_4W5-iC-2M4N-4" value="GUI&#39;s coverering common use case with APPXF modules.&lt;div&gt;APPLICATION_CMD does not yet exist.&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;spacingLeft=4;spacingRight=4;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="OMR0yY9i_4W5-iC-2M4N-3" vertex="1">
           <mxGeometry y="26" width="720" height="54" as="geometry" />
         </mxCell>
         <mxCell id="OMR0yY9i_4W5-iC-2M4N-6" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" source="OMR0yY9i_4W5-iC-2M4N-1" target="xNg26A6SZNMzz_5sGm6C-3" edge="1">

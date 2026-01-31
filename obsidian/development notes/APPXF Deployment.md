@@ -1,4 +1,5 @@
 Helpful pages:
+https://py-pkgs.org/welcome
 https://packaging.python.org/en/latest/tutorials/packaging-projects/
 https://drivendata.co/blog/python-packaging-2023
 
