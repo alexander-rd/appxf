@@ -2,9 +2,6 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/appxf_private"]
-
 [project]
 name = "appxf_private"
 version = "0.4"

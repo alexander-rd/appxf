@@ -1,18 +1,18 @@
 # Testing
 ```plantuml
 @startuml
-!theme cerulean 
+!theme cerulean
 
 |Application|
 start
 :<b>workflows/test.yml</b>;
 |APPXF|
 :<b>actions/setup/action.yml</b>(python version)
-Plus kiss_cf token as long as not appxf;
+Plus appxf_private token as long as not appxf;
 
 |Application|
 :<b>actions/setup/action.yml</b>
-(optional) for application 
+(optional) for application
 specific installations;
 
 |APPXF|
@@ -24,14 +24,14 @@ end
 ```
 ## Current Setup
 * Entry point: **.github/workflows/test.yml**
-	* Calls: **kiss_cf/github/test**@main (os, python version)
+	* Calls: **appxf_private/github/test**@main (os, python version)
 		* checkout repo
-		* checkout kiss_cf (if not running on kiss_cf)
-		* Calls: **./.github/actions/setup** (only if on kiss_cf)
-		* Calls: **kiss_cf/.github/actions/setup** (if not on kiss_cf)
-		* install kiss_cf
+		* checkout appxf_private (if not running on appxf_private)
+		* Calls: **./.github/actions/setup** (only if on appxf_private)
+		* Calls: **appxf_private/.github/actions/setup** (if not on appxf_private)
+		* install appxf_private
 		* tox preparation
-		* run tox (if not kiss_cf) << wrong
+		* run tox (if not appxf_private) << wrong
 
 # TODO:
 * User RUNNER_OS instead of passing the os as argument.

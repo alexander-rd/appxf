@@ -251,14 +251,14 @@ Build outputs:
         type=Path,
         nargs='*',
         default=[],
-        help='Additional requirements files to install (default: requirements.txt, kiss_cf/requirements.txt)'
+        help='Additional requirements files to install (default: requirements.txt, appxf_private/requirements.txt)'
     )
     parser.add_argument(
         '--editable-packages',
         type=Path,
         nargs='*',
         default=[],
-        help='Paths to packages to install in editable mode (default: kiss_cf)'
+        help='Paths to packages to install in editable mode (default: appxf_private)'
     )
     parser.add_argument(
         '--hidden-imports',
@@ -295,12 +295,12 @@ Build outputs:
     # Set default requirements if none provided
     requirements_files = args.requirements if args.requirements else [
         Path('requirements.txt'),
-        Path('kiss_cf/requirements.txt'),
+        Path('appxf_private/requirements.txt'),
     ]
 
     # Set default editable packages if none provided
     editable_packages = args.editable_packages if args.editable_packages else [
-        Path('kiss_cf'),
+        Path('appxf_private'),
     ]
 
     print(f'{"="*60}')

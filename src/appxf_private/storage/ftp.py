@@ -8,7 +8,7 @@ from .storage_to_bytes import StorageToBytes
 
 # Notes on ftputil. While ftputil offers an upload_if_newer and
 # download_if_newer together with synchronize_times(), it is based on files on
-# the file system and the time detla cannot be retrieved. Kiss_cf needed to
+# the file system and the time detla cannot be retrieved. APPXF needed to
 # come up with it's own solution since most operations will be based on storing
 # and loading bytestreams.
 #

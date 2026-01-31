@@ -17,10 +17,10 @@ jobs:
 
     steps:
       - id: call_setup
-        uses: alexander-rd/kiss_cf/.github/actions/setup@main
+        uses: alexander-rd/appxf_private/.github/actions/setup@main
         with:
           python-version: ${{ matrix.python-version }}
           caller-is-kiss-cf: 'yes'
 
       - id: run_tox
-        uses: alexander-rd/kiss_cf/.github/actions/run-tox@main
+        uses: alexander-rd/appxf_private/.github/actions/run-tox@main

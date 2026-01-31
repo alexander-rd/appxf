@@ -38,18 +38,18 @@ runs:
     # note: requirements are not installed since this is handled by TOX within
     # the venv
 
-    # handle kiss_cf repository
-    - name: Checkout kiss_cf (if called from using project)
+    # handle appxf_private repository
+    - name: Checkout appxf_private (if called from using project)
       uses: actions/checkout@v3
       with:
-        repository: alexander-rd/kiss_cf
-        path: kiss_cf
+        repository: alexander-rd/appxf_private
+        path: appxf_private
         # TODO: remove token once repo becomes public
         token: ${{ inputs.kiss-cf-token }}
       if: inputs.caller-is-kiss-cf == 'no'
-    # install kiss_cf repository
-    - name: Install kiss_cf (if called from using project)
-      run: pip install -e./kiss_cf
+    # install appxf_private repository
+    - name: Install appxf_private (if called from using project)
+      run: pip install -e./appxf_private
       shell: bash
       if: inputs.caller-is-kiss-cf == 'no'
 
