@@ -129,7 +129,7 @@ def _init_path_from_origin(target_path, origin_path: str = ''):
 
 ### Cleanup support
 def test_cleanup(request):
-    ''' cleanup current kiss_cf directories
+    ''' cleanup current APPXF directories
 
     Function is expected to be executed before any test case. Modelled as test
     case to re-use fixtures.

@@ -29,7 +29,7 @@ class _RestrictedUnpickler(pickle.Unpickler):
         # Forbid everything else.
         raise TypeError(
             f'Cannot deserialize "{module}.{name}". To protect from code '
-            f'injection, serialization/deserialization was limited in kiss_cf')
+            f'injection, serialization/deserialization was limited in APPXF')
 
 
 class _RestrictedPickler(pickle.Pickler):

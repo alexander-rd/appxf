@@ -7,7 +7,7 @@ import importlib.resources
 # system language by default.
 _translation = gettext.translation(
     domain='appxf-gui',
-    localedir=str(importlib.resources.files("kiss_cf") / "locale"),
+    localedir=str(importlib.resources.files("appxf_private") / "locale"),
     fallback=True)
 
 # Export the pgettext function as _ for context-aware translations

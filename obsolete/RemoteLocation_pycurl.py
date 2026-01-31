@@ -8,7 +8,7 @@
 #    succeeded at one point, it results in the main two core reasons:
 #    * at least MEDIUM risk to include problems due to incompatibilities of
 #      C libraries (like dependency to SSL)
-#    * kiss_cf users in windows would face similar problems for their
+#    * appxf_private users in windows would face similar problems for their
 #      application. This would not be acceptable.
 #    * at least MEDIUM effort to maintain the build pipeline
 #

@@ -124,7 +124,7 @@ def buffered(buffer: Buffer | typing.Callable[..., Buffer]):
     def _buffered(func):
         '''The decorator which will use buffer to wrap the function.'''
         if func.__kwdefaults__:
-            raise Exception('kiss_cf cannot deal with default arguments for '
+            raise Exception('appxf_private cannot deal with default arguments for '
                             'kwargs. Check if you can use Buffer class '
                             'directly')
 
