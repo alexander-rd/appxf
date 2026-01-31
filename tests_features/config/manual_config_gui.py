@@ -1,8 +1,8 @@
 '''Manual testing the configuration GUI.'''
 
-from kiss_cf.config import Config
-from kiss_cf.application_gui.config_gui import EditConfigWindow
-from kiss_cf.gui import KissOption
+from appxf_private.config import Config
+from appxf_private.application_gui.config_gui import EditConfigWindow
+from appxf_private.gui import KissOption
 
 config = Config()
 #config.language['USER'] = 'Benutzer'

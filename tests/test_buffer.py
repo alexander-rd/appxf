@@ -1,5 +1,5 @@
-from kiss_cf.buffer import Buffer, buffered
-from kiss_cf.storage import Storage
+from appxf_private.buffer import Buffer, buffered
+from appxf_private.storage import Storage
 
 # Used to test logging:
 # from appxf import logging as kiss_logging

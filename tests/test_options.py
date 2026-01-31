@@ -1,6 +1,6 @@
 ''' options module with Options object
 '''
-from kiss_cf import Options
+from appxf_private import Options
 from dataclasses import dataclass, field
 
 import pytest

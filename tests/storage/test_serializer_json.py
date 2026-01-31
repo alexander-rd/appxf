@@ -1,7 +1,7 @@
 ''' Test all serializer classes '''
 import pytest
 
-from kiss_cf.storage import JsonSerializer, Serializer
+from appxf_private.storage import JsonSerializer, Serializer
 
 from tests.storage.test_serializer_base import BaseSerializerTest
 

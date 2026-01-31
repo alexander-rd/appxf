@@ -21,8 +21,8 @@ save button on top, not a delete button.
 import tkinter
 
 from appxf_matema.case_runner import ManualCaseRunner
-from kiss_cf.setting import Setting
-from kiss_cf.gui import GridToplevel, SettingSelectDetailFrame
+from appxf_private.setting import Setting
+from appxf_private.gui import GridToplevel, SettingSelectDetailFrame
 
 setting = Setting.new('select::text',
     select_map={'01 One': 'Template text 01 to be adapted.',

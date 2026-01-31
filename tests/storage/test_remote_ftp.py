@@ -2,7 +2,7 @@ import pytest
 import datetime
 from dotenv import load_dotenv
 import os
-from kiss_cf.storage.ftp import FtpLocation
+from appxf_private.storage.ftp import FtpLocation
 
 load_dotenv()
 host = os.environ.get('KISS_FTP_HOST')

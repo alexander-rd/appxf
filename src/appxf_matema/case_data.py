@@ -3,8 +3,8 @@
 from pathlib import Path
 from collections import OrderedDict
 
-from kiss_cf.storage import JsonSerializer, LocalStorage
-from kiss_cf.setting import SettingDict, SettingSelect, SettingString
+from appxf_private.storage import JsonSerializer, LocalStorage
+from appxf_private.setting import SettingDict, SettingSelect, SettingString
 
 
 class CaseEntry:

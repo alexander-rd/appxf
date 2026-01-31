@@ -5,8 +5,8 @@ import tkinter
 
 from appxf import logging
 from appxf_matema.case_runner import ManualCaseRunner
-from kiss_cf.setting import Setting
-from kiss_cf.gui import GridToplevel, SettingDictColumnFrame
+from appxf_private.setting import Setting
+from appxf_private.gui import GridToplevel, SettingDictColumnFrame
 
 # Use Case: Create a bunch of settings let the user edit and handle results
 # upon button press.

@@ -2,8 +2,8 @@ import os
 import pytest
 from unittest.mock import patch
 
-from kiss_cf.storage import Storage, CompactSerializer
-from kiss_cf.registry import Registry, AppxfRegistryError, \
+from appxf_private.storage import Storage, CompactSerializer
+from appxf_private.registry import Registry, AppxfRegistryError, \
     AppxfRegistryUnknownUser, AppxfRegistryRoleError
 
 from tests._fixtures import appxf_objects
