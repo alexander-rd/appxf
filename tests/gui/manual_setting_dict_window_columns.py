@@ -4,8 +4,8 @@ Validation: Entry types are shown. Latest after loosing focus on entry, wrong va
 Columns: Placing options on top of this widget will test alignement of entry fields. Here, all properties are independent and entry fields start directly after the label.
 '''
 from appxf_matema.case_runner import ManualCaseRunner
-from appxf_private.setting import SettingBool, SettingDict
-from appxf_private.gui import setting_dict
+from appxf.setting import SettingBool, SettingDict
+from appxf.gui import setting_dict
 
 prop_dict = SettingDict({option: SettingBool() for option in [
     'One', 'Two', 'Three', 'Four',

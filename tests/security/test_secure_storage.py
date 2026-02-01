@@ -3,8 +3,8 @@
 Utilizing BaseStorageTest for test cases. See storage/test_storage_base.py
 '''
 import pytest
-from appxf_private.storage import Storage, LocalStorage
-from appxf_private.security import SecurePrivateStorage
+from appxf.storage import Storage, LocalStorage
+from appxf.security import SecurePrivateStorage
 
 import tests._fixtures.test_sandbox
 from tests.storage.test_storage_base import BaseStorageTest

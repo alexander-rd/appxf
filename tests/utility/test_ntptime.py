@@ -1,6 +1,6 @@
 import pytest
 from datetime import datetime, timedelta
-from appxf_private.utility.ntptime import NtpTime
+from appxf.utility.ntptime import NtpTime
 from ntplib import NTPClient
 import ntplib
 

@@ -24,7 +24,7 @@ But the above has a severe flaw: when executing GUI tests in APPXF-GUI, the pyth
 Current culprits after cases can be ran with coverage stored:
 * I would like to see a coverage summary after execution
 * I would like to see a coverage summary for specific folders
-* I need a mechanism that some configuration can tell which files to cover. Some subset of appxf_private - but due to invalidation via dependencies (unit tests), this should be stripped down much further and potentially on a per-file basis. For feature-tests, this should not be the case (any coverage is reasonable).
+* I need a mechanism that some configuration can tell which files to cover. Some subset of appxf - but due to invalidation via dependencies (unit tests), this should be stripped down much further and potentially on a per-file basis. For feature-tests, this should not be the case (any coverage is reasonable).
 * Test results (comments and status) should be collected after execution. But how does the separate system call know where to put such information? >> Script arguments would work.
 * From the above: the test case helper needs to write a separate file with execution results (tester comments, status). At some point, we also need to collect testing instructions which could also be collected in this way. An even better way would be if the case helper would directly act upon the database. This would also allow to display "recent execution results".
 * CAREFUL HERE - there are two applications running that act on database. STORE before running and LOAD afterwards.

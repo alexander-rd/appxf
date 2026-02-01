@@ -5,8 +5,8 @@ import tkinter
 
 from appxf import logging
 from appxf_matema.case_runner import ManualCaseRunner
-from appxf_private.setting import Setting
-from appxf_private.gui import GridToplevel, SettingDictColumnFrame
+from appxf.setting import Setting
+from appxf.gui import GridToplevel, SettingDictColumnFrame
 
 # Use Case: Create a bunch of settings let the user edit and handle results
 # upon button press.
@@ -41,7 +41,7 @@ class FrameForTesting(GridToplevel):
 # TODO: This does not yet work, frame is ineffective and changed values do not
 # apply to OK button readout. Also the entries are not marked red, yet.
 
-gui_logger = logging.getLogger('appxf_private.gui')
+gui_logger = logging.getLogger('appxf.gui')
 gui_logger.setLevel(logging.logging.WARNING)
 
 ManualCaseRunner().run(

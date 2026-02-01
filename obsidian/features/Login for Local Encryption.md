@@ -5,9 +5,9 @@
 # Old Security Documentation
 Your application likely stores sensible data like passwords to servers or details on other persons. A **login** procedure allows to encrypt the locally stored data. You thereby do not depend on the password protection of the operating system and stolen data cannot be used without this password. A **registration** procedure can ensure that only authorized users get access to servers. For example can you verify the requested user role and you can provide server passwords as part of the registration process.
 
-Usage can be as simple as the following. Note that login and registration both requiere a appxf_private configuration object (see TBD):
+Usage can be as simple as the following. Note that login and registration both requiere a appxf configuration object (see TBD):
 ```python
-from appxf_private import config, login, registration
+from appxf import config, login, registration
 
 # You should always use your own salt for your tool but never change it, unless
 # you want user passwords to become invalid.
@@ -30,9 +30,9 @@ registration.check()
 ## Login
 Without a gui, this could be like
 ```python
-from appxf_private.security.local import Security
+from appxf.security.local import Security
 
-# You need to get the password input from somewhere, appxf_private does not support a
+# You need to get the password input from somewhere, appxf does not support a
 # command line helper.
 pwd = ''
 

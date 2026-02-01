@@ -56,7 +56,7 @@ class CmdHelper:
         subprocess.run([
             sys.executable,
             '-m', 'coverage', 'run',
-            '--source=appxf_private',
+            '--source=appxf',
             '--branch',
             f'--data-file={coverage_file}',
             case_name,

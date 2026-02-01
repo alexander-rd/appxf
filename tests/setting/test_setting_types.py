@@ -15,14 +15,14 @@ import pytest
 from collections.abc import MutableMapping
 from typing import Any, Callable
 
-from appxf_private.setting import Setting
-from appxf_private.setting import AppxfSettingError, AppxfSettingConversionError
-from appxf_private.setting import SettingString, SettingText, SettingEmail, SettingPassword
-from appxf_private.setting import SettingBool, SettingInt, SettingFloat
-from appxf_private.setting import SettingBase64
-from appxf_private.setting import SettingDict
+from appxf.setting import Setting
+from appxf.setting import AppxfSettingError, AppxfSettingConversionError
+from appxf.setting import SettingString, SettingText, SettingEmail, SettingPassword
+from appxf.setting import SettingBool, SettingInt, SettingFloat
+from appxf.setting import SettingBase64
+from appxf.setting import SettingDict
 
-from appxf_private.setting import setting as setting_module
+from appxf.setting import setting as setting_module
 
 
 class SettingCase():

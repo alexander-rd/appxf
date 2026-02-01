@@ -1,8 +1,8 @@
 
 import pytest
-from appxf_private.storage import AppxfStorableError, RamStorage, Storage
-from appxf_private.setting import SettingDict
-from appxf_private.config import Config, AppxfConfigError
+from appxf.storage import AppxfStorableError, RamStorage, Storage
+from appxf.setting import SettingDict
+from appxf.config import Config, AppxfConfigError
 
 @pytest.fixture(autouse=True)
 def setup():

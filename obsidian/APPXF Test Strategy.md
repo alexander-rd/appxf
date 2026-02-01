@@ -38,8 +38,8 @@ commenting results with OK/FAILED
 **Definition.** In APPXF context, an application harness aggregates objects for a basic application. It ***does*** provide methods for operations on the aggregated objects while it ***does not*** provide any user interface or enforces behavior more than initialization.
 
 The __AppHarness__ for testing is stored in `tests/_fixtures/app_harness.py`. The fixtures in `tests/fixtures/application.py` may combine several ApplicationMock instances. They are prepared and used as follows:
-1. The file structure is prepared once for the appxf_private library version at location:
-   `.testing/app_\<context\>_\<appxf_private version\>`.
+1. The file structure is prepared once for the appxf library version at location:
+   `.testing/app_\<context\>_\<appxf version\>`.
 2. The prepared folder is copied for the specific test case. The dictionary of the fixture contains entries like `app_user` which return an ApplicationMock object. This ApplicationMock includes all objects and required paths in context of the ApplicationMock.
 ### Application Harness User Interface
 **Definition.** In APPXF context, an application harness user interface just puts a default user interface on top of an application harness.
@@ -48,7 +48,7 @@ The __AppHarness__ for testing is stored in `tests/_fixtures/app_harness.py`. Th
 __This is work in progress.__ Most of the required helpers are not yet existing!
 
 Testing of backwards compatibility shall be based on the __ApplicationMock__ fixtures with the following procedure:
-* At a release, the appxf_private-version specific prepared file structures <code>.testing/app_*</code> are checked-in while the release version of the main branch is increased.
+* At a release, the appxf-version specific prepared file structures <code>.testing/app_*</code> are checked-in while the release version of the main branch is increased.
 * The behavior driven sceanrio outlines are extended by incorporating the old version.
 
 #TODO: Mention a specific example of such a test application fixture.

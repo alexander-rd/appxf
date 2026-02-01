@@ -1,8 +1,8 @@
 '''Manual testing the configuration GUI.'''
 
-from appxf_private.config import Config
-from appxf_private.application_gui.config_gui import EditConfigWindow
-from appxf_private.gui import AppxfOption
+from appxf.config import Config
+from appxf.application_gui.config_gui import EditConfigWindow
+from appxf.gui import AppxfOption
 
 config = Config()
 #config.language['USER'] = 'Benutzer'

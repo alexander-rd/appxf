@@ -5,7 +5,7 @@
 			"path": "../appxf"
 		},
 		{
-			"name": "APPXF_Private",
+			"name": "appxf",
 			"path": "."
 		},
 	],

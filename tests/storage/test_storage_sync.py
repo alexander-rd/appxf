@@ -1,5 +1,5 @@
-from appxf_private.storage.sync import SyncData
-from appxf_private.storage import Storage
+from appxf.storage.sync import SyncData
+from appxf.storage import Storage
 from datetime import datetime
 import pytest
 

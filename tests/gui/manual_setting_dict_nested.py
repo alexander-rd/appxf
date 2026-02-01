@@ -7,8 +7,8 @@ a nested Deict C. All Dicts have a string and an integer.
 __Resizing:__ should only affect the right entry part.
 '''
 
-from appxf_private.setting import Setting
-from appxf_private.gui import SettingFrameDefault, SettingDictSingleFrame
+from appxf.setting import Setting
+from appxf.gui import SettingFrameDefault, SettingDictSingleFrame
 from appxf_matema.case_runner import ManualCaseRunner
 
 inner_A = Setting.new(

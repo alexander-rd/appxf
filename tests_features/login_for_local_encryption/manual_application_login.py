@@ -1,7 +1,7 @@
-from appxf_private.gui import AppxfApplication, Login
-from appxf_private.security import Security, SecurePrivateStorage
-from appxf_private.storage import LocalStorage
-from appxf_private.config import Config
+from appxf.gui import AppxfApplication, Login
+from appxf.security import Security, SecurePrivateStorage
+from appxf.storage import LocalStorage
+from appxf.config import Config
 
 # Initialize security for user password and credentials handling
 security = Security(

@@ -5,7 +5,7 @@ specific tests. Like in storage module: RamStorage or LocalStorage.
 '''
 from abc import ABC, abstractmethod
 
-from appxf_private.storage import Storage, MetaData
+from appxf.storage import Storage, MetaData
 from datetime import datetime
 
 # TODO: test cases need to be added to cover general derivation behavior when

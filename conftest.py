@@ -1,11 +1,11 @@
 from appxf import logging
-from appxf_private.storage import Storage
+from appxf.storage import Storage
 
 FLAG_LOG_ACTIVATED = False
 def pytest_runtest_setup(item):
     global FLAG_LOG_ACTIVATED
     if not FLAG_LOG_ACTIVATED:
-        logging.activate_logging('appxf_private', directory='./.testing')
+        logging.activate_logging('appxf', directory='./.testing')
         FLAG_LOG_ACTIVATED = True
 
 def pytest_runtest_teardown(item, nextitem):

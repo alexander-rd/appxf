@@ -2,8 +2,8 @@
 TBD
 '''
 from appxf_matema.case_runner import ManualCaseRunner
-from appxf_private.gui.setting_dict import SettingDictSingleFrame
-from appxf_private.setting import Setting, SettingDict
+from appxf.gui.setting_dict import SettingDictSingleFrame
+from appxf.setting import Setting, SettingDict
 
 # Scope: SettingSelect edit options functionality
 

@@ -3,11 +3,11 @@ import pytest
 from collections import OrderedDict
 from copy import deepcopy
 
-from appxf_private.setting import SettingDict, Setting
-from appxf_private.setting import AppxfSettingError, AppxfSettingWarning
-from appxf_private.setting import SettingString, SettingInt, SettingFloat, SettingBool
+from appxf.setting import SettingDict, Setting
+from appxf.setting import AppxfSettingError, AppxfSettingWarning
+from appxf.setting import SettingString, SettingInt, SettingFloat, SettingBool
 
-from appxf_private.storage import RamStorage
+from appxf.storage import RamStorage
 
 # REQ: SettingDict shall be able to be filled with settings by:
 #  1) settings parameter on constructor taking a dictionary {key: setting}
