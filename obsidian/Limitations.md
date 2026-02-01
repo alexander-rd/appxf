@@ -1,5 +1,5 @@
 # Credentials
-APPXF does not expose credentials in the logging and does only expose it to admins if configured properly. But to be able to use the credentials, they have it! They only need to alter the code or rebuild an application to extract this information.
+APPXF does not expose credentials in the logging and does only expose it to admins if configured properly. But to be able to access services, users do have passwords! Theoretically, they could alter the code or rebuild the application to extract them.
 ## Status Quo
 Without APPXF, if credentials must be shared, they will be shared. They will be available to others with the same limitation as stated above. But will the exchange channel be secure? Will the password be updated frequently? 
 APPXF, at least, secures the communication path *and* makes rolling out updated passwords seamless.
