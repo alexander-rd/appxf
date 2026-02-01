@@ -1,13 +1,25 @@
-# Project files
-.venv
-.vscode
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
-
-# dev/test/build
+*.py[cod]
+*$py.class
+*.drawio.bkp
+*.bkp-*
 cov_*
+/manual_tests
+pytest-env
+data
 dist
+notes
+prof
 .coverage
+.env
+.obsidian/plugins
+.obsidian/appearance.json
+.obsidian/workspace.json
 .testing
 .tox
+.venv
+.vscode
+coverage.json
+coverage.xml
+.python-version
