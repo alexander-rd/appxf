@@ -1,0 +1,11 @@
+{
+  "server_url": "",
+  "header": "!theme cerulean",
+  "debounce": 3,
+  "localJar": "",
+  "javaPath": "java",
+  "dotPath": "dot",
+  "defaultProcessor": "svg",
+  "cache": 60,
+  "exportPath": "plantuml"
+}
