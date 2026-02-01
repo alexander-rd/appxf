@@ -1,0 +1,231 @@
+{
+  "main": {
+    "id": "2271302091e87574",
+    "type": "split",
+    "children": [
+      {
+        "id": "30dd7d7bce40768d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "951ae42c733eb8dc",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "obsidian/development notes/__Current Development.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "__Current Development"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "3016aff726d194a8",
+    "type": "split",
+    "children": [
+      {
+        "id": "cdf22cba3328bf9d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "0c414a65f6b1e2fd",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "7559447bf4db276e",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "pip install",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "bc3f96c991114ea9",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "a5f47b2fec571e92",
+    "type": "split",
+    "children": [
+      {
+        "id": "0bb128f8cab1839b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f9df60e7064a3c44",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Welcome.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Welcome"
+            }
+          },
+          {
+            "id": "e6ff7e8b0c509b64",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Welcome.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Welcome"
+            }
+          },
+          {
+            "id": "67a3fe088daf52e1",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "db3e725dbd652bc9",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "8c26dce011d6b9bc",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Welcome.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Welcome"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "951ae42c733eb8dc",
+  "lastOpenFiles": [
+    "src/appxf/locale/en/LC_MESSAGES/appxf-gui.po",
+    "src/appxf/locale/en/LC_MESSAGES/appxf-gui.mo",
+    "src/appxf/locale/de/LC_MESSAGES/appxf-gui.po",
+    "src/appxf/locale/de/LC_MESSAGES/appxf-gui.mo",
+    "src/appxf/utility/__pycache__/ntptime.cpython-312.pyc",
+    "src/appxf/utility/__pycache__/__init__.cpython-312.pyc",
+    "src/appxf/storage/__pycache__/sync.cpython-312.pyc",
+    "src/appxf/storage/__pycache__/storage_to_bytes.cpython-312.pyc",
+    "src/appxf/storage/__pycache__/storage.cpython-312.pyc",
+    "src/appxf/storage/__pycache__/storable.cpython-312.pyc",
+    "src/appxf/storage/__pycache__/serializer_raw.cpython-312.pyc",
+    "obsidian/development notes/APPXF Deployment.md",
+    "obsidian/README_OLD.md",
+    "obsidian/development notes/Licensing Considerations.md",
+    "obsidian/development notes/Definition of Done.md",
+    "obsidian/development notes/APPXF Deployment Plans.md",
+    "obsidian/development notes/Development Notes (How To Lines).md",
+    "obsidian/development notes/__Current Development.md",
+    "obsidian/Limitations.md",
+    "obsidian/Definition of Done.md",
+    "obsidian/APPXF-MaTeMa.md",
+    "obsidian/APPXF Test Strategy.md",
+    "obsidian/APPXF Application Testing.md",
+    "obsidian/modules/Locale (Translations).md",
+    "obsidian/modules/Github Support.md",
+    "obsidian/matema_features/Case Runner.md",
+    "obsidian/features/User Registry.md",
+    "obsidian/features/Storage Concept.md",
+    "obsidian/features/Registration.md",
+    "obsidian/features/Login for Local Encryption.md",
+    "obsidian/features/Logging.md",
+    "obsidian/features/Implementation Features.md",
+    "obsidian/features/Data Synchronization.md",
+    "obsidian/features/Configuration.md",
+    "obsidian/features/FunctionalAnalysis/Registration/update user database.md",
+    "obsidian/features/FunctionalAnalysis/Registration/Registration Details.md",
+    "cov_html/favicon_32_cb_c827f16f.png",
+    "cov_html/keybd_closed_cb_900cfef5.png",
+    "cov_html_FEATURE/favicon_32_cb_c827f16f.png",
+    "cov_html_FEATURE/keybd_closed_cb_900cfef5.png",
+    "cov_html_UNIT/favicon_32_cb_c827f16f.png",
+    "cov_html_UNIT/keybd_closed_cb_900cfef5.png"
+  ]
+}

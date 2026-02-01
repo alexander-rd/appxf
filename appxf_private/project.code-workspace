@@ -1,0 +1,43 @@
+{
+	"folders": [
+		{
+			"name": "APPXF",
+			"path": "../appxf"
+		},
+		{
+			"name": "appxf",
+			"path": "."
+		},
+	],
+	"settings": {
+		"files.exclude": {
+			"**/__pycache__": true,
+			"**/.tox": false,
+		},
+		"search.exclude": {
+			"**/.venv": true,
+			"**/dist": true
+		},
+		"workbench.editor.labelFormat": "default",
+		"python.analysis.typeCheckingMode": "basic",
+		"python.testing.pytestArgs": [
+			"tests"
+		],
+		"python.testing.unittestEnabled": false,
+		"python.testing.pytestEnabled": true,
+		"rewrap.wrappingColumn": 79,
+		"files.trimTrailingWhitespace": true,
+		"flake8.args": [
+			"--per-file-ignores=\\\"init.py:F401\\\"\""
+		],
+		"python.autoComplete.extraPaths": [
+
+		],
+		"python.analysis.extraPaths": [],
+		"pylint.ignorePatterns": [
+			"test_*.py"
+		],
+		"editor.acceptSuggestionOnEnter": "off",
+		"editor.inlineSuggest.edits.allowCodeShifting": "never",
+	}
+}

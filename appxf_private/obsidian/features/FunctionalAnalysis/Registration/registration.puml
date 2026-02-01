@@ -1,0 +1,25 @@
+@startuml
+!theme cerulean
+|User Application|
+start
+:Generate registration request;
+
+|External Exchange|
+:Send registration request to admin;
+
+|Admin Application|
+:Load and review request;
+:Update user database;
+:Synchronize user database
+with remote storage;
+:Generate response;
+
+|External Exchange|
+:Send response to user;
+
+|User Application|
+:[[[Load response]]];
+:Synchronize with remote;
+ 
+stop
+@enduml

@@ -1,0 +1,1 @@
+'''Facade for APPXF email module'''
