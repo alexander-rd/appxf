@@ -9,6 +9,11 @@ from appxf_private.storage import Storable, Storage, RamStorage
 log = logging.getLogger(__name__)
 
 
+# TODO #6: This buffer is an undocumented feature. It was added for a private
+# application with the intend to share buffer results accross users (see:
+# registry and SharedStorage). Since SharedStorage and synchronization is not
+# usable, this buffer remains undocumented.
+
 class Buffer(Storable):
     '''Helper to organize data buffering.
 

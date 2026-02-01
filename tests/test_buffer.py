@@ -1,4 +1,4 @@
-from appxf_private.buffer import Buffer, buffered
+from appxf_private.storage import Buffer, buffered
 from appxf_private.storage import Storage
 
 

@@ -1,10 +1,6 @@
 ''' Facade for storage related classes '''
 
-# Only the abstract/general classes and the specific implementations should be
-# public. Intermediate classes like a LocalStorage is considered
-# within the location implementations but shall only be treated as
-# Storage when used elsewhere. Rationale: keep the external interface
-# simple.
+#
 
 # flake8: noqa F401
 
@@ -24,6 +20,9 @@ from .storage_to_bytes import StorageToBytes
 from .local import LocalStorage
 #from .ftp import FtpStorage
 from .ram import RamStorage
+
+# Buffer
+from .buffer import Buffer, buffered
 
 # Helpers
 from .meta_data import MetaData

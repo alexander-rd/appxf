@@ -6,6 +6,8 @@ fake_tkinter.activate()
 
 from appxf_private.gui.application import AppxfApplication # noqa E402
 
+# TODO: This test case was rendered "manual" but the cases look like automated
+# ones. Cannot reconsider right now since it needs more effort.
 
 class DummyFrame(tkinter.Frame):
     def __init__(self, parent, argOne, argTwo, *args, **kwargs):

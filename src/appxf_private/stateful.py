@@ -46,9 +46,7 @@ class Stateful():
         '''
         self._set_state_default(data, **kwarg)
 
-    # ########################
-    # Default Implementation
-    # /
+    # ######################## Default Implementation /
     #
     # Restrictions for this interface contract are motivated by the Storable
     # behavior (storage module):
@@ -57,8 +55,8 @@ class Stateful():
     #   * Text based serializers (like JSON) cannot store and restore arbitrary
     #     objects without sacrificing human readability.
     #
-    # Supported base types (medium risk for extensions - almost all extensions
-    # will require specific handling from serializers):
+    # Supported base types (medium risk for extensions since almost all
+    # extensions will require specific handling from serializers):
     DefaultBaseType: TypeAlias = bool | int | float | bytes | str
     # The type that is supported for get_state()/set_state():
     #   * Dictionaries may contain BaseType as keys and recursively any
@@ -72,7 +70,7 @@ class Stateful():
         set[Union[DefaultBaseType, None]],  # set must be hashable
         dict[str, 'DefaultStateType'],  # explicit to resolve pylint issues
         ]
-    # For testing, the type variable are be analyzed via get_origin() and
+    # For testing, the type variables are be analyzed via get_origin() and
     # get_args() to ensure coverage for serializers.
 
     # Default implementation for get_state()/set_state() is based on the

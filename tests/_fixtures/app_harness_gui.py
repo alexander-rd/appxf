@@ -74,7 +74,7 @@ class AppHarnessGui():
             if not registration.check():
                 return
 
-        # loading regitry will happen automatically when required - like during
+        # loading registry will happen automatically when required - like during
         # a sync attempt:
         #
         # TODO: the sync attempt
