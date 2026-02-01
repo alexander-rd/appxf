@@ -1,5 +1,5 @@
-from kiss_cf.storage.sync import SyncData
-from kiss_cf.storage import Storage
+from appxf_private.storage.sync import SyncData
+from appxf_private.storage import Storage
 from datetime import datetime
 import pytest
 

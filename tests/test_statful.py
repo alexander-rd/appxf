@@ -1,6 +1,6 @@
 ''' options module with Options object
 '''
-from kiss_cf import Stateful
+from appxf_private import Stateful
 from dataclasses import dataclass, field
 
 import pytest

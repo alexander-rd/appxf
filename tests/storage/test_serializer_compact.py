@@ -2,7 +2,7 @@
 import pytest
 import pickle
 
-from kiss_cf.storage import Serializer, CompactSerializer
+from appxf_private.storage import Serializer, CompactSerializer
 
 from tests.storage.test_serializer_base import BaseSerializerTest, DummyClassNotSerializable
 

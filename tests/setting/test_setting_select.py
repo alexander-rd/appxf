@@ -1,6 +1,6 @@
 import pytest
 
-from kiss_cf.setting import Setting, SettingSelect
+from appxf_private.setting import Setting, SettingSelect
 
 def test_init_default():
     setting = SettingSelect(Setting.new(str))

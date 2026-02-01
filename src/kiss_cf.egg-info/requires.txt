@@ -1,8 +1,0 @@
-mariadb>=1.1.5
-
-[testing]
-flake8>=3.9
-mypy>=0.910
-pytest-cov>=2.0
-pytest>=6.0
-tox>=3.24

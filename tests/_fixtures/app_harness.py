@@ -13,10 +13,10 @@ from __future__ import annotations
 
 import os
 
-from kiss_cf.security import Security, SecurePrivateStorage
-from kiss_cf.registry import Registry, SharedSync, SecureSharedStorage
-from kiss_cf.config import Config
-from kiss_cf.storage import LocalStorage, Storage
+from appxf_private.security import Security, SecurePrivateStorage
+from appxf_private.registry import Registry, SharedSync, SecureSharedStorage
+from appxf_private.config import Config
+from appxf_private.storage import LocalStorage, Storage
 
 from .restricted_location import CredentialLocationMock
 

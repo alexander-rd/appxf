@@ -6,8 +6,8 @@ are registered to admin.
 __Scope:__ Feel free to play around and inspect configurations.
 '''
 from appxf_matema.case_runner import ManualCaseRunner
-from kiss_cf.gui import KissApplication
-from kiss_cf.storage import Storage
+from appxf_private.gui import AppxfApplication
+from appxf_private.storage import Storage
 from tests._fixtures import test_sandbox
 from tests._fixtures import application
 from tests._fixtures.app_harness import AppHarness

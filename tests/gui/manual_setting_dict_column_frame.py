@@ -6,8 +6,8 @@ Columns: Placing options on top of this widget will test alignement of entry fie
 #! TODO: update testing text
 
 from appxf_matema.case_runner import ManualCaseRunner
-from kiss_cf.setting import SettingBool, SettingString, SettingEmail
-from kiss_cf.gui import setting_dict
+from appxf_private.setting import SettingBool, SettingString, SettingEmail
+from appxf_private.gui import setting_dict
 
 #  - Label length: the dict uses very short and very long names on purpose:
 prop_dict = {

@@ -1,8 +1,8 @@
 
 import pytest
-from kiss_cf.storage import AppxfStorableError, RamStorage, Storage
-from kiss_cf.setting import SettingDict
-from kiss_cf.config import Config, KissConfigError
+from appxf_private.storage import AppxfStorableError, RamStorage, Storage
+from appxf_private.setting import SettingDict
+from appxf_private.config import Config, AppxfConfigError
 
 @pytest.fixture(autouse=True)
 def setup():
@@ -14,8 +14,8 @@ def test_config_initialization_state():
 
 def test_config_fill_section():
     config = Config()
-    # just a view varianty of propert init. Full testing in scope of
-    # KissPropertyDict.
+    # just a view variant of setting init. Full testing in scope of
+    # SettingDict.
     config.add_section(
         'TEST', settings = {
             'email': ('email',),
@@ -78,12 +78,12 @@ def test_config_store_load_custom_storage():
 def test_config_adding_existing_section():
     config = Config()
     config.add_section('TEST')
-    with pytest.raises(KissConfigError) as exc_info:
+    with pytest.raises(AppxfConfigError) as exc_info:
         config.add_section('TEST')
     assert 'Cannot add section TEST' in str(exc_info.value)
 
 def test_config_access_non_existing_section():
     config = Config()
-    with pytest.raises(KissConfigError) as exc_info:
+    with pytest.raises(AppxfConfigError) as exc_info:
         config.section('TEST')
     assert 'Cannot access section TEST' in str(exc_info.value)

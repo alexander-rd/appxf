@@ -41,25 +41,3 @@ git push
 # cleanup branch
 git branch -d \<branch-name\>
 git push origin --delete \<branch-name\>
-
-## Others
- * Reproduce: errors are not shown in the log file (like wrong database conrhyfig, likely
-   also missing template file)
-
-Mitarbeit:
- * Consider Status of Mitarbeitstag
-
-OpenOlitor TODO:
-
- * % Verplanung bei Mitbarbeit-Übersicht
- * Notwendige Dateien als Teil des Builds (schnelleres Verteilen)
-   + ODS template
-   + passwörter
-
-Working on Email Templates:
- * Checkin Naming changes for Property->Setting (GUI)
- ** Update manual GUI testing scripts
- ** Do not yet check in SettingSelect
- ** Update documentation of StorageDummy
- ** ?? Utilize StorageMock as Dummy (aka RamStorage or Buffer) ??
- * Show SettingSelect in GUI
