@@ -1,4 +1,3 @@
-''' utility implementations
+'''Facade for APPXF utility module'''
 
-None of the modules in here should currently be used.
-'''
+# None of the modules in here should currently be used.

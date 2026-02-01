@@ -1,5 +1,4 @@
 
-
-# flake8: noqa F401
+'''Facade for APPXF config module'''
 
 from .config import Config, AppxfConfigError

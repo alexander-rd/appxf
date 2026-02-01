@@ -1,4 +1,4 @@
-''' Configuration and Settings
+'''Facade for APPXF setting module
 
 Typical use cases for application configuration settings are:
   * user settings like their email
@@ -23,7 +23,8 @@ the following classes are the entry points:
       additional conveniance.
 '''
 
-# flake8: noqa F401
+# TODO: transfer this description into the documentation. I cannot see how this
+# description is valuable during development of applications.
 
 from .setting import Setting, AppxfSettingError, AppxfSettingConversionError
 from .base_types import SettingString, SettingText, SettingEmail, SettingPassword

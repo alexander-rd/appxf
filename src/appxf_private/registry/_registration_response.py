@@ -10,7 +10,7 @@ from typing import TypedDict, Any
 
 from appxf_private.storage import CompactSerializer
 
-# TODO: apply DictStorable here bute keep the get_bytes interface.
+# TODO: apply DictStorable here but keep the get_bytes interface.
 
 
 class AppxfExceptionRegistrationResponse(Exception):

@@ -1,4 +1,4 @@
-''' APPXF Common GUI Classe
+''' APPXF Common GUI Class
 
 GridFrame: Includes helpers to align frames via tkinter grid.
 MainWindow: TopLevel window with configurable buttons on

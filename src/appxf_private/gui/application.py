@@ -2,7 +2,7 @@
 
 # Note on decision: switching main frame
 #
-# Switching frames in the web is done by constructing all necessary views and
+# Switching frames in the app is done by constructing all necessary views and
 # then pulling the one of current interest to the front.
 #  - (+) you can switch between views and the state of the view remains like
 #    you left it.
@@ -22,7 +22,7 @@
 #
 # A compromise would be to construct a frame when needed but then, retaining
 # it. This alternative should be well compatible with constructing all frames
-# from the beginning but more co plex to implement.
+# from the beginning but more complex to implement.
 #
 # Conclusion: We should go with the first alternative but keep the interface
 # compatible to the compromise. This will imply that AppxfApplication does not

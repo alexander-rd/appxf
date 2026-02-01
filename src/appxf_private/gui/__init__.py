@@ -1,6 +1,10 @@
+'''Facade for APPXF gui module'''
 
+# TODO: this module should be renamed closer to tkinter and may even be split
+# off and planned as separate package to open up for other GUI integrations. If
+# there will be a command line integration, this would be one staying in APPXF
+# scope.
 
-# flake8: noqa F401
 from .common import GridFrame, ButtonFrame, GridToplevel, GridTk, AppxfGuiError
 
 from .setting_base import SettingFrameDefault

@@ -28,7 +28,16 @@ from appxf_private.storage import Storage, RamStorage
 #     ?? Will it become necessary to define the type on option definition
 #     ** It would be nice to configure an option directly on creation
 
-# TODO: support of translations for section naming
+# TODO: support of translations for section naming since they will pop up in
+# menus. Note that this applies likewise to settings in the SettingDict's.
+
+# TODO: Consider enforcing full lower-case (or full upper-case) section names.
+# Currently, this is not fixed and when checking for existing sections, it's
+# never clear whether upper() should be applied. The best solution would be to
+# support the ["this-section" in config] syntax where the implementation
+# handles the intended case-insensitivity the current usage is like
+# ["this-section" in config.sections()]. This problem applies likewise to
+# SettingDict. If touched, it should also consider the translations solution.
 
 # TODO: recover INI file handling:
 #   1) Loading sections from INI file
@@ -51,7 +60,7 @@ class Config():
     convenience:
       * load/store of all sections
       * store/load into one human readable INI file to assist the tool
-        developers. !! Evverything including passwords !!
+        developers. !! Everything including passwords !!
 
     In an application, it is recommended to initialize the the aplication parts
     with the APPXF SettingDict's. They are shared by value and can be loaded
