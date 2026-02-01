@@ -3,10 +3,10 @@
 
 import os
 
-from appxf_private.storage import LocalStorage, RamStorage, Storage
-from appxf_private.security import Security
-from appxf_private.registry import Registry
-from appxf_private.config import Config
+from appxf.storage import LocalStorage, RamStorage, Storage
+from appxf.security import Security
+from appxf.registry import Registry
+from appxf.config import Config
 
 ### Config Objects
 # Note that Config implementation uses RamStorage if no StorageFactory is

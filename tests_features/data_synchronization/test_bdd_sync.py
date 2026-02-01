@@ -1,10 +1,10 @@
 from pytest_bdd import scenarios, scenario, given, when, then, parsers
 from pytest import fixture
 import pytest
-from appxf_private.storage import Storage, LocalStorage, sync, StorageToBytes
-from appxf_private.security import SecurePrivateStorage
-from appxf_private.registry import SecureSharedStorage, Registry
-from appxf_private.config import Config
+from appxf.storage import Storage, LocalStorage, sync, StorageToBytes
+from appxf.security import SecurePrivateStorage
+from appxf.registry import SecureSharedStorage, Registry
+from appxf.config import Config
 import os.path
 
 # Fixtures upon which the ones we require are depenent on must be included as

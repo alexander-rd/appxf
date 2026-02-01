@@ -4,8 +4,8 @@ Implemented as mock for remote locations like FTP during the initialization
 procedure.
 '''
 
-from appxf_private.storage import LocalStorage
-from appxf_private.setting import Setting
+from appxf.storage import LocalStorage
+from appxf.setting import Setting
 
 class CredentialLocationMock(LocalStorage):
 

@@ -1,5 +1,5 @@
-from appxf_private.storage import Buffer, buffered
-from appxf_private.storage import Storage
+from appxf.storage import Buffer, buffered
+from appxf.storage import Storage
 
 
 def assert_buffer_contains(buffer: Buffer,

@@ -3,7 +3,6 @@ name: Test Windows
 # gernetes independent badges.
 
 on:
-  - push
   - pull_request
 
 jobs:
@@ -17,11 +16,11 @@ jobs:
 
     steps:
       - id: call_setup
-        uses: alexander-rd/kiss_cf/.github/actions/setup@main
+        uses: alexander-rd/appxf/.github/actions/setup@main
         with:
           python-version: ${{ matrix.python-version }}
           caller-is-appxf: 'yes'
           caller-is-kiss-cf: 'yes'
 
       - id: run_tox
-        uses: alexander-rd/kiss_cf/.github/actions/run-tox@main
+        uses: alexander-rd/appxf/.github/actions/run-tox@main

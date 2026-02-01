@@ -4,7 +4,7 @@ Switch Button: It toggle buttons to switch to start/second. Switching must NOT r
 '''
 import tkinter
 from appxf_matema.case_runner import ManualCaseRunner
-from appxf_private.gui.application import AppxfApplication
+from appxf.gui.application import AppxfApplication
 
 app = AppxfApplication()
 app.title('AppxfApplication Dummy')

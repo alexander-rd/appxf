@@ -2,7 +2,7 @@ import pytest
 import datetime
 from dotenv import load_dotenv
 import os
-from appxf_private.storage.ftp import FtpLocation
+from appxf.storage.ftp import FtpLocation
 
 # TODO: Test was disables upon transition to public repository. FTP was
 # currently not used in an application and before re-enabling, a better

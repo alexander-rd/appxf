@@ -3,12 +3,12 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "appxf_private"
+name = "appxf"
 version = "0.4"
 authors = [
   { name = "Alexander Reinhold", email="mail@alexander-reinhold.de" }
 ]
-description = "APPXF_Private"
+description = "appxf"
 readme = "README.md"
 requires-python = ">=3.10"
 license_file = "LICENSE"
@@ -17,7 +17,7 @@ classifiers = [
 ]
 
 [project.entry-points.pyinstaller40]
-hook-dirs = "appxf_private.pyinstaller:get_hook_dirs"
+hook-dirs = "appxf.pyinstaller:get_hook_dirs"
 
 [tool.appxf]
 # The testing sandbox is the root directory where files are placed that are
@@ -58,14 +58,14 @@ legacy_tox_ini = """
 
     commands = pytest -rA tests/_fixtures/application.py::test_cleanup
                coverage erase
-               coverage run --source=appxf_private --context=UNIT --branch -m pytest -rA ./tests
+               coverage run --source=appxf --context=UNIT --branch -m pytest -rA ./tests
                coverage report --contexts=UNIT
                coverage html --contexts=UNIT -d cov_html_UNIT
-               coverage run -a --source=appxf_private --context=FEATURE --branch -m pytest -rA ./tests_features
+               coverage run -a --source=appxf --context=FEATURE --branch -m pytest -rA ./tests_features
                coverage report --contexts=FEATURE
                coverage html --contexts=FEATURE -d cov_html_FEATURE
                coverage report
                coverage html -d cov_html
 """
-# commands = pytest --cov=appxf_private --cov-report html --cov-report term
+# commands = pytest --cov=appxf --cov-report html --cov-report term
 # commands = coverage run --source src -m pytest

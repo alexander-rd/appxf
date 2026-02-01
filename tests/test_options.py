@@ -1,6 +1,6 @@
 ''' options module with Options object
 '''
-from appxf_private import Options
+from appxf import Options
 from dataclasses import dataclass, field
 
 import pytest

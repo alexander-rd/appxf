@@ -1,6 +1,6 @@
 import pytest
 
-from appxf_private.setting import Setting, SettingSelect
+from appxf.setting import Setting, SettingSelect
 
 def test_init_default():
     setting = SettingSelect(Setting.new(str))

@@ -1,5 +1,5 @@
 ## Basic Logging
-Logging during development shows progress and hints you left in your messages. Any log you issue will be __printed to the console__. When your application is shipped out of your hands, you rely on __logging written to a file__. Once log files are written, some __log rotation and cleanup of storage would be nice__: appxf_private starts a new log file for each application session (log rotation) and will only keep the last five log files (cleanup).
+Logging during development shows progress and hints you left in your messages. Any log you issue will be __printed to the console__. When your application is shipped out of your hands, you rely on __logging written to a file__. Once log files are written, some __log rotation and cleanup of storage would be nice__: appxf starts a new log file for each application session (log rotation) and will only keep the last five log files (cleanup).
 
 Assumption is that your application structures code into one top-level package. The \_\_init\_\_.py of this top-level package is the place to activate logging:
 ```python
@@ -43,7 +43,7 @@ class YourClass():
 ```
 
 ## Logging Other Modules
-Warnings and Errors of other modules are logged to console and file just like logs of appxf_private and your application. What would be missing is uncought exceptions. For that reason, you should embed your main code into:
+Warnings and Errors of other modules are logged to console and file just like logs of appxf and your application. What would be missing is uncought exceptions. For that reason, you should embed your main code into:
  ```python
 from appxf import logging
 
@@ -85,7 +85,7 @@ log_frame = LoggingFrame(parent)
 ```
 
 ## Pop-Up-Messages
-No feature is provided here to link pop up warnings/errors with logging. Just forward the message also to the appxf_private logging module.
+No feature is provided here to link pop up warnings/errors with logging. Just forward the message also to the appxf logging module.
 
 ## Extentions (not yet implemented)
 * Sending bug report via Email. Automatically sends all available log files.

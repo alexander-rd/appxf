@@ -3,8 +3,8 @@
 from pathlib import Path
 from collections import OrderedDict
 
-from appxf_private.storage import JsonSerializer, LocalStorage
-from appxf_private.setting import SettingDict, SettingSelect, SettingString
+from appxf.storage import JsonSerializer, LocalStorage
+from appxf.setting import SettingDict, SettingSelect, SettingString
 
 
 class CaseEntry:

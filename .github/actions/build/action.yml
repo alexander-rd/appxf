@@ -35,7 +35,7 @@ runs:
 
     - name: Building
       run: |
-        python -m appxf_private.build.pyinstaller \
+        python -m appxf.build.pyinstaller \
           --main-file ${{ inputs.main-file }} \
           --additional-files "${{ inputs.additional-files }}" \
           --hidden-imports "${{ inputs.hidden-imports }}" \

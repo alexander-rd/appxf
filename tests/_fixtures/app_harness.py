@@ -13,10 +13,10 @@ from __future__ import annotations
 
 import os
 
-from appxf_private.security import Security, SecurePrivateStorage
-from appxf_private.registry import Registry, SharedSync, SecureSharedStorage
-from appxf_private.config import Config
-from appxf_private.storage import LocalStorage, Storage
+from appxf.security import Security, SecurePrivateStorage
+from appxf.registry import Registry, SharedSync, SecureSharedStorage
+from appxf.config import Config
+from appxf.storage import LocalStorage, Storage
 
 from .restricted_location import CredentialLocationMock
 
