@@ -25,6 +25,18 @@ hook-dirs = "appxf_private.pyinstaller:get_hook_dirs"
 # subfolders.
 test-sandbox-root = "./.testing"
 
+# Note: flake8 does not support reading configuration from pyproject.toml. You
+# have to install pyproject-flake8 and run flake8p to have the following
+# conifugration effective.
+# See: https://pypi.org/project/Flake8-pyproject/
+[tool.flake8]
+filename = './src/**/*.py'
+per-file-ignores = [
+    # ignore "not used imports" in __init__ files:
+    '__init__.py:F401',
+]
+count = true
+
 [tool.tox]
 legacy_tox_ini = """
     [tox]
