@@ -4,8 +4,8 @@ Implemented as mock for remote locations like FTP during the initialization
 procedure.
 '''
 
-from kiss_cf.storage import LocalStorage
-from kiss_cf.setting import Setting
+from appxf_private.storage import LocalStorage
+from appxf_private.setting import Setting
 
 class CredentialLocationMock(LocalStorage):
 

@@ -1,6 +1,6 @@
 from pytest_bdd import scenarios, scenario, given, when, then, parsers
 from pytest import fixture
-from kiss_cf.storage import Storage
+from appxf_private.storage import Storage
 
 from tests._fixtures import application, test_sandbox
 from tests._fixtures.app_harness import AppHarness

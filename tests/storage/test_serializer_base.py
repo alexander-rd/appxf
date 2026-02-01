@@ -8,8 +8,8 @@ from abc import ABC, abstractmethod
 from typing import get_origin, get_args, Union, ForwardRef
 from types import UnionType
 
-from kiss_cf import Stateful
-from kiss_cf.storage import Serializer, JsonSerializer
+from appxf_private import Stateful
+from appxf_private.storage import Serializer, JsonSerializer
 from collections import OrderedDict
 
 class DummyClassNotSerializable:

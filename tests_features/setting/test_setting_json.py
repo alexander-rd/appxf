@@ -12,8 +12,8 @@ Tests to ensure that the implementation adheres to the following concept goals:
 '''
 import pytest
 from collections import OrderedDict
-from kiss_cf.setting import Setting, SettingDict, SettingEmail, SettingSelect
-from kiss_cf.storage import RamStorage, JsonSerializer, Storage
+from appxf_private.setting import Setting, SettingDict, SettingEmail, SettingSelect
+from appxf_private.storage import RamStorage, JsonSerializer, Storage
 
 # Feature testing must apply context to storage:
 @pytest.fixture(autouse=True)

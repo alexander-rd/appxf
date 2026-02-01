@@ -3,11 +3,11 @@ import pytest
 from collections import OrderedDict
 from copy import deepcopy
 
-from kiss_cf.setting import SettingDict, Setting
-from kiss_cf.setting import AppxfSettingError, AppxfSettingWarning
-from kiss_cf.setting import SettingString, SettingInt, SettingFloat, SettingBool
+from appxf_private.setting import SettingDict, Setting
+from appxf_private.setting import AppxfSettingError, AppxfSettingWarning
+from appxf_private.setting import SettingString, SettingInt, SettingFloat, SettingBool
 
-from kiss_cf.storage import RamStorage
+from appxf_private.storage import RamStorage
 
 # REQ: SettingDict shall be able to be filled with settings by:
 #  1) settings parameter on constructor taking a dictionary {key: setting}

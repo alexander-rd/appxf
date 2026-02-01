@@ -1,7 +1,7 @@
 ''' Provide a GUI for the application harness '''
 import os
-from kiss_cf.gui import KissApplication, ConfigMenu, Login
-from kiss_cf.gui import RegistrationUser, RegistrationAdmin
+from appxf_private.gui import AppxfApplication, ConfigMenu, Login
+from appxf_private.gui import RegistrationUser, RegistrationAdmin
 from tests._fixtures.app_harness import AppHarness
 
 
@@ -17,16 +17,16 @@ class AppHarnessGui():
         self.app_name = f'AppHarnessGui for {harness.user}'
 
     def _run_application(self):
-        app = KissApplication()
+        app = AppxfApplication()
         # === Main Window === #
         app.geometry('600x200')
         app.title(self.app_name)
 
         # --- Frames --- #
-        # There could be frames added via self.kiss_app.register_frame but the
+        # There could be frames added via self.app.register_frame but the
         # application for testing does not have any behavior.
 
-        # TODO: The frame switching provided by KissApplication() should have a
+        # TODO: The frame switching provided by AppxfApplication() should have a
         # manual test where frames should be added. Optional: from the frames,
         # it should be possible to access other features that are typically
         # within the menus.
@@ -74,7 +74,7 @@ class AppHarnessGui():
             if not registration.check():
                 return
 
-        # loading regitry will happen automatically when required - like during
+        # loading registry will happen automatically when required - like during
         # a sync attempt:
         #
         # TODO: the sync attempt

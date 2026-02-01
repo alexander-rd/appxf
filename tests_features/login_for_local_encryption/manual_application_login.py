@@ -1,7 +1,7 @@
-from kiss_cf.gui import KissApplication, Login
-from kiss_cf.security import Security, SecurePrivateStorage
-from kiss_cf.storage import LocalStorage
-from kiss_cf.config import Config
+from appxf_private.gui import AppxfApplication, Login
+from appxf_private.security import Security, SecurePrivateStorage
+from appxf_private.storage import LocalStorage
+from appxf_private.config import Config
 
 # Initialize security for user password and credentials handling
 security = Security(
@@ -33,5 +33,5 @@ login.check()
 config.load()
 
 # run application main window
-app = KissApplication()
+app = AppxfApplication()
 app.mainloop()

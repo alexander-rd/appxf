@@ -3,12 +3,12 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "kiss_cf"
-version = "0.3b0"
+name = "appxf_private"
+version = "0.4"
 authors = [
   { name = "Alexander Reinhold", email="mail@alexander-reinhold.de" }
 ]
-description = "KISS Cross Functionals"
+description = "APPXF_Private"
 readme = "README.md"
 requires-python = ">=3.10"
 license_file = "LICENSE"
@@ -17,13 +17,25 @@ classifiers = [
 ]
 
 [project.entry-points.pyinstaller40]
-hook-dirs = "kiss_cf.pyinstaller:get_hook_dirs"
+hook-dirs = "appxf_private.pyinstaller:get_hook_dirs"
 
 [tool.appxf]
 # The testing sandbox is the root directory where files are placed that are
 # needed or generated during test case. Each test case should use individual
 # subfolders.
 test-sandbox-root = "./.testing"
+
+# Note: flake8 does not support reading configuration from pyproject.toml. You
+# have to install pyproject-flake8 and run flake8p to have the following
+# conifugration effective.
+# See: https://pypi.org/project/Flake8-pyproject/
+[tool.flake8]
+filename = './src/**/*.py'
+per-file-ignores = [
+    # ignore "not used imports" in __init__ files:
+    '__init__.py:F401',
+]
+count = true
 
 [tool.tox]
 legacy_tox_ini = """
@@ -37,7 +49,7 @@ legacy_tox_ini = """
         3.12: py312
 
     [testenv]
-    passenv = KISS_*
+    passenv = APPXF_*
     setenv = PYTHONPATH = {toxinidir}
              VIRTUALENV_DOWNLOAD=0
     deps =
@@ -46,14 +58,14 @@ legacy_tox_ini = """
 
     commands = pytest -rA tests/_fixtures/application.py::test_cleanup
                coverage erase
-               coverage run --source=kiss_cf --context=UNIT --branch -m pytest -rA ./tests
+               coverage run --source=appxf_private --context=UNIT --branch -m pytest -rA ./tests
                coverage report --contexts=UNIT
                coverage html --contexts=UNIT -d cov_html_UNIT
-               coverage run -a --source=kiss_cf --context=FEATURE --branch -m pytest -rA ./tests_features
+               coverage run -a --source=appxf_private --context=FEATURE --branch -m pytest -rA ./tests_features
                coverage report --contexts=FEATURE
                coverage html --contexts=FEATURE -d cov_html_FEATURE
                coverage report
                coverage html -d cov_html
 """
-# commands = pytest --cov=kiss_cf --cov-report html --cov-report term
+# commands = pytest --cov=appxf_private --cov-report html --cov-report term
 # commands = coverage run --source src -m pytest

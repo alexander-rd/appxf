@@ -1,0 +1,133 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the appxf-gui package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: appxf-gui\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-01-22 22:51+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/appxf_private/gui/registration_user.py:81
+msgctxt "window"
+msgid "Registry - User Registration"
+msgstr ""
+
+#: src/appxf_private/gui/registration_user.py:86
+msgctxt "window"
+msgid "User Registration"
+msgstr ""
+
+#: src/appxf_private/gui/registration_user.py:92
+msgctxt "button"
+msgid "Load Admin Keys"
+msgstr ""
+
+#: src/appxf_private/gui/registration_user.py:93
+msgctxt "button"
+msgid "Initialize as Admin"
+msgstr ""
+
+#: src/appxf_private/gui/registration_user.py:94
+msgctxt "button"
+msgid "Write Request"
+msgstr ""
+
+#: src/appxf_private/gui/registration_user.py:95
+msgctxt "button"
+msgid "Load Response"
+msgstr ""
+
+#: src/appxf_private/gui/registration_user.py:99
+msgctxt "label"
+msgid "Admin Keys"
+msgstr ""
+
+#: src/appxf_private/gui/registration_user.py:113
+msgctxt "label"
+msgid "Registration"
+msgstr ""
+
+#: src/appxf_private/gui/registration_user.py:137
+msgctxt "status"
+msgid "Admin keys are already loaded to encrypt your user data."
+msgstr ""
+
+#: src/appxf_private/gui/registration_user.py:141
+msgctxt "status"
+msgid "You have to load admin keys to encrypt the user data in your request."
+msgstr ""
+
+#: src/appxf_private/gui/registration_user.py:160
+msgctxt "dialog"
+msgid "Save Registration Request"
+msgstr ""
+
+#: src/appxf_private/gui/registration_user.py:183
+msgctxt "error"
+msgid "Failed to write file: {}"
+msgstr ""
+
+#: src/appxf_private/gui/registration_user.py:190
+msgctxt "info"
+msgid "Registration request saved to {}"
+msgstr ""
+
+#: src/appxf_private/gui/registration_user.py:199
+msgctxt "dialog"
+msgid "Select Registration Response File"
+msgstr ""
+
+#: src/appxf_private/gui/registration_user.py:223
+msgctxt "error"
+msgid "Failed to read file: {}"
+msgstr ""
+
+#: src/appxf_private/gui/registration_user.py:230
+msgctxt "error"
+msgid "Failed to apply response: {}"
+msgstr ""
+
+#: src/appxf_private/gui/registration_user.py:243
+msgctxt "dialog"
+msgid "Select Admin Keys File"
+msgstr ""
+
+#: src/appxf_private/gui/registration_user.py:258
+msgctxt "error"
+msgid "Failed to load admin keys: {}"
+msgstr ""
+
+#: src/appxf_private/gui/login.py:75
+msgctxt "window"
+msgid "Login - Initialize"
+msgstr ""
+
+#: src/appxf_private/gui/login.py:87 src/appxf_private/gui/login.py:156
+msgctxt "label"
+msgid "Password:"
+msgstr ""
+
+#: src/appxf_private/gui/login.py:91
+msgctxt "label"
+msgid "Repeat Password:"
+msgstr ""
+
+#: src/appxf_private/gui/login.py:137 src/appxf_private/gui/login.py:171
+msgctxt "button"
+msgid "OK"
+msgstr ""
+
+#: src/appxf_private/gui/login.py:150
+msgctxt "window"
+msgid "Login"
+msgstr ""

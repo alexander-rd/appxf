@@ -1,10 +1,10 @@
 from pytest_bdd import scenarios, scenario, given, when, then, parsers
 from pytest import fixture
 import pytest
-from kiss_cf.storage import Storage, LocalStorage, sync, StorageToBytes
-from kiss_cf.security import SecurePrivateStorage
-from kiss_cf.registry import SecureSharedStorage, Registry
-from kiss_cf.config import Config
+from appxf_private.storage import Storage, LocalStorage, sync, StorageToBytes
+from appxf_private.security import SecurePrivateStorage
+from appxf_private.registry import SecureSharedStorage, Registry
+from appxf_private.config import Config
 import os.path
 
 # Fixtures upon which the ones we require are depenent on must be included as

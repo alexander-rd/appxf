@@ -3,8 +3,8 @@
 from pathlib import Path
 from collections import OrderedDict
 
-from kiss_cf.storage import JsonSerializer, LocalStorage
-from kiss_cf.setting import SettingDict, SettingSelect, SettingString
+from appxf_private.storage import JsonSerializer, LocalStorage
+from appxf_private.setting import SettingDict, SettingSelect, SettingString
 
 
 class CaseEntry:
@@ -30,7 +30,7 @@ class CaseEntry:
 
 class CaseData():
     # Test cases shall be selected efficiently which is ideally supported by
-    # the database storage. The followins layers may exist:
+    # the database storage. The following layers may exist:
     #  1) Test case library like, unit tests and feature tests in case of
     #     appxf. THIS LEVEL IS NOT SUPPORTED. If this is required, scanner and
     #     test tool need to be ran twice. Or the tool is extended later
