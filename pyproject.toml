@@ -34,7 +34,7 @@ legacy_tox_ini = """
         3.10: py310
 
     [testenv]
-    passenv = KISS_*
+    passenv = APPXF_*
     setenv = PYTHONPATH = {toxinidir}
              VIRTUALENV_DOWNLOAD=0
     deps =

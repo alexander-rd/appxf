@@ -6,7 +6,7 @@ import pytest
 import os.path
 import shutil
 
-from tests.fixtures.env_base import env_base
+from tests._fixtures.env_base import env_base
 
 # TODO: fixture to be reconsidered after application context's were introduced.
 
