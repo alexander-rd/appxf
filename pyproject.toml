@@ -2,20 +2,6 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[project]
-name = "appxf"
-version = "0.0.2"
-authors = [
-  { name = "alexander-rd", email="mail@alexander-rd.de" }
-]
-description = "APPXF assists python applications (APP) by delivering the cross functional (XF) concerns "
-readme = "README.md"
-requires-python = ">=3.10"
-license_file = "LICENSE"
-classifiers = [
-    "Programming Language :: Python :: 3"
-]
-
 [tool.hatch.build]
 exclude = [
   "/.*",
@@ -23,15 +9,51 @@ exclude = [
   "requirements_test.txt"
 ]
 
+[project]
+name = "appxf"
+version = "0.0.2"
+authors = [
+  { name = "alexander-rd", email="mail@alexander-rd.de" }
+]
+description = "APPXF applications (APP) cross functional concerns (XF)"
+readme = "README.md"
+requires-python = ">=3.10"
+license_file = "LICENSE"
+classifiers = [
+    "Programming Language :: Python :: 3"
+]
+
+[project.entry-points.pyinstaller40]
+hook-dirs = "appxf.pyinstaller:get_hook_dirs"
+
+[tool.appxf]
+# The testing sandbox is the root directory where files are placed that are
+# needed or generated during test case. Each test case should use individual
+# subfolders.
+test-sandbox-root = "./.testing"
+
+# Note: flake8 does not support reading configuration from pyproject.toml. You
+# have to install pyproject-flake8 and run flake8p to have the following
+# conifugration effective.
+# See: https://pypi.org/project/Flake8-pyproject/
+[tool.flake8]
+filename = './src/**/*.py'
+per-file-ignores = [
+    # ignore "not used imports" in __init__ files:
+    '__init__.py:F401',
+]
+count = true
+
 [tool.tox]
 legacy_tox_ini = """
     [tox]
     isolated_build = True
-    env_list = py310
+    env_list = py310, py312
 
     [gh-actions]
     python =
         3.10: py310
+        3.12: py312
 
     [testenv]
     passenv = APPXF_*
@@ -41,7 +63,16 @@ legacy_tox_ini = """
       -r{toxinidir}/requirements.txt
       -r{toxinidir}/requirements_test.txt
 
-    commands = coverage run --source=appxf --branch -m pytest -rA
+    commands = pytest -rA tests/_fixtures/application.py::test_cleanup
+               coverage erase
+               coverage run --source=appxf --context=UNIT --branch -m pytest -rA ./tests
+               coverage report --contexts=UNIT
+               coverage html --contexts=UNIT -d cov_html_UNIT
+               coverage run -a --source=appxf --context=FEATURE --branch -m pytest -rA ./tests_features
+               coverage report --contexts=FEATURE
+               coverage html --contexts=FEATURE -d cov_html_FEATURE
                coverage report
                coverage html -d cov_html
 """
+# commands = pytest --cov=appxf --cov-report html --cov-report term
+# commands = coverage run --source src -m pytest

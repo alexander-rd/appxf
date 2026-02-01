@@ -3,7 +3,6 @@ name: Test Windows
 # gernetes independent badges.
 
 on:
-  - push
   - pull_request
 
 jobs:
@@ -11,11 +10,17 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        python-version: ['3.10']
+        python-version: ['3.12']
 
-    uses: alexander-rd/appxf/.github/workflows/test.yml@main
-    secrets: inherit
-    with:
-      os: ${{ matrix.os }}
-      python-version: ${{ matrix.python-version }}
-      caller-is-appxf: 'yes'
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - id: call_setup
+        uses: alexander-rd/appxf/.github/actions/setup@main
+        with:
+          python-version: ${{ matrix.python-version }}
+          caller-is-appxf: 'yes'
+          caller-is-kiss-cf: 'yes'
+
+      - id: run_tox
+        uses: alexander-rd/appxf/.github/actions/run-tox@main
