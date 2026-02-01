@@ -13,12 +13,6 @@ from appxf_private.gui.setting_dict import SettingDictWindow
 from appxf_private.gui.locale import _
 from appxf_private.gui.registration_admin import RegistrationAdmin
 
-# TODO: reconsider language concept: maybe something configurable, working on
-# human readable INI files and adding a context (section, option, button, ...)
-# to the translations.
-#
-# from ..language import translate
-
 # TODO: better option on when to validate input:
 # https://www.plus2net.com/python/tkinter-validation.php
 

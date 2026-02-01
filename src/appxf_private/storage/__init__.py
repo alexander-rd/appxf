@@ -1,8 +1,4 @@
-''' Facade for storage related classes '''
-
-#
-
-# flake8: noqa F401
+'''Facade for APPXF storage module'''
 
 # Abstract/General Classes
 from .serializer import Serializer

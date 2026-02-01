@@ -1,3 +1,6 @@
+'''Support for pyinstaller based builds'''
+
+
 import os
 
 def get_hook_dirs():

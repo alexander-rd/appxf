@@ -3,6 +3,13 @@ import ntplib
 from datetime import datetime, timedelta
 from appxf import logging
 
+# TODO: reactivate and document this feature. It was implemented as part of the
+# ideas for fily synchronization, relying on time stamps but not on ways to
+# retrieve system time (Rationale by example: since years, my system time in
+# Windows is hours off and corrects itself eventually after hours.. ..a sync
+# decisions should not be based on this). Meaning for this feature: either it
+# has other value or it is needed again for file synchronization.
+
 
 class NtpTime():  # pragma: no cover
     '''Provide offset between system time and NTP time servers.

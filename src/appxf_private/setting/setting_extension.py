@@ -2,7 +2,7 @@
 
 Fancy and planned to be reworked!
 '''
-# TODO: refactoring according to ticket #17: aggregate Setting instead of
+# TODO #17: refactoring according to ticket #17 - aggregate Setting instead of
 # deriving from it.
 
 from __future__ import annotations
