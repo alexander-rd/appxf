@@ -1,1 +1,8 @@
+appxf >= 0.0.2
 babel
+cryptography
+email-validator
+ftputil
+ntplib
+pandas
+recordclass
