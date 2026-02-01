@@ -4,21 +4,64 @@ inputs:
   python-version:
     type: string
     required: true
+  caller-is-appxf:
+    type: string
+    required: false
+    default: 'no'
+  appxf-token:
+    required: false
+
 
 runs:
   using: "composite"
 
   steps:
   # COMMON steps
-    - name: Set up Python ${{ inputs.python-version }}
-      uses: actions/setup-python@v4
+    - name: set up python ${{ inputs.python-version }}
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ inputs.python-version }}
+    # Make python version available: ${{ env.PYTHON_VERSION }} or $PYTHON_VERSION
+    - name: Capture Python version
+      run: |
+        PYVER=$(python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+        echo "PYTHON_VERSION=$PYVER" >> "$GITHUB_ENV"
+      shell: bash
 
     - name: upgrade python (Win+Linux)
       run: python -m pip install --upgrade pip
       shell: bash
 
-  # LINUX specific steps: none, yet
+    # checkout repositories
+    - name: Checkout
+      uses: actions/checkout@v3
+    # note: requirements are not installed since this is handled by TOX within
+    # the venv
+
+    # handle appxf repository
+    - name: Checkout appxf (if called from using project)
+      uses: actions/checkout@v3
+      with:
+        repository: alexander-rd/appxf
+        path: appxf
+        # TODO: remove token once repo becomes public
+        token: ${{ inputs.appxf-token }}
+      if: inputs.caller-is-appxf == 'no'
+    # install appxf repository
+    - name: Install appxf (if called from using project)
+      run: pip install -e./appxf
+      shell: bash
+      if: inputs.caller-is-appxf == 'no'
+
+  # LINUX specific steps
+    - name: Install tkinter
+      run: sudo apt install python3-tk
+      shell: bash
+      if: runner.os == 'Linux'
+    - name: Orientation (ls)
+      run: ls -la
+      shell: bash
+      if: runner.os == 'Linux'
 
   # WINDOWS specific steps: none, yet
+
