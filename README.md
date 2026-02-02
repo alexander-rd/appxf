@@ -16,11 +16,8 @@ APPXF may help close a gap when writing applications for
 small associations or non-profits. Development will continue with the clear
 understanding that one person’s free time cannot accomplish everything.
 
-## You
-### Your Project
-If you find any part of this library useful, drop a message. APPXF will not
-suddenly clean up all open topics or guarantee interface stability but efforts
-will be continuously prioritized based on the information available.
+## Appreciation is Welcome
+If you find any part of this library useful, the currently most efficient acknowledgement and motivation would be shareíng your story and project as a [discussion topic](https://github.com/alexander-rd/appxf/discussions/new?category=show-and-tell) (example: [the app which initialized APPXF](https://github.com/alexander-rd/appxf/discussions/10)). Additionally, while APPXF will not suddenly clean up all open topics or guarantee interface stability for relevant features, efforts are continuously prioritized based on the information available.
 
-### Contributing
-See ...
+## Contributions Welcome
+For further information, see the [contributions page](CONTRIBUTING.md).
