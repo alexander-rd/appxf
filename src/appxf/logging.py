@@ -4,8 +4,6 @@ import sys
 import traceback
 import warnings
 from . import fileversions
-# (C) 2024 github/alexander-rd. Part of APPXF package. MIT license, see LICENSE
-# file for details.
 
 # Expected usage will likely not include appxf.logging and python builtin
 # logging such that the following should be OK:

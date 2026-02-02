@@ -1,7 +1,4 @@
 ''' provide common functions for storage handling '''
-# (C) 2024 github/alexander-rd. Part of APPXF package. MIT license, see LICENSE
-# file for details.
-
 import pytest
 import os.path
 import shutil

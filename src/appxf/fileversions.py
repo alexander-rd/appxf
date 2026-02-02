@@ -5,8 +5,6 @@ module provides get_filename() to construct corresponging filenames, like:
 20230401_v00_file.txt or 2023_CW04.txt (without version index) or file_007.txt
 (without date information).
 '''
-# (C) 2024 github/alexander-rd. Part of APPXF package. MIT license, see LICENSE
-# file for details.
 
 import logging
 import os.path
