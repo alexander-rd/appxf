@@ -4,16 +4,20 @@ APPXF covers an application's (APP) cross-functional concerns (XF), such as
 settings, data sharing, logging, and secure storage, to reduce effort when
 writing desktop applications.
 
-__What it is:__ As of February 2026, around three years of hobbyist development
+## What it is
+As of February 2026, around three years of hobbyist development
 have been transferred into this public repository. It is *working code* that is
 used in an application for a small association. While there are several usable
 components, the *interfaces are unstable* and there is *no consistent
 documentation*.
 
-__It may become:__ APPXF may help close a gap when writing applications for
+## It may become
+APPXF may help close a gap when writing applications for
 small associations or non-profits. Development will continue with the clear
 understanding that one person’s free time cannot accomplish everything.
 
-If you find any part of this library useful, drop a message. APPXF will not
-suddenly clean up all open topics or guarantee interface stability but efforts
-will be continuously prioritized based on the information available.
+## Appreciation is Welcome
+If you find any part of this library useful, the currently most efficient acknowledgement and motivation would be shareíng your story and project as a [discussion topic](https://github.com/alexander-rd/appxf/discussions/new?category=show-and-tell) (example: [the app which initialized APPXF](https://github.com/alexander-rd/appxf/discussions/10)). Additionally, while APPXF will not suddenly clean up all open topics or guarantee interface stability for relevant features, efforts are continuously prioritized based on the information available.
+
+## Contributions Welcome
+For further information, see the [contributions page](CONTRIBUTING.md).
