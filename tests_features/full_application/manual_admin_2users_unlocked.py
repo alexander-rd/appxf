@@ -1,3 +1,5 @@
+# Copyright 2025-2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# SPDX-License-Identifier: Apache-2.0
 ''' Full Applications
 
 __Precondition:__ Admin, User A and User B are initialized and logged in. Users

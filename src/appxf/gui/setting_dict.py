@@ -1,3 +1,5 @@
+# Copyright 2023-2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# SPDX-License-Identifier: Apache-2.0
 ''' Aggregate single setting frames/windows into one interface
 
 This module handles, in particular, SettingDict but aggregates all setting_*

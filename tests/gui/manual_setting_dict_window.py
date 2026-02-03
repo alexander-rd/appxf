@@ -1,3 +1,5 @@
+# Copyright 2023-2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# SPDX-License-Identifier: Apache-2.0
 '''
 Resizing: should only affect the right entry part.
 Validation: Entry types are shown. Latest after loosing focus on entry, wrong values should turn the entry red.

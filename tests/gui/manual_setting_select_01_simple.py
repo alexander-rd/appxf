@@ -1,3 +1,5 @@
+# Copyright 2024-2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# SPDX-License-Identifier: Apache-2.0
 '''
 Frame shall only show the label and the dropdown. The edit button must not be
 presented. The dropdown must be empty at startup (nothing selected) and contain
