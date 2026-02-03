@@ -18,6 +18,9 @@ fi
 
 BRANCH_NAME="$1"
 
+echo "Verifying branch is up to date with origin..."
+git push
+
 # Extract issue number from branch name (assumes format: number-rest-of-name)
 ISSUE_NUMBER=$(echo "$BRANCH_NAME" | grep -oE '^[0-9]+')
 
