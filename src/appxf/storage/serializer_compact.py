@@ -1,3 +1,5 @@
+# Copyright 2024-2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# SPDX-License-Identifier: Apache-2.0
 ''' Provide a serialization
 
 This is a small wrapper around pickle to ensure "safe" unpacking the bytes from

@@ -1,3 +1,5 @@
+# Copyright 2025-2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# SPDX-License-Identifier: Apache-2.0
 ''' Definition of basic types like int or str as settings
 '''
 from __future__ import annotations

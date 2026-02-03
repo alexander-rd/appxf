@@ -1,3 +1,5 @@
+# Copyright 2025-2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# SPDX-License-Identifier: Apache-2.0
 # flake8: noqa F401
 
 # Even if matema grows to submodules, classes shall be available from here.

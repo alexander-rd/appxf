@@ -1,3 +1,5 @@
+# Copyright 2023-2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# SPDX-License-Identifier: Apache-2.0
 # Enable to test for key indexable (object[]) behavior:
 from ftputil import FTPHost
 import os.path
