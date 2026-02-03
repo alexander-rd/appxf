@@ -1,4 +1,3 @@
-appxf >= 0.0.2
 babel
 cryptography
 email-validator
