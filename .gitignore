@@ -23,3 +23,4 @@ prof
 coverage.json
 coverage.xml
 .python-version
+gh_token
