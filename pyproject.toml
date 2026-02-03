@@ -18,7 +18,8 @@ authors = [
 description = "APPXF application (APP) cross functional concerns (XF)"
 readme = "README.md"
 requires-python = ">=3.10"
-license_file = "LICENSE"
+license=Apache-2.0
+license_file = "LICENSES/Apache-2.0"
 classifiers = [
     "Programming Language :: Python :: 3"
 ]
