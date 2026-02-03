@@ -47,10 +47,8 @@ if [ -z "$ISSUE_NUMBER" ]; then
     exit 1
 fi
 
-echo ""
 echo "--------------------------------"
 echo "Details of issue #$ISSUE_NUMBER"
-echo "--------------------------------"
 
 # Try to fetch issue details using GitHub CLI
 if gh issue view "$ISSUE_NUMBER" --json title,body &> /dev/null; then
