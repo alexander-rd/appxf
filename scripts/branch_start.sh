@@ -11,12 +11,32 @@ set -e
 
 if [ $# -eq 0 ]; then
     echo 'Error: Branch name is required'
-    echo 'Usage: ./branch_start.sh <branch_name>'
     echo 'Example: ./branch_start.sh 42_implement_feature'
     exit 1
 fi
 
 BRANCH_NAME="$1"
+
+echo "================================"
+echo "Verifying preconditions..."
+echo "--------------------------------"
+STATUS_OUTPUT=$(git status)
+echo "$STATUS_OUTPUT"
+echo "--------------------------------"
+
+# Check for clean working tree
+if ! echo "$STATUS_OUTPUT" | grep -q "nothing to commit, working tree clean"; then
+    echo "Error: Working tree is not clean. Please commit or stash your changes first."
+    exit 1
+fi
+
+# Check if branch is up to date
+if ! echo "$STATUS_OUTPUT" | grep -q "Your branch is up to date"; then
+    echo "Error: Branch is not up to date with origin. Please pull or push your changes first."
+    exit 1
+fi
+
+echo "✓ Repository is clean and up to date"
 
 # Extract issue number from branch name (assumes format: number-rest-of-name)
 ISSUE_NUMBER=$(echo "$BRANCH_NAME" | grep -oE '^[0-9]+')
@@ -28,8 +48,8 @@ if [ -z "$ISSUE_NUMBER" ]; then
 fi
 
 echo ""
-echo "================================"
-echo "Issue #$ISSUE_NUMBER Details"
+echo "--------------------------------"
+echo "Details of issue #$ISSUE_NUMBER"
 echo "--------------------------------"
 
 # Try to fetch issue details using GitHub CLI
