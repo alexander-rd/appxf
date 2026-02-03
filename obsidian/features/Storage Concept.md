@@ -1,3 +1,5 @@
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
+<!--SPDX-License-Identifier: 0BSD-->
 **Situation and Problem.** An application maintains data that shall be persisted during sessions. But there are more details to consider. Shall the data be stored human readable or in binary format? Shall it be encrypted? Shall it be shared with other application instances?
 
 **Feature.** The storage concept is an abstraction allowing you to focus on the function your are implementing and pick the storage behavior from the APPXF library. The behavior is split into **storage locations**:
@@ -10,7 +12,7 @@ and **additional methods**:
 * locally encrypted (see [[Login for Local Encryption]])
 * shared storage that includes meta data [[Data Synchronization]]
 	* without encryption
-	* with encryption based on [[User Registry]] 
+	* with encryption based on [[User Registry]]
 * encrypted for remote shares (see [[User Registry]])
 
 # Guide

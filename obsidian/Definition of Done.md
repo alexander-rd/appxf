@@ -1,3 +1,5 @@
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
+<!--SPDX-License-Identifier: 0BSD-->
 # Code
 * flake succeeds
 * unit test coverage (see [[APPXF Test Strategy]])

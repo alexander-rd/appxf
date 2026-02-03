@@ -1,7 +1,9 @@
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
+<!--SPDX-License-Identifier: 0BSD-->
 # Credentials
 APPXF does not expose credentials in the logging and does only expose it to admins if configured properly. But to be able to access services, users do have passwords! Theoretically, they could alter the code or rebuild the application to extract them.
 ## Status Quo
-Without APPXF, if credentials must be shared, they will be shared. They will be available to others with the same limitation as stated above. But will the exchange channel be secure? Will the password be updated frequently? 
+Without APPXF, if credentials must be shared, they will be shared. They will be available to others with the same limitation as stated above. But will the exchange channel be secure? Will the password be updated frequently?
 APPXF, at least, secures the communication path *and* makes rolling out updated passwords seamless.
 ## Alternatives
 APPXF is a solution for small-scale groups providing a minimum of security. The only way to properly protect credentials is by not providing direct access. A typical way to achieve this is a web service where users log in and the server handles the credentials. Such web based services will typically be too much effort for small-scale groups might not be safer, if:

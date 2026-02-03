@@ -1,3 +1,5 @@
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
+<!--SPDX-License-Identifier: 0BSD-->
 # Ubuntu installations
 (Collected, needs some refinement (one line)):
 ```bash
@@ -30,7 +32,7 @@ The last three steps are for manual test case execution which can have their own
 * The plugins are not checked in, only the configuration - you ***may*** need to install them manually (not confirmed)
 * The plantuml plugin is configured to use a local jar file. You need to place the file into `.obsidian/plugins/obsidian-plantuml`
 # Journal
-## 15.06.2025 
+## 15.06.2025
 Problems with pip after changing from Ubuntu 22.04 to 24.04 (pip needs venv or packages must be installed via apt-get). This topic has two aspects:
  * venv is now mandatory when developing python
  * I did not yet resolve preparing for multiple python versions. 3.10 was not available via apt-get and I stopped digging deeper into pyenv.

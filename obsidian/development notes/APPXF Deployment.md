@@ -1,3 +1,5 @@
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
+<!--SPDX-License-Identifier: 0BSD-->
 Helpful pages:
 https://py-pkgs.org/welcome
 https://packaging.python.org/en/latest/tutorials/packaging-projects/

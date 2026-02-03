@@ -1,3 +1,5 @@
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
+<!--SPDX-License-Identifier: 0BSD-->
 The CaseRunner is used within your manual test case to operate with the MaTeMa. The following outlines the interactions.
 
 * **Initialization**: The MaTeMa uses the ***command line arguments*** to pass information to the CaseRunner. This includes details on how to pass test execution details *back* to the MaTeMa.
@@ -14,7 +16,7 @@ participant CaseRunner as RUNNER
 == Test Initialization ==
 MATEMA -> CASE : new process
 note right
-MaTeMa uses command line arguments 
+MaTeMa uses command line arguments
 to pass information to CaseRunner
 end note
 CASE -> RUNNER : initialize
@@ -67,10 +69,10 @@ from appxf_metama import CaseRunner
 
 def setup():
 	# any preparations before test execution
-	
+
 def teardown():
 	# any steps after test execution
-	
+
 def test():
 	# implementation of your test case
 
@@ -82,10 +84,10 @@ Remarks:
 * #TODO adding capabilities for `test_*()`would be nice and enable putting multiple test cases within one file `manual_*.py` like for pytest.
 # Use Case: Launching Processes
 Using `process_*()` functions will result in action buttons within the CaseRunner GUI. The buttons use the functions summary as labels and execute within a *new process* that loads your manual test case module.
-```python	
+```python
 def process_app_admin():
 	''' Admin Application '''
-	
+
 def process_app_user():
 	''' User Application '''
 ```
@@ -99,9 +101,9 @@ Applications often have a persisted state on the file system (or on a server), r
 ```python
 def setup_once():
 	# sandbox preparation executed ONCE before any setup()
-	
+
 def teardown_once():
-	# sandbox teardown executed ONCE before the case runner 
+	# sandbox teardown executed ONCE before the case runner
 	# closes and after any teardown()
 ```
 # Reference Sequences
@@ -124,7 +126,7 @@ The following reference sequence is still an outline but hopefully clarifies any
 	2. Ensure logging and coverage is active
 	3. If existing, execute `test()`
 7. CaseRunner GUI waits for test conclusion
-	1. May spawn any `process_*()` 
+	1. May spawn any `process_*()`
 8. CaseRunner concludes the test
 	1. stop coverage (but not logging)
 	2. run `teardown()` and `teardown_once()` (in this order)
