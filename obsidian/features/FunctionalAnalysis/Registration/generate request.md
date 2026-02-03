@@ -1,3 +1,5 @@
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
+<!--SPDX-License-Identifier: 0BSD-->
 to be continued?
 ```plantuml
 @startuml
@@ -7,7 +9,7 @@ to be continued?
 start
 ->UI opens;
 if (admin keys) then (available)
-:UI opens 
+:UI opens
 (no load admin keys button);
 else (missing)
 :UI opens

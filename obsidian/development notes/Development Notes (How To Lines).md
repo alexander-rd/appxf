@@ -1,3 +1,5 @@
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
+<!--SPDX-License-Identifier: 0BSD-->
 ### Install package after checkout
 Execute from where setup.py is located:
 pip install -e .
@@ -9,9 +11,9 @@ source .venv/bin/activate
 **run tests via tox:**
 tox
 
-**run tests via pytest** (might require being in venv (see above)) 
+**run tests via pytest** (might require being in venv (see above))
 pytest -rA
-pytest -rA tests/test_\<specific\>.py 
+pytest -rA tests/test_\<specific\>.py
 
 **run manual tests** (the PYTHONPATH prepend is necessary because python would execute the script from it's path and an otherwise empty python evironment)
 `PYTHONPATH=. python tests_features/user_registry/manual_registration_request.py`

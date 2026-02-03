@@ -1,3 +1,5 @@
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
+<!--SPDX-License-Identifier: 0BSD-->
 # Requirements
 * The manual test case must be executable directly without any test management.
 	* The script may still use any helpers
@@ -37,7 +39,7 @@ The Script would contain the helper that launches the test case execution. This 
 * (-) Strong requirement to the manual test case implementation: it has to provide the case results.
 	* If case results are not available, the MaTeMa can only evaluate the process exist status.
 * (+) Automation or convenience actions (buttons) are self contained and available via manual execution
-* (/) There are typically three windows: 
+* (/) There are typically three windows:
 	* the MaTeMa
 	* an execution helper for case description and results collection
 	* the UI that is tested

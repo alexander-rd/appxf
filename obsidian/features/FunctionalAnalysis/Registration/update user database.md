@@ -1,3 +1,5 @@
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
+<!--SPDX-License-Identifier: 0BSD-->
 ? this diagram sounds technical (calling registry)
 ```plantuml
 @startuml
@@ -5,7 +7,7 @@
 
 |User Interface|
 start
-->registry shall add user 
+->registry shall add user
 with role from request data;
 |Registry|
 switch (check public keys)
