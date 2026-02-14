@@ -84,9 +84,9 @@ if [ -n "$EXISTING_PR" ]; then
     echo "Updating existing pull request #$EXISTING_PR..."
 
     # Update the PR
-    #gh pr edit "$EXISTING_PR" \
-    #    --title "$ISSUE_TITLE" \
-    #    --body "$PR_BODY"
+    gh pr edit "$EXISTING_PR" \
+        --title "$ISSUE_TITLE" \
+        --body "$PR_BODY"
 
     PR_URL=$(gh pr view "$EXISTING_PR" --json url --jq '.url')
 
