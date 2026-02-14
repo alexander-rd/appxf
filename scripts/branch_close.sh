@@ -91,9 +91,13 @@ if [ -n "$EXISTING_PR" ]; then
     echo "Updating existing pull request #$EXISTING_PR..."
 
     # Update the PR
-    gh pr edit "$EXISTING_PR" \
+    if ! PR_EDIT_OUTPUT=$(gh pr edit "$EXISTING_PR" \
         --title "$ISSUE_TITLE" \
-        --body "$PR_BODY"
+        --body "$PR_BODY" 2>&1); then
+        echo 'ERROR: Failed to update pull request:'
+        echo "$PR_EDIT_OUTPUT"
+        exit 1
+    fi
 
     PR_URL=$(gh pr view "$EXISTING_PR" --json url --jq '.url')
 
@@ -105,13 +109,17 @@ else
     echo 'Creating new pull request...'
 
     # Create the PR
-    PR_URL=$(gh pr create \
+    if ! PR_CREATE_OUTPUT=$(gh pr create \
         --title "$ISSUE_TITLE" \
         --body "$PR_BODY" \
-        --base "$DEFAULT_BRANCH" 2>&1)
+        --base "$DEFAULT_BRANCH" 2>&1); then
+        echo 'ERROR: Failed to create pull request:'
+        echo "$PR_CREATE_OUTPUT"
+        exit 1
+    fi
 
     # Extract URL from output (gh pr create prints the URL)
-    PR_URL=$(echo "$PR_URL" | grep -oE 'https://github.com/[^[:space:]]+')
+    PR_URL=$(echo "$PR_CREATE_OUTPUT" | grep -oE 'https://github.com/[^[:space:]]+')
 
     echo '✓ Pull request created'
     echo "Title: $ISSUE_TITLE"
