@@ -1,3 +1,5 @@
+# Copyright 2024-2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# SPDX-License-Identifier: Apache-2.0
 ''' Storage to Raw Bytes
 
 This module merges serializers with Storage as a basis for any file storage.

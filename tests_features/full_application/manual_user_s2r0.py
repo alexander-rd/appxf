@@ -1,3 +1,5 @@
+# Copyright 2025-2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# SPDX-License-Identifier: Apache-2.0
 ''' User Initialization without Registration
 
 __Precondition:__ User application with initialized user (Local Security) but

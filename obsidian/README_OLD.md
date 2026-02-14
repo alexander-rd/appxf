@@ -1,3 +1,5 @@
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
+<!--SPDX-License-Identifier: 0BSD-->
 This is the old README that was present in the original private repository. It needs to be merged into the new README and planned documentation.
 # APPXF
 

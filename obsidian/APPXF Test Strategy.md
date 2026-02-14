@@ -1,3 +1,5 @@
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
+<!--SPDX-License-Identifier: 0BSD-->
 The test strategy considers the following two test levels:
 * __Unit Tests__ are driven by code coverage of the individual modules and *should cover 100%* (lines and branches) while *80% branch coverage is acceptable for initial versions*. While focusing on individual modules, tests may or may not cut free interfaces to other modules. Modules include GUI modules which must be covered by manual tests.
 * __Feature Tests__ are driven by the APPXF supported ***use cases*** and ***performance targets*** while *appropriate coverage is determined by review*. If use cases are already well covered by the unit tests, they do not need to be repeated but a corresponding file shall still be present with corresponding arugments. Feature tests shall use the APPXF implementation as-is wherever possible.

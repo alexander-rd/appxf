@@ -1,3 +1,5 @@
+'Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+'SPDX-License-Identifier: 0BSD
 @startuml
 !theme cerulean
 |User Application|
@@ -20,6 +22,6 @@ with remote storage;
 |User Application|
 :[[[Load response]]];
 :Synchronize with remote;
- 
+
 stop
 @enduml
