@@ -16,6 +16,13 @@
 
 set -e
 
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+echo '================================'
+echo 'Verifying preconditions...'
+"$SCRIPT_DIR/_verify_clean_working_tree.sh"
+
 echo '================================'
 echo 'Preparing pull request...'
 echo '--------------------------------'
