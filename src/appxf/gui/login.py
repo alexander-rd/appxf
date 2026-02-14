@@ -1,3 +1,5 @@
+# Copyright 2023-2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# SPDX-License-Identifier: Apache-2.0
 '''Class Login provides GUI to init user data and get password.
 
 Exception UserAbortError is defined to terminate the application on

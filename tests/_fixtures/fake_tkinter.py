@@ -1,3 +1,5 @@
+# Copyright 2023-2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# SPDX-License-Identifier: Apache-2.0
 ''' Monkey-Patching tkinter to allow automated tests behind a Tk()
 
 General problem: tox does not support any graphics and, therefore, cannot

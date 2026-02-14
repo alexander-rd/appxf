@@ -1,3 +1,5 @@
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
+<!--SPDX-License-Identifier: 0BSD-->
 # APPXF
 
 APPXF covers an application's (APP) cross-functional concerns (XF), such as

@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# SPDX-License-Identifier: 0BSD
 
 # branch_start.sh - Create a new branch and display associated APPXF issue information
 #
@@ -17,26 +19,13 @@ fi
 
 BRANCH_NAME="$1"
 
-echo "================================"
-echo "Verifying preconditions..."
-echo "--------------------------------"
-STATUS_OUTPUT=$(git status)
-echo "$STATUS_OUTPUT"
-echo "--------------------------------"
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Check for clean working tree
-if ! echo "$STATUS_OUTPUT" | grep -q "nothing to commit, working tree clean"; then
-    echo "Error: Working tree is not clean. Please commit or stash your changes first."
-    exit 1
-fi
+echo '================================'
+echo 'Verifying preconditions...'
 
-# Check if branch is up to date
-if ! echo "$STATUS_OUTPUT" | grep -q "Your branch is up to date"; then
-    echo "Error: Branch is not up to date with origin. Please pull or push your changes first."
-    exit 1
-fi
-
-echo "✓ Repository is clean and up to date"
+"$SCRIPT_DIR/_verify_clean_working_tree.sh"
 
 # Extract issue number from branch name (assumes format: number-rest-of-name)
 ISSUE_NUMBER=$(echo "$BRANCH_NAME" | grep -oE '^[0-9]+')

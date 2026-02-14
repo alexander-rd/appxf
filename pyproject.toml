@@ -1,3 +1,5 @@
+# Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# SPDX-License-Identifier: 0BSD
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -18,7 +20,8 @@ authors = [
 description = "APPXF application (APP) cross functional concerns (XF)"
 readme = "README.md"
 requires-python = ">=3.10"
-license_file = "LICENSE"
+license="Apache-2.0"
+license_file = "LICENSES/Apache-2.0"
 classifiers = [
     "Programming Language :: Python :: 3"
 ]

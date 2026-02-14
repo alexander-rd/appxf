@@ -1,3 +1,5 @@
+# Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# SPDX-License-Identifier: Apache-2.0
 from appxf.gui.locale import _
 from appxf.gui.registration_user import log
 from appxf.registry import AppxfRegistryRoleError, AppxfRegistryUnknownUser, Registry

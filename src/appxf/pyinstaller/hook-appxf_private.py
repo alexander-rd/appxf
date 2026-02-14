@@ -1,3 +1,5 @@
+# Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# SPDX-License-Identifier: Apache-2.0
 '''PyInstaller hook registration
 '''
 from PyInstaller.utils.hooks import collect_data_files

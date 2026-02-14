@@ -1,9 +1,11 @@
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
+<!--SPDX-License-Identifier: 0BSD-->
 **Situation.** You want to work together with others in an application and exchange data securely. How do you set up the initial communication?
 
 The **registration** procedure *initializes* the [[User Registry]] to enable [[Data Synchronization]]. The procedure requires an admin instance and the user instance that wants to register. It comprises three top-level steps.
 ```plantuml
 @startuml
-!theme cerulean 
+!theme cerulean
 
 |User Application|
 :generate request;
