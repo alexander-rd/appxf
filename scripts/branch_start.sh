@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# SPDX-License-Identifier: 0BSD
 
 # branch_start.sh - Create a new branch and display associated APPXF issue information
 #
