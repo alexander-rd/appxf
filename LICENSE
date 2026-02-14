@@ -1,13 +1,13 @@
 <!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
 <!--SPDX-License-Identifier: 0BSD-->
-Applying licenses is currently in progress (issue #1)
+Applying licenses is currently in progress (see issue #1)
+ * TODO: where to indicate license when files cannot contain them
 
 The APPXF project uses the following licenses:
  * Apache-2.0 (Apache License 2.0)
  * 0BSD (BSD Zero Clause License)
-with license texts available in LICENSES/*.
+with license texts available in the LICENSES subfolder.
 
-The licensing applies the the following guideline:
- * Apache 2.0 for [src, tests, tests_features] folders: Python sources and tranlation PO files use Apache-2.0
- * 0BSD for [.github, doc, scripts]: General scripts, CI automation and documentation
- while each file clearly indicates it's license.
+There is no default license and each file indicates the applicable license using SPDX tags. The following guideline applies:
+ * Apache 2.0 for [src, tests, tests_features] folders with python source files and tranlation PO files.
+ * 0BSD for [.github, doc, scripts] with general scripts, CI automation and documentation.
