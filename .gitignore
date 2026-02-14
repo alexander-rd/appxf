@@ -24,3 +24,4 @@ coverage.json
 coverage.xml
 .python-version
 gh_token
+gh_token_classic
