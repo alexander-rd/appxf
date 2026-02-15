@@ -3,7 +3,7 @@
 
 name: CI
 on:
-  - pull_request
+  pull_request: {}
 # Performing sanity checks on pull requests like license headers, flake8 and
 # unit tests without credentials.
 
@@ -11,7 +11,7 @@ on:
 # ones without credentials to be moved here. Also, flake8 is not yet active.
 
 jobs:
-  license_headers:
+  license-headers:
     name: Verify license headers
     runs-on: ubuntu-slim
     steps:
@@ -20,3 +20,45 @@ jobs:
 
       - name: Verify file headers
         run: scripts/file_checkers.sh
+
+  test-linux:
+    name: Test Linux
+    needs: license-headers
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.12']
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - id: setup_call
+        uses: alexander-rd/appxf/.github/actions/setup@main
+        with:
+          python-version: ${{ matrix.python-version }}
+          caller-is-appxf: 'yes'
+          caller-is-kiss-cf: 'yes'
+
+      - id: run_tox
+        uses: alexander-rd/appxf/.github/actions/run-tox@main
+
+  test-windows:
+    name: Test Windows
+    needs: license-headers
+    strategy:
+      matrix:
+        os: [windows-latest]
+        python-version: ['3.12']
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - id: call_setup
+        uses: alexander-rd/appxf/.github/actions/setup@main
+        with:
+          python-version: ${{ matrix.python-version }}
+          caller-is-appxf: 'yes'
+          caller-is-kiss-cf: 'yes'
+
+      - id: run_tox
+        uses: alexander-rd/appxf/.github/actions/run-tox@main
