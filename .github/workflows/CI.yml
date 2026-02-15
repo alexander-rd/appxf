@@ -12,17 +12,17 @@ on:
 
 jobs:
   license-headers:
-    name: Verify license headers
+    name: verify license headers
     runs-on: ubuntu-slim
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Verify file headers
+      - name: verify license headers
         run: scripts/file_checkers.sh
 
   test-linux:
-    name: Test Linux
+    name: test linux
     needs: license-headers
     strategy:
       matrix:
@@ -43,7 +43,7 @@ jobs:
         uses: alexander-rd/appxf/.github/actions/run-tox@main
 
   test-windows:
-    name: Test Windows
+    name: test windows
     needs: license-headers
     strategy:
       matrix:

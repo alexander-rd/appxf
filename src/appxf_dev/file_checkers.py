@@ -15,8 +15,11 @@ COPYRIGHT_AUTHOR = 'the contributors of APPXF (github.com/alexander-rd/appxf)'
 # License phrases are fixed strings and no alterations are expected. With
 # SPDX-License-Identifier, only a single line is expected.
 LICENSES = {
-    '.py': 'SPDX-License-Identifier: Apache-2.0',
-    '.sh': 'SPDX-License-Identifier: 0BSD',
+    '.py':      'SPDX-License-Identifier: Apache-2.0',
+    '.po':      'SPDX-License-Identifier: Apache-2.0',
+    '.pot':     'SPDX-License-Identifier: Apache-2.0',
+    '.feature': 'SPDX-License-Identifier: Apache-2.0',
+    '.sh':      'SPDX-License-Identifier: 0BSD',
 }
 
 
@@ -57,7 +60,7 @@ def verify_file_header(file: Path) -> bool:
     has_copyright = False
     has_license = False
 
-    if file.suffix in ['.py', '.sh']:
+    if file.suffix in ['.py', '.pot', '.po','.sh', '.feature']:
         # Expected are copyright lines followed by SPDX license identifyer
         # (Apache). There may be more copyright lines - only one must contain
         # the expected author/contributor text.
@@ -89,7 +92,7 @@ def verify_file_header(file: Path) -> bool:
 def verify_git_files() -> bool:
     ''' Verify that all git files are .py files '''
     file_list = get_git_files()
-    verified = True
+    not_verified_files = 0
     for file in file_list:
         # skip directories
         if file.is_dir():
@@ -98,8 +101,16 @@ def verify_git_files() -> bool:
         if not verify_file_header(file):
             # verify_file() prints details while the loop shall continue to
             # report all findings.
-            verified = False
-    return verified
+            not_verified_files += 1
+
+    if not_verified_files:
+        print(f'{not_verified_files} file(s) failed copyright/license '
+              f'verification.')
+        print('Please add corresonding information. If not applicable, add '
+              'files explicitly to the LICENSE text file.')
+    else:
+        print('All files verified successfully')
+    return not_verified_files == 0
 
 
 def main() -> int:
