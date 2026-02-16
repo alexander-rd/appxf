@@ -1,14 +1,16 @@
 # Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)
 # SPDX-License-Identifier: 0BSD
 
-name: CI
+name: CI Checks
 on:
   pull_request: {}
+  push:
+    branches:
+      - main
 # Performing sanity checks on pull requests like license headers, flake8 and
 # unit tests without credentials.
 
-# TODO: this workflow is work in progress. Unit tests need splitting and the
-# ones without credentials to be moved here. Also, flake8 is not yet active.
+# TODO: Flake 8 is not yet active.
 
 jobs:
   license-headers:
@@ -19,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: verify license headers
-        run: scripts/file_checkers.sh
+        run: scripts/check_license_headers.sh
 
   test-linux:
     name: test linux
