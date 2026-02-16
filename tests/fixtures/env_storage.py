@@ -1,3 +1,5 @@
+# Copyright 2024-2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# SPDX-License-Identifier: Apache-2.0
 ''' provide common functions for storage handling '''
 import pytest
 import os.path

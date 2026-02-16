@@ -1,0 +1,66 @@
+# Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# SPDX-License-Identifier: 0BSD
+
+name: CI Checks
+on:
+  pull_request: {}
+  push:
+    branches:
+      - main
+# Performing sanity checks on pull requests like license headers, flake8 and
+# unit tests without credentials.
+
+# TODO: Flake 8 is not yet active.
+
+jobs:
+  license-headers:
+    name: verify license headers
+    runs-on: ubuntu-slim
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: verify license headers
+        run: scripts/check_license_headers.sh
+
+  test-linux:
+    name: test linux
+    needs: license-headers
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.12']
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - id: setup_call
+        uses: alexander-rd/appxf/.github/actions/setup@main
+        with:
+          python-version: ${{ matrix.python-version }}
+          caller-is-appxf: 'yes'
+          caller-is-kiss-cf: 'yes'
+
+      - id: run_tox
+        uses: alexander-rd/appxf/.github/actions/run-tox@main
+
+  test-windows:
+    name: test windows
+    needs: license-headers
+    strategy:
+      matrix:
+        os: [windows-latest]
+        python-version: ['3.12']
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - id: call_setup
+        uses: alexander-rd/appxf/.github/actions/setup@main
+        with:
+          python-version: ${{ matrix.python-version }}
+          caller-is-appxf: 'yes'
+          caller-is-kiss-cf: 'yes'
+
+      - id: run_tox
+        uses: alexander-rd/appxf/.github/actions/run-tox@main
