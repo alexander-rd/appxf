@@ -19,7 +19,11 @@ LICENSES = {
     '.po':      'SPDX-License-Identifier: Apache-2.0',
     '.pot':     'SPDX-License-Identifier: Apache-2.0',
     '.feature': 'SPDX-License-Identifier: Apache-2.0',
+    '.toml':    'SPDX-License-Identifier: 0BSD',
     '.sh':      'SPDX-License-Identifier: 0BSD',
+    '.yml':     'SPDX-License-Identifier: 0BSD',
+    '.md':      'SPDX-License-Identifier: 0BSD',
+    '.puml':    'SPDX-License-Identifier: 0BSD',
 }
 
 EXCLUSION_FILE = 'LICENSE'
@@ -98,7 +102,7 @@ def verify_file_header(file: Path) -> bool:
     has_copyright = False
     has_license = False
 
-    if file.suffix in ['.py', '.pot', '.po','.sh', '.feature']:
+    if file.suffix in ['.py', '.pot', '.po', '.feature', '.toml', '.sh', '.yml']:
         # Expected are copyright lines followed by SPDX license identifyer
         # (Apache). There may be more copyright lines - only one must contain
         # the expected author/contributor text.
@@ -114,6 +118,32 @@ def verify_file_header(file: Path) -> bool:
                         has_copyright = True
                 if line.startswith(LICENSES[file.suffix]):
                     has_license = True
+    elif file.suffix in ['.md']:
+        with file.open(encoding='utf-8') as fh:
+            while True:
+                line = fh.readline().rstrip('\n').strip()
+                # resolve comment line:
+                if not line.startswith('<!--'):
+                    break
+                line = line.lstrip('<!--').rstrip('-->').strip()
+                if line.lower().startswith('copyright'):
+                    if COPYRIGHT_AUTHOR in line:
+                        has_copyright = True
+                if line.startswith(LICENSES[file.suffix]):
+                    has_license = True
+    elif file.suffix in ['.puml']:
+        with file.open(encoding='utf-8') as fh:
+            while True:
+                line = fh.readline().rstrip('\n').strip()
+                # resolve comment line:
+                if not line.startswith("'"):
+                    break
+                line = line.lstrip("'").strip()
+                if line.lower().startswith('copyright'):
+                    if COPYRIGHT_AUTHOR in line:
+                        has_copyright = True
+                if line.startswith(LICENSES[file.suffix]):
+                    has_license = True
     else:
         print(f'{file}:\n  Unsupported file type for header verification')
         return False
@@ -123,7 +153,7 @@ def verify_file_header(file: Path) -> bool:
         if not has_copyright:
             print('  Missing or invalid copyright')
         if not has_license:
-            print(f'  Missing SPDX license identifier: {LICENSES[".py"].split(": ")[1]}')
+            print(f'  Missing SPDX license identifier: {LICENSES[file.suffix].split(": ")[1]}')
         return False
     return True
 
@@ -155,7 +185,7 @@ def verify_git_files() -> bool:
         print('Please add corresonding information. If not applicable, add '
               'files explicitly to the LICENSE text file.')
     else:
-        print('All files verified successfully')
+        print('Copyright/License information verified for all maintained files.')
     return not_verified_files == 0
 
 
