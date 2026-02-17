@@ -1,4 +1,4 @@
-# Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
 from pathlib import Path
 from fnmatch import fnmatch
@@ -10,7 +10,7 @@ import subprocess
 #  * author or contributor reference
 # Copyright lines are NOT expected to break into the next line(s). The years
 # part is not checked.
-COPYRIGHT_AUTHOR = 'the contributors of APPXF (github.com/alexander-rd/appxf)'
+COPYRIGHT_AUTHOR = 'the contributors of APPXF (github.com/alexander-nbg/appxf)'
 
 # License phrases are fixed strings and no alterations are expected. With
 # SPDX-License-Identifier, only a single line is expected.

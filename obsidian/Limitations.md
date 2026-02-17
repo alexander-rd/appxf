@@ -1,4 +1,4 @@
-<!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)-->
 <!--SPDX-License-Identifier: 0BSD-->
 # Credentials
 APPXF does not expose credentials in the logging and does only expose it to admins if configured properly. But to be able to access services, users do have passwords! Theoretically, they could alter the code or rebuild the application to extract them.

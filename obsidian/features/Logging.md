@@ -1,4 +1,4 @@
-<!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)-->
 <!--SPDX-License-Identifier: 0BSD-->
 ## Basic Logging
 Logging during development shows progress and hints you left in your messages. Any log you issue will be __printed to the console__. When your application is shipped out of your hands, you rely on __logging written to a file__. Once log files are written, some __log rotation and cleanup of storage would be nice__: appxf starts a new log file for each application session (log rotation) and will only keep the last five log files (cleanup).

@@ -1,4 +1,4 @@
-<!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)-->
 <!--SPDX-License-Identifier: 0BSD-->
 # Requirements
 * The manual test case must be executable directly without any test management.

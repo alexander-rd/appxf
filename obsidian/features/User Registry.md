@@ -1,4 +1,4 @@
-<!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)-->
 <!--SPDX-License-Identifier: 0BSD-->
 Assume an application that shares information with others. How does the application know which *others* exist? How do those *others* get access to your data?
 

@@ -1,4 +1,4 @@
-# Copyright 2025-2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
 # Test directories need to be scanned for manual_*.py files to initialize the
 # test database. In case of renaming or removal, such test cases also must be

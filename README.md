@@ -1,4 +1,4 @@
-<!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)-->
 <!--SPDX-License-Identifier: 0BSD-->
 # APPXF
 
@@ -19,7 +19,7 @@ small associations or non-profits. Development will continue with the clear
 understanding that one person’s free time cannot accomplish everything.
 
 ## Appreciation is Welcome
-If you find any part of this library useful, the currently most efficient acknowledgement and motivation would be shareíng your story and project as a [discussion topic](https://github.com/alexander-rd/appxf/discussions/new?category=show-and-tell) (example: [the app which initialized APPXF](https://github.com/alexander-rd/appxf/discussions/10)). Additionally, while APPXF will not suddenly clean up all open topics or guarantee interface stability for relevant features, efforts are continuously prioritized based on the information available.
+If you find any part of this library useful, the currently most efficient acknowledgement and motivation would be shareíng your story and project as a [discussion topic](https://github.com/alexander-nbg/appxf/discussions/new?category=show-and-tell) (example: [the app which initialized APPXF](https://github.com/alexander-nbg/appxf/discussions/10)). Additionally, while APPXF will not suddenly clean up all open topics or guarantee interface stability for relevant features, efforts are continuously prioritized based on the information available.
 
 ## Contributions Welcome
 For further information, see the [contributions page](CONTRIBUTING.md).

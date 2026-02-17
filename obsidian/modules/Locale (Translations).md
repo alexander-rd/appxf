@@ -1,4 +1,4 @@
-<!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)-->
 <!--SPDX-License-Identifier: 0BSD-->
 * General concept explained: https://phrase.com/blog/posts/translate-python-gnu-gettext/
 * Context sensitive translations are used: `_(<context>, <string>)`

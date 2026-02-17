@@ -3,7 +3,7 @@ name: Bug Report
 about: Create a report to help improving appxf
 title: ''
 labels: bug
-assignees: alexander-rd
+assignees: alexander-nbg
 
 ---
 **Reproduce**

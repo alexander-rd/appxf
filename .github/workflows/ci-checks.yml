@@ -1,4 +1,4 @@
-# Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: 0BSD
 
 name: CI Checks
@@ -35,14 +35,14 @@ jobs:
 
     steps:
       - id: setup_call
-        uses: alexander-rd/appxf/.github/actions/setup@main
+        uses: alexander-nbg/appxf/.github/actions/setup@main
         with:
           python-version: ${{ matrix.python-version }}
           caller-is-appxf: 'yes'
           caller-is-kiss-cf: 'yes'
 
       - id: run_tox
-        uses: alexander-rd/appxf/.github/actions/run-tox@main
+        uses: alexander-nbg/appxf/.github/actions/run-tox@main
 
   test-windows:
     name: test windows
@@ -56,11 +56,11 @@ jobs:
 
     steps:
       - id: call_setup
-        uses: alexander-rd/appxf/.github/actions/setup@main
+        uses: alexander-nbg/appxf/.github/actions/setup@main
         with:
           python-version: ${{ matrix.python-version }}
           caller-is-appxf: 'yes'
           caller-is-kiss-cf: 'yes'
 
       - id: run_tox
-        uses: alexander-rd/appxf/.github/actions/run-tox@main
+        uses: alexander-nbg/appxf/.github/actions/run-tox@main

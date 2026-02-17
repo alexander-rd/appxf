@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: 0BSD
 
 # branch_start.sh - Create a new branch and display associated APPXF issue information
@@ -62,7 +62,7 @@ else
     echo "  Generate token: https://github.com/settings/tokens"
     echo "  Authenticate: gh auth login --with-token < your_token_file"
     echo "Make sure the issue exists and you have access to it."
-    echo "  https://github.com/alexander-rd/appxf/issues/$ISSUE_NUMBER"
+    echo "  https://github.com/alexander-nbg/appxf/issues/$ISSUE_NUMBER"
     echo "================================"
 fi
 echo "Press Enter to continue (or <Ctrl+C> to cancel)..."

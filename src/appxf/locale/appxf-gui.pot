@@ -1,4 +1,4 @@
-# Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
 #
 #, fuzzy
@@ -8,7 +8,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-01-22 22:51+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: alexander-rd <mail@alexander-rd.de>\n"
+"Last-Translator: alexander-nbg <mail@alexander-nbg.de>\n"
 "Language-Team: N/A\n"
 "Language: \n"
 "MIME-Version: 1.0\n"

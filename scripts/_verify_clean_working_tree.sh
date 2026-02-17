@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: 0BSD
 
 # _verify_clean_working_tree.sh - Verify the working tree being clean and up to

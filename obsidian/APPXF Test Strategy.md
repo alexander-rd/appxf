@@ -1,4 +1,4 @@
-<!--Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)-->
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)-->
 <!--SPDX-License-Identifier: 0BSD-->
 The test strategy considers the following two test levels:
 * __Unit Tests__ are driven by code coverage of the individual modules and *should cover 100%* (lines and branches) while *80% branch coverage is acceptable for initial versions*. While focusing on individual modules, tests may or may not cut free interfaces to other modules. Modules include GUI modules which must be covered by manual tests.

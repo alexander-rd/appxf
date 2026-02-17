@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: 0BSD
 
 # branch_close.sh - Create or update a pull request for the current branch
@@ -69,7 +69,7 @@ if ! gh issue view "$ISSUE_NUMBER" --json title,body &> /dev/null; then
     echo "  Generate token: https://github.com/settings/tokens"
     echo "  Authenticate: gh auth login --with-token < your_token_file"
     echo "Make sure the issue exists and you have access to it."
-    echo "  https://github.com/alexander-rd/appxf/issues/$ISSUE_NUMBER"
+    echo "  https://github.com/alexander-nbg/appxf/issues/$ISSUE_NUMBER"
     exit 1
 fi
 

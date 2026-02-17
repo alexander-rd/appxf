@@ -21,13 +21,13 @@ quite verbose.
 Apache-2.0 licenses
 -------------------
 Apache-2.0 license applies with copyright by the contributors of APPXF
-(github.com/alexander-rd/appxf) to:
+(github.com/alexander-nbg/appxf) to:
  * requirements*.txt
 
 0BSD license
 ------------
 0BSD license applies with copyright by the contributors of APPXF
-(github.com/alexander-rd/appxf) to:
+(github.com/alexander-nbg/appxf) to:
  * LICENSE
  * CONTRIBUTORS
  * .gitignore

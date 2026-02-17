@@ -1,4 +1,4 @@
-# Copyright 2023-2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# Copyright 2023-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: 0BSD
 
 name: Setup
@@ -45,7 +45,7 @@ runs:
     - name: Checkout appxf (if called from using project)
       uses: actions/checkout@v3
       with:
-        repository: alexander-rd/appxf
+        repository: alexander-nbg/appxf
         path: appxf
         # TODO: remove token once repo becomes public
         token: ${{ inputs.appxf-token }}

@@ -1,4 +1,4 @@
-# Copyright 2026 the contributors of APPXF (github.com/alexander-rd/appxf)
+# Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: 0BSD
 [build-system]
 requires = ["hatchling"]
@@ -15,7 +15,7 @@ exclude = [
 name = "appxf"
 version = "0.0.3a0"
 authors = [
-  { name = "alexander-rd", email="mail@alexander-rd.de" }
+  { name = "alexander-nbg", email="mail@alexander-nbg.de" }
 ]
 description = "APPXF application (APP) cross functional concerns (XF)"
 readme = "README.md"
