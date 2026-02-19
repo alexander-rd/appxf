@@ -1,28 +1,21 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-*.drawio.bkp
-*.bkp-*
-cov_*
-/manual_tests
-pytest-env
-data
-dist
-notes
-prof
-.coverage
-.env
-.obsidian/plugins
-.obsidian/appearance.json
-.obsidian/workspace.json
-.testing
-.tox
+# development environment
 .venv
 .vscode
-coverage.json
-coverage.xml
-.python-version
+*.code-workspace
+
+# temporary directories (backup files, local builds, tests, etc.)
+__pycache__
+.coverage
+.env
+.testing
+.tox
+*.drawio.bkp
+*.bkp-*
+doc/_build
+cov_*
+
+# notes during development
+__dev_notes.md
+# stored github tokens
 gh_token
 gh_token_classic
-doc/_build

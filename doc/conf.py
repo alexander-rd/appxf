@@ -1,5 +1,9 @@
+from datetime import date
+
 project = 'APPXF'
-author = 'APPXF contributors'
+html_title = 'APPXF'
+author = 'the contributors of APPXF (github.com/alexander-nbg/appxf)'
+copyright = f'{date.today().year} the contributors of APPXF (github.com/alexander-nbg/appxf)'
 
 extensions = [
     'myst_parser',
@@ -14,9 +18,8 @@ source_suffix = {
 
 master_doc = 'index'
 
-html_sidebars = {
-    '**': [
-        'navigation.html',
-        'searchbox.html',
-    ]
+html_theme = 'pydata_sphinx_theme'
+
+html_theme_options = {
+    'github_url': 'https://github.com/alexander-nbg/appxf',
 }

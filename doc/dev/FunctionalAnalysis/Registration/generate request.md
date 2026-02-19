@@ -1,0 +1,22 @@
+<!--Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)-->
+<!--SPDX-License-Identifier: 0BSD-->
+# Generate Request
+
+to be continued?
+```plantuml
+@startuml
+!theme cerulean
+
+|User Application|
+start
+->UI opens;
+if (admin keys) then (available)
+:UI opens
+(no load admin keys button);
+else (missing)
+:UI opens
+(with load admin keys button);
+endif;
+stop
+@enduml
+```
