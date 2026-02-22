@@ -22,6 +22,7 @@ LICENSES = {
     '.toml':    'SPDX-License-Identifier: 0BSD',
     '.sh':      'SPDX-License-Identifier: 0BSD',
     '.yml':     'SPDX-License-Identifier: 0BSD',
+    '.yaml':    'SPDX-License-Identifier: 0BSD',
     '.md':      'SPDX-License-Identifier: 0BSD',
     '.puml':    'SPDX-License-Identifier: 0BSD',
 }
@@ -102,7 +103,9 @@ def verify_file_header(file: Path) -> bool:
     has_copyright = False
     has_license = False
 
-    if file.suffix in ['.py', '.pot', '.po', '.feature', '.toml', '.sh', '.yml']:
+    if file.suffix in ['.py', '.pot', '.po',
+                       '.feature', '.toml', '.sh',
+                       '.yml', '.yaml']:
         # Expected are copyright lines followed by SPDX license identifyer
         # (Apache). There may be more copyright lines - only one must contain
         # the expected author/contributor text.
