@@ -88,20 +88,8 @@ echo 'Checking for existing pull request...'
 EXISTING_PR=$(gh pr list --head "$CURRENT_BRANCH" --json number --jq '.[0].number' 2>/dev/null || echo '')
 
 if [ -n "$EXISTING_PR" ]; then
-    echo "Updating existing pull request #$EXISTING_PR..."
-
-    # Update the PR
-    if ! PR_EDIT_OUTPUT=$(gh pr edit "$EXISTING_PR" \
-        --title "$ISSUE_TITLE" \
-        --body "$PR_BODY" 2>&1); then
-        echo 'ERROR: Failed to update pull request:'
-        echo "$PR_EDIT_OUTPUT"
-        exit 1
-    fi
-
     PR_URL=$(gh pr view "$EXISTING_PR" --json url --jq '.url')
-
-    echo '✓ Pull request updated successfully!'
+    echo '✓ Pull request already exists'
     echo "PR #$EXISTING_PR: $ISSUE_TITLE"
     echo "URL: $PR_URL"
     echo '================================'

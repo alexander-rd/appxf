@@ -1,0 +1,26 @@
+' Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
+' SPDX-License-Identifier: 0BSD
+@startuml
+!include ../../style.puml
+
+|User Interface|
+start
+->registry shall add user
+with role from request data;
+|Registry|
+switch (check public keys)
+case (all new)
+	:use new user ID
+	upate registry;
+case (consistent set)
+	:use existing user ID
+	update registry;
+case (inconsistent set)
+	:to indicate error:
+	use negative user ID
+	no registry update;
+endswitch
+|User Interface|
+->return with user ID;
+stop
+@enduml
