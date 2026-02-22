@@ -1,6 +1,6 @@
 <!--Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)-->
 <!--SPDX-License-Identifier: 0BSD-->
-**MaTeMa** - **Ma**nual **Te**st **Ma**nager
+# **MaTeMa** - **Ma**nual **Te**st **Ma**nager
 
 **Situation and Problem.** Assume you are developer or tester in a reasonable complex project running on low budget that needs manual test cases because it has GUI elements to test. You already have some test cases but fear to add more because you have no means to maintain an overview nor do you have time to run all tests for every code change you do. But you also do not want to sacrifice quality.
 

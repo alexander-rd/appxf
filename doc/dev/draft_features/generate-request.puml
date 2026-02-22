@@ -1,11 +1,5 @@
-<!--Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)-->
-<!--SPDX-License-Identifier: 0BSD-->
-# Generate Request
-
-to be continued?
-```plantuml
 @startuml
-!theme cerulean
+!include ../../style.puml
 
 |User Application|
 start
@@ -19,4 +13,3 @@ else (missing)
 endif;
 stop
 @enduml
-```

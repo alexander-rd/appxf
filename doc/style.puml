@@ -1,0 +1,9 @@
+!theme cerulean
+skinparam {
+  ' This does currently not work for the generated pages. SVG and PNG seem OK
+  ' but the HTML embedding may add a white background (see ticket #47).
+  backgroundColor transparent
+  ' This is a quickfix for the otherwise transparent background of notes with
+  ' white text color (see ticket #47).
+  noteBackgroundColor gray
+}

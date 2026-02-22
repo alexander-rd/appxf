@@ -1,39 +1,15 @@
 <!--Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)-->
 <!--SPDX-License-Identifier: 0BSD-->
+# MaTeMa Case Runner
+
 The CaseRunner is used within your manual test case to operate with the MaTeMa. The following outlines the interactions.
 
 * **Initialization**: The MaTeMa uses the ***command line arguments*** to pass information to the CaseRunner. This includes details on how to pass test execution details *back* to the MaTeMa.
 * **Test Execution**: The CaseRunner supports manual test case execution in various ways, see the usage patterns below.
 * **Test Conclusion**: The CaseRunner collects results from the execution and passes it back to the MaTeMa.
-```plantuml
-@startuml
-skinparam noteBackgroundColor transparent
-
-participant MaTeMa as MATEMA
-participant manual_case.py as CASE
-participant CaseRunner as RUNNER
-
-== Test Initialization ==
-MATEMA -> CASE : new process
-note right
-MaTeMa uses command line arguments
-to pass information to CaseRunner
-end note
-CASE -> RUNNER : initialize
-== Test Execution ==
-RUNNER -> CASE : control / instrumenting
-note left
-coverage and logging
-GUI: support test steps,
-display description,
-collect results
-end note
-== Test Conclusion ==
-RUNNER -> MATEMA : test results (via file system)
-CASE -> MATEMA : exit status
-@enduml
+```{plantuml} case-runner.puml
 ```
-# General Remarks
+## General Remarks
 * ***Limitation***: The manual test must not use command line arguments. Since the MaTeMa and the CaseRunner itself uses this interface for test control, inconsistencies can lead to unexpected behavior.
 * ***Limitation***: The CaseRunner typically controls logging and coverage collection such that you test script should not also try to control those details.
 * ***Limitation***: If the test case generates a tkinter.Tk instance, it must pass it via `CaseRunner(parent=...)`. Exceptions are Tk instances confined in any `test()` or `process_*()` which will run in their own process.
@@ -55,7 +31,7 @@ Remarks:
 * You can put the test case description in the modules docstring like shown in the "Single Instance" use case.
 
 #TODO The CaseRunner currently does not restrict it's actions to just command line reading. There is no feature to ***not*** start the file parsing. The examples already draft expected behavior.
-# Use Case: Single Instance
+## Use Case: Single Instance
 Split `startup()` and `teardown()` code. This has two effects:
 * this code is not increasing your coverage, the case runner will start coverage only for the execution of `test()`
 * because of the above, you limit the file dependencies to the test case and avoid marking the case invalid due to changes in the corresponding files
@@ -82,7 +58,7 @@ Remarks:
 * The functions `setup()` and `teardown()` are executed before and after any call of `test()` or `process_*()`. Without `test()` or `process_*()`, they have no effect.
 * The run() is required.
 * #TODO adding capabilities for `test_*()`would be nice and enable putting multiple test cases within one file `manual_*.py` like for pytest.
-# Use Case: Launching Processes
+## Use Case: Launching Processes
 Using `process_*()` functions will result in action buttons within the CaseRunner GUI. The buttons use the functions summary as labels and execute within a *new process* that loads your manual test case module.
 ```python
 def process_app_admin():
@@ -106,7 +82,7 @@ def teardown_once():
 	# sandbox teardown executed ONCE before the case runner
 	# closes and after any teardown()
 ```
-# Reference Sequences
+## Reference Sequences
 The following reference sequence is still an outline but hopefully clarifies any open questions concerning the order of execution.
 
 1. Execute your module until CaseRunner()

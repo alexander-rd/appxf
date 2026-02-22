@@ -1,5 +1,7 @@
 <!--Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)-->
 <!--SPDX-License-Identifier: 0BSD-->
-# Dummy Page with Uncluded puml
+# Registration: Generate Request
 
-![[registration.puml]]
+to be continued?
+```{plantuml} generate-request.puml
+```

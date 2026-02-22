@@ -25,20 +25,18 @@ Provided numbers only provide a rough idea.
 
 ## Cross-Cutting Concerns
  * Configuration
- * [Logging](doc/logging.md)
+ * Logging (TODO: page link)
  * Persisting Data
  * Data Exchange via FTP
    * Note to be added: installation of libcurl requires libssl-dev
- * [Security](doc/security.md)
+ * Security (TODO: page link)
  * GUI
  * Extention modules
    * Email sending
    * Email inbox parsing
    * OpenOlitor database connection
 
-Persistency
------------
-
+## Persistency
 Storing data locally is currently incorporated into configuration and security
 modules. If this toolbox is used, the following default locations apply where
 modules place files:
@@ -46,9 +44,7 @@ modules place files:
  * config: ./data/config
 Where "./" is the location of the binary.
 
-GUI
----
-
+## GUI
 The decision to be made: tkinter or QT. Since the APPXF framework does not aim
 for professionals, a quick learning curve is essential such that tkinter was
 chosen as the basis (see also:
@@ -59,9 +55,7 @@ help with GUI design. [PySimpleGUI](https://www.pysimplegui.org/en/latest/)
 crossed me late for unknown reasons. I will reconsider for this even simpler
 approach.
 
-Language
---------
-
+## Language
 All implementation is in (American) English. When components have user visible
 strings, they will offer an option **language** that expects a dictionary
 mapping from the visible English strings into what you need.

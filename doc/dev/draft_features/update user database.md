@@ -3,31 +3,7 @@
 # Update User Database
 
 ? this diagram sounds technical (calling registry)
-```plantuml
-@startuml
-!theme cerulean
-
-|User Interface|
-start
-->registry shall add user
-with role from request data;
-|Registry|
-switch (check public keys)
-case (all new)
-	:use new user ID
-	upate registry;
-case (consistent set)
-	:use existing user ID
-	update registry;
-case (inconsistent set)
-	:to indicate error:
-	use negative user ID
-	no registry update;
-endswitch
-|User Interface|
-->return with user ID;
-stop
-@enduml
+```{uml} update-user-database.puml
 ```
 # Checking Public Keys
 The registry stores the public signing key and the public encryption keys which also serve as an identification. **They must be unique**. Hence, if any of the signing or encryption keys already exists, a new user **must not** be added. There are two cases:

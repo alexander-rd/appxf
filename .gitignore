@@ -13,6 +13,7 @@ __pycache__
 *.bkp-*
 doc/_build
 cov_*
+plantuml.jar
 
 # notes during development
 __dev_notes.md

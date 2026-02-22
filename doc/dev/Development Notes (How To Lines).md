@@ -2,10 +2,10 @@
 <!--SPDX-License-Identifier: 0BSD-->
 # Development Notes
 
-### Install package after checkout
+## Install package after checkout
 Execute from where setup.py is located:
 pip install -e .
-### install package in .venv
+## install package in .venv
 (to ensure Phylance in visual code finds the sources):
 source .venv/bin/activate
 .. then pip install \<whatever\>
@@ -20,13 +20,13 @@ pytest -rA tests/test_\<specific\>.py
 **run manual tests** (the PYTHONPATH prepend is necessary because python would execute the script from it's path and an otherwise empty python evironment)
 `PYTHONPATH=. python tests_features/user_registry/manual_registration_request.py`
 
-### profiling
+## profiling
 (look in /prof) pip install pytest-profiling pytest -rA --profile --profile-svg
 
-### Allow browser to read HTML reports in OS like Ubuntu 24.10
+## Allow browser to read HTML reports in OS like Ubuntu 24.10
 python -m http.server
 
-### Flake8 manual
+## Flake8 manual
 flake8 --count src
 
 ## GIT

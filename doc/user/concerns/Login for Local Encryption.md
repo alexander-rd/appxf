@@ -57,4 +57,4 @@ else:
 ```
 
 Dropping images:
-![login](securityLogin.png)
+`![login](securityLogin.png)`

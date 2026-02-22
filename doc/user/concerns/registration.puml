@@ -1,0 +1,17 @@
+@startuml
+!include ../../style.puml
+
+|User Application|
+:generate request;
+->send via email;
+
+|Admin Application|
+:review request
+add to user database
+generate response;
+->send via email;
+
+|User Application|
+:load response;
+
+@enduml

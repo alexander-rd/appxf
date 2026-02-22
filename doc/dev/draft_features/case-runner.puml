@@ -1,0 +1,26 @@
+@startuml
+!include ../../style.puml
+
+participant MaTeMa as MATEMA
+participant manual_case.py as CASE
+participant CaseRunner as RUNNER
+
+== Test Initialization ==
+MATEMA -> CASE : new process
+note right
+MaTeMa uses command line arguments
+to pass information to CaseRunner
+end note
+CASE -> RUNNER : initialize
+== Test Execution ==
+RUNNER -> CASE : control / instrumenting
+note left
+coverage and logging
+GUI: support test steps,
+display description,
+collect results
+end note
+== Test Conclusion ==
+RUNNER -> MATEMA : test results (via file system)
+CASE -> MATEMA : exit status
+@enduml
