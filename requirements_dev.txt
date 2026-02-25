@@ -1,0 +1,5 @@
+# Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
+# SPDX-License-Identifier: 0BSD
+# Development requirements (linting, formatting, code quality tools).
+# Install with: pip install -r requirements_dev.txt
+ruff

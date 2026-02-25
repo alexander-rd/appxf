@@ -7,12 +7,28 @@ on:
   push:
     branches:
       - main
-# Performing sanity checks on pull requests like license headers, flake8 and
-# unit tests without credentials.
-
-# TODO: Flake 8 is not yet active.
+# Performing sanity checks on pull requests like license headers, ruff linting
+# and unit tests without credentials.
 
 jobs:
+  ruff:
+    name: ruff lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Run ruff
+        run: ruff check src/
+
   license-headers:
     name: verify license headers
     runs-on: ubuntu-slim

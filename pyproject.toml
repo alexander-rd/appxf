@@ -47,6 +47,34 @@ per-file-ignores = [
 ]
 count = true
 
+[tool.ruff]
+# Target Python version (minimum supported version)
+target-version = "py310"
+# Directories to check (mirrors flake8 filename setting)
+src = ["src"]
+# Line length - ruff default is 88 (same as black). Adjust as needed.
+line-length = 88
+
+[tool.ruff.lint]
+# Minimum rule set: E (pycodestyle errors) and F (pyflakes) mirror flake8 defaults.
+# These rules catch the most common code quality issues.
+select = ["E", "F"]
+
+# Recommended additional rule sets to activate (uncomment and fix issues incrementally):
+# "W"  - pycodestyle warnings (whitespace, blank lines)
+# "I"  - isort import ordering (ensures consistent import order)
+# "N"  - pep8 naming conventions (variable, function, class names)
+# "UP" - pyupgrade: enforce modern Python syntax (e.g. f-strings, type hints)
+# "B"  - flake8-bugbear: opinionated checks that catch common bugs
+# "C4" - flake8-comprehensions: unnecessary list/dict/set comprehensions
+# "SIM"- flake8-simplify: suggest simpler code constructs
+# "ANN"- flake8-annotations: enforce type annotations
+# "RUF"- ruff-specific rules (misc. best-practice checks)
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore unused imports in __init__ files (re-exports are intentional)
+"__init__.py" = ["F401"]
+
 [tool.tox]
 legacy_tox_ini = """
     [tox]
