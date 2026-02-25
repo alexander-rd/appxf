@@ -1,6 +1,6 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-from pytest_bdd import scenarios, scenario, given, when, then, parsers
+from pytest_bdd import scenarios, given, when, then, parsers
 from pytest import fixture
 from appxf.storage import Storage
 
@@ -10,7 +10,6 @@ from tests._fixtures.app_harness import AppHarness
 
 # Fixtures upon which the ones we require are depenent on must be included as
 # well. Otherwise, we will get a "fixture not found".
-from tests._fixtures import appxf_objects
 scenarios('test_bdd_registry.feature')
 
 @fixture(autouse=True)
@@ -103,7 +102,7 @@ def verify_stored_in_configuration(env, role, config_data, config_section):
 
 @given(parsers.parse('{role} {config_section} configuration is empty'))
 def empty_value_in_configuration(env, role, config_section):
-    app: AppHarness = env['app_' + role]
+    env['app_' + role]
     verify_stored_in_configuration(env, role, '', config_section)
 
 @when(parsers.parse('{role_user} registers the application to {role_admin}'))

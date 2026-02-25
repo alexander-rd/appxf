@@ -142,7 +142,7 @@ class BaseSettingTest:
             assert 'Cannot set' in str(exc_info.value)
             # Actual input:
             try:
-                test = str(value)
+                str(value)
             except TypeError:
                 # cannot check input that cannot be converted to str (see
                 # DummyClassErrorOnStrCreation):
@@ -195,7 +195,7 @@ class BaseSettingTest:
             assert 'Cannot set' in str(exc_info.value)
             # Actual input:
             try:
-                test = str(value)
+                str(value)
             except TypeError:
                 # cannot check input that cannot be converted to str (see
                 # DummyClassErrorOnStrCreation):

@@ -18,7 +18,6 @@ import time
 from pathlib import Path
 from typing import List, Optional
 
-
 # Build directory paths (module-level constants)
 BUILD_DIR = Path('./build')
 ENV_PATH = BUILD_DIR / '.env'
@@ -103,8 +102,11 @@ def get_activation_script() -> str:
         return f'source {ENV_PATH / "bin" / "activate"}'
 
 
-# TODO (E501): shorten function signature or split type hint onto next line
-def run_in_venv(cmd: List[str], verbose: bool = False, **kwargs) -> subprocess.CompletedProcess:
+def run_in_venv(
+        cmd: List[str],
+        verbose: bool = False,
+        **kwargs
+    ) -> subprocess.CompletedProcess:
     '''Run a command within the virtual environment.'''
     # Use the full path to the venv executables (works on all platforms)
     if platform.system() == 'Windows':
@@ -254,8 +256,9 @@ Build outputs:
         type=Path,
         nargs='*',
         default=[],
-        # TODO (E501): shorten help string
-        help='Additional requirements files to install (default: requirements.txt, appxf/requirements.txt)'
+        help=(
+            'Additional requirements files to install '
+            '(default: requirements.txt, appxf/requirements.txt)')
     )
     parser.add_argument(
         '--editable-packages',

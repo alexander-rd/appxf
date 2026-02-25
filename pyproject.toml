@@ -1,16 +1,5 @@
 # Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: 0BSD
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.hatch.build]
-exclude = [
-  "/.*",
-  "tests",
-  "requirements_test.txt"
-]
-
 [project]
 name = "appxf"
 version = "0.0.3a0"
@@ -26,6 +15,17 @@ classifiers = [
     "Programming Language :: Python :: 3"
 ]
 
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+exclude = [
+  "/.*",
+  "tests",
+  "requirements_test.txt"
+]
+
 [project.entry-points.pyinstaller40]
 hook-dirs = "appxf.pyinstaller:get_hook_dirs"
 
@@ -36,19 +36,18 @@ hook-dirs = "appxf.pyinstaller:get_hook_dirs"
 test-sandbox-root = "./.testing"
 
 [tool.ruff]
-# Target Python version (minimum supported version)
-target-version = "py310"
-# Directories to check (mirrors flake8 filename setting)
-src = ["src"]
-# Line length - ruff default is 88 (same as black). Adjust as needed.
-line-length = 88
+# Note: Line length default is already 88. Minimum python version is taken from project
+# configuration.
+extend-exclude = ["tests", "tests_features"]
+# TODO: There is actually no reason to exclude tests from using good python code.
+# Except, right now, there is no time to fix those legacy flaws.
 
 [tool.ruff.lint]
-# Minimum rule set: E (pycodestyle errors) and F (pyflakes) mirror flake8 defaults.
-# These rules catch the most common code quality issues.
+# Remarks:
+#  * E (pycodestyle errors; PEP8)
+#  * F (pyflakes; flake8 defaults)
 select = ["E", "F"]
-
-# Recommended additional rule sets to activate (uncomment and fix issues incrementally):
+# TODO: Review and consider the following further checks:
 # "W"  - pycodestyle warnings (whitespace, blank lines)
 # "I"  - isort import ordering (ensures consistent import order)
 # "N"  - pep8 naming conventions (variable, function, class names)
@@ -59,12 +58,18 @@ select = ["E", "F"]
 # "ANN"- flake8-annotations: enforce type annotations
 # "RUF"- ruff-specific rules (misc. best-practice checks)
 
+[tool.ruff.format]
+quote-style = "preserve"
+
 [tool.ruff.lint.per-file-ignores]
 # Unused imports in __init__.py are intentional re-exports.
-# Ruff has no built-in exception for __init__.py — either use this ignore,
-# or switch to explicit re-exports (e.g. `from .module import Foo as Foo`),
-# which ruff then accepts without a per-file-ignore.
 "__init__.py" = ["F401"]
+# TODO: This is a slight issue since in some occasions, it causes unwanted dependencies.
+# Example: when storage activated FTP again, any usage of storage would also import the
+# dependency to FTP. This is acceptable for now, but not on the long run. Despite the
+# other solutions (adding to __all__ and maxing the re-imports explicit with [import XY
+# as XY]), merging classes into appropriate longer module files would enable dropping
+# the module facade in __init__.py
 
 [tool.tox]
 legacy_tox_ini = """

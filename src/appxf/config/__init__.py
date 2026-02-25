@@ -2,4 +2,4 @@
 # SPDX-License-Identifier: Apache-2.0
 '''Facade for APPXF config module'''
 
-from .config import Config, AppxfConfigError
+from .config import AppxfConfigError, Config

@@ -1,8 +1,8 @@
 # Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-from pathlib import Path
-from fnmatch import fnmatch
 import subprocess
+from fnmatch import fnmatch
+from pathlib import Path
 
 # Expected copyright phrase has three parts:
 #  * "Copyright "

@@ -11,9 +11,9 @@ import tkinter
 from tkinter import filedialog, messagebox
 
 from appxf import logging
+from appxf.gui.setting_dict import SettingDictColumnFrame, SettingDictSingleFrame
 from appxf.registry import Registry
 from appxf.setting import Setting, SettingDict
-from appxf.gui.setting_dict import SettingDictSingleFrame, SettingDictColumnFrame
 
 # TODO: This file is in DRAFT STATUS, mostly generated with GitHub copilot and
 # needs a detailed review. Currently, getting the GUI and behavior right is

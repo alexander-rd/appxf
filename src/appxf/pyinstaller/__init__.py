@@ -5,6 +5,7 @@
 
 import os
 
+
 def get_hook_dirs():
     '''Return this directory containing PyInstaller hooks
 

@@ -7,7 +7,6 @@ which is required to reach initialized applications.
 '''
 import os
 import shutil
-import pytest
 from appxf.storage import Storage
 from tests._fixtures.app_harness import AppHarness
 import tests._fixtures.test_sandbox

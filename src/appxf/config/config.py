@@ -5,13 +5,12 @@
 The configuration concept is accumulating APPXF SettingDict objects as
 sections.
 '''
-from appxf import logging
-from typing import Any
 from collections.abc import Mapping
+from typing import Any
 
+from appxf import logging
 from appxf.setting import SettingDict
-from appxf.storage import Storage, RamStorage
-
+from appxf.storage import RamStorage, Storage
 
 # TODO: config refactoring
 #  1) I need the serialize/deserialize on dictionaries as storable >> to mary

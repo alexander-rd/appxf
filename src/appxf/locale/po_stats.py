@@ -4,6 +4,7 @@
 '''
 import sys
 
+
 def read_context_from_pot(pot_file):
     '''Extract context tags from a POT file
 
@@ -123,11 +124,16 @@ def main():
     '''Main entry point for command-line usage.'''
     import argparse
 
-    # TODO (E501): shorten argparse description and help strings
-    parser = argparse.ArgumentParser(description='Statistics and analysis tools for gettext PO/POT files.')
-    parser.add_argument('file', help='Path to PO or POT file')
-    parser.add_argument('--contexts', action='store_true', help='Print all contexts from a POT file')
-    parser.add_argument('--incomplete', action='store_true', help='Print incomplete contexts from a PO file')
+    parser = argparse.ArgumentParser(
+        description='Statistics and analysis tools for gettext PO/POT files.')
+    parser.add_argument(
+        'file', help='Path to PO or POT file')
+    parser.add_argument(
+        '--contexts', action='store_true',
+        help='Print all contexts from a POT file')
+    parser.add_argument(
+        '--incomplete', action='store_true',
+        help='Print incomplete contexts from a PO file')
 
     args = parser.parse_args()
 

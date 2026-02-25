@@ -10,10 +10,10 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from .storage import Storage, AppxfStorageError
 from .serializer import Serializer
 from .serializer_compact import CompactSerializer
 from .serializer_json import JsonSerializer
+from .storage import AppxfStorageError, Storage
 
 
 class StorageToBytes(Storage, ABC):

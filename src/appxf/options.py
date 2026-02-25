@@ -3,12 +3,12 @@
 ''' Implementation of Options class '''
 
 from __future__ import annotations
+
 from collections import OrderedDict
-from dataclasses import dataclass, fields, Field, MISSING
-from typing import Any, TypeVar, Type
+from dataclasses import MISSING, Field, dataclass, fields
+from typing import Any, Type, TypeVar
 
 from appxf import Stateful
-
 
 # This TypeVar is required for correct type hints when using new_from_kwarg().
 # The resulting Options object must be of the derived Options class to contain

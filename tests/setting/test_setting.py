@@ -6,10 +6,9 @@ Note that most functionality is covered with tests in test_setting_types.
 '''
 import pytest
 
-from appxf.setting import Setting, SettingExtension
+from appxf.setting import Setting
 from appxf.setting import AppxfSettingError
 
-from appxf.setting import setting as setting_module
 from appxf.setting import base_types as base_types_module
 # pylint: disable=protected-access
 # pylint: disable=missing-function-docstring

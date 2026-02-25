@@ -6,7 +6,6 @@ Utilizing BaseStorageTest for test cases. See test_storage_base.py
 '''
 import pytest
 from appxf.storage import Storage, LocalStorage
-from appxf.security import SecurePrivateStorage
 from appxf.registry import SecureSharedStorage
 
 import tests._fixtures.test_sandbox

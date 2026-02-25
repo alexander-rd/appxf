@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 import os
 import pytest
-from unittest.mock import patch
 
 from appxf.storage import Storage, CompactSerializer
 from appxf.registry import Registry, AppxfRegistryError, \

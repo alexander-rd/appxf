@@ -1,8 +1,7 @@
 # Copyright 2023-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-from pytest_bdd import scenarios, scenario, given, when, then, parsers
+from pytest_bdd import scenarios, given, when, then, parsers
 from pytest import fixture
-import pytest
 from appxf.storage import Storage, LocalStorage, sync, StorageToBytes
 from appxf.security import SecurePrivateStorage
 from appxf.registry import SecureSharedStorage, Registry

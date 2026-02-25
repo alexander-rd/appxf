@@ -1,7 +1,7 @@
 # Copyright 2023-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
 ''' Secure Storage for private (non-shared) usage '''
-from appxf.storage import StorageToBytes, Storage
+from appxf.storage import Storage, StorageToBytes
 
 from .security import Security
 

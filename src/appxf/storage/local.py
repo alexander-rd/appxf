@@ -1,10 +1,10 @@
 # Copyright 2023-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
+
 import os.path
 
-from .storage_to_bytes import StorageToBytes, Storage
-from .storage_to_bytes import CompactSerializer, Serializer
+from .storage_to_bytes import CompactSerializer, Serializer, Storage, StorageToBytes
 
 
 class LocalStorage(StorageToBytes):

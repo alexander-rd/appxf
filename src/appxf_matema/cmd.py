@@ -1,10 +1,11 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
 ''' Command line helper to inspect and run cases '''
+import os
 import subprocess
 import sys
-import os
 from pathlib import Path
+
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
 

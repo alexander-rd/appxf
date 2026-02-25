@@ -7,10 +7,11 @@ MainWindow: TopLevel window with configurable buttons on
 
 '''
 from __future__ import annotations
+
 import functools
 import tkinter
 from tkinter import ttk
-from typing import NamedTuple, Iterable, Callable
+from typing import Callable, Iterable, NamedTuple
 
 from appxf import logging
 
@@ -408,13 +409,14 @@ class _CommonWindow:
 
         # bind Enter keys
         if key_enter_as_button:
-            # TODO (E501): refactor lambda to a named method
             self.bind(
                 '<Return>',
-                lambda event, b=key_enter_as_button: self.button_frame.handle_button_press(b))
+                lambda event, b=key_enter_as_button:
+                    self.button_frame.handle_button_press(b))
             self.bind(
                 '<KP_Enter>',
-                lambda event, b=key_enter_as_button: self.button_frame.handle_button_press(b))
+                lambda event, b=key_enter_as_button:
+                    self.button_frame.handle_button_press(b))
 
         # Buttons to close the window:
         for button in closing:

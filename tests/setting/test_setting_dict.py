@@ -187,7 +187,7 @@ def test_setting_dict_set_via_value():
 def test_setting_dict_overwriting_by_setting_object():
     setting_dict = SettingDict({
         'test': ('bool', False)})
-    assert setting_dict['test'] == False
+    assert not setting_dict['test']
     assert type(setting_dict.get_setting('test')) == SettingBool
     # overwrite by Email
     setting_dict['test'] = Setting.new('string', 'some')
@@ -197,7 +197,7 @@ def test_setting_dict_overwriting_by_setting_object():
 def test_setting_dict_overwriting_by_setting_class():
     setting_dict = SettingDict({
         'test': ('bool', False)})
-    assert setting_dict['test'] == False
+    assert not setting_dict['test']
     assert type(setting_dict.get_setting('test')) == SettingBool
     # overwrite by Email
     setting_dict['test'] = SettingInt
@@ -207,7 +207,7 @@ def test_setting_dict_overwriting_by_setting_class():
 def test_setting_dict_overwriting_by_tuple():
     setting_dict = SettingDict({
         'test': ('bool', False)})
-    assert setting_dict['test'] == False
+    assert not setting_dict['test']
     assert type(setting_dict.get_setting('test')) == SettingBool
     # overwrite by Email
     setting_dict['test'] = ('string', 'some')
@@ -508,7 +508,7 @@ def _verify_get_state_keys(
     if setting_keys is None:
         # none of the keys should be a dict with 'value':
         for key in top_level_keys:
-            assert not isinstance(data[key], OrderedDict) or not 'value' in data[key], (
+            assert not isinstance(data[key], OrderedDict) or 'value' not in data[key], (
                 f'Key "{key}" is not expected to be a dictionary '
                 f'containing "value". It is: {data[key]}')
         return
@@ -762,7 +762,7 @@ def test_setting_dict_set_state_default_missing_key_exception():
         # sample: Key A is maintained by SettingDict() but not included in
         # data. Data for set_state() only included the keys:
         # odict_keys(['_version', 'B']).
-        assert f'but not included in data' in exc[1]
+        assert 'but not included in data' in exc[1]
         assert f"{exc[0]}" in exc[1]
 
 # REQ: The output of get_state() shall restore missing keys with value AND
@@ -860,7 +860,6 @@ def test_setting_dict_set_state_type_mismatch():
     setting_dict = SettingDict(settings={
         'test': (int, '42')})
     setting_dict.options.name = 'TestDict'
-    original_setting = setting_dict.get_setting('test')
     data = setting_dict.get_state(type = True)
 
 
@@ -894,9 +893,9 @@ def test_setting_dict_set_state_missing_key_remove():
     assert 'test_str' not in setting_dict
     assert setting_dict['test_int'] == 42
     # check warnings content:
-    assert f'but not included in data' in str(warn_info[0].message)
-    assert f'test_str' in str(warn_info[0].message)
-    assert f'test_int' not in str(warn_info[0].message)
+    assert 'but not included in data' in str(warn_info[0].message)
+    assert 'test_str' in str(warn_info[0].message)
+    assert 'test_int' not in str(warn_info[0].message)
 
 # same test as above but not triggering the warning (switched off):
 @pytest.mark.filterwarnings("error")
@@ -936,8 +935,6 @@ def test_setting_dict_store_load_cycle():
     setting_dict.set_storage(storage)
     setting_dict['entry'] = 'before@store.com'
     setting_dict['input_check'] = '1'
-    setting_obj_init_entry = setting_dict.get_setting('entry')
-    setting_obj_init_input_check = setting_dict.get_setting('input_check')
 
     setting_dict.store()
     setting_dict['entry'] = 'after@store.com'

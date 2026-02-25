@@ -1,9 +1,8 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
 import tkinter
-
-from tkinter import ttk
 from copy import deepcopy
+from tkinter import ttk
 
 from appxf import logging
 from appxf.setting import Setting, SettingSelect
@@ -210,8 +209,9 @@ class SettingSelectDetailFrame(SettingFrameBase):
 
     def _handle_dropdown_update(self):
         # TODO: value should not be printed here if it's a password.
-        # TODO (E501): shorten debug log format string
-        self.log.debug(f'Setting [{self.setting.options.name}] updated: {self.setting.base_setting.value}')
+        self.log.debug(
+            f'Setting [{self.setting.options.name}] updated: '
+            f'{self.setting.base_setting.value}')
         self.setting_frame.update()
 
     def _handle_delete_option(self):

@@ -10,7 +10,7 @@ __Resizing:__ should only affect the right entry part.
 '''
 
 from appxf.setting import Setting
-from appxf.gui import SettingFrameDefault, SettingDictSingleFrame
+from appxf.gui import SettingDictSingleFrame
 from appxf_matema.case_runner import ManualCaseRunner
 
 inner_A = Setting.new(

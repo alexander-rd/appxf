@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 ''' signature behavior for authenticity '''
 
-from datetime import datetime
 import uuid
+from datetime import datetime
 
 
 class MetaData():

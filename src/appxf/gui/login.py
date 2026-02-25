@@ -9,12 +9,12 @@ import tkinter
 import tkinter.ttk
 
 from appxf import logging
+from appxf.gui.locale import _
+from appxf.gui.setting_dict import SettingDictSingleFrame
+from appxf.security import Security
 
 # from appxf.config import Config
 from appxf.setting import SettingDict
-from appxf.gui.setting_dict import SettingDictSingleFrame
-from appxf.security import Security
-from appxf.gui.locale import _
 
 
 class UserAbortError(Exception):
@@ -138,8 +138,8 @@ class Login():
                 self._user_config.store()
                 self.log.debug('OK, quit')
                 guiRoot.destroy()
-        # TODO (E501): wrap tkinter.Button constructor args
-        okButton = tkinter.Button(guiRoot, text=_('button', 'OK'), command=okButtonFunction)
+        okButton = tkinter.Button(
+            guiRoot, text=_('button', 'OK'), command=okButtonFunction)
         okButton.grid(row=4, column=1, padx=5, pady=5, sticky='E')
 
         guiRoot.bind('<Return>', okButtonFunction)
@@ -173,8 +173,8 @@ class Login():
                                exc_info=True)
                 self.log.warning('Password wrong, but we continue.')
 
-        # TODO (E501): wrap tkinter.Button constructor args
-        okButton = tkinter.Button(guiRoot, text=_('button', 'OK'), command=okButtonFunction)
+        okButton = tkinter.Button(
+            guiRoot, text=_('button', 'OK'), command=okButtonFunction)
         okButton.grid(row=3, column=2, padx=5, pady=5, sticky='E')
 
         guiRoot.bind('<Return>', okButtonFunction)

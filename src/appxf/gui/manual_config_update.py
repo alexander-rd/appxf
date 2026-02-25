@@ -1,10 +1,10 @@
 # Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
+from tkinter import filedialog, messagebox
+
 from appxf.gui.locale import _
 from appxf.gui.registration_user import log
 from appxf.registry import AppxfRegistryRoleError, AppxfRegistryUnknownUser, Registry
-
-from tkinter import filedialog, messagebox
 
 
 def handle_manual_config_update_load(

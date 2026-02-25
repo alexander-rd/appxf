@@ -28,14 +28,18 @@ the following classes are the entry points:
 # TODO: transfer this description into the documentation. I cannot see how this
 # description is valuable during development of applications.
 
-from .setting import Setting, AppxfSettingError, AppxfSettingConversionError
-from .base_types import SettingString, SettingText, SettingEmail, SettingPassword
-from .base_types import SettingBool, SettingInt, SettingFloat
-from .base_types import SettingBase64
-
+from .base_types import (
+    SettingBase64,
+    SettingBool,
+    SettingEmail,
+    SettingFloat,
+    SettingInt,
+    SettingPassword,
+    SettingString,
+    SettingText,
+    validated_conversion_configparser,
+)
+from .setting import AppxfSettingConversionError, AppxfSettingError, Setting
+from .setting_dict import AppxfSettingWarning, SettingDict
 from .setting_extension import SettingExtension
 from .setting_select import SettingSelect
-
-from .setting_dict import SettingDict, AppxfSettingWarning
-
-from .base_types import validated_conversion_configparser

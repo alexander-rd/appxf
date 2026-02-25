@@ -8,10 +8,7 @@ are registered to admin.
 __Scope:__ Feel free to play around and inspect configurations.
 '''
 from appxf_matema.case_runner import ManualCaseRunner
-from appxf.gui import AppxfApplication
-from appxf.storage import Storage
 from tests._fixtures import test_sandbox
-from tests._fixtures import application
 from tests._fixtures.app_harness import AppHarness
 from tests._fixtures.app_harness_gui import AppHarnessGui
 

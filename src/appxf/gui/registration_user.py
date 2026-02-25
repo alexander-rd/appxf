@@ -11,10 +11,9 @@ import tkinter
 from tkinter import filedialog, messagebox
 
 from appxf import logging
-from appxf.registry import Registry
-from appxf.gui.common import GridFrame, GridTk, GridToplevel
-from appxf.gui.common import ButtonFrame
+from appxf.gui.common import ButtonFrame, GridFrame, GridTk, GridToplevel
 from appxf.gui.locale import _
+from appxf.registry import Registry
 
 # TODO: This file is in DRAFT STATUS, mostly generated with GitHub copilot and
 # needs a detailed review. Currently, getting the GUI and behavior right is
@@ -105,20 +104,27 @@ class RegistrationUser:
             current_row += 1
 
             # Button row for Admin Keys
-            # TODO (E501): wrap ButtonFrame constructor args
-            admin_buttons = ButtonFrame(admin_frame, buttons=[self._button_load_admin_keys, self._button_initialize_as_admin, ''])
+            admin_buttons = ButtonFrame(
+                admin_frame,
+                buttons=[self._button_load_admin_keys,
+                         self._button_initialize_as_admin, ''])
             admin_frame.place(widget=admin_buttons, row=0, column=0)
 
             # Status text (unlabeled) to display admin status
             self._admin_status_var = tkinter.StringVar(value='')
-            # TODO (E501): wrap tkinter.Label constructor args
-            admin_status_label = tkinter.Label(admin_frame, textvariable=self._admin_status_var, anchor='w')
+            admin_status_label = tkinter.Label(
+                admin_frame,
+                textvariable=self._admin_status_var,
+                anchor='w')
             admin_frame.place(widget=admin_status_label, row=1, column=0)
 
             # Hook up events from button frames to wrapper methods that update status
-            # TODO (E501): refactor lambdas to named methods
-            admin_buttons.bind(f'<<{self._button_load_admin_keys}>>', lambda event: self._on_load_admin_keys())
-            admin_buttons.bind(f'<<{self._button_initialize_as_admin}>>', lambda event: self._on_initialize_as_admin())
+            admin_buttons.bind(
+                f'<<{self._button_load_admin_keys}>>',
+                lambda event: self._on_load_admin_keys())
+            admin_buttons.bind(
+                f'<<{self._button_initialize_as_admin}>>',
+                lambda event: self._on_initialize_as_admin())
 
         # Registration frame (row 1)
         registration_frame = GridFrame(self._gui_root, text=_('label', 'Registration'))
@@ -126,12 +132,17 @@ class RegistrationUser:
         current_row += 1
 
         # Buttons for registration: Write Request and Load Response
-        # TODO (E501): wrap ButtonFrame args and refactor lambdas to named methods
-        self._registration_buttons = ButtonFrame(registration_frame, buttons=[self._button_write_request, self._button_load_response, ''])
+        self._registration_buttons = ButtonFrame(
+            registration_frame,
+            buttons=[self._button_write_request, self._button_load_response, ''])
         registration_frame.place(widget=self._registration_buttons, row=0, column=0)
 
-        self._registration_buttons.bind(f'<<{self._button_write_request}>>', lambda event: self._on_generate_request())
-        self._registration_buttons.bind(f'<<{self._button_load_response}>>', lambda event: self._on_load_response())
+        self._registration_buttons.bind(
+            f'<<{self._button_write_request}>>',
+            lambda event: self._on_generate_request())
+        self._registration_buttons.bind(
+            f'<<{self._button_load_response}>>',
+            lambda event: self._on_load_response())
 
         # call status updater at init
         self._update_admin_status()
@@ -142,15 +153,18 @@ class RegistrationUser:
             return
 
         if self._registry.has_admin_keys():
-            # TODO (E501): shorten status string or extract to constant
-            status = _('status', 'Admin keys are already loaded to encrypt your user data.')
+            status = _(
+                'status',
+                'Admin keys are already loaded to encrypt your user data.')
             self._registration_buttons.set_button_active(
                 self._button_write_request, True)
             self._registration_buttons.set_button_active(
                 self._button_load_response, True)
         else:
-            # TODO (E501): shorten status string or extract to constant
-            status = _('status', 'You have to load admin keys to encrypt the user data in your request.')
+            status = _(
+                'status',
+                'You have to load admin keys to encrypt the user data '
+                'in your request.')
             self._registration_buttons.set_button_active(
                 self._button_write_request, False)
             self._registration_buttons.set_button_active(
@@ -266,8 +280,10 @@ class RegistrationUser:
         except Exception as e:
             self.log.error('Failed to load admin keys: %s', e)
             try:
-                # TODO (E501): wrap messagebox.showerror args
-                messagebox.showerror('Error', _('error', 'Failed to load admin keys: {}').format(e), parent=self._gui_root)
+                messagebox.showerror(
+                    'Error',
+                    _('error', 'Failed to load admin keys: {}').format(e),
+                    parent=self._gui_root)
             except Exception:
                 pass
             return

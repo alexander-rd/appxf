@@ -31,6 +31,7 @@
 # take a contructed Frame, only the required class.
 
 import tkinter
+
 from recordclass import RecordClass
 
 

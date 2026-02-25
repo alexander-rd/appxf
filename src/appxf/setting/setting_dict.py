@@ -8,13 +8,15 @@ Surprise: it bundles Settings to a dictionary behavior. ;)
 # allow class name being used before being fully defined (like in same class):
 from __future__ import annotations
 
+import warnings
 from collections import OrderedDict
+from collections.abc import Mapping, MutableMapping
 from dataclasses import dataclass
 from typing import Any, Callable
-from collections.abc import Mapping, MutableMapping
-from appxf.storage import Storable, Storage, RamStorage
-from .setting import Setting, AppxfSettingError, AppxfSettingConversionError
-import warnings
+
+from appxf.storage import RamStorage, Storable, Storage
+
+from .setting import AppxfSettingConversionError, AppxfSettingError, Setting
 
 
 class AppxfSettingWarning(Warning):

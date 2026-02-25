@@ -7,8 +7,8 @@ import pytest
 from appxf import fileversions
 from appxf import logging
 
-from tests.fixtures.env_base import env_base
-from tests.fixtures.env_storage import env_test_directory
+from tests.fixtures.env_base import env_base  # noqa: F401
+from tests.fixtures.env_storage import env_test_directory  # noqa: F401
 
 def test_fileversions_format_yyyyMMdd():
     logging.logging.debug('hello')

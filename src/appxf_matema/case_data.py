@@ -2,11 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 ''' Providing a helper to maintain test case data '''
 
-from pathlib import Path
 from collections import OrderedDict
+from pathlib import Path
 
-from appxf.storage import JsonSerializer, LocalStorage
 from appxf.setting import SettingDict, SettingSelect, SettingString
+from appxf.storage import JsonSerializer, LocalStorage
 
 
 class CaseEntry:

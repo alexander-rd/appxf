@@ -3,14 +3,14 @@
 ''' Definition of basic types like int or str as settings
 '''
 from __future__ import annotations
-from typing import Type, Any
-from dataclasses import dataclass
-from email_validator import validate_email, EmailNotValidError
 
 import base64
 import binascii
 import configparser
+from dataclasses import dataclass
+from typing import Any, Type
 
+from email_validator import EmailNotValidError, validate_email
 
 from .setting import Setting, _BaseTypeT
 

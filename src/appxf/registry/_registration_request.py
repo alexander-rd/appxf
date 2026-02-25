@@ -8,7 +8,7 @@ which is not in scope of this class.
 '''
 from __future__ import annotations
 
-from typing import TypedDict, Any
+from typing import Any, TypedDict
 
 from appxf.security import Security
 from appxf.storage import CompactSerializer

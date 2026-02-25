@@ -3,7 +3,6 @@
 import pytest
 from datetime import datetime, timedelta
 from appxf.utility.ntptime import NtpTime
-from ntplib import NTPClient
 import ntplib
 
 def ntplib_request_failing(server):
@@ -35,7 +34,7 @@ def test_functional(fresh_NtpTime):
 
 @pytest.mark.skip(reason='NTP server is currently not used and occasionally fails')
 def test_server_all_fail(mocker, fresh_NtpTime):
-    m = mocker.patch('ntplib.NTPClient.request', side_effect=ntplib_request_failing)
+    mocker.patch('ntplib.NTPClient.request', side_effect=ntplib_request_failing)
     with pytest.raises(Exception) as excinfo:
         fresh_NtpTime.get_offset_from_utc_now()
     assert 'None of the server requests succeeded' in str(excinfo.value)

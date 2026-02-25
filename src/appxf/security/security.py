@@ -3,23 +3,25 @@
 '''Define security algorithms.'''
 
 # ## General imports
+# generate crypt key from password
+import base64
 import pickle
+from typing import Any, Iterable
 
 # ## Cryptography related imports
 # cryptography error handling
 from cryptography.exceptions import InvalidSignature
-# generate crypt key from password
-import base64
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
 # synchronous encryption:
 from cryptography.fernet import Fernet
-# asynchronous encryption:
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import padding, rsa
-from typing import Any, Iterable
 
-from appxf.storage import CompactSerializer, Storage, LocalStorage
+# asynchronous encryption:
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
+from appxf.storage import CompactSerializer, LocalStorage, Storage
+
 
 class AppxfSecurityException(Exception):
     ''' General security related errors. '''
