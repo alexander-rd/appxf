@@ -210,6 +210,7 @@ class SettingSelectDetailFrame(SettingFrameBase):
 
     def _handle_dropdown_update(self):
         # TODO: value should not be printed here if it's a password.
+        # TODO (E501): shorten debug log format string
         self.log.debug(f'Setting [{self.setting.options.name}] updated: {self.setting.base_setting.value}')
         self.setting_frame.update()
 

@@ -3,7 +3,6 @@
 '''Define security algorithms.'''
 
 # ## General imports
-import os.path
 import pickle
 
 # ## Cryptography related imports

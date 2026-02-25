@@ -103,6 +103,7 @@ def get_activation_script() -> str:
         return f'source {ENV_PATH / "bin" / "activate"}'
 
 
+# TODO (E501): shorten function signature or split type hint onto next line
 def run_in_venv(cmd: List[str], verbose: bool = False, **kwargs) -> subprocess.CompletedProcess:
     '''Run a command within the virtual environment.'''
     # Use the full path to the venv executables (works on all platforms)
@@ -253,6 +254,7 @@ Build outputs:
         type=Path,
         nargs='*',
         default=[],
+        # TODO (E501): shorten help string
         help='Additional requirements files to install (default: requirements.txt, appxf/requirements.txt)'
     )
     parser.add_argument(
@@ -310,7 +312,7 @@ Build outputs:
     print(f'{"="*60}')
     print(f'Platform: {platform.system()}')
     print(f'Main file: {main_file}')
-    print(f'Build directory: ./build/')
+    print('Build directory: ./build/')
     print(f'Clean build: {args.clean}')
     print(f'Verbose: {args.verbose}')
     print(f'{"="*60}')
@@ -369,7 +371,9 @@ Build outputs:
             save_build_info(verbose=args.verbose)
 
         print(f'\n{"="*60}')
-        print(f'Build completed successfully! (Total time: {elapsed_time(start_total)})')
+        print(
+            f'Build completed successfully! (Total time: {elapsed_time(start_total)})'
+        )
         print(f'{"="*60}')
 
     except subprocess.CalledProcessError as e:

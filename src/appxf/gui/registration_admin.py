@@ -182,11 +182,11 @@ class RegistrationAdmin:
                     parent=self._admin_window,
                 )
                 self._current_user_id = user_id
-            except (ValueError, KeyError) as e:
+            except (ValueError, KeyError):
                 self.log.exception('Failed to add user.')
                 messagebox.showerror(
                     'Error',
-                    f'Failed to add user (see log for details).',
+                    'Failed to add user (see log for details).',
                     parent=self._admin_window,
                 )
 
@@ -325,7 +325,6 @@ class RegistrationAdmin:
         Arguments:
             request_bytes -- Serialized registration request bytes
         '''
-        from appxf.registry._registration_request import RegistrationRequest
 
         try:
             request = self._registry.get_request_data(request_bytes)

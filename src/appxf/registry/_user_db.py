@@ -1,7 +1,7 @@
 # Copyright 2023-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
 from appxf import logging
-from appxf.storage import Storable, Storage, CompactSerializer
+from appxf.storage import Storable, Storage
 from typing import Set, TypedDict
 
 

@@ -14,7 +14,6 @@ def read_context_from_pot(pot_file):
         set: All context tags found in the file
     '''
     contexts = set()
-    current_context = None
 
     with open(pot_file, 'r', encoding='utf-8') as f:
         for line in f:
@@ -34,7 +33,8 @@ def analyze_po_file(po_file):
         po_file: Path to the PO file
 
     Returns:
-        dict: Statistics with context as key and dict with 'translated' and 'total' counts
+        dict: Statistics with context as key and dict with
+        'translated' and 'total' counts
     '''
     stats = {}
     current_context = None
@@ -123,6 +123,7 @@ def main():
     '''Main entry point for command-line usage.'''
     import argparse
 
+    # TODO (E501): shorten argparse description and help strings
     parser = argparse.ArgumentParser(description='Statistics and analysis tools for gettext PO/POT files.')
     parser.add_argument('file', help='Path to PO or POT file')
     parser.add_argument('--contexts', action='store_true', help='Print all contexts from a POT file')

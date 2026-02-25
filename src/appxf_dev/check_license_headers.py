@@ -156,7 +156,8 @@ def verify_file_header(file: Path) -> bool:
         if not has_copyright:
             print('  Missing or invalid copyright')
         if not has_license:
-            print(f'  Missing SPDX license identifier: {LICENSES[file.suffix].split(": ")[1]}')
+            spdx_id = LICENSES[file.suffix].split(': ')[1]
+            print(f'  Missing SPDX license identifier: {spdx_id}')
         return False
     return True
 

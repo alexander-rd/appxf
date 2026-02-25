@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
-import inspect
 import json
 import subprocess
 import sys

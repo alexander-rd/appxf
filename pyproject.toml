@@ -35,18 +35,6 @@ hook-dirs = "appxf.pyinstaller:get_hook_dirs"
 # subfolders.
 test-sandbox-root = "./.testing"
 
-# Note: flake8 does not support reading configuration from pyproject.toml. You
-# have to install pyproject-flake8 and run flake8p to have the following
-# conifugration effective.
-# See: https://pypi.org/project/Flake8-pyproject/
-[tool.flake8]
-filename = './src/**/*.py'
-per-file-ignores = [
-    # ignore "not used imports" in __init__ files:
-    '__init__.py:F401',
-]
-count = true
-
 [tool.ruff]
 # Target Python version (minimum supported version)
 target-version = "py310"
@@ -72,7 +60,10 @@ select = ["E", "F"]
 # "RUF"- ruff-specific rules (misc. best-practice checks)
 
 [tool.ruff.lint.per-file-ignores]
-# Ignore unused imports in __init__ files (re-exports are intentional)
+# Unused imports in __init__.py are intentional re-exports.
+# Ruff has no built-in exception for __init__.py — either use this ignore,
+# or switch to explicit re-exports (e.g. `from .module import Foo as Foo`),
+# which ruff then accepts without a per-file-ignore.
 "__init__.py" = ["F401"]
 
 [tool.tox]

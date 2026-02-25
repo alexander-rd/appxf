@@ -103,7 +103,9 @@ class GridFrame(tkinter.LabelFrame):
             if frame_cls:
                 # try common constructor signatures:
                 return frame_cls(parent, appxf_object, **kwargs)
-        raise AppxfGuiError(f'No registered frame for object of type {obj_type.__name__}')
+        raise AppxfGuiError(
+            f'No registered frame for object of type {obj_type.__name__}'
+        )
 
     # Note that the weights are read from it's Frame contents. If it contains
     # widgets, they may sum up to zero. If they contain nothing, the frame
@@ -356,7 +358,7 @@ class ButtonFrame(GridFrame):
             widget.config(state=state)
         except tkinter.TclError:
             # If a widget type doesn't support state, ignore it silently
-            self.log.debug('Could not set state for widget %s', w)
+            self.log.debug('Could not set state for widget %s', widget)
 
 class _CommonWindow:
     '''Mixin providing common functions for Toplevel and Tk variants
@@ -406,6 +408,7 @@ class _CommonWindow:
 
         # bind Enter keys
         if key_enter_as_button:
+            # TODO (E501): refactor lambda to a named method
             self.bind(
                 '<Return>',
                 lambda event, b=key_enter_as_button: self.button_frame.handle_button_press(b))
