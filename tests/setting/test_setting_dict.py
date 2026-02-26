@@ -294,9 +294,7 @@ def test_setting_dict_invalid_not_applied():
     assert 'b@' in setting_dict['B']
     assert 'c@' in setting_dict['C']
     for key in setting_dict:
-        assert isinstance(
-            setting_dict.get_setting(key), type(Setting.new('email'))
-        )
+        assert isinstance(setting_dict.get_setting(key), type(Setting.new('email')))
     # cycle through keys and try to apply a wrong value to each of those keys.
     # Only checking one position would not be sufficient in case SettingDict
     # already fails with the first assignment. No assumptions on order of
@@ -312,9 +310,7 @@ def test_setting_dict_invalid_not_applied():
         assert 'b@' in setting_dict['B']
         assert 'c@' in setting_dict['C']
         for key in setting_dict:
-            assert isinstance(
-                setting_dict.get_setting(key), type(Setting.new('email'))
-            )
+            assert isinstance(setting_dict.get_setting(key), type(Setting.new('email')))
 
 
 # REQ: When changing the underlying Setting directly, the value returned by

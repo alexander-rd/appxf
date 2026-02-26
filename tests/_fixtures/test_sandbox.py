@@ -7,12 +7,13 @@ files and folders needed during test case execution. This module provides
 corresponding variables and helpers.
 '''
 
-import pytest
+import inspect
 import os
 import shutil
-import toml
-import inspect
 from pathlib import Path
+
+import pytest
+import toml
 
 ### Reading configuration from pyproject.toml
 try:
@@ -124,8 +125,6 @@ def _init_test_sandbox(
         relative_module_path = module_path.relative_to(sandbox_root_parent).as_posix()
     except ValueError:
         relative_module_path = module_path.name
-    if relative_module_path in ['test', 'tests']:
-        relative_module_path = ''
 
     path = test_sandbox_root
     if relative_module_path:

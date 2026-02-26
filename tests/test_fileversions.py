@@ -2,12 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 import os
 from datetime import date
+
 import pytest
 
-from appxf import fileversions
-from appxf import logging
-
-from tests.fixtures.env_storage import env_test_directory  # noqa: F401
+import tests._fixtures.test_sandbox
+from appxf import fileversions, logging
 
 
 def test_fileversions_format_yyyyMMdd():
@@ -83,31 +82,29 @@ def test_fileversions_format_errors():
     assert fileversions.get_filename('(yyyyMMdd)_file.txt', existing=True) is None
 
 
-def test_fileversions_existing(env_test_directory):
-    env = env_test_directory
-    print(env)
+def test_fileversions_existing(request):
+    test_path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(request)
     # Still no files existing:
     assert (
-        fileversions.get_filename('file_(00).txt', directory=env['dir'], existing=True)
+        fileversions.get_filename('file_(00).txt', directory=test_path, existing=True)
         is None
     )
     assert (
-        fileversions.get_filename('file_00.txt', directory=env['dir'], existing=True)
+        fileversions.get_filename('file_00.txt', directory=test_path, existing=True)
         is None
     )
     # Drop file
-    open(os.path.join(env['dir'], 'file_00.txt'), 'w').close()
+    open(os.path.join(test_path, 'file_00.txt'), 'w').close()
     # Check if now existing:
     assert (
-        fileversions.get_filename('file_00.txt', directory=env['dir'], existing=True)
+        fileversions.get_filename('file_00.txt', directory=test_path, existing=True)
         == 'file_00.txt'
     )
     assert (
-        fileversions.get_filename('file_(00).txt', directory=env['dir'], existing=True)
+        fileversions.get_filename('file_(00).txt', directory=test_path, existing=True)
         == 'file_00.txt'
     )
     # Check if next version is correct
     assert (
-        fileversions.get_filename('file_(00).txt', directory=env['dir'])
-        == 'file_01.txt'
+        fileversions.get_filename('file_(00).txt', directory=test_path) == 'file_01.txt'
     )
