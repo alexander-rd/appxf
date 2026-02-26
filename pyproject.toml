@@ -38,7 +38,7 @@ test-sandbox-root = "./.testing"
 [tool.ruff]
 # Note: Line length default is already 88. Minimum python version is taken from project
 # configuration.
-extend-exclude = ["tests", "tests_features"]
+# extend-exclude = ["tests", "tests_features"]
 # TODO: There is actually no reason to exclude tests from using good python code.
 # Except, right now, there is no time to fix those legacy flaws.
 

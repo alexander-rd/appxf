@@ -2,8 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 '''
 Resizing: First main frame has a border and is the only thing that must resize.
-Switch Button: It toggle buttons to switch to start/second. Switching must NOT resize the window.
+Switch Button: It toggle buttons to switch to start/second.
+Switching must NOT resize the window.
 '''
+
 import tkinter
 from appxf_matema.case_runner import ManualCaseRunner
 from appxf.gui.application import AppxfApplication
@@ -11,16 +13,20 @@ from appxf.gui.application import AppxfApplication
 app = AppxfApplication()
 app.title('AppxfApplication Dummy')
 
+
 class DummyFrame(tkinter.Frame):
     def __init__(self, *args, **kwargs):
         next_frame = kwargs.get('next_frame', 'start')
         kwargs.pop('next_frame')
-        super().__init__(*args, **kwargs,
-                         highlightbackground='red',
-                         highlightthickness=2)
+        super().__init__(
+            *args, **kwargs, highlightbackground='red', highlightthickness=2
+        )
 
-        button = tkinter.Button(self, text=f'Switch to [{next_frame}]',
-                                command=lambda: app.show_frame(next_frame))
+        button = tkinter.Button(
+            self,
+            text=f'Switch to [{next_frame}]',
+            command=lambda: app.show_frame(next_frame),
+        )
         button.pack(padx=150, pady=50)
 
 

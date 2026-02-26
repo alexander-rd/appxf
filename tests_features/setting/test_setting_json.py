@@ -1,6 +1,6 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Serialization of SettingDict into JSON
+'''Serialization of SettingDict into JSON
 
 Tests to ensure that the implementation adheres to the following concept goals:
  * JSON export shall be concise if storage is only about values
@@ -12,18 +12,21 @@ Tests to ensure that the implementation adheres to the following concept goals:
       for SettingSelect
     * setting type to be able to restore settings for an empty SettingDict
 '''
+
 import pytest
 from collections import OrderedDict
 from appxf.setting import Setting, SettingDict, SettingEmail, SettingSelect
 from appxf.storage import RamStorage, JsonSerializer, Storage
+
 
 # Feature testing must apply context to storage:
 @pytest.fixture(autouse=True)
 def setup_storage_context():
     Storage.switch_context("test_setting_json")
 
+
 def overwrite_with_defaults(setting_dict: SettingDict):
-    ''' Fill values with default values '''
+    '''Fill values with default values'''
     for key in setting_dict.keys():
         this_setting = setting_dict.get_setting(key)
         if isinstance(this_setting, SettingDict):
@@ -35,16 +38,19 @@ def overwrite_with_defaults(setting_dict: SettingDict):
         else:
             this_setting.value = this_setting.get_default()
 
-def verify_json(setting_dict: SettingDict,
-                export_options: SettingDict.ExportOptions,
-                expected_json: str,
-                full_recovery: bool = False):
+
+def verify_json(
+    setting_dict: SettingDict,
+    export_options: SettingDict.ExportOptions,
+    expected_json: str,
+    full_recovery: bool = False,
+):
     raw_data = setting_dict.get_state(options=export_options)
     serialized_data = JsonSerializer.serialize(raw_data)
 
     # check serialization
     print(f'Produced JSON:\n{serialized_data.decode("utf-8")}')
-    #print(f'Expected JSON:\n{expected_json}')
+    # print(f'Expected JSON:\n{expected_json}')
     assert expected_json[1:-5] == serialized_data.decode('utf-8')
 
     # check recovery
@@ -60,19 +66,32 @@ def verify_json(setting_dict: SettingDict,
     assert recovered_dict.input == original_inputs
     assert recovered_dict.value == original_values
 
+
 def test_setting_json_simple():
-    ''' JSON for options with only values included - the most simple/reduced
-    form of output (no options being set or set to stored) '''
-    verify_json(setting_dict=SettingDict(OrderedDict([
-        ('string', Setting.new('string', value='test')),
-        ('integer', Setting.new('int', value=42)),
-        ('select', Setting.new('select::string', value='01',
-            select_map={'01': 'Value'},
-            custom_value=False,
-            mutable_items=False, mutable_list=False))
-    ])),
-    export_options=SettingDict.ExportOptions(),
-    expected_json='''
+    '''JSON for options with only values included - the most simple/reduced
+    form of output (no options being set or set to stored)'''
+    verify_json(
+        setting_dict=SettingDict(
+            OrderedDict(
+                [
+                    ('string', Setting.new('string', value='test')),
+                    ('integer', Setting.new('int', value=42)),
+                    (
+                        'select',
+                        Setting.new(
+                            'select::string',
+                            value='01',
+                            select_map={'01': 'Value'},
+                            custom_value=False,
+                            mutable_items=False,
+                            mutable_list=False,
+                        ),
+                    ),
+                ]
+            )
+        ),
+        export_options=SettingDict.ExportOptions(),
+        expected_json='''
 {
     "_version": 2,
     "string": "test",
@@ -80,21 +99,31 @@ def test_setting_json_simple():
     "select": "01"
 }
     ''',
-    full_recovery=False)
+        full_recovery=False,
+    )
+
 
 def test_setting_json_single_display_option():
     '''JSON for a few non-default options'''
-    export_options = SettingDict.ExportOptions(
-        value_options = True,
-        display_options = True)
-    setting_dict = SettingDict({
-        'string': Setting.new('string', value='test'),
-        'integer': Setting.new('int', value=42),
-        'select': Setting.new('select::string', value='01', select_map={'01': 'test_value'},
-            display_width = 42, custom_value=False,)
-        })
+    export_options = SettingDict.ExportOptions(value_options=True, display_options=True)
+    setting_dict = SettingDict(
+        {
+            'string': Setting.new('string', value='test'),
+            'integer': Setting.new('int', value=42),
+            'select': Setting.new(
+                'select::string',
+                value='01',
+                select_map={'01': 'test_value'},
+                display_width=42,
+                custom_value=False,
+            ),
+        }
+    )
 
-    verify_json(setting_dict, export_options=export_options, expected_json='''
+    verify_json(
+        setting_dict,
+        export_options=export_options,
+        expected_json='''
 {
     "_version": 2,
     "string": "test",
@@ -106,25 +135,35 @@ def test_setting_json_single_display_option():
     }
 }
     ''',
-    full_recovery=False)
+        full_recovery=False,
+    )
+
 
 def test_setting_json_full_options_export():
     '''JSON for options with and without options being set'''
     setting_dict = SettingDict(
         settings={
-            'select': Setting.new('select::string', value='01', select_map={'01': 'Value'},
-                                  custom_value=True)
-            },
+            'select': Setting.new(
+                'select::string',
+                value='01',
+                select_map={'01': 'Value'},
+                custom_value=True,
+            )
+        },
         # TODO: integer and select had "options_stored" set to True
         display_columns=3,
-        )
+    )
     export_options = SettingDict.ExportOptions(
-        control_options = True,
-        value_options = True,
-        display_options = True,
-        export_defaults = True)
+        control_options=True,
+        value_options=True,
+        display_options=True,
+        export_defaults=True,
+    )
 
-    verify_json(setting_dict, export_options=export_options, expected_json='''
+    verify_json(
+        setting_dict,
+        export_options=export_options,
+        expected_json='''
 {
     "_version": 2,
     "_settings": {
@@ -159,27 +198,38 @@ def test_setting_json_full_options_export():
     "display_options_mutable": false,
     "control_options_mutable": false
 }
-    ''', full_recovery=False)
+    ''',
+        full_recovery=False,
+    )
+
 
 def test_setting_json_full_options_and_type():
     '''JSON for options with and without options being set'''
     setting_dict = SettingDict(
         settings={
-            'select': Setting.new('select::string', value='01', select_map={'01': 'Value'},
-                                  custom_value=True)
-            },
+            'select': Setting.new(
+                'select::string',
+                value='01',
+                select_map={'01': 'Value'},
+                custom_value=True,
+            )
+        },
         # TODO: integer and select had "options_stored" set to True
-        storage=RamStorage.get(name='setting_dict', ram_area='test')
-        )
+        storage=RamStorage.get(name='setting_dict', ram_area='test'),
+    )
     export_options = SettingDict.ExportOptions(
-        type = True,
-        add_new_keys= True,
+        type=True,
+        add_new_keys=True,
         exception_on_new_key=False,
-        control_options = True,
-        value_options = True,
-        display_options = True,
-        export_defaults = True)
-    verify_json(setting_dict, export_options=export_options, expected_json='''
+        control_options=True,
+        value_options=True,
+        display_options=True,
+        export_defaults=True,
+    )
+    verify_json(
+        setting_dict,
+        export_options=export_options,
+        expected_json='''
 {
     "_version": 2,
     "_settings": {
@@ -216,22 +266,33 @@ def test_setting_json_full_options_and_type():
     "display_options_mutable": false,
     "control_options_mutable": false
 }
-    ''', full_recovery=True)
+    ''',
+        full_recovery=True,
+    )
+
 
 def test_setting_json_dict_of_dict_simple():
     '''JSON for options with and without options being set'''
     setting_dict = SettingDict(
         settings={
-            'dict_one': SettingDict(settings={
-                'string_one': (str, 'one'),
-                'integer_one': (int, '01'),
-            }),
-            'dict_two': SettingDict(settings={
-                'string_two': (str, 'two'),
-                'integer_two': (int, 2),
-            })
-        })
-    verify_json(setting_dict, export_options=SettingDict.ExportOptions(), expected_json='''
+            'dict_one': SettingDict(
+                settings={
+                    'string_one': (str, 'one'),
+                    'integer_one': (int, '01'),
+                }
+            ),
+            'dict_two': SettingDict(
+                settings={
+                    'string_two': (str, 'two'),
+                    'integer_two': (int, 2),
+                }
+            ),
+        }
+    )
+    verify_json(
+        setting_dict,
+        export_options=SettingDict.ExportOptions(),
+        expected_json='''
 {
     "_version": 2,
     "dict_one": {
@@ -243,27 +304,42 @@ def test_setting_json_dict_of_dict_simple():
         "integer_two": 2
     }
 }
-    ''', full_recovery=False)
+    ''',
+        full_recovery=False,
+    )
+
 
 def test_setting_json_dict_of_dict_some_options():
     '''JSON for options with and without options being set'''
     setting_dict = SettingDict(
         settings={
-            'dict_one': SettingDict(settings={
-                'string_one': (str, 'one'),
-                'integer_one': (int, '01'),
-            }, display_width=101),
-            'dict_two': SettingDict(settings={
-                'string_two': (str, 'two'),
-                'integer_two': (int, 2),
-            }, display_width=102)
-        }, display_columns=3)
+            'dict_one': SettingDict(
+                settings={
+                    'string_one': (str, 'one'),
+                    'integer_one': (int, '01'),
+                },
+                display_width=101,
+            ),
+            'dict_two': SettingDict(
+                settings={
+                    'string_two': (str, 'two'),
+                    'integer_two': (int, 2),
+                },
+                display_width=102,
+            ),
+        },
+        display_columns=3,
+    )
     export_options = SettingDict.ExportOptions(
-        control_options = True,
-        value_options = True,
-        display_options = True,
-        export_defaults = False)
-    verify_json(setting_dict, export_options=export_options, expected_json='''
+        control_options=True,
+        value_options=True,
+        display_options=True,
+        export_defaults=False,
+    )
+    verify_json(
+        setting_dict,
+        export_options=export_options,
+        expected_json='''
 {
     "_version": 2,
     "_settings": {
@@ -284,27 +360,36 @@ def test_setting_json_dict_of_dict_some_options():
     },
     "display_columns": 3
 }
-    ''', full_recovery=False)
+    ''',
+        full_recovery=False,
+    )
 
 
 def test_setting_json_dict_of_dict_type_recovery():
     '''JSON for options with and without options being set'''
     setting_dict = SettingDict(
         settings={
-            'dict_one': SettingDict(settings={
-                'string_one': (str, 'one'),
-                'integer_one': (int, '01'),
-            }),
-            'dict_two': SettingDict(settings={
-                'string_two': (str, 'two'),
-                'integer_two': (int, 2),
-            })
-        })
+            'dict_one': SettingDict(
+                settings={
+                    'string_one': (str, 'one'),
+                    'integer_one': (int, '01'),
+                }
+            ),
+            'dict_two': SettingDict(
+                settings={
+                    'string_two': (str, 'two'),
+                    'integer_two': (int, 2),
+                }
+            ),
+        }
+    )
     export_options = SettingDict.ExportOptions(
-        type=True,
-        add_new_keys=True,
-        exception_on_new_key=False)
-    verify_json(setting_dict, export_options=export_options, expected_json='''
+        type=True, add_new_keys=True, exception_on_new_key=False
+    )
+    verify_json(
+        setting_dict,
+        export_options=export_options,
+        expected_json='''
 {
     "_version": 2,
     "dict_one": {
@@ -334,4 +419,6 @@ def test_setting_json_dict_of_dict_type_recovery():
         }
     }
 }
-    ''', full_recovery=True)
+    ''',
+        full_recovery=True,
+    )

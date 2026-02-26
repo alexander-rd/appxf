@@ -1,6 +1,6 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Tests for class Security in security module
+'''Tests for class Security in security module
 
 Rely on Security helpers from tests._fixtures.appxf_objects to avoid spinning
 up the full application harness. Paths are isolated per test via the sandbox
@@ -24,20 +24,23 @@ TEST_PASSWORD = 'test-registry-password'
 # TODO LATER: test case for failing loading (use a file encrypted from a different
 # user with different password)
 
+
 @pytest.fixture(autouse=True)
 def test_setup(request):
     Storage.reset()
     test_sandbox.init_test_sandbox_from_fixture(request, cleanup=True)
 
+
 @pytest.fixture()
 def sandbox_path(request):
     return test_sandbox.init_test_sandbox_from_fixture(request, cleanup=True)
 
+
 def get_data_storage_factory(root_path, sec: Security):
     data_path = os.path.join(root_path, 'data')
     return SecurePrivateStorage.get_factory(
-        base_storage_factory=LocalStorage.get_factory(path=data_path),
-        security=sec)
+        base_storage_factory=LocalStorage.get_factory(path=data_path), security=sec
+    )
 
 
 # Uninitialized test location should indicate as not user initialized.
@@ -46,6 +49,7 @@ def test_security_uninitialized(sandbox_path):
     assert not sec.is_user_initialized()
     # also not unlocked
     assert not sec.is_user_unlocked()
+
 
 # Initialize a user (write file and authenticate)
 def test_security_init(sandbox_path):
@@ -61,6 +65,7 @@ def test_security_init(sandbox_path):
     sec.unlock_user(TEST_PASSWORD)
     assert sec.is_user_unlocked()
 
+
 # Unlock a user
 def test_security_unlock(sandbox_path):
     # prepare initialized user on disk
@@ -70,6 +75,7 @@ def test_security_unlock(sandbox_path):
     # unlock:
     sec.unlock_user(TEST_PASSWORD)
     assert sec.is_user_unlocked()
+
 
 # Store and load
 def test_security_store_load(sandbox_path):
@@ -92,12 +98,14 @@ def test_security_store_load(sandbox_path):
     data_loaded = storage.load()
     assert data == data_loaded
 
+
 # TODO UPGRADE: test case to get public keys and always get same keys again after
 # reloading security material.
 
 # TODO UPGRADE: manual verification with cryptography algorithms. (1) Let
 # implementation sign and manual verify. (2) Manual sign and let implementation
 # verify.
+
 
 def test_security_store_assymetric_keys(sandbox_path):
     sec = appxf_objects.get_security_unlocked(sandbox_path, TEST_PASSWORD)
@@ -116,6 +124,7 @@ def test_security_store_assymetric_keys(sandbox_path):
     assert signing_public_key == security.get_signing_public_key()
     assert encryp_public_key == security.get_encryption_public_key()
 
+
 # Verify cycle
 def test_security_sign_verify(sandbox_path):
     sec = appxf_objects.get_security_unlocked(sandbox_path, TEST_PASSWORD)
@@ -130,19 +139,21 @@ def test_security_sign_verify(sandbox_path):
     # verification on false public key (using encryption public key)
     assert not sec.verify_signature(data, signature, sec.get_encryption_public_key())
 
+
 # Hybrid encrypt/decrypt cycle:
 def test_security_hybrid_encrypt_decrypt(sandbox_path):
     sec = appxf_objects.get_security_unlocked(sandbox_path, TEST_PASSWORD)
 
     data = b'To be encrypted'
     data_encrpted, key_blob_map = sec.hybrid_encrypt(
-        data, {1: sec.get_encryption_public_key()})
+        data, {1: sec.get_encryption_public_key()}
+    )
 
-    data_decrypted = sec.hybrid_decrypt(
-        data_encrpted, key_blob_map, blob_identifier=1)
+    data_decrypted = sec.hybrid_decrypt(data_encrpted, key_blob_map, blob_identifier=1)
 
     assert data != data_encrpted
     assert data == data_decrypted
+
 
 # Hybrid SIGNED encrypt/decrypt cycle:
 def test_security_hybrid_signed_encrypt_decrypt(sandbox_path):
@@ -150,10 +161,12 @@ def test_security_hybrid_signed_encrypt_decrypt(sandbox_path):
 
     data = b'To be encrypted'
     data_encrypted_bytes = sec.hybrid_signed_encrypt(
-        data, {1: sec.get_encryption_public_key()})
+        data, {1: sec.get_encryption_public_key()}
+    )
 
     data_decrypted, author_key = sec.hybrid_signed_decrypt(
-        data_encrypted_bytes, blob_identifier=1)
+        data_encrypted_bytes, blob_identifier=1
+    )
 
     assert data != data_encrypted_bytes
     assert data == data_decrypted

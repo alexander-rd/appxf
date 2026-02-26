@@ -1,17 +1,15 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Provide a GUI for the application harness '''
+'''Provide a GUI for the application harness'''
+
 import os
 from appxf.gui import AppxfApplication, ConfigMenu, Login
 from appxf.gui import RegistrationUser
 from tests._fixtures.app_harness import AppHarness
 
 
-class AppHarnessGui():
-    def __init__(
-        self,
-        harness: AppHarness,
-        *args, **kwargs):
+class AppHarnessGui:
+    def __init__(self, harness: AppHarness, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
 
@@ -38,7 +36,8 @@ class AppHarnessGui():
             parent=app,
             config=self.harness.config,
             registry=self.harness.registry,
-            root_path=self.harness.root_path)
+            root_path=self.harness.root_path,
+        )
         # gui_root.frame_menu.add_separator()
         app.frame_menu.add_cascade(label='Config', menu=configMenu)
 
@@ -50,7 +49,8 @@ class AppHarnessGui():
             login = Login(
                 security=self.harness.security,
                 user_config=self.harness.config.section('USER'),
-                app_name='Login: ' + self.app_name)
+                app_name='Login: ' + self.app_name,
+            )
             login.check()
 
         # config is privately encrypted and must be loaded before any sync
@@ -66,13 +66,13 @@ class AppHarnessGui():
                 if not self.harness.registry.has_admin_keys():
                     with open(admin_keys_path, 'rb') as f:
                         admin_keys_data = f.read()
-                        self.harness.registry.set_admin_key_bytes(
-                            admin_keys_data)
+                        self.harness.registry.set_admin_key_bytes(admin_keys_data)
                 hide_admin_keys = True
             registration = RegistrationUser(
-                registry = self.harness.registry,
-                root_dir = self.harness.root_path,
-                hide_admin_keys=hide_admin_keys)
+                registry=self.harness.registry,
+                root_dir=self.harness.root_path,
+                hide_admin_keys=hide_admin_keys,
+            )
             if not registration.check():
                 return
 

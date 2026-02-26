@@ -12,9 +12,11 @@ import os.path
 # well. Otherwise, we will get a "fixture not found".
 from tests._fixtures import appxf_objects
 import tests._fixtures.test_sandbox
+
 scenarios('test_bdd_sync.feature')
 
 # TODO: should be rewritten to use the application.py fixture
+
 
 # define default context/environment
 @fixture(autouse=True)
@@ -24,25 +26,32 @@ def env(request):
     env = {'dir': tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(request)}
     # commonly used objects:
     env['security'] = appxf_objects.get_security_unlocked(path=env['dir'])
-    env['config'] = Config(default_storage=LocalStorage.get_factory(
-        path=os.path.join(env['dir'], 'config')))
+    env['config'] = Config(
+        default_storage=LocalStorage.get_factory(
+            path=os.path.join(env['dir'], 'config')
+        )
+    )
     registry = Registry(
         local_storage_factory=LocalStorage.get_factory(
-            path=os.path.join(env['dir'], 'local_registry')),
+            path=os.path.join(env['dir'], 'local_registry')
+        ),
         remote_storage_factory=LocalStorage.get_factory(
-            path=os.path.join(env['dir'], 'remote_registry')),
+            path=os.path.join(env['dir'], 'remote_registry')
+        ),
         security=env['security'],
-        config=env['config'])
+        config=env['config'],
+    )
     registry.initialize_as_admin()
     env['registry'] = registry
     # empty field for to be added storages
     env['storage_factory'] = {}
     return env
 
+
 # @given(parsers.parse('Location {locations}'))
 @given(parsers.parse('Locations [{locations}]'))
 def initialize_locations(env, request, locations):
-    ''' Ensure location paths exist '''
+    '''Ensure location paths exist'''
     print(f'Locations {locations}')
     # Handle locations parameter:
     locations = locations.split(',')
@@ -56,20 +65,25 @@ def initialize_locations(env, request, locations):
         if not os.path.exists(this_path):
             os.makedirs(this_path)
 
+
 @given(parsers.parse('Location {locations} is using Default'))
 def set_storage_method_default(env, locations):
     print(f'Location {locations} is using Default')
     # define and assign the storage method constructor:
     for loc in locations:
         env['storage_factory'][loc] = LocalStorage.get_factory(
-            path=os.path.join(env['dir'], loc))
+            path=os.path.join(env['dir'], loc)
+        )
+
 
 @given(parsers.parse('Location {locations} is using LocalStorage'))
 def set_storage_method_local(env, locations):
     print(f'Location {locations} is using LocalStorage')
     for loc in locations:
         env['storage_factory'][loc] = LocalStorage.get_factory(
-            path=os.path.join(env['dir'], loc))
+            path=os.path.join(env['dir'], loc)
+        )
+
 
 @given(parsers.parse('Location {locations} is using SecurePrivateStorage'))
 def set_storage_method_secure_private(env, locations):
@@ -85,8 +99,9 @@ def set_storage_method_secure_private(env, locations):
         env['storage_factory'][loc] = SecurePrivateStorage.get_factory(
             security=env['security'],
             base_storage_factory=LocalStorage.get_factory(
-                path=os.path.join(env['dir'], loc))
-            )
+                path=os.path.join(env['dir'], loc)
+            ),
+        )
     # TODO: the keywords for get_factory (and others?) definitely needs to be
     # updated in all the deriving classes - it's not good to work with them.
 
@@ -110,9 +125,11 @@ def define_storage_method_secure_shared(env, locations):
         # factory for base_storage.
         env['storage_factory'][loc] = SecureSharedStorage.get_factory(
             base_storage_factory=LocalStorage.get_factory(
-                path=os.path.join(env['dir'], loc)),
+                path=os.path.join(env['dir'], loc)
+            ),
             security=env['security'],
-            registry=env['registry'])
+            registry=env['registry'],
+        )
 
 
 @given(parsers.parse('{location} writes "{data}" into {file}'))
@@ -120,16 +137,18 @@ def define_storage_method_secure_shared(env, locations):
 def write_data(env, location, data, file):
     print(f'{location} writes "{data}" into {file}')
 
-    #storage = env['storage method'][location](file)
+    # storage = env['storage method'][location](file)
     print(env)
     storage: Storage = env['storage_factory'][location](file)
     print(f'Using: {storage.__class__.__name__}')
     storage.store(data.encode('utf-8'))
 
+
 @then(parsers.parse('There is no data in {loc}'))
 def no_data_in_location(env, loc):
     print(f'There is no data in {loc}')
     assert not os.listdir(os.path.join(env['dir'], loc))
+
 
 @given(parsers.parse('Synchronizing {loc_a} with {loc_b}'))
 @when(parsers.parse('Synchronizing {loc_a} with {loc_b}'))
@@ -150,8 +169,7 @@ def contains_data_in_file(env, location, data, file):
     print(f'Using: {storage.__class__.__name__}')
     # list sync state for debugging:
     if storage.get_meta('sync').exists():
-        print('Sync State JSON: \n' +
-            str(storage.get_meta('sync').load()))
+        print('Sync State JSON: \n' + str(storage.get_meta('sync').load()))
 
     # check file content
     read_data = storage.load().decode('utf-8')

@@ -18,11 +18,13 @@ host = os.environ.get('APPXF_FTP_HOST')
 user = os.environ.get('APPXF_FTP_USER')
 passwd = os.environ.get('APPXF_FTP_PASSWORD')
 
+
 @pytest.fixture
 def remote_connection():
     print(f'[{host}] with [{user}] and [{passwd}]')
     location = FtpLocation(host=host, user=user, password=passwd)
     return location
+
 
 # TODO UPGRADE: activate testing again (github fails)
 @pytest.mark.skip(reason='FTP connection not yet used. Will be fixed in short time.')
@@ -37,6 +39,7 @@ def test_write_read(remote_connection):
     read_data = remote_connection.load(file).decode('utf-8')
     print(f'Loaded data: {read_data}')
     assert read_data == data
+
 
 #! TODO: Test case that covers the automatic reconnect.
 

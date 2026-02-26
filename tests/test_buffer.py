@@ -4,9 +4,7 @@ from appxf.storage import Buffer, buffered
 from appxf.storage import Storage
 
 
-def assert_buffer_contains(buffer: Buffer,
-                           what: str,
-                           inputlist: list, exact=True):
+def assert_buffer_contains(buffer: Buffer, what: str, inputlist: list, exact=True):
     '''Check if buffer contains "the one" what with exactly the inputs'''
     # check "what"
     whatlist = buffer.buffer.keys()
@@ -31,13 +29,14 @@ def test_init():
 # TODO: There is not really a check if the functions to be buffered were
 # executed (agagin) >> check missing.
 
+
 def test_buffered_args():
     Storage.reset()
     buffer = Buffer()
 
     @buffered(buffer)
     def test_func(argOne, argTwo):
-        return argOne+argTwo
+        return argOne + argTwo
 
     assert test_func(1, 20) == 21
     assert buffer.isbuffered('test_func', '1,20')
@@ -54,7 +53,7 @@ def test_buffered_kwargs():
     def test_func(a=1, b=2, c=3):
         # adding a local variable since implementation might use inspection of
         # code object
-        tmp = b*(c+1)
+        tmp = b * (c + 1)
         return a + tmp
 
     assert test_func() == 9
@@ -73,7 +72,7 @@ def test_buffered_mixedargs():
     def test_func(a, b, c='hello', d=15):
         # adding a local variable since implementation might use inspection of
         # code object
-        tmp = b+d
+        tmp = b + d
         return f'{a}, {c}: {tmp}'
 
     assert test_func('bah', 42) == 'bah, hello: 57'
@@ -82,8 +81,7 @@ def test_buffered_mixedargs():
     assert_buffer_contains(buffer, 'test_func', ['bah,42,hello,15'])
 
     assert test_func('this', 3, 'that', 4) == 'this, that: 7'
-    assert_buffer_contains(buffer, 'test_func', ['bah,42,hello,15',
-                                                 'this,3,that,4'])
+    assert_buffer_contains(buffer, 'test_func', ['bah,42,hello,15', 'this,3,that,4'])
 
 
 # Used to test logging:

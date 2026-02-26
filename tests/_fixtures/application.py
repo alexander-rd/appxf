@@ -1,10 +1,11 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' provide fixtures with test application
+'''provide fixtures with test application
 
 Using some of the fixtures includes coverage of considerable functionality
 which is required to reach initialized applications.
 '''
+
 import os
 import shutil
 from appxf.storage import Storage
@@ -20,52 +21,51 @@ from tests._fixtures.test_sandbox import project_version
 # woth this complexity. The evaluation should anylyze the time savings of the
 # most complex cases (like: registeres user with set up remote files).
 
-def get_fresh_application(
-        request,
-        user: str = 'user'
-        ) -> AppHarness:
+
+def get_fresh_application(request, user: str = 'user') -> AppHarness:
     # ensure initialized test directory:
-    test_root_path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(request, cleanup=False)
+    test_root_path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(
+        request, cleanup=False
+    )
     # just create the application mock which generates requried folders:
     return AppHarness(test_root_path, user, registry_enabled=True)
 
-def get_application_login_initialized(
-        request,
-        user: str = 'user'
-        ) -> AppHarness:
+
+def get_application_login_initialized(request, user: str = 'user') -> AppHarness:
     # initialize test directory:
-    test_root_path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(request, cleanup=False)
+    test_root_path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(
+        request, cleanup=False
+    )
     # ensure base context is available
     app_context_path = _init_app_context_login_initialized(user=user)
     # copy from base context:
-    _init_path_from_origin(target_path=test_root_path,
-                           origin_path=app_context_path)
+    _init_path_from_origin(target_path=test_root_path, origin_path=app_context_path)
     # open application mock to return
     Storage.switch_context(user)
     return AppHarness(test_root_path, user, registry_enabled=True)
 
+
 def get_application_registration_admin_initialized(
-        request,
-        user: str = 'user'
-        ) -> AppHarness:
+    request, user: str = 'user'
+) -> AppHarness:
     # initialize test directory:
-    test_root_path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(request, cleanup=False)
+    test_root_path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(
+        request, cleanup=False
+    )
     # ensure base context is available
     app_context_path = _init_app_context_registration_admin_initialized(user=user)
     # copy from base context:
-    _init_path_from_origin(target_path=test_root_path,
-                           origin_path=app_context_path)
+    _init_path_from_origin(target_path=test_root_path, origin_path=app_context_path)
     # open application mock to return
     app = AppHarness(test_root_path, user, registry_enabled=True)
     return app
 
-def get_unlocked_application(
-        request,
-        user: str = 'user'
-        ) -> AppHarness:
+
+def get_unlocked_application(request, user: str = 'user') -> AppHarness:
     app = get_application_login_initialized(request, user=user)
     app.perform_login_unlock()
     return app
+
 
 ### Application Context Initialization
 
@@ -79,9 +79,12 @@ def get_unlocked_application(
 #   'users' -- list of initialized users It is intentional that the
 # ApplicationMock objects are not forwarded
 
+
 def _init_app_context_login_initialized(user: str = 'user'):
-    path = os.path.join(tests._fixtures.test_sandbox.test_sandbox_root,
-                        f'app_login_initialized_{user}_{project_version}')
+    path = os.path.join(
+        tests._fixtures.test_sandbox.test_sandbox_root,
+        f'app_login_initialized_{user}_{project_version}',
+    )
     # do not repeat if already present:
     if os.path.exists(path):
         return path
@@ -91,9 +94,12 @@ def _init_app_context_login_initialized(user: str = 'user'):
     app_user.perform_login_init()
     return path
 
+
 def _init_app_context_registration_admin_initialized(user: str = 'user'):
-    path = os.path.join(tests._fixtures.test_sandbox.test_sandbox_root,
-                        f'app_registration_initialized_{user}_{project_version}')
+    path = os.path.join(
+        tests._fixtures.test_sandbox.test_sandbox_root,
+        f'app_registration_initialized_{user}_{project_version}',
+    )
     if user != 'admin':
         raise ValueError('Only admin user can be initialized as registration admin')
     # do not repeat if already present:
@@ -106,8 +112,9 @@ def _init_app_context_registration_admin_initialized(user: str = 'user'):
     app_user.perform_registration_admin_init()
     return path
 
+
 def _init_path_from_origin(target_path, origin_path: str = ''):
-    ''' Copy a context to a new test environment
+    '''Copy a context to a new test environment
 
     Arguments:
         target_path -- new path to created
@@ -128,9 +135,10 @@ def _init_path_from_origin(target_path, origin_path: str = ''):
         os.makedirs(target_path, exist_ok=True)
         print(f'Created path {target_path}')
 
+
 ### Cleanup support
 def test_cleanup(request):
-    ''' cleanup current APPXF directories
+    '''cleanup current APPXF directories
 
     Function is expected to be executed before any test case. Modelled as test
     case to re-use fixtures.
@@ -149,6 +157,7 @@ def test_cleanup(request):
             print(f'Removed {path}')
         else:
             print(f'Skipped non-directory {path}')
+
 
 # TODO: I think the cleanup above does not work as intenden. (1) The context
 # list would not include "app_user". (2) it executes in some folder with

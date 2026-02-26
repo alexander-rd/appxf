@@ -1,6 +1,6 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Test all serializer classes '''
+'''Test all serializer classes'''
 
 import pytest
 import math
@@ -14,44 +14,115 @@ from appxf import Stateful
 from appxf.storage import Serializer, JsonSerializer
 from collections import OrderedDict
 
-class DummyClassNotSerializable:
-    ''' Just a custom classs that will not be serializeable '''
 
-all_type_list = [True, 'some', None, 1.25, b'a',
-                 {'stop': True}, ['list_in_list'], ('tuple',), {'set',}]
-all_type_tuple = (True, 'some', None, 1.25, b'a',
-                  {'stop': True}, ['list_in_list'], ('tuple',), {'set',})
+class DummyClassNotSerializable:
+    '''Just a custom classs that will not be serializeable'''
+
+
+all_type_list = [
+    True,
+    'some',
+    None,
+    1.25,
+    b'a',
+    {'stop': True},
+    ['list_in_list'],
+    ('tuple',),
+    {
+        'set',
+    },
+]
+all_type_tuple = (
+    True,
+    'some',
+    None,
+    1.25,
+    b'a',
+    {'stop': True},
+    ['list_in_list'],
+    ('tuple',),
+    {
+        'set',
+    },
+)
 all_type_set = {True, 'some', None, 1.25, b'a'}
 all_type_dict = {
-    True: True, 42:42, 3.14: 3.14, 'string': 'string',
+    True: True,
+    42: 42,
+    3.14: 3.14,
+    'string': 'string',
     'none': None,
     b'a': b'b',
     'list': all_type_list + [all_type_tuple, all_type_set],
     'tuple': all_type_tuple,
     'more_tuple': (all_type_list, all_type_set),
     'set': all_type_set,
-    'dict': {'stop': True}}
+    'dict': {'stop': True},
+}
 
 samples = [
     # strings with some special words and characters:
-    'test', '', 'True', 'true', 'False', 'false',
-    'NaN', 'nan', 'Infinity', 'infinity', '-Infinity',
-    '!"§$%&/()=?', '`\'*\'_:;,.-#+',
-
+    'test',
+    '',
+    'True',
+    'true',
+    'False',
+    'false',
+    'NaN',
+    'nan',
+    'Infinity',
+    'infinity',
+    '-Infinity',
+    '!"§$%&/()=?',
+    '`\'*\'_:;,.-#+',
     # basic types:
-    True, False, None, float('infinity'), float('-infinity'), float('nan')
-    -1, 1, 42, 1234567890, -1234567890,
-    1.123456789, -1.123456789, 123456789.01, -123456789.01,
-
+    True,
+    False,
+    None,
+    float('infinity'),
+    float('-infinity'),
+    float('nan') - 1,
+    1,
+    42,
+    1234567890,
+    -1234567890,
+    1.123456789,
+    -1.123456789,
+    123456789.01,
+    -123456789.01,
     # bytes:
-    b'', b'1234', bytes('Hallo 12340', 'utf-8'),
-
+    b'',
+    b'1234',
+    bytes('Hallo 12340', 'utf-8'),
     # simple list and dict:
-    [1, 2, 3], {'A': 1, 'B': 2}, OrderedDict({'A': 3, 'B': 4}),
-
+    [1, 2, 3],
+    {'A': 1, 'B': 2},
+    OrderedDict({'A': 3, 'B': 4}),
     # arbitrary elements types in containers:
-    [True, 42, 1.25, 'some', None, b'a', all_type_list, all_type_tuple, all_type_set, all_type_dict],
-    (True, 42, 1.25, 'some', None, b'a', all_type_list, all_type_tuple, all_type_set, all_type_dict),
+    [
+        True,
+        42,
+        1.25,
+        'some',
+        None,
+        b'a',
+        all_type_list,
+        all_type_tuple,
+        all_type_set,
+        all_type_dict,
+    ],
+    (
+        True,
+        42,
+        1.25,
+        'some',
+        None,
+        b'a',
+        all_type_list,
+        all_type_tuple,
+        all_type_set,
+        all_type_dict,
+    ),
     {True, 42, 1.25, 'some', None, b'a'},
     # arbitrary key and value types in dict:
     all_type_dict,
@@ -62,13 +133,14 @@ samples = [
 invalid_samples = [
     DummyClassNotSerializable(),
     {'A': DummyClassNotSerializable(), 'B': 42},
-    {DummyClassNotSerializable(): 'invalid key'}
+    {DummyClassNotSerializable(): 'invalid key'},
 ]
+
 
 class BaseSerializerTest(ABC):
     @abstractmethod
     def _get_serializer(self) -> Serializer:
-        ''' Return specific serializer for testing '''
+        '''Return specific serializer for testing'''
 
     @pytest.mark.parametrize('value', samples)
     def test(self, value):
@@ -92,13 +164,13 @@ class BaseSerializerTest(ABC):
         assert 'Cannot serialize' in str(exc_info)
         assert 'DummyClassNotSerializable' in str(exc_info)
 
+
 def test_stateful_interface_contract():
-    ''' Serializer tests must include all types from Stateful '''
+    '''Serializer tests must include all types from Stateful'''
+
     # we will cycle throught the types but also need the following helper for
     # recursions
-    def verify_type_tested(this_type,
-                           test_samples,
-                           tree: list[type] | None = None):
+    def verify_type_tested(this_type, test_samples, tree: list[type] | None = None):
         if tree is None:
             tree = []
         if not tree:
@@ -115,15 +187,16 @@ def test_stateful_interface_contract():
                 # skip if type is already tested
                 if that_type in tree:
                     continue
-                verify_type_tested(that_type, test_samples,
-                                   tree + [that_type])
+                verify_type_tested(that_type, test_samples, tree + [that_type])
             return
+
         # we now extract the tested samples that match the origin or base type:
         def tree_to_str(tree):
             if len(tree) > 1:
                 more = '\n -> '.join([str(item) for item in tree[1:]])
                 return f'{tree[0]}: {more}'
             return str(tree[0])
+
         print(f'Testing type {tree_to_str(tree)}')
         type_base = this_type if type_origin is None else type_origin
         included = []
@@ -135,7 +208,8 @@ def test_stateful_interface_contract():
             f'Type is not (fully) covered by samples. '
             f'Type tree: {tree_to_str(tree)}\n'
             f'Current base type: {type_base}\n'
-            f'samples: {test_samples}\n')
+            f'samples: {test_samples}\n'
+        )
 
         # we are done if this_type was a basic type
         if type_origin is None:
@@ -145,7 +219,8 @@ def test_stateful_interface_contract():
             return
         # if not, we need to iterate into them
         if len(type_args) == 1:
-            # this is any simple container and we just jump into the container content types:
+            # this is any simple container and we just jump into the
+            # container content types:
             if not isinstance(type_args[0], list):
                 type_list = [type_args[0]]
             else:
@@ -154,7 +229,8 @@ def test_stateful_interface_contract():
                 verify_type_tested(
                     that_type,
                     [sample for container in included for sample in container],
-                    tree+[type_origin, f'Element({that_type})'])
+                    tree + [type_origin, f'Element({that_type})'],
+                )
             return
         if type_origin in [dict]:
             # dict like classes need to iterate into the keys:
@@ -166,7 +242,8 @@ def test_stateful_interface_contract():
                 verify_type_tested(
                     that_type,
                     [sample for some_dict in included for sample in some_dict.keys()],
-                    tree+[type_origin, f'Key({that_type})'])
+                    tree + [type_origin, f'Key({that_type})'],
+                )
             # and into the arguments:
             if not isinstance(type_args[1], list):
                 type_list = [type_args[1]]
@@ -176,15 +253,15 @@ def test_stateful_interface_contract():
                 verify_type_tested(
                     that_type,
                     [sample for some_dict in included for sample in some_dict.values()],
-                    tree+[type_origin, f'Value({that_type})'])
+                    tree + [type_origin, f'Value({that_type})'],
+                )
             return
 
         assert False, (
-            f'Failing: {this_type} as origin {type_origin} '
-            f'with arguments {type_args}')
-
+            f'Failing: {this_type} as origin {type_origin} with arguments {type_args}'
+        )
 
     # we cycle through the DefaultState type:
     for this_type in get_args(Stateful.DefaultStateType):
         verify_type_tested(this_type, samples)
-    #verify_type_tested(Stateful.DefaultStateType, samples)
+    # verify_type_tested(Stateful.DefaultStateType, samples)

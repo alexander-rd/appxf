@@ -1,9 +1,10 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Testing SecurePrivateStorage
+'''Testing SecurePrivateStorage
 
 Utilizing BaseStorageTest for test cases. See storage/test_storage_base.py
 '''
+
 import pytest
 from appxf.storage import Storage, LocalStorage
 from appxf.security import SecurePrivateStorage
@@ -15,6 +16,7 @@ from tests._fixtures import appxf_objects
 # Test manual decryption to ensure that details are stored with encryption.
 # Manual decryption should define the algorithms that were used as a regression
 # testing when algoirhms change.
+
 
 # Define fixture here to get it executed before setup_method which must have
 # self.env to be passed to _get_storage().
@@ -30,14 +32,14 @@ def setup_local(request):
 
 
 class TestSecureStorage(BaseStorageTest):
-    ''' run basic Storage tests for RamStorage '''
+    '''run basic Storage tests for RamStorage'''
 
     def _get_storage(self) -> Storage:
         return SecurePrivateStorage(
-            base_storage=LocalStorage(
-                file='test',
-                path=self.env['dir']),
-            security=self.env['security'])
+            base_storage=LocalStorage(file='test', path=self.env['dir']),
+            security=self.env['security'],
+        )
+
 
 # TODO: add test case that generates a matching local storage before the secure
 # storage. This operation should cause an error.

@@ -1,10 +1,11 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Provide Base Class for Storage Testing
+'''Provide Base Class for Storage Testing
 
 See specific test files for storage object related tests and implementation
 specific tests. Like in storage module: RamStorage or LocalStorage.
 '''
+
 from abc import ABC, abstractmethod
 
 from appxf.storage import Storage, MetaData
@@ -25,11 +26,12 @@ from datetime import datetime
 # storage objects (also in context of storables or config menus that rely now
 # on RAM).
 
-class BaseStorageTest(ABC):
 
+class BaseStorageTest(ABC):
     @abstractmethod
     def _get_storage(self) -> Storage:
-        ''' provide a storage '''
+        '''provide a storage'''
+
     # TODO: alter this interface to provide the kwarg arguments instead. This
     # enables testing with constructor, get() or factory().
 
@@ -46,7 +48,7 @@ class BaseStorageTest(ABC):
         pass
 
     def test_basic_store_load(self):
-        ''' Check 2 store/load cycles '''
+        '''Check 2 store/load cycles'''
         self.storage.store('init')
         assert 'init' == self.storage.load()
         # second read must work also:

@@ -1,6 +1,6 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Registration Cycle
+'''Registration Cycle
 
 __Preconditions:__ A ***user application*** has user data and password set and
 opens unlocked. The user is not yet registered. An ***admin application*** is
@@ -38,40 +38,39 @@ application.
 __Step 8:__ Even if the admin closes the application and reloads the request
 and adds the user again, it will be added with the same user ID.
 '''
+
 from appxf_matema.case_runner import ManualCaseRunner
 from tests._fixtures import test_sandbox
 from tests._fixtures.app_harness import AppHarness
 from tests._fixtures.app_harness_gui import AppHarnessGui
 
+
 def setup_once():
     sandbox_path = test_sandbox.init_test_sandbox_for_caller_module(cleanup=True)
     # setup user
-    app_user = AppHarness(
-        sandbox_path, 'user',
-        registry_enabled=True)
+    app_user = AppHarness(sandbox_path, 'user', registry_enabled=True)
     app_user.perform_login_init()
     # setup admin
-    app_admin = AppHarness(
-        sandbox_path, 'admin',
-        registry_enabled=True)
+    app_admin = AppHarness(sandbox_path, 'admin', registry_enabled=True)
     app_admin.perform_login_init()
     app_admin.perform_registration_admin_init()
 
+
 def process_app_user():
-    ''' Launch User '''
+    '''Launch User'''
     sandbox_path = test_sandbox.init_test_sandbox_for_caller_module(cleanup=False)
-    app_user = AppHarness(sandbox_path, 'user',
-                          registry_enabled=True)
+    app_user = AppHarness(sandbox_path, 'user', registry_enabled=True)
     app_user.perform_login_unlock()
 
     AppHarnessGui(app_user).start()
 
+
 def process_app_admin():
-    ''' Launch Admin '''
+    '''Launch Admin'''
     sandbox_path = test_sandbox.init_test_sandbox_for_caller_module(cleanup=False)
-    app_admin = AppHarness(sandbox_path, 'admin',
-                          registry_enabled=True)
+    app_admin = AppHarness(sandbox_path, 'admin', registry_enabled=True)
     app_admin.perform_login_unlock()
     AppHarnessGui(app_admin).start()
+
 
 ManualCaseRunner(logging_context='appxf').run()

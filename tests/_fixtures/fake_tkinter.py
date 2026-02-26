@@ -1,6 +1,6 @@
 # Copyright 2023-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Monkey-Patching tkinter to allow automated tests behind a Tk()
+'''Monkey-Patching tkinter to allow automated tests behind a Tk()
 
 General problem: tox does not support any graphics and, therefore, cannot
 initialize a Tk() application even if you don't start the Tk.mainloop().
@@ -15,10 +15,13 @@ fake_tkinter.activate()
 import my_module_with_tkinter
 ```
 '''
+
 import tkinter
+
 
 def dummy_function(*args, **kwargs):
     pass
+
 
 # Monkey-Patching Tk(). We need this to run those automated tests in tox:
 class FakeTk(object):

@@ -1,6 +1,6 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Test Storage Base Class
+'''Test Storage Base Class
 
 See specific test files for storage OBJECT related tests and implementation
 specific tests.
@@ -20,27 +20,45 @@ specific tests.
 from __future__ import annotations
 from typing import Callable
 
+
 def test_storage_simple_abstract_derivative():
     from appxf.storage import Storage
+
     # Verify properties of Storage before touching anything
     assert Storage.__abstractmethods__
+
     # Derivation One
     class DerivateOne(Storage):
         pass
+
     assert DerivateOne.__abstractmethods__
+
 
 def test_storage_simple_derivative():
     from appxf.storage import Storage
-     # Derivation One
+
+    # Derivation One
     class DerivateOne(Storage):
         @classmethod
-        def get(cls, name: str, location: str, storage_init_fun: Callable[..., Storage], user: str = '') -> Storage:
-            return super().get(name=name, location=location,
-                               storage_init_fun=lambda: DerivateOne(name, location))
+        def get(
+            cls,
+            name: str,
+            location: str,
+            storage_init_fun: Callable[..., Storage],
+            user: str = '',
+        ) -> Storage:
+            return super().get(
+                name=name,
+                location=location,
+                storage_init_fun=lambda: DerivateOne(name, location),
+            )
+
         def exists(self) -> bool:
             return False
+
         def store_raw(self, data: object, meta: str = ''):
             pass
+
         def load_raw(self, meta: str = '') -> object:
             return None
 
@@ -53,23 +71,39 @@ def test_storage_simple_derivative():
     assert storage.location == ''
     assert storage.id() == 'DerivateOne(): test'
 
+
 def test_storage_copmlex_derivative():
     from appxf.storage import Storage
+
     # We test proper collection of keywords through multiple instances AND
     # assigning the correct root storage
     class DerivateOneAbstract(Storage):
         pass
+
     class DerivativeTwoRoot(DerivateOneAbstract):
         @classmethod
-        def get(cls, name: str, location: str, storage_init_fun: Callable[..., Storage], user: str = '') -> Storage:
-            return super().get(name=name, location=location,
-                               storage_init_fun=lambda: DerivativeTwoRoot(name, location))
+        def get(
+            cls,
+            name: str,
+            location: str,
+            storage_init_fun: Callable[..., Storage],
+            user: str = '',
+        ) -> Storage:
+            return super().get(
+                name=name,
+                location=location,
+                storage_init_fun=lambda: DerivativeTwoRoot(name, location),
+            )
+
         def exists(self) -> bool:
             return False
+
         def store_raw(self, data: object, meta: str = ''):
             pass
+
         def load_raw(self, meta: str = '') -> object:
             return None
+
     class DerivativeThree(DerivativeTwoRoot):
         pass
 

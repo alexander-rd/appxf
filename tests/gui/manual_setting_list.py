@@ -3,6 +3,7 @@
 '''
 Test case is less about ... TBD
 '''
+
 import tkinter
 
 from appxf import logging
@@ -19,17 +20,17 @@ setting_dict = {
     'StringSelect': Setting.new(
         'select::string',
         select_map={'01 One': 'Text One', '02 Two': 'Text Two'},
-        ),
+    ),
     'BooleanTrue': Setting.new(bool, value=True),
     'BooleanFalse': Setting.new(bool, value=False),
 }
+
 
 # This test case put's everything into it's own frame. The tester will need to
 # monitor console output upon hitting "OK" button.
 class FrameForTesting(GridToplevel):
     def __init__(self, parent: tkinter.BaseWidget, setting):
-        super().__init__(parent=parent,
-                         title='Testing Setting Lists')
+        super().__init__(parent=parent, title='Testing Setting Lists')
         self.bind('<<OK>>', lambda event: self._handle_ok())
 
         self.setting = setting
@@ -40,11 +41,11 @@ class FrameForTesting(GridToplevel):
         for key, setting in self.setting.items():
             print(f'{key}: {setting.value}')
 
+
 # TODO: This does not yet work, frame is ineffective and changed values do not
 # apply to OK button readout. Also the entries are not marked red, yet.
 
 gui_logger = logging.getLogger('appxf.gui')
 gui_logger.setLevel(logging.logging.WARNING)
 
-ManualCaseRunner().run(
-    FrameForTesting, setting_dict)
+ManualCaseRunner().run(FrameForTesting, setting_dict)

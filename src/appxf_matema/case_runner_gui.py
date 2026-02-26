@@ -19,8 +19,6 @@ from tkhtmlview import HTMLLabel
 from appxf_matema.case_info import CaseInfo
 from appxf_matema.git_info import GitInfo
 
-import logging
-
 
 class CaseRunnerGui:
     '''GUI container for manual test case runner.
