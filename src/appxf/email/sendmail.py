@@ -12,26 +12,22 @@ from appxf.setting import SettingDict
 log = logging.getLogger(__name__)
 
 config_property_template = SettingDict(
-    {'server': (str,),
-     'port': (str,),
-     'user': (str,),
-     'password': ('password',)})
+    {'server': (str,), 'port': (str,), 'user': (str,), 'password': ('password',)}
+)
 # TODO: Properties could add "URL"
 
 
 class Email(MIMEMultipart):
-    ''' Email Object
+    '''Email Object
 
     If you plan to send multiple Emails, it is recommended to collect them
     first in a list and then use sendmail.send() for this list. In this way,
     you only need to connect to the SMTP server once, processing all Emails at
     once.
     '''
-    def __init__(self,
-                 message='',
-                 file_list=[],
-                 **kwargs):
-        ''' Email Object
+
+    def __init__(self, message='', file_list=[], **kwargs):
+        '''Email Object
 
         This class is wrapping MIMEMultipart while you can construct it
         directly like: `email = Email(Subject='Email Title', message='Text',
@@ -61,36 +57,37 @@ class Email(MIMEMultipart):
 
         for f in file_list:
             with open(f, "rb") as file:
-                part = MIMEApplication(
-                    file.read(),
-                    Name=os.path.basename(f)
-                )
+                part = MIMEApplication(file.read(), Name=os.path.basename(f))
             # After the file is closed
             part['Content-Disposition'] = (
-                'attachment; filename="%s"' % os.path.basename(f))
+                'attachment; filename="%s"' % os.path.basename(f)
+            )
             self.attach(part)
 
-        log.debug(f'Subject: {self["Subject"]}, '
-                  f'To: {self["To"]}, '
-                  f'CC: {self["CC"]}, '
-                  f'BCC: {self["BCC"]}, '
-                  f'files: {file_list}')
+        log.debug(
+            f'Subject: {self["Subject"]}, '
+            f'To: {self["To"]}, '
+            f'CC: {self["CC"]}, '
+            f'BCC: {self["BCC"]}, '
+            f'files: {file_list}'
+        )
 
     def send(self, config: dict):
         # Forward to module level send function
         send(self, config)
 
 
-def send(email: list[Email] | Email,
-         config: dict | SettingDict,
-         debug_send_email: bool = True,
-         debug_substituttion_email: str = '',):
+def send(
+    email: list[Email] | Email,
+    config: dict | SettingDict,
+    debug_send_email: bool = True,
+    debug_substituttion_email: str = '',
+):
 
     if isinstance(email, MIMEMultipart):
         email = [email]
 
     with smtplib.SMTP(config['server'], config['port']) as server:
-
         if debug_send_email:
             # identify ourselves to smtp gmail client
             server.ehlo()
@@ -105,30 +102,31 @@ def send(email: list[Email] | Email,
             cc = this_msg['CC'].split(', ')
             bcc = this_msg['BCC'].split(', ')
 
-            log.debug(f'subject: {this_msg["Subject"]}, '
-                      f'To: {" ".join(to)}, '
-                      f'CC: {" ".join(cc)}, '
-                      f'BCC: {" ".join(bcc)}')
+            log.debug(
+                f'subject: {this_msg["Subject"]}, '
+                f'To: {" ".join(to)}, '
+                f'CC: {" ".join(cc)}, '
+                f'BCC: {" ".join(bcc)}'
+            )
 
-            target_list = \
-                [a for a in to  if a] +\
-                [a for a in cc  if a] +\
-                [a for a in bcc if a]
+            target_list = (
+                [a for a in to if a] + [a for a in cc if a] + [a for a in bcc if a]
+            )
             target = set(target_list)
             if debug_substituttion_email:
                 log.debug(
                     f'Using substitution Email: '
                     f'{debug_substituttion_email} '
-                    f'instead of {target}')
+                    f'instead of {target}'
+                )
                 target = [debug_substituttion_email]
             else:
                 log.debug(f'Sending to: {target}')
 
             if debug_send_email:
                 senderr = server.sendmail(
-                    this_msg['From'],
-                    list(target),
-                    this_msg.as_string())
+                    this_msg['From'], list(target), this_msg.as_string()
+                )
                 if senderr:
                     log.debug('Emails sending with error:')
                     log.debug(str(senderr))

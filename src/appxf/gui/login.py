@@ -5,6 +5,7 @@
 Exception UserAbortError is defined to terminate the application on
 Login.check().
 '''
+
 import tkinter
 import tkinter.ttk
 
@@ -29,7 +30,8 @@ class UserAbortError(Exception):
 #    should start with focus on password.
 # Best would be to become independent of configuration. But: YAGNI.
 
-class Login():
+
+class Login:
     '''Provides login process including initialization of user data.
 
     Main aim of having a login procedure is to protect locally stored data by a
@@ -41,13 +43,17 @@ class Login():
     user data and the following added to it:
      * key: a secred key that is used to encrypt locally stored data
     '''
+
     log = logging.getLogger(__name__ + '.Login')
 
-    def __init__(self, security: Security,
-                 user_config: SettingDict | None = None,
-                 app_name='Login',
-                 pwd_min_length=6,
-                 **kwargs):
+    def __init__(
+        self,
+        security: Security,
+        user_config: SettingDict | None = None,
+        app_name='Login',
+        pwd_min_length=6,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self._security = security
         if user_config is None:
@@ -79,8 +85,8 @@ class Login():
         guiRoot.columnconfigure(1, weight=1)
 
         userConfig = SettingDictSingleFrame(
-            guiRoot, setting=self._user_config,
-            frame_label=False)
+            guiRoot, setting=self._user_config, frame_label=False
+        )
         userConfig.grid(row=0, column=0, sticky='NSWE', columnspan=2)
         left_min_size_config = userConfig.get_left_col_min_width()
 
@@ -103,9 +109,9 @@ class Login():
 
         # get password left column min width
         guiRoot.update()
-        left_min_size_login = max(
-            [pwdLabel.winfo_width(), pwdRepLabel.winfo_width()]
-            ) + 10
+        left_min_size_login = (
+            max([pwdLabel.winfo_width(), pwdRepLabel.winfo_width()]) + 10
+        )
         left_min_size = max([left_min_size_config, left_min_size_login])
         # adjust column here and in config
         userConfig.set_left_column_min_width(left_min_size)
@@ -116,15 +122,17 @@ class Login():
 
         def okButtonFunction(event=None):
             valid = True
-            pwdEntry   .config(foreground='black')
+            pwdEntry.config(foreground='black')
             pwdRepEntry.config(foreground='black')
 
-            if (len(pwdEntry.get()) < self._pwd_min_length):
-                self.log.debug('NOK, Passwort muss mindestens '
-                               f'{self._pwd_min_length} Zeichen haben')
-                pwdEntry   .config(foreground='red')
+            if len(pwdEntry.get()) < self._pwd_min_length:
+                self.log.debug(
+                    'NOK, Passwort muss mindestens '
+                    f'{self._pwd_min_length} Zeichen haben'
+                )
+                pwdEntry.config(foreground='red')
                 valid = False
-            if (pwdEntry.get() != pwdRepEntry.get()):
+            if pwdEntry.get() != pwdRepEntry.get():
                 self.log.debug('NOK, Passwords do not match')
                 pwdRepEntry.config(foreground='red')
                 valid = False
@@ -138,8 +146,10 @@ class Login():
                 self._user_config.store()
                 self.log.debug('OK, quit')
                 guiRoot.destroy()
+
         okButton = tkinter.Button(
-            guiRoot, text=_('button', 'OK'), command=okButtonFunction)
+            guiRoot, text=_('button', 'OK'), command=okButtonFunction
+        )
         okButton.grid(row=4, column=1, padx=5, pady=5, sticky='E')
 
         guiRoot.bind('<Return>', okButtonFunction)
@@ -169,12 +179,14 @@ class Login():
                 self._security.unlock_user(pwdEntry.get())
                 guiRoot.destroy()
             except Exception:
-                self.log.debug('Password verification failed because of:',
-                               exc_info=True)
+                self.log.debug(
+                    'Password verification failed because of:', exc_info=True
+                )
                 self.log.warning('Password wrong, but we continue.')
 
         okButton = tkinter.Button(
-            guiRoot, text=_('button', 'OK'), command=okButtonFunction)
+            guiRoot, text=_('button', 'OK'), command=okButtonFunction
+        )
         okButton.grid(row=3, column=2, padx=5, pady=5, sticky='E')
 
         guiRoot.bind('<Return>', okButtonFunction)

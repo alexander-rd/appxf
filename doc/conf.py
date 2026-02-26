@@ -7,8 +7,8 @@ project = 'APPXF'
 html_title = 'APPXF'
 author = 'the contributors of APPXF (github.com/alexander-nbg/appxf)'
 copyright = (
-    f'{date.today().year} the contributors of '
-    f'APPXF (github.com/alexander-nbg/appxf)')
+    f'{date.today().year} the contributors of APPXF (github.com/alexander-nbg/appxf)'
+)
 
 extensions = [
     'myst_parser',
@@ -38,7 +38,8 @@ html_theme_options = {
         '<b>Documentation is not usable</b>: '
         'APPXF is currently transitioning from private repo. '
         'See <a href="https://github.com/alexander-nbg/appxf/issues/48" '
-        'target="_blank">issue #48</a>.'),
+        'target="_blank">issue #48</a>.'
+    ),
 }
 
 project_root = Path(__file__).resolve().parent.parent

@@ -1,6 +1,6 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Storage to Raw Bytes
+'''Storage to Raw Bytes
 
 This module merges serializers with Storage as a basis for any file storage.
 '''
@@ -17,11 +17,9 @@ from .storage import AppxfStorageError, Storage
 
 
 class StorageToBytes(Storage, ABC):
-    ''' Storage class with convertion to bytes as raw storage type '''
+    '''Storage class with convertion to bytes as raw storage type'''
 
-    def __init__(self,
-                 serializer: type[Serializer] = CompactSerializer,
-                 **kwargs):
+    def __init__(self, serializer: type[Serializer] = CompactSerializer, **kwargs):
         super().__init__(**kwargs)
         self._serializer = serializer
 
@@ -36,7 +34,8 @@ class StorageToBytes(Storage, ABC):
         if meta in cls._meta_serializer_dict:
             raise AppxfStorageError(
                 f'Serializer {cls._meta_serializer_dict[meta].__name__} is '
-                f'already defined as serializer for {meta}')
+                f'already defined as serializer for {meta}'
+            )
         cls._meta_serializer_dict[meta] = serializer
 
     # overloading the converion functions to apply the serializer
@@ -54,11 +53,11 @@ class StorageToBytes(Storage, ABC):
 
     @abstractmethod
     def store_raw(self, data: bytes):
-        ''' Store interface to the actual storage '''
+        '''Store interface to the actual storage'''
 
     @abstractmethod
     def load_raw(self) -> bytes:
-        ''' Load interface to the actual storage '''
+        '''Load interface to the actual storage'''
 
 
 # define serializer for MetaData:

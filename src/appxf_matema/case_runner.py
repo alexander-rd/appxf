@@ -16,7 +16,7 @@ from appxf_matema.git_info import GitInfo
 
 
 class ManualCaseRunner:
-    ''' Interface Wrapper for Test Cases
+    '''Interface Wrapper for Test Cases
 
     The interfaces include:
      * MaTeMa input arguments and output result writing (via TBD CaseInfo)
@@ -25,12 +25,15 @@ class ManualCaseRunner:
      * handling test case execution: setup(), teardown(), test()
         * includes logging and coverage activation
     '''
+
     log = logging.getLogger(__name__ + '.ManualCaseRunner')
 
-    def __init__(self,
-                 logging_context: str = '',
-                 disable_parsing: bool = False,
-                 parent: tkinter.Tk | None = None):
+    def __init__(
+        self,
+        logging_context: str = '',
+        disable_parsing: bool = False,
+        parent: tkinter.Tk | None = None,
+    ):
         self._parent = parent
         self._disable_parsing = disable_parsing
         # Note: using logging_context = '' will activate any logging since
@@ -67,9 +70,8 @@ class ManualCaseRunner:
     @cached_property
     def gui(self):
         return CaseRunnerGui(
-            case_info=self.case_info,
-            git_info=self.git_info,
-            parent=self._parent)
+            case_info=self.case_info, git_info=self.git_info, parent=self._parent
+        )
 
     @cached_property
     def argparse_result(self):
@@ -78,11 +80,14 @@ class ManualCaseRunner:
             description=(
                 'This CaseRunner from APPXF MaTeMa '
                 'was called via above mentioned python script.'
-            ))
+            ),
+        )
         parser.add_argument(
             '--result-file',
-            required=False, default='',
-            help='File to store test results in JSON format.')
+            required=False,
+            default='',
+            help='File to store test results in JSON format.',
+        )
         return parser.parse_args()
 
     @property
@@ -101,7 +106,7 @@ class ManualCaseRunner:
 
     def ensure_case_parser(self, stack_index: int = 1):
         if not self._disable_parsing:
-            self._case_parser=CaseParser(stack_index=stack_index+1)
+            self._case_parser = CaseParser(stack_index=stack_index + 1)
             self._case_parser.parse()
 
     def _handle_cli_arguments(self):
@@ -119,7 +124,7 @@ class ManualCaseRunner:
         pass
 
     def _handle_process_calls(self) -> bool:
-        ''' execute process call and return true if existent '''
+        '''execute process call and return true if existent'''
         process_arg = None
         for arg in sys.argv:
             if arg.startswith('--process_'):
@@ -139,30 +144,27 @@ class ManualCaseRunner:
         self.log.debug(f'Enabled logging via {__class__.__name__}')
         self._logging_activated = True
 
-
     def _write_result_file(self, result: str, gui: CaseRunnerGui = None):
         if self.argparse_result.result_file:
             comment = ''
             if gui:
                 comment = self.gui.get_observations_text()
-            with open(
-                self.argparse_result.result_file,
-                'w', encoding='utf-8'
-            ) as file:
-                json.dump({
-                    'timestamp': f'{self.case_info.timestamp}',
-                    'author': (
-                        f'{self.git_info.user_name} '
-                        f'<{self.git_info.user_email}>'
-                    ),
-                    'description': self.case_info.explanation,
-                    'comment': comment,
-                    'result': result
-                }, file, indent=2)
+            with open(self.argparse_result.result_file, 'w', encoding='utf-8') as file:
+                json.dump(
+                    {
+                        'timestamp': f'{self.case_info.timestamp}',
+                        'author': (
+                            f'{self.git_info.user_name} <{self.git_info.user_email}>'
+                        ),
+                        'description': self.case_info.explanation,
+                        'comment': comment,
+                        'result': result,
+                    },
+                    file,
+                    indent=2,
+                )
 
-    def run(self,
-            item: type[tkinter.BaseWidget] | None = None,
-            *args, **kwargs):
+    def run(self, item: type[tkinter.BaseWidget] | None = None, *args, **kwargs):
         # ensure parsing is initialized, stack indexing from here is:
         #  0) this run()
         #  1) the calling module
@@ -215,19 +217,21 @@ class ManualCaseRunner:
                 teardown_func()
 
     def _parse_process_hooks(self):
-        ''' Parse module for process hooks and add to test case GUI
+        '''Parse module for process hooks and add to test case GUI
 
         Creates buttons for each process_* function. CaseRunner will spawn a
         new python process, executing this function whenever the button is
         pressed.
         '''
-        for function_name, summary in (
-                self.case_parser.caller_module_function_map.items()
-        ):
+        for (
+            function_name,
+            summary,
+        ) in self.case_parser.caller_module_function_map.items():
             if function_name.startswith('process_'):
                 self.gui.add_process_button(
                     command=self._get_process_hook(function_name, summary),
-                    label=summary if summary else function_name)
+                    label=summary if summary else function_name,
+                )
 
             # update the window:
             self.gui.wm.update()
@@ -235,18 +239,21 @@ class ManualCaseRunner:
     def _get_process_hook(self, function_name: str, summary: str):
         def run_process():
             subprocess.run(
-                [sys.executable,
+                [
+                    sys.executable,
                     self.case_parser.caller_module_path,
-                    f'--{function_name}'
+                    f'--{function_name}',
                 ],
                 check=False,
-                )
+            )
+
         return run_process
 
     def _run_frame(
         self,
         frame_type: type[tkinter.Frame],
-        *args, **kwargs,
+        *args,
+        **kwargs,
     ):
         test_window = tkinter.Toplevel(self.gui.tk)
 
@@ -263,7 +270,8 @@ class ManualCaseRunner:
     def _run_toplevel(
         self,
         toplevel_type: type[tkinter.Toplevel],
-        *args, **kwargs,
+        *args,
+        **kwargs,
     ):
         test_window = toplevel_type(self.gui.tk, *args, **kwargs)
         self.gui.place_toplevel(test_window)

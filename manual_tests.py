@@ -1,6 +1,6 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Manual Test Runner
+'''Manual Test Runner
 
 Call via:  ./.venv/bin/python manual_tests.py
 
@@ -11,9 +11,7 @@ from appxf_matema import Scanner, CmdHelper, CaseData
 
 case_data = CaseData()
 
-scanner = Scanner(
-    case_data = case_data,
-    path=['tests', 'tests_features'])
+scanner = Scanner(case_data=case_data, path=['tests', 'tests_features'])
 scanner.scan()
 
 cmd_helper = CmdHelper(database=case_data)

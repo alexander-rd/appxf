@@ -8,11 +8,11 @@ from appxf.registry import AppxfRegistryRoleError, AppxfRegistryUnknownUser, Reg
 
 
 def handle_manual_config_update_load(
-        parent,
-        registry: Registry,
-        initial_path: str,
-        initial_file: str = 'config.update',
-    ):
+    parent,
+    registry: Registry,
+    initial_path: str,
+    initial_file: str = 'config.update',
+):
     '''File dialog for loading a manual config update file
 
     Keyword arguments:
@@ -26,7 +26,8 @@ def handle_manual_config_update_load(
         title=_('dialog', 'Config Update File'),
         initialdir=initial_path,
         initialfile=initial_file,
-        defaultextension='')
+        defaultextension='',
+    )
     if not file_path:
         return
 
@@ -49,14 +50,15 @@ def handle_manual_config_update_load(
             parent=parent,
         )
 
+
 def handle_manual_config_update_write(
-        parent,
-        registry: Registry,
-        initial_path: str,
-        initial_file: str = 'config.update',
-        sections: list[str] | None = None,
-        include_user_db: bool = True,
-    ):
+    parent,
+    registry: Registry,
+    initial_path: str,
+    initial_file: str = 'config.update',
+    sections: list[str] | None = None,
+    include_user_db: bool = True,
+):
     '''File dialog for writing a manual config update file.
 
     Keyword arguments:
@@ -79,14 +81,15 @@ def handle_manual_config_update_write(
         title=_('dialog', 'Config Update File'),
         initialdir=initial_path,
         initialfile=initial_file,
-        defaultextension='')
+        defaultextension='',
+    )
     if not file_path:
         return
 
     try:
         update_bytes = registry.get_manual_config_update_bytes(
-            sections=sections,
-            include_user_db=include_user_db)
+            sections=sections, include_user_db=include_user_db
+        )
         with open(file_path, 'wb') as fh:
             fh.write(update_bytes)
 

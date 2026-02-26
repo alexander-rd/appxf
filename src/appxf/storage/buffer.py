@@ -16,6 +16,7 @@ log = logging.getLogger(__name__)
 # registry and SharedStorage). Since SharedStorage and synchronization is not
 # usable, this buffer remains undocumented.
 
+
 class Buffer(Storable):
     '''Helper to organize data buffering.
 
@@ -32,10 +33,7 @@ class Buffer(Storable):
 
     log = logging.getLogger(f'{__name__}.Buffer')
 
-    def __init__(self,
-                 storage_handler: Storage = RamStorage(),
-                 **kwargs
-                 ):
+    def __init__(self, storage_handler: Storage = RamStorage(), **kwargs):
 
         super().__init__(storage_handler, **kwargs)
         self.buffer = dict()
@@ -95,7 +93,7 @@ def get_positional_arguments(func, *args, **kwargs):
 
     Note generic args or kwargs not being supported.
     '''
-    argumentlist = func.__code__.co_varnames[0:(func.__code__.co_argcount)]
+    argumentlist = func.__code__.co_varnames[0 : (func.__code__.co_argcount)]
     default_value_list = func.__defaults__
 
     def getvalue(iarg, argname):
@@ -111,16 +109,15 @@ def get_positional_arguments(func, *args, **kwargs):
             nodefault_count = len(argumentlist) - len(default_value_list)
             # it is possible that the default value does not exist
             if iarg < nodefault_count:
-                raise Exception(f'Function {func.__qualname__} must use '
-                                f'{nodefault_count} parameters, '
-                                f' only {len(args)} provided.')
+                raise Exception(
+                    f'Function {func.__qualname__} must use '
+                    f'{nodefault_count} parameters, '
+                    f' only {len(args)} provided.'
+                )
             else:
                 return default_value_list[iarg - nodefault_count]
 
-    return tuple(
-        getvalue(iarg, argname)
-        for iarg, argname in enumerate(argumentlist)
-    )
+    return tuple(getvalue(iarg, argname) for iarg, argname in enumerate(argumentlist))
 
 
 def buffered(buffer: Buffer | typing.Callable[..., Buffer]):
@@ -128,12 +125,15 @@ def buffered(buffer: Buffer | typing.Callable[..., Buffer]):
 
     This function, taking the buffer as variable, returns the decorator.
     '''
+
     def _buffered(func):
         '''The decorator which will use buffer to wrap the function.'''
         if func.__kwdefaults__:
-            raise Exception('appxf cannot deal with default arguments for '
-                            'kwargs. Check if you can use Buffer class '
-                            'directly')
+            raise Exception(
+                'appxf cannot deal with default arguments for '
+                'kwargs. Check if you can use Buffer class '
+                'directly'
+            )
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -150,7 +150,8 @@ def buffered(buffer: Buffer | typing.Callable[..., Buffer]):
                     'Buffer decorator must have either a buffer or a '
                     'function as input. The function must have the '
                     'same parameters like the decorated function and '
-                    'it must return a buffer')
+                    'it must return a buffer'
+                )
                 raise e
 
             val = this_buffer.get(func.__name__, argstring)
@@ -159,6 +160,7 @@ def buffered(buffer: Buffer | typing.Callable[..., Buffer]):
                 this_buffer.set(val, func.__name__, argstring)
 
             return val
+
         return wrapper
 
     return _buffered

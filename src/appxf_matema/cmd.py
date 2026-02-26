@@ -1,6 +1,7 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Command line helper to inspect and run cases '''
+'''Command line helper to inspect and run cases'''
+
 import os
 import subprocess
 import sys
@@ -13,8 +14,7 @@ from .case_data import CaseData
 
 
 class CmdHelper:
-    def __init__(self,
-                 database: CaseData):
+    def __init__(self, database: CaseData):
         self.database = database
 
     def print_case_summary(self):
@@ -56,17 +56,21 @@ class CmdHelper:
         env = os.environ.copy()
         existing = env.get('PYTHONPATH', '')
         env['PYTHONPATH'] = os.pathsep.join([existing, '.']).strip(os.pathsep)
-        subprocess.run([
-            sys.executable,
-            '-m', 'coverage', 'run',
-            '--source=appxf',
-            '--branch',
-            f'--data-file={coverage_file}',
-            case_name,
-            f'--result-file={result_file}'
+        subprocess.run(
+            [
+                sys.executable,
+                '-m',
+                'coverage',
+                'run',
+                '--source=appxf',
+                '--branch',
+                f'--data-file={coverage_file}',
+                case_name,
+                f'--result-file={result_file}',
             ],
             check=True,
-            env=env)
+            env=env,
+        )
 
         # Optional: Combine results if running multiple times
         # subprocess.run([sys.executable, "-m", "coverage", "combine"],

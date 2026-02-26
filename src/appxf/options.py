@@ -1,6 +1,6 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Implementation of Options class '''
+'''Implementation of Options class'''
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ _OptionTypeT = TypeVar('_OptionTypeT', bound='Options')
 
 @dataclass(eq=False, order=False)
 class Options(Stateful):
-    ''' implementation helper for options
+    '''implementation helper for options
 
     Base class implementation for option handling of classes, consuming kwarg's
     during construction via new_from_kwarg(). Also allows a reset to defaults
@@ -36,10 +36,10 @@ class Options(Stateful):
     # __init__ is provided by dataclass
 
     @classmethod
-    def new_from_kwarg(cls: Type[_OptionTypeT],
-                       kwarg_dict: dict[str, Any]
-                       ) -> _OptionTypeT:
-        ''' consume any valid argument from kwargs and return options instance
+    def new_from_kwarg(
+        cls: Type[_OptionTypeT], kwarg_dict: dict[str, Any]
+    ) -> _OptionTypeT:
+        '''consume any valid argument from kwargs and return options instance
 
         Arguments that are matching fields are applied to this option class and
         a new instance is returned. The arguments are removed from kwarg_dict.
@@ -59,7 +59,7 @@ class Options(Stateful):
 
     @classmethod
     def new(cls: Type[_OptionTypeT], **kwarg) -> _OptionTypeT:
-        ''' new options from kwarg
+        '''new options from kwarg
 
         Calls new_from_kwarg() followed by raise_error_on_non_empty_kwarg().
         See those functions for details.
@@ -69,7 +69,7 @@ class Options(Stateful):
         return out
 
     def update_from_kwarg(self, kwarg_dict: dict[str, Any]):
-        ''' get updated option
+        '''get updated option
 
         Arguments work the same as for new_from_kwarg().
         '''
@@ -81,7 +81,7 @@ class Options(Stateful):
         self._apply_kwarg(normal_kwarg)
 
     def update(self, **kwarg):
-        ''' update options
+        '''update options
 
         See update_from_kwarg. This function also calls
         raise_error_on_non_empty_kwarg afterwards.
@@ -90,7 +90,7 @@ class Options(Stateful):
         self.raise_error_on_non_empty_kwarg(kwarg)
 
     def reset(self):
-        ''' reset options to default values '''
+        '''reset options to default values'''
         for field in fields(self):
             if field.default is not MISSING:
                 setattr(self, field.name, field.default)
@@ -103,11 +103,12 @@ class Options(Stateful):
                 raise TypeError(
                     f'This should not happen: neither a default value or a '
                     f'default_factors is set for field {field.name} of '
-                    f'{self.__class__}')
+                    f'{self.__class__}'
+                )
 
     @classmethod
     def raise_error_on_non_empty_kwarg(cls, kwarg_dict: dict[str, Any]):
-        ''' shortcut error handling
+        '''shortcut error handling
 
         This function is recommended after manual calls to new_from_kwargs()
         or update_from_kwargs()
@@ -115,13 +116,14 @@ class Options(Stateful):
         for key in kwarg_dict:
             raise AttributeError(
                 f'Argument [{key}] is unknown, {cls} supports '
-                f'{[field.name for field in fields(cls)] + ["options"]}.')
+                f'{[field.name for field in fields(cls)] + ["options"]}.'
+            )
 
     # #####################
     # Internal Functions and Helpers
     # /
     def _apply_kwarg(self, kwarg_dict: dict[str, Any]):
-        ''' Apply an already processed kwarg dictionary
+        '''Apply an already processed kwarg dictionary
 
         Function is used in context of new and update.
         '''
@@ -130,26 +132,25 @@ class Options(Stateful):
             setattr(self, key, value)
 
     @classmethod
-    def _get_normal_kwarg(cls,
-                          kwarg_dict: dict[str, Any]
-                          ) -> dict[str, Any]:
-        normal_kwarg = {key: value
-                        for key, value in kwarg_dict.items()
-                        if key in [field.name for field in fields(cls)]}
+    def _get_normal_kwarg(cls, kwarg_dict: dict[str, Any]) -> dict[str, Any]:
+        normal_kwarg = {
+            key: value
+            for key, value in kwarg_dict.items()
+            if key in [field.name for field in fields(cls)]
+        }
         for key in normal_kwarg:
             kwarg_dict.pop(key)
         return normal_kwarg
 
     @classmethod
-    def _get_kwarg_from_named_option(cls,
-                                     kwarg_dict: dict[str, Any]
-                                     ) -> dict[str, Any]:
+    def _get_kwarg_from_named_option(cls, kwarg_dict: dict[str, Any]) -> dict[str, Any]:
         options = kwarg_dict.pop('options', None)
         if options is not None:
             if isinstance(options, cls):
                 update_dict = {
                     field.name: getattr(options, field.name)
-                    for field in fields(options)}
+                    for field in fields(options)
+                }
             elif isinstance(options, dict):
                 update_dict = cls._get_normal_kwarg(options)
                 cls.raise_error_on_non_empty_kwarg(options)
@@ -157,14 +158,14 @@ class Options(Stateful):
                 raise AttributeError(
                     f'Argument options must be {cls} or '
                     f'a dictionary with valid keys, you provided '
-                    f'{options.__class__.__name__}')
+                    f'{options.__class__.__name__}'
+                )
         else:
             update_dict = {}
         return update_dict
 
     def _get_fields_with_default_values(self) -> list[str]:
-        return [field.name for field in fields(self)
-                if self._is_default(field)]
+        return [field.name for field in fields(self) if self._is_default(field)]
 
     def _is_default(self, field: Field) -> bool:
         if field.default is not MISSING:
@@ -178,7 +179,8 @@ class Options(Stateful):
             raise TypeError(
                 f'This should not happen: could not determine if field '
                 f'{field.name} uses default value or not '
-                f'(default: {field.default}).')
+                f'(default: {field.default}).'
+            )
 
     # ##########################
     # adjust Stateful behavior
@@ -188,8 +190,7 @@ class Options(Stateful):
     # the attribute_mask:
     def get_state(self, **kwarg) -> OrderedDict[str, Any]:
         export_defaults = kwarg.pop('export_defaults', True)
-        attribute_mask = kwarg.pop(
-            'attribute_mask', self.attribute_mask.copy())
+        attribute_mask = kwarg.pop('attribute_mask', self.attribute_mask.copy())
 
         if not export_defaults:
             attribute_mask += self._get_fields_with_default_values()

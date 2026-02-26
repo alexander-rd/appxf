@@ -31,22 +31,23 @@ def elapsed_time(start: float) -> str:
 
 class _StepLogger:
     '''Context manager for logging build steps with timing.'''
+
     def __init__(self, message: str):
         self.message = message
         self.start_time = None
 
     def __enter__(self):
-        print(f'\n{"="*60}')
+        print(f'\n{"=" * 60}')
         print(self.message)
-        print(f'{"-"*60}')
+        print(f'{"-" * 60}')
         self.start_time = time.time()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is None:
-            print(f'{"-"*60}')
+            print(f'{"-" * 60}')
             print(f'Done ({elapsed_time(self.start_time)}); {self.message}')
-            print(f'{"="*60}')
+            print(f'{"=" * 60}')
         return False
 
 
@@ -55,7 +56,7 @@ def run_command(
     shell: bool = False,
     check: bool = True,
     verbose: bool = False,
-    **kwargs
+    **kwargs,
 ) -> subprocess.CompletedProcess:
     '''Run a command and return the result.'''
     if verbose:
@@ -63,9 +64,15 @@ def run_command(
 
     # Suppress output unless verbose or capture_output is set
     if not verbose and 'capture_output' not in kwargs:
-        result = subprocess.run(cmd, shell=shell, check=check,
-                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                              text=True, **kwargs)
+        result = subprocess.run(
+            cmd,
+            shell=shell,
+            check=check,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            **kwargs,
+        )
         # Only print if there's an error or warning
         if result.stderr:
             print(result.stderr, file=sys.stderr)
@@ -75,6 +82,7 @@ def run_command(
             return subprocess.run(cmd, shell=shell, check=check, **kwargs)
         else:
             return subprocess.run(cmd, shell=shell, check=check, **kwargs)
+
 
 def create_venv(cleanup: bool = False, verbose: bool = False) -> None:
     '''Create a virtual environment at ./build/.env'''
@@ -103,10 +111,8 @@ def get_activation_script() -> str:
 
 
 def run_in_venv(
-        cmd: List[str],
-        verbose: bool = False,
-        **kwargs
-    ) -> subprocess.CompletedProcess:
+    cmd: List[str], verbose: bool = False, **kwargs
+) -> subprocess.CompletedProcess:
     '''Run a command within the virtual environment.'''
     # Use the full path to the venv executables (works on all platforms)
     if platform.system() == 'Windows':
@@ -124,9 +130,7 @@ def run_in_venv(
 
 
 def install_requirements(
-    requirements_files: List[Path],
-    editable_packages: List[Path],
-    verbose: bool = False
+    requirements_files: List[Path], editable_packages: List[Path], verbose: bool = False
 ) -> None:
     '''Install requirements in the virtual environment.'''
     # Install requirements files
@@ -155,12 +159,14 @@ def build(
     debug_build: bool = False,
     hidden_imports: Optional[List[str]] = None,
     strip: bool = True,
-    verbose: bool = False
+    verbose: bool = False,
 ) -> None:
     '''Build executable via PyInstaller'''
     # Base command
     cmd = [
-        'python', '-m', 'PyInstaller',
+        'python',
+        '-m',
+        'PyInstaller',
         str(main_file),
         '--onefile',
         '--clean',
@@ -206,16 +212,19 @@ def save_build_info(verbose: bool = False) -> None:
 
     with open(info_file, 'w') as f:
         # Get Python version
-        result = run_in_venv(['python', '--version'],
-                            capture_output=True, text=True, verbose=verbose)
+        result = run_in_venv(
+            ['python', '--version'], capture_output=True, text=True, verbose=verbose
+        )
         f.write(result.stdout)
 
         # Get pip freeze
-        result = run_in_venv(['pip', 'freeze'],
-                            capture_output=True, text=True, verbose=verbose)
+        result = run_in_venv(
+            ['pip', 'freeze'], capture_output=True, text=True, verbose=verbose
+        )
         f.write(result.stdout)
 
     print(f'  Build information saved to {info_file}')
+
 
 def main():
     '''Main entry point'''
@@ -232,66 +241,55 @@ Examples:
 Build outputs:
   - Virtual environment: ./build/.env
   - Distribution files: ./build/dist/
-        '''
+        ''',
     )
 
     # Mandatory arguments
     parser.add_argument(
-        '-m', '--main-file',
-        required=True,
-        type=Path,
-        help='Main Python file to build'
+        '-m', '--main-file', required=True, type=Path, help='Main Python file to build'
     )
 
     # Optional arguments
     parser.add_argument(
-        '-a', '--additional-files',
+        '-a',
+        '--additional-files',
         type=Path,
         nargs='*',
         default=[],
-        help='Additional files to copy to dist directory'
+        help='Additional files to copy to dist directory',
     )
     parser.add_argument(
-        '-r', '--requirements',
+        '-r',
+        '--requirements',
         type=Path,
         nargs='*',
         default=[],
         help=(
             'Additional requirements files to install '
-            '(default: requirements.txt, appxf/requirements.txt)')
+            '(default: requirements.txt, appxf/requirements.txt)'
+        ),
     )
     parser.add_argument(
         '--editable-packages',
         type=Path,
         nargs='*',
         default=[],
-        help='Paths to packages to install in editable mode (default: appxf)'
+        help='Paths to packages to install in editable mode (default: appxf)',
     )
     parser.add_argument(
-        '--hidden-imports',
-        nargs='*',
-        default=[],
-        help='Hidden imports for PyInstaller'
+        '--hidden-imports', nargs='*', default=[], help='Hidden imports for PyInstaller'
     )
     parser.add_argument(
-        '--no-strip',
-        action='store_true',
-        help='Disable strip option for PyInstaller'
+        '--no-strip', action='store_true', help='Disable strip option for PyInstaller'
     )
     parser.add_argument(
-        '--debug',
-        action='store_true',
-        help='Also create a debug build'
+        '--debug', action='store_true', help='Also create a debug build'
     )
     parser.add_argument(
-        '--clean',
-        action='store_true',
-        help='Clean build directory before building'
+        '--clean', action='store_true', help='Clean build directory before building'
     )
     parser.add_argument(
-        '--verbose',
-        action='store_true',
-        help='Show detailed command output'
+        '--verbose', action='store_true', help='Show detailed command output'
     )
 
     args = parser.parse_args()
@@ -300,25 +298,33 @@ Build outputs:
     main_file = args.main_file.resolve()
 
     # Set default requirements if none provided
-    requirements_files = args.requirements if args.requirements else [
-        Path('requirements.txt'),
-        Path('appxf/requirements.txt'),
-    ]
+    requirements_files = (
+        args.requirements
+        if args.requirements
+        else [
+            Path('requirements.txt'),
+            Path('appxf/requirements.txt'),
+        ]
+    )
 
     # Set default editable packages if none provided
-    editable_packages = args.editable_packages if args.editable_packages else [
-        Path('appxf'),
-    ]
+    editable_packages = (
+        args.editable_packages
+        if args.editable_packages
+        else [
+            Path('appxf'),
+        ]
+    )
 
-    print(f'{"="*60}')
+    print(f'{"=" * 60}')
     print('PyInstaller Build Script')
-    print(f'{"="*60}')
+    print(f'{"=" * 60}')
     print(f'Platform: {platform.system()}')
     print(f'Main file: {main_file}')
     print('Build directory: ./build/')
     print(f'Clean build: {args.clean}')
     print(f'Verbose: {args.verbose}')
-    print(f'{"="*60}')
+    print(f'{"=" * 60}')
 
     # Validate main file exists
     if not main_file.exists():
@@ -340,8 +346,9 @@ Build outputs:
 
         # Install requirements
         with _StepLogger('Installing requirements'):
-            install_requirements(requirements_files, editable_packages,
-                               verbose=args.verbose)
+            install_requirements(
+                requirements_files, editable_packages, verbose=args.verbose
+            )
 
         # Build with PyInstaller (release)
         with _StepLogger('Building release version with PyInstaller'):
@@ -350,7 +357,7 @@ Build outputs:
                 debug_build=False,
                 hidden_imports=args.hidden_imports if args.hidden_imports else None,
                 strip=not args.no_strip,
-                verbose=args.verbose
+                verbose=args.verbose,
             )
 
         # Build debug version if requested
@@ -361,7 +368,7 @@ Build outputs:
                     debug_build=True,
                     hidden_imports=args.hidden_imports if args.hidden_imports else None,
                     strip=not args.no_strip,
-                    verbose=args.verbose
+                    verbose=args.verbose,
                 )
 
         # Copy additional files
@@ -373,11 +380,11 @@ Build outputs:
         with _StepLogger('Saving build information'):
             save_build_info(verbose=args.verbose)
 
-        print(f'\n{"="*60}')
+        print(f'\n{"=" * 60}')
         print(
             f'Build completed successfully! (Total time: {elapsed_time(start_total)})'
         )
-        print(f'{"="*60}')
+        print(f'{"=" * 60}')
 
     except subprocess.CalledProcessError as e:
         print(f'\nError: Build failed with exit code {e.returncode}')
@@ -385,6 +392,7 @@ Build outputs:
     except Exception as e:
         print(f'\nError: {e}')
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 

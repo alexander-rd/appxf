@@ -24,12 +24,15 @@ from appxf.storage import CompactSerializer, LocalStorage, Storage
 
 
 class AppxfSecurityException(Exception):
-    ''' General security related errors. '''
+    '''General security related errors.'''
+
 
 class AppxfSecuritySignatureError(Exception):
-    ''' Signature verification failed. '''
+    '''Signature verification failed.'''
+
     def __init__(self, msg='Signature verification failed', *args, **kwargs):
         super().__init__(msg, *args, **kwargs)
+
 
 def _get_default_key_dict():
     return {
@@ -42,7 +45,7 @@ def _get_default_key_dict():
     }
 
 
-class Security():
+class Security:
     '''Maintaining consistent encryption.
 
     This class defines the security algorithms used and will hold the
@@ -51,10 +54,7 @@ class Security():
 
     # TODO: allowing a path as storage would be nice such that users do not
     # have to deal with LocalStorage when needing a Security object.
-    def __init__(self,
-                 salt: str,
-                 storage: Storage | str | None = None,
-                 **kwargs):
+    def __init__(self, salt: str, storage: Storage | str | None = None, **kwargs):
         '''Get security context.
 
         The salt is used during password handling. It is a measure against
@@ -65,11 +65,9 @@ class Security():
         derived from the password.
         '''
         if storage is None:
-            storage = LocalStorage(
-                file='keys', path='./data/security')
+            storage = LocalStorage(file='keys', path='./data/security')
         elif isinstance(storage, str):
-            storage = LocalStorage.get(
-                file='keys', path=storage)
+            storage = LocalStorage.get(file='keys', path=storage)
 
         super().__init__(**kwargs)
         self._salt = salt
@@ -85,21 +83,22 @@ class Security():
         # dump data
         data = pickle.dumps(self._key_dict)
         # write file
-        self._storage.store_raw(
-            self._encrypt_to_bytes(self._derived_key, data))
+        self._storage.store_raw(self._encrypt_to_bytes(self._derived_key, data))
 
     def _verify_version(self):
-        ''' Verify correct version
+        '''Verify correct version
 
         This code might catch later version adaptions.
         '''
         if 'version' not in self._key_dict.keys():
             raise AppxfSecurityException(
-                'Not an APPXF security file: no version information')
+                'Not an APPXF security file: no version information'
+            )
         if self._key_dict['version'] != 1:
             raise AppxfSecurityException(
                 f'Keys stored in version {self._key_dict["version"]}, '
-                f'expected is version 1')
+                f'expected is version 1'
+            )
 
     def _load_keys(self):
         '''Read key_dict from encrypted file
@@ -154,20 +153,19 @@ class Security():
         which should be cought to handle wrong passwords.
         '''
         if not self.is_user_initialized():
-            raise AppxfSecurityException(
-                'User is not initialized. Run init_user().')
+            raise AppxfSecurityException('User is not initialized. Run init_user().')
         self._derived_key = self._derive_key(password)
         self._load_keys()
 
     def _get_symmetric_key(self):
         if not self.is_user_unlocked():
             raise AppxfSecurityException(
-                'Trying to access symmetric keys before '
-                'succeeding with unlock_user()')
+                'Trying to access symmetric keys before succeeding with unlock_user()'
+            )
         return self._key_dict['symmetric_key']
 
     def encrypt_to_bytes(self, data: bytes) -> bytes:
-        ''' Encrypt data bytes
+        '''Encrypt data bytes
 
         The private symmetric key is used to encrypted bytes.
         file -- path of the file as string, list of strings is also possible
@@ -179,9 +177,8 @@ class Security():
     def _encrypt_to_bytes(cls, key: bytes, data: bytes) -> bytes:
         return Fernet(key).encrypt(data)
 
-
     def decrypt_from_bytes(self, data: bytes) -> bytes:
-        ''' Decrypt from data bytes
+        '''Decrypt from data bytes
 
         Decrypts data bytes based on the symmetric key.
         '''
@@ -196,62 +193,66 @@ class Security():
         return Fernet(key).decrypt(data)
 
     def get_signing_public_key(self) -> bytes:
-        ''' Get public key to verify signatures.
+        '''Get public key to verify signatures.
 
         Note that the signing public key remains private to the security
         module and only sign() is exposed.
         '''
         if not self.is_user_unlocked():
             raise AppxfSecurityException(
-                'Trying to access public key before '
-                'succeeding with unlock_user()')
+                'Trying to access public key before succeeding with unlock_user()'
+            )
         self._ensure_signing_keys_exist()
         return self._key_dict['signing_pub_key']
 
     def get_encryption_public_key(self) -> bytes:
-        ''' Get public key to encrypt data for this user
+        '''Get public key to encrypt data for this user
 
         Note that the private keys for decryption remains private to the
         security module and only hybrid_decrypt() is exposed.
         '''
         if not self.is_user_unlocked():
             raise AppxfSecurityException(
-                'Trying to access public key before '
-                'succeeding with unlock_user()')
+                'Trying to access public key before succeeding with unlock_user()'
+            )
         self._ensure_encryption_keys_exist()
         return self._key_dict['encryption_pub_key']
 
     def _ensure_signing_keys_exist(self):
-        ''' Create keys, if required '''
-        if (not self._key_dict['signing_pub_key'] and
-                not self._key_dict['signing_priv_key']):
+        '''Create keys, if required'''
+        if (
+            not self._key_dict['signing_pub_key']
+            and not self._key_dict['signing_priv_key']
+        ):
             self._generate_signing_keys()
             return
-        if (not self._key_dict['signing_pub_key'] or
-                not self._key_dict['signing_priv_key']):
+        if (
+            not self._key_dict['signing_pub_key']
+            or not self._key_dict['signing_priv_key']
+        ):
             raise AppxfSecurityException(
-                'Only public or private validation key are set. '
-                'This should not happen.'
-                )
+                'Only public or private validation key are set. This should not happen.'
+            )
 
     def _ensure_encryption_keys_exist(self):
-        ''' Create keys, if required '''
-        if (not self._key_dict['encryption_pub_key'] and
-                not self._key_dict['encryption_priv_key']):
+        '''Create keys, if required'''
+        if (
+            not self._key_dict['encryption_pub_key']
+            and not self._key_dict['encryption_priv_key']
+        ):
             self._generate_encryption_keys()
             return
-        if (not self._key_dict['encryption_pub_key'] or
-                not self._key_dict['encryption_priv_key']):
+        if (
+            not self._key_dict['encryption_pub_key']
+            or not self._key_dict['encryption_priv_key']
+        ):
             raise AppxfSecurityException(
-                'Only public or private encryption key are set. '
-                'This should not happen.'
-                )
+                'Only public or private encryption key are set. This should not happen.'
+            )
 
     def _generate_signing_keys(self):
-        ''' Add validation keys '''
-        key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=2048)
+        '''Add validation keys'''
+        key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
         private_key = Security._serialize_private_key(key)
         public_key = Security._serialize_public_key(key.public_key())
         self._key_dict['signing_pub_key'] = public_key
@@ -259,11 +260,9 @@ class Security():
         self._write_keys()
 
     def _generate_encryption_keys(self):
-        ''' Add validation keys '''
+        '''Add validation keys'''
         # TODO UPGRADE: Should there be different key variants/algorithms??
-        key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=2048)
+        key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
         private_key = Security._serialize_private_key(key)
         public_key = Security._serialize_public_key(key.public_key())
         self._key_dict['encryption_pub_key'] = public_key
@@ -274,7 +273,8 @@ class Security():
     def _serialize_public_key(cls, key: rsa.RSAPublicKey) -> bytes:
         return key.public_bytes(
             encoding=serialization.Encoding.DER,
-            format=serialization.PublicFormat.SubjectPublicKeyInfo)
+            format=serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
         # Note: In a minor test, PEM encoding took 426 bytes. DER encoding took
         # 264 bytes. Key size is 2048 bit or 256 byte.
 
@@ -285,7 +285,8 @@ class Security():
         if not isinstance(key, rsa.RSAPublicKey):
             raise AppxfSecurityException(
                 f'Unexpected key class {key.__class__.__name__}. '
-                f'Expected RSAPrivateKey.')
+                f'Expected RSAPrivateKey.'
+            )
         return key
 
     @classmethod
@@ -293,7 +294,8 @@ class Security():
         return key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.PKCS8,
-            encryption_algorithm=serialization.NoEncryption())
+            encryption_algorithm=serialization.NoEncryption(),
+        )
 
     @classmethod
     def _deserialize_private_key(cls, key_bytes: bytes) -> rsa.RSAPrivateKey:
@@ -301,7 +303,8 @@ class Security():
         if not isinstance(key, rsa.RSAPrivateKey):
             raise AppxfSecurityException(
                 f'Unexpected key class {key.__class__.__name__}. '
-                f'Expected RSAPrivateKey.')
+                f'Expected RSAPrivateKey.'
+            )
         return key
 
     def sign(self, data: bytes) -> bytes:
@@ -315,18 +318,20 @@ class Security():
         '''
         self._ensure_signing_keys_exist()
         private_key = Security._deserialize_private_key(
-            self._key_dict['signing_priv_key'])
+            self._key_dict['signing_priv_key']
+        )
 
         return private_key.sign(
             data,
-            padding.PSS(mgf=padding.MGF1(hashes.SHA256()),
-                        salt_length=padding.PSS.MAX_LENGTH
-                        ),
-            hashes.SHA256())
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH
+            ),
+            hashes.SHA256(),
+        )
 
     @classmethod
     def verify_signature(cls, data, signature, public_key_bytes: bytes) -> bool:
-        ''' Verify signature and return boolean outcome
+        '''Verify signature and return boolean outcome
 
         If you need to verify your own signature, you need to call:
         verify_signature(data, signature, security.get_signing_public_key())
@@ -340,10 +345,14 @@ class Security():
 
         try:
             public_key.verify(
-                signature, data,
-                padding.PSS(mgf=padding.MGF1(hashes.SHA256()),
-                            salt_length=padding.PSS.MAX_LENGTH),
-                hashes.SHA256())
+                signature,
+                data,
+                padding.PSS(
+                    mgf=padding.MGF1(hashes.SHA256()),
+                    salt_length=padding.PSS.MAX_LENGTH,
+                ),
+                hashes.SHA256(),
+            )
             return True
         except InvalidSignature:
             return False
@@ -356,26 +365,30 @@ class Security():
             padding.OAEP(
                 mgf=padding.MGF1(algorithm=hashes.SHA256()),
                 algorithm=hashes.SHA256(),
-                label=None)
-            )
+                label=None,
+            ),
+        )
 
     def _decrypt_with_private_key_from_byes(self, data: bytes):
         private_key = self._deserialize_private_key(
-            self._key_dict['encryption_priv_key'])
+            self._key_dict['encryption_priv_key']
+        )
         return private_key.decrypt(
             data,
             padding.OAEP(
                 mgf=padding.MGF1(algorithm=hashes.SHA256()),
                 algorithm=hashes.SHA256(),
-                label=None)
-            )
+                label=None,
+            ),
+        )
 
     @classmethod
-    def hybrid_encrypt(cls,
-                       data: bytes,
-                       public_keys: Iterable[bytes] | dict[Any, bytes] | None = None,
-                       ) -> tuple[bytes, dict[Any, bytes]]:
-        ''' Hybrid encryption returning encrypted data and key blob dict
+    def hybrid_encrypt(
+        cls,
+        data: bytes,
+        public_keys: Iterable[bytes] | dict[Any, bytes] | None = None,
+    ) -> tuple[bytes, dict[Any, bytes]]:
+        '''Hybrid encryption returning encrypted data and key blob dict
 
         The data will be encrypted with a generated symmetric key. This
         password will be encrypted with the provided public keys to result in
@@ -399,25 +412,24 @@ class Security():
         if isinstance(public_keys, dict):
             for label, key in public_keys.items():
                 key_encrypted = cls._encrypt_with_public_key_to_bytes(
-                    symmetric_key, key)
+                    symmetric_key, key
+                )
                 key_blob_dict[label] = key_encrypted
         else:
             # ensure unique list of public keys:
             public_keys = set(*public_keys)
             for key in public_keys:
                 key_encrypted = cls._encrypt_with_public_key_to_bytes(
-                    symmetric_key, key)
+                    symmetric_key, key
+                )
                 key_blob_dict[key] = key_encrypted
 
         return data_encrypted, key_blob_dict
 
     def hybrid_decrypt(
-            self,
-            data: bytes,
-            key_blob_dict: dict[Any, bytes],
-            blob_identifier: Any = None
-        ) -> bytes:
-        ''' Hybrid decryption returning decrypted data
+        self, data: bytes, key_blob_dict: dict[Any, bytes], blob_identifier: Any = None
+    ) -> bytes:
+        '''Hybrid decryption returning decrypted data
 
         PRECONDITION: From hybrid_encrypt(), you obtain a dictionary of key
         blobs. The correct key blob for THIS call must be identified from the
@@ -434,11 +446,11 @@ class Security():
         if blob_identifier not in key_blob_dict:
             raise AppxfSecurityException(
                 f'Key blobs do not include one for identity: {blob_identifier}. '
-                f'Available are: {list(key_blob_dict.keys())}')
+                f'Available are: {list(key_blob_dict.keys())}'
+            )
         key_blob = key_blob_dict[blob_identifier]
 
-        symmetric_key = self._decrypt_with_private_key_from_byes(
-            key_blob)
+        symmetric_key = self._decrypt_with_private_key_from_byes(key_blob)
 
         return self._decrypt_from_bytes(symmetric_key, data)
 
@@ -467,11 +479,11 @@ class Security():
     # All this goes along with switching to "signing before encryption".
 
     def hybrid_signed_encrypt(
-            self,
-            data: bytes,
-            public_keys: Iterable[bytes] | dict[Any, bytes] | None = None,
-        ) -> bytes:
-        ''' Hybrid encryption with signed data
+        self,
+        data: bytes,
+        public_keys: Iterable[bytes] | dict[Any, bytes] | None = None,
+    ) -> bytes:
+        '''Hybrid encryption with signed data
 
         Functions like hybrid_encrypt() but applies signature on data and packs
         everything to bytes.
@@ -481,23 +493,21 @@ class Security():
         signed_data = {
             'data': data,
             'author': self.get_signing_public_key(),
-            'signature': signature
+            'signature': signature,
         }
         signed_data_bytes = CompactSerializer.serialize(signed_data)
 
         # encrypt signed data
         encrypted_data_bytes, key_blob_dict = self.hybrid_encrypt(
-            data = signed_data_bytes,
-            public_keys=public_keys)
-        return CompactSerializer.serialize({
-            'data': encrypted_data_bytes,
-            'key_blob_dict': key_blob_dict})
+            data=signed_data_bytes, public_keys=public_keys
+        )
+        return CompactSerializer.serialize(
+            {'data': encrypted_data_bytes, 'key_blob_dict': key_blob_dict}
+        )
 
     def hybrid_signed_decrypt(
-            self,
-            data: bytes,
-            blob_identifier: Any = None
-        ) -> tuple[bytes, bytes]:
+        self, data: bytes, blob_identifier: Any = None
+    ) -> tuple[bytes, bytes]:
         '''Hybrid decryption with signature verification
 
         Functions like hybrid_decrypt() while it expects bytes generated from
@@ -520,15 +530,15 @@ class Security():
 
         # decrypt to signed data:
         signed_data_bytes = self.hybrid_decrypt(
-            encrypted_data_bytes, key_blob_dict, blob_identifier)
+            encrypted_data_bytes, key_blob_dict, blob_identifier
+        )
         signed_data: dict = CompactSerializer.deserialize(signed_data_bytes)
 
         # unpack signed data and verify signature:
         data = signed_data['data']
         author_pub_key = signed_data['author']
         signature = signed_data['signature']
-        if not Security.verify_signature(
-                data, signature, author_pub_key):
+        if not Security.verify_signature(data, signature, author_pub_key):
             raise AppxfSecuritySignatureError()
 
         return data, author_pub_key
@@ -543,11 +553,11 @@ class Security():
         keys anymore.
         '''
         kdf = PBKDF2HMAC(
-                algorithm=hashes.SHA256(),
-                length=32,
-                salt=bytes(self._salt, 'utf-8'),
-                iterations=480000,
-                )
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=bytes(self._salt, 'utf-8'),
+            iterations=480000,
+        )
         return base64.urlsafe_b64encode(kdf.derive(bytes(pwd, 'utf-8')))
 
     @classmethod

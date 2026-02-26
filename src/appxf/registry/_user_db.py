@@ -7,7 +7,7 @@ from appxf.storage import Storable, Storage
 
 
 class AppxfUserDatabaseException(Exception):
-    ''' Error in User Database handling '''
+    '''Error in User Database handling'''
 
 
 class UserEntry(TypedDict):
@@ -15,6 +15,7 @@ class UserEntry(TypedDict):
     roles: list[str]
     validation_key: bytes
     encryption_key: bytes
+
 
 # TODO: do we need the extra role storage in the UserEntry?
 
@@ -42,25 +43,30 @@ class UserDatabase(Storable):
         # lookup.
         self._validation_key_map: dict[bytes, int] = {}
 
-    attributes = ['_version', '_next_id', '_unused_id_list',
-                  '_user_db', '_role_map', '_validation_key_map']
+    attributes = [
+        '_version',
+        '_next_id',
+        '_unused_id_list',
+        '_user_db',
+        '_role_map',
+        '_validation_key_map',
+    ]
     # TODO: should apply custom get_state to apply version check
 
     # TODO: next_id / unused_id_list should rather be re-created than stored
     # and loaded (more prone for errors)
 
-    def init_user_db(self,
-                     validation_key: bytes,
-                     encryption_key: bytes) -> int:
+    def init_user_db(self, validation_key: bytes, encryption_key: bytes) -> int:
         # forward to reuse function with add_new()
         user_id = self.add_new(
             validation_key=validation_key,
             encryption_key=encryption_key,
-            roles=['user', 'admin'])
+            roles=['user', 'admin'],
+        )
         return user_id
 
     def get_users(self, role: str = '') -> set[int]:
-        ''' get users IDs as set
+        '''get users IDs as set
 
         Keyword Arguments:
             role {str} -- only users having role, '' ignores (default: '')
@@ -81,11 +87,13 @@ class UserDatabase(Storable):
         Returns None if no user is found'''
         return self._validation_key_map.get(key)
 
-    def add_new(self,
-                validation_key: bytes,
-                encryption_key: bytes,
-                roles: list[str] | str = 'user') -> int:
-        ''' add user with UNKNOWN user Id, returning new user ID
+    def add_new(
+        self,
+        validation_key: bytes,
+        encryption_key: bytes,
+        roles: list[str] | str = 'user',
+    ) -> int:
+        '''add user with UNKNOWN user Id, returning new user ID
 
         Negative user IDs are invalid: Existing keys are checked. If the keys
         already exist and are consistent, the existing user ID is returned and
@@ -109,15 +117,16 @@ class UserDatabase(Storable):
             if match_found == 2:
                 self.log.info(
                     'New user already existing with ID %i. Updating roles to %s',
-                     user_id, str(roles))
+                    user_id,
+                    str(roles),
+                )
                 self.set_roles(user_id, roles)
                 return user_id
             # if keys exist but are inconsistent:
             if match_found == 1:
                 # return the negative user ID (we ensured that user IDs start
                 # with 1, not with 0)
-                self.log.info(
-                    f'new user keys already exist for user ID {user_id}')
+                self.log.info(f'new user keys already exist for user ID {user_id}')
                 return -user_id
 
         # TODO: get determine new ID (implementation might already consider
@@ -127,24 +136,30 @@ class UserDatabase(Storable):
         self.log.info(f'adding new user with {user_id}, next: {self._next_id}')
 
         # forward to reuse function with init_user_db()
-        self.add(user_id=user_id,
-                 validation_key=validation_key,
-                 encryption_key=encryption_key,
-                 roles=roles)
+        self.add(
+            user_id=user_id,
+            validation_key=validation_key,
+            encryption_key=encryption_key,
+            roles=roles,
+        )
         return user_id
 
-    def add(self,
-            user_id: int,
-            validation_key: bytes,
-            encryption_key: bytes,
-            roles: list[str]):
+    def add(
+        self,
+        user_id: int,
+        validation_key: bytes,
+        encryption_key: bytes,
+        roles: list[str],
+    ):
 
         roles = [role.lower() for role in roles]
 
-        entry = UserEntry(id=user_id, roles=roles,
-                          validation_key=validation_key,
-                          encryption_key=encryption_key
-                          )
+        entry = UserEntry(
+            id=user_id,
+            roles=roles,
+            validation_key=validation_key,
+            encryption_key=encryption_key,
+        )
         # entry = UserEntry2(id=user_id, validation_key=validation_key)
         self._user_db[user_id] = entry
         # Update validation key mapping
@@ -157,7 +172,7 @@ class UserDatabase(Storable):
             self._role_map[role].add(user_id)
 
     def remove_user(self, user_id: int):
-        ''' Remove user by deleting all role assignments
+        '''Remove user by deleting all role assignments
 
         The user's public keys remain existent in case there is still shared
         data from this user that might need signature validation.
@@ -165,9 +180,7 @@ class UserDatabase(Storable):
         for role in self._role_map:
             if user_id in self._role_map[role]:
                 self._role_map[role].remove(user_id)
-            if (not self._role_map[role] and
-                    not role == 'user' and
-                    not role == 'admin'):
+            if not self._role_map[role] and not role == 'user' and not role == 'admin':
                 del self._role_map[role]
 
     # TODO: When USER DB starts maintaining user information (USER CONFIG),
@@ -179,16 +192,14 @@ class UserDatabase(Storable):
     # anymore.
 
     def purge_user(self, user_id: int):
-        ''' Like remove_user but also deleting the public keys
+        '''Like remove_user but also deleting the public keys
 
         Using this should ensure that there is no data present anymore that
         needs to be authenticated against this user's signing key.
         '''
 
         if user_id not in self._user_db:
-            self.log.warning(
-                'Trying to purge USER ID %i which does not exist',
-                user_id)
+            self.log.warning('Trying to purge USER ID %i which does not exist', user_id)
             return
         # ensure steps from remove() - role_map being cleared
         self.remove_user(user_id)
@@ -220,10 +231,7 @@ class UserDatabase(Storable):
     def get_encryption_key(self, user_id: int) -> bytes:
         return self._get_user_entry(user_id)['encryption_key']
 
-    def get_encryption_key_dict(
-            self,
-            roles: list[str] | str
-            ) -> dict[int, bytes]:
+    def get_encryption_key_dict(self, roles: list[str] | str) -> dict[int, bytes]:
         # resolve input ambiguity:
         if isinstance(roles, str):
             roles = [roles.lower()]
@@ -232,11 +240,10 @@ class UserDatabase(Storable):
         for this_role in roles:
             role_users.update(self.get_users(this_role))
         # return encryption keys for role users:
-        return {user: self._user_db[user]['encryption_key']
-                for user in role_users}
+        return {user: self._user_db[user]['encryption_key'] for user in role_users}
 
     def get_roles(self, user_id: int | None = None) -> list[str]:
-        ''' Get list of roles
+        '''Get list of roles
 
         Keyword Arguments:
         user_id -- Return roles for this user ID or, if None, return all roles
@@ -250,7 +257,7 @@ class UserDatabase(Storable):
         return entry['roles']
 
     def set_roles(self, user_id: int, roles: list[str] | str):
-        ''' set roles for user ID '''
+        '''set roles for user ID'''
         if user_id not in self._user_db:
             raise ValueError(f'User ID {user_id} is not registered.')
 
@@ -276,6 +283,7 @@ class UserDatabase(Storable):
     def load(self, **kwargs):
         self.log.debug('Loading USER DB')
         return super().load(**kwargs)
+
 
 # TODO: Support is needed to verify conditions to purge a user. This requires a
 # complete registry of all files the user may have stored in the past. This

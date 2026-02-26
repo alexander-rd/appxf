@@ -24,7 +24,7 @@ from .storage_to_bytes import StorageToBytes
 
 
 def retry_method_with_reconnect(method):
-    ''' Recover errors with a fresh connection.
+    '''Recover errors with a fresh connection.
 
     Executes the decorated method to:
         1) execute method an catch errors (logged as warning)
@@ -32,33 +32,31 @@ def retry_method_with_reconnect(method):
         3) executes the operation a second time
     (2) and (3) are onl if (1) returns errors.
     '''
+
     def method_wrapper(self, *args, **kwargs):
         try:
             return method(self, *args, **kwargs)
         except Exception as e:
             self.log.warning(
                 f'Error on executing {method.__name__}, '
-                f'try reconnect and repeat. Error: {e}', exc_info=True)
+                f'try reconnect and repeat. Error: {e}',
+                exc_info=True,
+            )
         # reconnect and try again. This time failing with original errors.
         self.connect()
         return method(self, *args, **kwargs)
+
     return method_wrapper
 
 
 class FtpLocation(StorageToBytes):
-
     # TODO UPGRADE: The verbose logging should be collected and printet to info
     # when errors occur
 
     log = logging.getLogger(__name__ + '.RemoteConnection')
 
-    def __init__(self,
-                 host: str,
-                 user: str,
-                 password: str,
-                 path: str = '',
-                 **kwargs):
-        ''' Maintainer for FTP locations
+    def __init__(self, host: str, user: str, password: str, path: str = '', **kwargs):
+        '''Maintainer for FTP locations
 
         The handler will handle one path on an FTP host. The host connections
         are shared between the handles
@@ -105,7 +103,8 @@ class FtpLocation(StorageToBytes):
             self.connection = FTPHost(self.host, self.user, self.password)
         except Exception as e:
             raise Exception(
-                f'Not able to initialize FTP object for [{self.host}]: {e}.')
+                f'Not able to initialize FTP object for [{self.host}]: {e}.'
+            )
 
         # TODO LATER: ensure login to FTP server is possible and things are
         # operational. An initial stat of the location could be of interes.

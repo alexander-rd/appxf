@@ -1,7 +1,7 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Implementation of SettingSelect, selecting a value from a predefined list
-'''
+'''Implementation of SettingSelect, selecting a value from a predefined list'''
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -51,11 +51,12 @@ from .setting_extension import SettingExtension, _BaseSettingT
 
 
 class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
-    ''' Setting restricted to a named, predefined set
+    '''Setting restricted to a named, predefined set
 
     You typically provide the available options during construction, like:
     [sel = AppxfSetting.new('int', options={'one': 1, 'two': 2})].
     '''
+
     # This AppxfSetting class is an extention on an existing AppxfSetting type
     # which is marked by this class attribute:
     setting_extension = 'select'
@@ -65,7 +66,8 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
 
     @dataclass(eq=False, order=False)
     class Options(Setting.Options):
-        ''' options for setting select '''
+        '''options for setting select'''
+
         # update value options - None
         #
         # select_map and base_setting are potential value_options. But this
@@ -90,21 +92,25 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
         # enable all behavior is "people dont read the documentation" to know
         # what is possible. Once they see behavior they don't want, they should
         # be able to find the option to disable.
-        control_options = (Setting.Options.control_options +
-                           ['mutable_items', 'mutable_list', 'custom_value'])
+        control_options = Setting.Options.control_options + [
+            'mutable_items',
+            'mutable_list',
+            'custom_value',
+        ]
 
-    def __init__(self,
-                 base_setting: _BaseSettingT,
-                 value: str | None = None,
-                 select_map: dict[str, Any] | None = None,
-                 **kwargs):
+    def __init__(
+        self,
+        base_setting: _BaseSettingT,
+        value: str | None = None,
+        select_map: dict[str, Any] | None = None,
+        **kwargs,
+    ):
         # Initialization sequence matters quite a bit, be careful with changes!
 
         # SettingExtension places base_setting attribute before trying to set
         # the default value and _validated_conversion handles the base setting
         # first.
-        super().__init__(base_setting=base_setting,
-                         **kwargs)
+        super().__init__(base_setting=base_setting, **kwargs)
 
         # If select_map was already applied during intialization, we have to
         # pass it through add_option() to perform validations but we can just
@@ -113,8 +119,7 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
         self.select_map: dict[str, Any] = {}
         if select_map is not None:
             for key, map_value in select_map.items():
-                self.add_select_item(key, map_value,
-                                     ignore_mutable_options=True)
+                self.add_select_item(key, map_value, ignore_mutable_options=True)
 
         # finally, set the intended value which may be one of the added options
         # above which is why value was not passed to the parent __init__()
@@ -153,12 +158,11 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
         # we have to export the select_map if either mutable_list or
         # mutable_items is True. Those options make the select_map part of the
         # user controlled values.
-        if (self.options.mutable_list or self.options.mutable_items):
+        if self.options.mutable_list or self.options.mutable_items:
             if isinstance(out, dict):
                 out['select_map'] = deepcopy(self.select_map)
             else:
-                out = {'value': out,
-                       'select_map': deepcopy(self.select_map)}
+                out = {'value': out, 'select_map': deepcopy(self.select_map)}
         # Like above, if custom_value is true, this base setting must be stored
         # as well. Currently, we store it with the same ExportOptions as the
         # SettingSelect, allowing no more fine grained control.
@@ -166,8 +170,10 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
             if isinstance(out, dict):
                 out['base_setting'] = self.base_setting.get_state(**kwarg)
             else:
-                out = {'value': out,
-                       'base_setting': self.base_setting.get_state(**kwarg)}
+                out = {
+                    'value': out,
+                    'base_setting': self.base_setting.get_state(**kwarg),
+                }
         return out
 
     def set_state(self, data: dict, **kwarg):
@@ -193,29 +199,30 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
     # Option Handling
     # /
     def get_select_keys(self) -> list[str]:
-        ''' Get list of selectable options
+        '''Get list of selectable options
 
         The list is sorted alphabetically.
         '''
         return sorted(list(self.select_map.keys()))
 
     def get_select_value(self, option: str) -> Any:
-        ''' Get the value for a selectable item '''
-        return self.select_map.get(option,
-                                   self.base_setting.get_default())
+        '''Get the value for a selectable item'''
+        return self.select_map.get(option, self.base_setting.get_default())
 
     def delete_select_key(self, option: str):
-        ''' Delete a selectable item by its key name '''
+        '''Delete a selectable item by its key name'''
         if option not in self.select_map:
             raise AppxfSettingError(
                 f'Cannot delete item "{option}" '
                 f'since it does not exist for '
-                f'"{self.options.name}".')
+                f'"{self.options.name}".'
+            )
         if not self.options.mutable_list:
             raise AppxfSettingError(
                 f'Cannot delete item "{option}" '
                 f'since mutable_list is False for '
-                f'"{self.options.name}".')
+                f'"{self.options.name}".'
+            )
         original_options = self.get_select_keys()
         if option in self.select_map:
             self.select_map.pop(option)
@@ -229,15 +236,17 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
             else:
                 self.value = new_list[-1]
 
-    def add_select_item(self, option: str, value: Any,
-                        ignore_mutable_options: bool = False):
-        ''' Add a new item to the select list by key and value '''
+    def add_select_item(
+        self, option: str, value: Any, ignore_mutable_options: bool = False
+    ):
+        '''Add a new item to the select list by key and value'''
         if option not in self.select_map:
             if not self.options.mutable_list and not ignore_mutable_options:
                 raise AppxfSettingError(
                     f'Cannot add the new item "{option}" '
                     f'since mutable_list is False for '
-                    f'"{self.options.name}".')
+                    f'"{self.options.name}".'
+                )
             # no check for mutable_item since a complete new one is added
         else:
             # no check for mutable_list since an existing one is being altered:
@@ -245,11 +254,13 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
                 raise AppxfSettingError(
                     f'Cannot change item "{option}" since '
                     f'mutable_items is False for '
-                    f'"{self.options.name}".')
+                    f'"{self.options.name}".'
+                )
         # We try to set the value and take error message from there:
         if not self.base_setting.validate(value):
             raise AppxfSettingError(
                 f'Cannot add option [{option}] with value {value} of type '
-                f'{value.__class__.__name__} because the value is not valid.')
+                f'{value.__class__.__name__} because the value is not valid.'
+            )
         # We also take the readily transformed value, not just the input
         self.select_map[option] = value

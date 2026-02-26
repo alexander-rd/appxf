@@ -1,6 +1,6 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Abstract Setting and Setting* implementations
+'''Abstract Setting and Setting* implementations
 
 Settings hold simple data types like strings, booleans or integers. They add
 the following support for usage in applications:
@@ -9,6 +9,7 @@ the following support for usage in applications:
  - maintaining GUI related options like default visibility or masking for
    passwords
 '''
+
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
@@ -20,14 +21,15 @@ from appxf import Options, Stateful
 
 
 class AppxfSettingError(Exception):
-    ''' AppxfSetting handling error '''
+    '''AppxfSetting handling error'''
 
 
 class AppxfSettingConversionError(Exception):
-    ''' AppxfSetting conversion error
+    '''AppxfSetting conversion error
 
     It is used when the Setting is not able to validate an input or convert it
     to the base type.'''
+
     def __init__(self, setting_class: type[Setting[Any]], value, **kwargs):
         super().__init__(**kwargs)
         # The following try/except is required since SettingString accepts any
@@ -43,7 +45,8 @@ class AppxfSettingConversionError(Exception):
         self.message = (
             f'Cannot set value [{value_str}] of type {value_type} into '
             f'{setting_class.__name__}. Either the base type {base_type} '
-            f'is not valid or the conversion failed.')
+            f'is not valid or the conversion failed.'
+        )
 
     def __str__(self):
         return self.message
@@ -57,8 +60,10 @@ class AppxfSettingConversionError(Exception):
 # TODO: refactoring according to ticket #16: substitute meta_class by
 # __init_subclass__
 
+
 class _SettingMeta(type):
-    ''' Meta class collecting Setting implementations '''
+    '''Meta class collecting Setting implementations'''
+
     # Mapping of types or string references to derived Setting classes. This
     # map is used when generating a new Setting without the need to import all
     # classes seperately. Note, however, that custom Setting implementations
@@ -79,17 +84,19 @@ class _SettingMeta(type):
 
     @classmethod
     def _register_setting_class(mcs, cls_register: type[Setting[Any]]):
-        ''' Handle the registration of a new Setting '''
+        '''Handle the registration of a new Setting'''
         # check class
         if cls_register.__name__ in mcs.implementation_names:
             raise AppxfSettingError(
-                f'Setting {cls_register.__name__} is already registered.')
+                f'Setting {cls_register.__name__} is already registered.'
+            )
         # check completeness of implementation:
         if cls_register.__abstractmethods__:
             raise AppxfSettingError(
                 f'Setting {cls_register.__name__} still has abstract methods: '
                 f'{cls_register.__abstractmethods__} '
-                f'that need implementation.')
+                f'that need implementation.'
+            )
         # I cannot use issubclass to differentiate an SettingExtension from an
         # Setting since the classes are not yet known. We rely on the attribute
         # to be existent or not.
@@ -106,14 +113,18 @@ class _SettingMeta(type):
             raise AppxfSettingError(
                 f'Setting {cls_register.__name__} does not return any '
                 f'supported type. Consider returning at least some '
-                f'[''your special type''] from get_supported_types().')
+                f'['
+                'your special type'
+                '] from get_supported_types().'
+            )
         if not isinstance(supported_types[0], str):
             raise AppxfSettingError(
                 f'Setting {cls_register.__name__} does not include a string '
                 f'as the default setting type name. It is used in context of '
                 f'SettingDict to store/load settings including their type '
                 f'in a human readable format. '
-                f'You defined {supported_types[0]}')
+                f'You defined {supported_types[0]}'
+            )
         # verify that no supported type already being registered
         for setting_type in supported_types:
             if setting_type in mcs.type_map:
@@ -121,22 +132,24 @@ class _SettingMeta(type):
                 raise AppxfSettingError(
                     f'Setting {cls_register.__name__} supported type '
                     f'{setting_type} is already registered for {other_cls}.'
-                    )
+                )
         # Adding stuff only after ALL checks
         # add class
         mcs.implementation_names.append(cls_register.__name__)
         mcs.implementations.append(cls_register)
         # add setting types
         mcs.type_map.update(
-            {setting_type: cls_register
-             for setting_type in cls_register.get_supported_types()
-             })
+            {
+                setting_type: cls_register
+                for setting_type in cls_register.get_supported_types()
+            }
+        )
 
     @classmethod
     def _add_extension(
-            mcs,
-            cls_register: type['SettingExtension[Any, Any]']  # noqa F821
-            ):
+        mcs,
+        cls_register: type['SettingExtension[Any, Any]'],  # noqa F821
+    ):
         '''Adding an extending Setting
 
         The existance of setting_extension is already checked when calling.
@@ -152,6 +165,7 @@ class _SettingMeta(type):
         mcs.extension_map[cls_register.setting_extension] = cls_register
 
     ''' Metaclass to trigger registration of new AppxfSetting classes '''
+
     def __new__(mcs, clsname, bases, attrs):
         newclass = super().__new__(mcs, clsname, bases, attrs)
         # Register only non abstract classes:
@@ -163,19 +177,17 @@ class _SettingMeta(type):
 
     @classmethod
     def get_setting_type(
-            cls,
-            requested_type: str | type,
-            ) -> tuple[type[Setting[Any]], type[Setting[Any]] | None]:
+        cls,
+        requested_type: str | type,
+    ) -> tuple[type[Setting[Any]], type[Setting[Any]] | None]:
         # Handle unfinished implementations of Settings:
-        if (
-            isinstance(requested_type, type) and
-            issubclass(requested_type, Setting)
-        ):
+        if isinstance(requested_type, type) and issubclass(requested_type, Setting):
             if requested_type.__abstractmethods__:
                 raise AppxfSettingError(
                     f'You need to provide a fully implemented class like '
                     f'SettingString. {requested_type.__name__} is not '
-                    f'fully implemented')
+                    f'fully implemented'
+                )
             return requested_type, None
         # requested type is now either a string or a type, before handling
         # potential SettingExtensions, we look up existing types:
@@ -198,13 +210,15 @@ class _SettingMeta(type):
             if type_split[0] not in cls.extension_map:
                 raise AppxfSettingError(
                     f'Extention [{type_split[0]}] is unknown. '
-                    f'Known are: {list(cls.extension_map.keys())}')
+                    f'Known are: {list(cls.extension_map.keys())}'
+                )
             extension_type = cls.extension_map[type_split[0]]
             # get base setting type
             if type_split[1] not in cls.type_map:
                 raise AppxfSettingError(
                     f'Base type [{type_split[1]}] is unknown. '
-                    f'Known are: {list(cls.type_map.keys())}')
+                    f'Known are: {list(cls.type_map.keys())}'
+                )
             base_setting_type = cls.type_map[type_split[1]]
             return extension_type, base_setting_type
 
@@ -216,17 +230,15 @@ class _SettingMeta(type):
 
     @classmethod
     def get_setting(
-            cls,
-            requested_type: str | type,
-            value: Any,
-            name: str,
-            **kwargs) -> Setting[Any]:
-        ''' Get Setting type from string or base type
+        cls, requested_type: str | type, value: Any, name: str, **kwargs
+    ) -> Setting[Any]:
+        '''Get Setting type from string or base type
 
         The type may also be an Setting directly
         '''
         setting_type, base_setting_type = cls.get_setting_type(
-            requested_type=requested_type)
+            requested_type=requested_type
+        )
 
         if base_setting_type is None:
             # this is a normal setting
@@ -235,18 +247,19 @@ class _SettingMeta(type):
             # this is a setting extension and we need to prepare the kwarg
             # options for extended settings and the settings.
             extension_options = {
-                key: val for key, val in kwargs.items()
-                if key != 'base_setting_options'}
-            base_options = (kwargs['base_setting_options']
-                            if 'base_setting_options' in kwargs
-                            else {})
+                key: val for key, val in kwargs.items() if key != 'base_setting_options'
+            }
+            base_options = (
+                kwargs['base_setting_options']
+                if 'base_setting_options' in kwargs
+                else {}
+            )
             base_setting = base_setting_type(**base_options)
             if value is None:
                 value = base_setting.get_default()
             return setting_type(
-                name=name, value=value,
-                base_setting=base_setting,
-                **extension_options)
+                name=name, value=value, base_setting=base_setting, **extension_options
+            )
 
 
 # The custom metaclass from registration and the ABC metaclass for abstract
@@ -258,7 +271,8 @@ class _SettingMetaMerged(_SettingMeta, ABCMeta):
 
 @dataclass
 class SettingExportOptions(Options):
-    ''' Options used for get_state() and set_state() '''
+    '''Options used for get_state() and set_state()'''
+
     # There will never be an option to control whether the value is exported.
     # There is no use case.
     #
@@ -287,7 +301,8 @@ class SettingExportOptions(Options):
 
 @dataclass(eq=False, order=False)
 class SettingOptions(Options):
-    ''' options for settings '''
+    '''options for settings'''
+
     # See ExportOptions for the defined export groups. Whether such options are
     # mutable is controlled by the same grouping:
     value_options_mutable: bool = False
@@ -321,46 +336,50 @@ class SettingOptions(Options):
     # export group cannot be exported (except name)
     value_options = []
     display_options = ['visible', 'display_width']
-    control_options = ['mutable', 'value_options_mutable',
-                       'display_options_mutable', 'control_options_mutable',
-                       ]
+    control_options = [
+        'mutable',
+        'value_options_mutable',
+        'display_options_mutable',
+        'control_options_mutable',
+    ]
 
     # with overwriting the get_state()/set_state(), the Stateful class
     # configuration for attribute/attribute_mask does not need to be changed
 
-    def get_state(self,
-                  options: SettingExportOptions | None = None,
-                  **kwargs) -> OrderedDict[str, Any]:
+    def get_state(
+        self, options: SettingExportOptions | None = None, **kwargs
+    ) -> OrderedDict[str, Any]:
         if options is None:
             options = SettingExportOptions()
         options.update_from_kwarg(kwargs)
         attributes = (
-            (self.value_options if options.value_options else []) +
-            (self.display_options if options.display_options else []) +
-            (self.control_options if options.control_options else []))
+            (self.value_options if options.value_options else [])
+            + (self.display_options if options.display_options else [])
+            + (self.control_options if options.control_options else [])
+        )
         if options.name:
             attributes += ['name']
         return super().get_state(
             attributes=attributes,
             attribute_mask=[],
             export_defaults=options.export_defaults,
-            **kwargs)
+            **kwargs,
+        )
 
-    def set_state(self,
-                  data: object,
-                  options: SettingExportOptions | None = None,
-                  **kwargs):
+    def set_state(
+        self, data: object, options: SettingExportOptions | None = None, **kwargs
+    ):
         if options is None:
             options = SettingExportOptions()
 
         attributes = (
-            (self.value_options if options.value_options else []) +
-            (self.display_options if options.display_options else []) +
-            (self.control_options if options.control_options else []))
-        return self._set_state_default(data=data,
-                                       attributes=attributes,
-                                       attribute_mask=[],
-                                       **kwargs)
+            (self.value_options if options.value_options else [])
+            + (self.display_options if options.display_options else [])
+            + (self.control_options if options.control_options else [])
+        )
+        return self._set_state_default(
+            data=data, attributes=attributes, attribute_mask=[], **kwargs
+        )
 
 
 # Setting uses the ValueType below in it's implementation to allow appropriate
@@ -368,9 +387,8 @@ class SettingOptions(Options):
 _BaseTypeT = TypeVar('_BaseTypeT', bound=object)
 
 
-class Setting(Generic[_BaseTypeT], Stateful,
-              metaclass=_SettingMetaMerged):
-    ''' Abstract base class for settings
+class Setting(Generic[_BaseTypeT], Stateful, metaclass=_SettingMetaMerged):
+    '''Abstract base class for settings
 
     Use Setting.new('str') to get matching appxf settings for known types. You
     may list types by Setting.get_registered_types().
@@ -392,15 +410,14 @@ class Setting(Generic[_BaseTypeT], Stateful,
 
     You do not need to provide anything else, including __init__.
     '''
+
     # Bring ExportOptions and Options directly in scope of the Setting class
     # such that they are always available with the Setting class (no extra
     # import).
     ExportOptions = SettingExportOptions
     Options = SettingOptions
 
-    def __init__(self,
-                 value: _BaseTypeT | None = None,
-                 **kwargs):
+    def __init__(self, value: _BaseTypeT | None = None, **kwargs):
         super().__init__(**kwargs)
         # consume kwargs into options/gui_options - must apply before applying
         # the value since options typically affect the validation:
@@ -466,13 +483,14 @@ class Setting(Generic[_BaseTypeT], Stateful,
     #  Registry and Factory
     # /
     @classmethod
-    def new(cls,
-            setting_type: str | type,
-            value: _BaseTypeT | None = None,
-            name: str = '',
-            **kwargs
-            ) -> Setting:
-        ''' Get specific Setting implementation by type '''
+    def new(
+        cls,
+        setting_type: str | type,
+        value: _BaseTypeT | None = None,
+        name: str = '',
+        **kwargs,
+    ) -> Setting:
+        '''Get specific Setting implementation by type'''
         # Behavior is more appropriate in the meta class:
         return _SettingMeta.get_setting(setting_type, value, name, **kwargs)
 
@@ -480,13 +498,13 @@ class Setting(Generic[_BaseTypeT], Stateful,
     @classmethod
     @abstractmethod
     def get_default(cls) -> _BaseTypeT:
-        ''' Provide default value when initializing '''
+        '''Provide default value when initializing'''
 
     # Implementing class must provide it's supported types
     @classmethod
     @abstractmethod
     def get_supported_types(cls) -> list[type | str]:
-        ''' Provide list of suported types
+        '''Provide list of suported types
 
         List typically includes strings and if the Setting is intended for a
         specific base class like string, bool or integer, it includes also the
@@ -494,8 +512,7 @@ class Setting(Generic[_BaseTypeT], Stateful,
         '''
 
     def get_type(self) -> str:
-        ''' Get Setting type
-        '''
+        '''Get Setting type'''
         # Note: This function was added to allow setting extensions like
         # SettingSelect to return the right setting type (like setting:string).
         # Note the Meta class implementation (class registration) is checking
@@ -504,26 +521,25 @@ class Setting(Generic[_BaseTypeT], Stateful,
 
     @property
     def input(self) -> _BaseTypeT | str:
-        ''' Original input when storing a value '''
+        '''Original input when storing a value'''
         return self._input
 
     @property
     def value(self) -> _BaseTypeT:
-        ''' Stored value of the Setting (converted to python builtin type) '''
+        '''Stored value of the Setting (converted to python builtin type)'''
         return self._value
 
     @value.setter
     def value(self, value: Any):
         if not self.options.mutable:
-            name = ('(' + self.options.name + ')'
-                    if self.options.name
-                    else '(no name)')
+            name = '(' + self.options.name + ')' if self.options.name else '(no name)'
             raise AppxfSettingError(
-                f'{self.__class__.__name__}{name} is set to be not mutable.')
+                f'{self.__class__.__name__}{name} is set to be not mutable.'
+            )
         self._set_value(value)
 
     def _set_value(self, value: Any):
-        ''' Reusable implentation for value setter and __init__ '''
+        '''Reusable implentation for value setter and __init__'''
         # default values can always be set even though they may appear as
         # invalid:
         if value == self.get_default():
@@ -536,7 +552,7 @@ class Setting(Generic[_BaseTypeT], Stateful,
         self._value = _value
 
     def validate(self, value: Any) -> bool:
-        ''' Validate a string to match the Setting type '''
+        '''Validate a string to match the Setting type'''
         # There was a different implementation before with simplified
         # validation check if the base type is already matched, now we just
         # rely on the _validated_convertion.
@@ -547,7 +563,7 @@ class Setting(Generic[_BaseTypeT], Stateful,
     # settings)
 
     def _validated_conversion(self, value: Any) -> tuple[bool, _BaseTypeT]:
-        ''' Validate a string to match the Setting's expectations
+        '''Validate a string to match the Setting's expectations
 
         Shall also provide the conversion to it's base type. Note that the
         default value (get_default()) can always be set even if this function
@@ -563,5 +579,5 @@ class Setting(Generic[_BaseTypeT], Stateful,
         return False, self.get_default()
 
     def to_string(self) -> str:
-        ''' Return stored value as string '''
+        '''Return stored value as string'''
         return str(self._value)

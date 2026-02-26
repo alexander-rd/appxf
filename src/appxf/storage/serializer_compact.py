@@ -1,6 +1,6 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Provide a serialization
+'''Provide a serialization
 
 This is a small wrapper around pickle to ensure "safe" unpacking the bytes from
 the file.
@@ -17,13 +17,24 @@ from collections import OrderedDict
 from .serializer import Serializer
 
 supported_types = {
-    int, float, str, bytes,
-    list, tuple, set, dict, OrderedDict, type(OrderedDict),
-    bool, type(None)}
+    int,
+    float,
+    str,
+    bytes,
+    list,
+    tuple,
+    set,
+    dict,
+    OrderedDict,
+    type(OrderedDict),
+    bool,
+    type(None),
+}
 
 
 class _RestrictedUnpickler(pickle.Unpickler):
     '''Class to disable unwanted symbols.'''
+
     def find_class(self, module, name):
         # Only allow safe classes from builtins.
         if module == 'collections' and name == 'OrderedDict':
@@ -31,7 +42,8 @@ class _RestrictedUnpickler(pickle.Unpickler):
         # Forbid everything else.
         raise TypeError(
             f'Cannot deserialize "{module}.{name}". To protect from code '
-            f'injection, serialization/deserialization was limited in APPXF')
+            f'injection, serialization/deserialization was limited in APPXF'
+        )
 
 
 class _RestrictedPickler(pickle.Pickler):
@@ -44,7 +56,7 @@ class _RestrictedPickler(pickle.Pickler):
 
 
 class CompactSerializer(Serializer):
-    ''' Use a raw byte based storage '''
+    '''Use a raw byte based storage'''
 
     # In case this class is adapted, consider the following design goals that
     # were not evaluated in detail when selecting pickle:

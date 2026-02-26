@@ -1,7 +1,7 @@
 # Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Statistics and analysis tools for gettext PO/POT files.
-'''
+'''Statistics and analysis tools for gettext PO/POT files.'''
+
 import sys
 
 
@@ -98,8 +98,7 @@ def get_incomplete_contexts(po_file):
     '''
     stats = analyze_po_file(po_file)
     incomplete = {
-        ctx: data for ctx, data in stats.items()
-        if data['translated'] < data['total']
+        ctx: data for ctx, data in stats.items() if data['translated'] < data['total']
     }
     return incomplete
 
@@ -108,6 +107,7 @@ def print_contexts(pot_file):
     '''Print all contexts from a POT file.'''
     contexts = read_context_from_pot(pot_file)
     print(f"Contexts: {', '.join(contexts)}")
+
 
 def print_incomplete(po_file):
     '''Print incomplete contexts from a PO file.'''
@@ -125,15 +125,17 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(
-        description='Statistics and analysis tools for gettext PO/POT files.')
+        description='Statistics and analysis tools for gettext PO/POT files.'
+    )
+    parser.add_argument('file', help='Path to PO or POT file')
     parser.add_argument(
-        'file', help='Path to PO or POT file')
+        '--contexts', action='store_true', help='Print all contexts from a POT file'
+    )
     parser.add_argument(
-        '--contexts', action='store_true',
-        help='Print all contexts from a POT file')
-    parser.add_argument(
-        '--incomplete', action='store_true',
-        help='Print incomplete contexts from a PO file')
+        '--incomplete',
+        action='store_true',
+        help='Print incomplete contexts from a PO file',
+    )
 
     args = parser.parse_args()
 
@@ -144,6 +146,7 @@ def main():
     else:
         parser.print_help()
         sys.exit(1)
+
 
 if __name__ == '__main__':
     main()

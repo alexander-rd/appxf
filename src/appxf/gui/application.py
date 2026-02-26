@@ -43,7 +43,7 @@ class FrameInfo(RecordClass):
 
 
 class AppxfApplication(tkinter.Tk):
-    ''' Main Application Window
+    '''Main Application Window
 
     This Application Window includes:
       * a top level menu bar [.menu] with
@@ -69,7 +69,7 @@ class AppxfApplication(tkinter.Tk):
     '''
 
     def __init__(self, *args, **kwargs):
-        ''' Create APPXF Application Window
+        '''Create APPXF Application Window
 
         Arguments: just forwarding args/kwargs to tkinter.Tk
         '''
@@ -99,11 +99,8 @@ class AppxfApplication(tkinter.Tk):
         self.config(menu=self.menu)
         self.config(menu=self.frame_menu)
 
-    def register_frame(self,
-                       name: str,
-                       cls: type,
-                       *args, **kwargs):
-        ''' Register content frame.
+    def register_frame(self, name: str, cls: type, *args, **kwargs):
+        '''Register content frame.
 
         The frame is only constructed when needed. For that reason, you provide
         the class and initialization arguments.
@@ -113,19 +110,21 @@ class AppxfApplication(tkinter.Tk):
             cls -- Frame class to be displayed
         '''
         if not issubclass(cls, (tkinter.Frame, tkinter.LabelFrame)):
-            raise TypeError(f'Provided class [cls] must be a subclass of '
-                            f'tkinter\'s Frame but is: {cls}')
+            raise TypeError(
+                f'Provided class [cls] must be a subclass of '
+                f'tkinter\'s Frame but is: {cls}'
+            )
         if name in self._frames.keys():
-            raise ValueError(f'A frame for {name} was already registered: '
-                             f'{self._frames[name].cls}')
+            raise ValueError(
+                f'A frame for {name} was already registered: {self._frames[name].cls}'
+            )
 
         self._frames[name] = FrameInfo(cls, args, kwargs, None)
         # self._update_menu()
-        self.frame_menu.add_command(
-                label=name, command=lambda: self.show_frame(name))
+        self.frame_menu.add_command(label=name, command=lambda: self.show_frame(name))
 
     def show_frame(self, name):
-        ''' Show registered frame by name
+        '''Show registered frame by name
 
         After using register_frame(name, ...), this function will create the
         Frame, if required, and updates the view to show it.
@@ -144,16 +143,15 @@ class AppxfApplication(tkinter.Tk):
         self._main_frame.tkraise()
         # Update window size to fit the frame's minimum content
         self.update_idletasks()
-        self.geometry(f"{self._main_frame.winfo_reqwidth()}x{self._main_frame.winfo_reqheight()}")
+        self.geometry(
+            f"{self._main_frame.winfo_reqwidth()}x{self._main_frame.winfo_reqheight()}"
+        )
 
     def _create_frame(self, name):
-        ''' Create frame from stored class
-        '''
+        '''Create frame from stored class'''
         frame_info = self._get_frame_info(name)
         # construct:
-        frame = frame_info.cls(self,
-                               *(frame_info.args),
-                               **(frame_info.kwargs))
+        frame = frame_info.cls(self, *(frame_info.args), **(frame_info.kwargs))
         frame.grid(row=0, column=0, sticky='NSWE')
         # store:
         frame_info.frame = frame
@@ -163,6 +161,7 @@ class AppxfApplication(tkinter.Tk):
         if not name:
             return self._dummy_frame
         if name not in self._frames:
-            raise KeyError(f'{name} was not registered as frame. '
-                           f'I know of: {self._frames.keys()}')
+            raise KeyError(
+                f'{name} was not registered as frame. I know of: {self._frames.keys()}'
+            )
         return self._frames[name]
