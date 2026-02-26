@@ -1,12 +1,13 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Providing GUI classes for user registration
+'''Providing GUI classes for user registration
 
 - RegistrationUser is the user perspective for generating registration requests
   and loading responses (or initializing as admin).
 - RegistrationAdmin is the admin perspective for reviewing requests, assigning
   roles, and generating responses.
 '''
+
 import tkinter
 from tkinter import filedialog, messagebox
 
@@ -29,14 +30,17 @@ class RegistrationAdmin:
     provided, or as Toplevel if parent is given. Expects registry to be
     initialized and current user to be admin.
     '''
+
     log = logging.getLogger(__name__ + '.RegistrationAdmin')
 
-    def __init__(self,
-                 registry: Registry,
-                 user_config: SettingDict,
-                 root_dir: str = './',
-                 parent: tkinter.BaseWidget | None = None,
-                 **kwargs):
+    def __init__(
+        self,
+        registry: Registry,
+        user_config: SettingDict,
+        root_dir: str = './',
+        parent: tkinter.BaseWidget | None = None,
+        **kwargs,
+    ):
         '''Initialize RegistrationAdmin and build GUI.
 
         Arguments:
@@ -84,7 +88,8 @@ class RegistrationAdmin:
 
         # ==== SECTION 1: Action Buttons ====
         section1_frame = tkinter.LabelFrame(
-            self._admin_window, text='Actions', padx=10, pady=10)
+            self._admin_window, text='Actions', padx=10, pady=10
+        )
         section1_frame.pack(fill='x', padx=10, pady=10)
 
         gen_keys_btn = tkinter.Button(
@@ -112,28 +117,31 @@ class RegistrationAdmin:
 
         # Generate a user data SettingDict from the user config but using
         # default (empty) values.
-        self._user_data_dict = SettingDict({
-            key: Setting.new(self._user_config.get_setting(key).get_type())
-            for key in self._user_config.keys()
-            })
+        self._user_data_dict = SettingDict(
+            {
+                key: Setting.new(self._user_config.get_setting(key).get_type())
+                for key in self._user_config.keys()
+            }
+        )
 
         self._user_data_frame = SettingDictSingleFrame(
-            section2_frame,
-            setting=self._user_data_dict)
+            section2_frame, setting=self._user_data_dict
+        )
         self._user_data_frame.pack(fill='both', expand=True)
 
         # ==== SECTION 3: Role Selection ====
         # Get available roles from registry
         available_roles = self._registry.get_roles()
-        self._roles_setting_dict = SettingDict({
-            role: (bool, role == 'user')
-            for role in available_roles})
+        self._roles_setting_dict = SettingDict(
+            {role: (bool, role == 'user') for role in available_roles}
+        )
 
         section3_frame = SettingDictColumnFrame(
             parent=self._admin_window,
             frame_label='Assign Roles',
             setting=self._roles_setting_dict,
-            columns=3)
+            columns=3,
+        )
         section3_frame.pack(fill='x', padx=10, pady=5)
 
         # ==== SECTION 4: Admin Action Buttons ====
@@ -151,13 +159,16 @@ class RegistrationAdmin:
                 messagebox.showwarning(
                     'No Request',
                     'Please load a registration request first',
-                    parent=self._admin_window)
+                    parent=self._admin_window,
+                )
                 return
 
             # Get selected roles from checkboxes
             selected_roles = [
-                role for role in self._roles_setting_dict
-                if self._roles_setting_dict[role]]
+                role
+                for role in self._roles_setting_dict
+                if self._roles_setting_dict[role]
+            ]
             self.log.debug('Selected roles: %s', selected_roles)
 
             try:
@@ -197,15 +208,14 @@ class RegistrationAdmin:
                 messagebox.showwarning(
                     'No User',
                     'Please add a user first before writing response',
-                    parent=self._admin_window)
+                    parent=self._admin_window,
+                )
                 return
 
             try:
                 # Get response bytes from registry
-                response_bytes = (
-                    self._registry.get_response_bytes(
-                        self._current_user_id
-                    )
+                response_bytes = self._registry.get_response_bytes(
+                    self._current_user_id
                 )
 
                 # Ask user where to save the file
@@ -231,9 +241,8 @@ class RegistrationAdmin:
             except (ValueError, KeyError, OSError) as e:
                 self.log.error('Failed to write response: %s', e)
                 messagebox.showerror(
-                    'Error',
-                    f'Failed to write response: {e}',
-                    parent=self._admin_window)
+                    'Error', f'Failed to write response: {e}', parent=self._admin_window
+                )
 
         close_btn = tkinter.Button(
             section4_frame,
@@ -290,8 +299,8 @@ class RegistrationAdmin:
         except (OSError, IOError) as e:
             self.log.error('Failed to write admin keys to %s: %s', file_path, e)
             messagebox.showerror(
-                'Error', f'Failed to write file: {e}',
-                parent=self._admin_window)
+                'Error', f'Failed to write file: {e}', parent=self._admin_window
+            )
             return
 
         self.log.info('Admin keys saved to %s', file_path)
@@ -303,7 +312,8 @@ class RegistrationAdmin:
             title='Select Registration Request File',
             initialdir=self._root_dir,
             initialfile='registration.request',
-            defaultextension='')
+            defaultextension='',
+        )
         if not file_path:
             return
         try:
@@ -315,9 +325,8 @@ class RegistrationAdmin:
         except (OSError, IOError) as e:
             self.log.error('Failed to read request file: %s', e)
             messagebox.showerror(
-                'Error',
-                f'Failed to read file: {e}',
-                parent=self._admin_window)
+                'Error', f'Failed to read file: {e}', parent=self._admin_window
+            )
 
     def _load_request_ui(self, request_bytes: bytes):
         '''Load and parse registration request, populate UI fields.
@@ -331,9 +340,8 @@ class RegistrationAdmin:
         except (ValueError, KeyError) as e:
             self.log.error('Failed to parse registration request: %s', e)
             messagebox.showerror(
-                'Error',
-                f'Invalid request format: {e}',
-                parent=self._admin_window)
+                'Error', f'Invalid request format: {e}', parent=self._admin_window
+            )
             return
 
         # Store request for later use

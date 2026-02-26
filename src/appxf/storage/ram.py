@@ -16,17 +16,14 @@ class RamStorage(Storage):
     # know which meta will exist >> meta must be last.
     _meta_data: dict[str, dict[str, dict[str, object]]] = {}
 
-    def __init__(self,
-                 name: str | None = None,
-                 ram_area: str = ''):
+    def __init__(self, name: str | None = None, ram_area: str = ''):
         # It is possible to use RamStorage() as a functional dummy storage. In
         # this case, get() will never work.
         if name is None:
             name = str(uuid.uuid4())
             while self.is_registered(name, location=ram_area):
                 name = str(uuid.uuid4())
-        super().__init__(name=name,
-                         location=ram_area)
+        super().__init__(name=name, location=ram_area)
 
         # initialize the ram area:
         if ram_area not in self._data:
@@ -37,24 +34,28 @@ class RamStorage(Storage):
             raise AppxfStorageWarning(
                 f'RAM storage for {ram_area}::{name} already exists: risk of '
                 f'writing to same storage. You should use RamStorage.get() '
-                f'instead of RamStorage() constructor.')
+                f'instead of RamStorage() constructor.'
+            )
             # TODO: the error message is wrong unless we keep get()
 
     @classmethod
-    def get(cls,
-            name: str,
-            ram_area: str = '',
-            ) -> Storage:
-        return super().get(name=name, location=ram_area,
-                           storage_init_fun=lambda: RamStorage(
-                               name=name, ram_area=ram_area))
+    def get(
+        cls,
+        name: str,
+        ram_area: str = '',
+    ) -> Storage:
+        return super().get(
+            name=name,
+            location=ram_area,
+            storage_init_fun=lambda: RamStorage(name=name, ram_area=ram_area),
+        )
 
     @classmethod
     def get_factory(cls, ram_area: str = '') -> Storage.Factory:
-        return super().get_factory(location=ram_area,
-                                   storage_get_fun=lambda name: RamStorage.get(
-                                       name=name, ram_area=ram_area
-                                   ))
+        return super().get_factory(
+            location=ram_area,
+            storage_get_fun=lambda name: RamStorage.get(name=name, ram_area=ram_area),
+        )
 
     @classmethod
     def reset(cls):
@@ -95,7 +96,6 @@ class RamStorage(Storage):
         if not self.exists():
             return None
         if self._meta:
-            return deepcopy(
-                self._meta_data[self._location][self._name][self._meta])
+            return deepcopy(self._meta_data[self._location][self._name][self._meta])
         # not meta:
         return deepcopy(self._data[self._location][self._name])

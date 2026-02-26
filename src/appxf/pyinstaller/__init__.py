@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 '''Support for pyinstaller based builds'''
 
-
 import os
 
 

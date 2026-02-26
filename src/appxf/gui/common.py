@@ -1,11 +1,12 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' APPXF Common GUI Class
+'''APPXF Common GUI Class
 
 GridFrame: Includes helpers to align frames via tkinter grid.
 MainWindow: TopLevel window with configurable buttons on
 
 '''
+
 from __future__ import annotations
 
 import functools
@@ -17,7 +18,7 @@ from appxf import logging
 
 
 class AppxfGuiError(Exception):
-    ''' Error thrown in context of GUI handling '''
+    '''Error thrown in context of GUI handling'''
 
 
 class GridSetting(NamedTuple):
@@ -35,7 +36,7 @@ class GridSetting(NamedTuple):
 
 
 class GridFrame(tkinter.LabelFrame):
-    ''' Class to support general APPXF frames
+    '''Class to support general APPXF frames
 
     Widgets/Frames are distinguished into the following categories for default
     settings:
@@ -87,7 +88,8 @@ class GridFrame(tkinter.LabelFrame):
                 if t in GridFrame._registry:
                     raise AppxfGuiError(
                         f'GridFrame for type {t} already registered: '
-                        f'{GridFrame._registry[t]} vs {cls}')
+                        f'{GridFrame._registry[t]} vs {cls}'
+                    )
                 GridFrame._registry[t] = cls
 
     @classmethod
@@ -112,30 +114,36 @@ class GridFrame(tkinter.LabelFrame):
     # widgets, they may sum up to zero. If they contain nothing, the frame
     # weight will be 1.
     frame_setting = GridSetting(
-        sticky='EWNS', padx=0, pady=0, row_weight=1, column_weight=1)
+        sticky='EWNS', padx=0, pady=0, row_weight=1, column_weight=1
+    )
 
-    classes_horizontal_stretch_setting = [
-        tkinter.Entry, ttk.Entry, ttk.Combobox]
+    classes_horizontal_stretch_setting = [tkinter.Entry, ttk.Entry, ttk.Combobox]
     item_horizontal_stretch_setting = GridSetting(
-        sticky='EW', padx=5, pady=5, row_weight=0, column_weight=1)
+        sticky='EW', padx=5, pady=5, row_weight=0, column_weight=1
+    )
 
     classes_full_stretch_setting = [tkinter.Text, ttk.Entry]
     item_full_stretch_setting = GridSetting(
-        sticky='EWNS', padx=5, pady=5, row_weight=1, column_weight=1)
+        sticky='EWNS', padx=5, pady=5, row_weight=1, column_weight=1
+    )
 
     classes_right_aligned_setting = [tkinter.Label]
     item_right_aligned_setting = GridSetting(
-        sticky='E', padx=5, pady=5, row_weight=0, column_weight=0)
+        sticky='E', padx=5, pady=5, row_weight=0, column_weight=0
+    )
 
     # applies to anything else
     item_centered_setting = GridSetting(
-        sticky='', padx=5, pady=5, row_weight=0, column_weight=0)
+        sticky='', padx=5, pady=5, row_weight=0, column_weight=0
+    )
 
-    def __init__(self,
-                 parent: tkinter.BaseWidget | tkinter.Tk,
-                 row_spread: bool = False,
-                 column_spread: bool = False,
-                 **kwargs):
+    def __init__(
+        self,
+        parent: tkinter.BaseWidget | tkinter.Tk,
+        row_spread: bool = False,
+        column_spread: bool = False,
+        **kwargs,
+    ):
 
         # add debug visuals:
         if 'debug' in kwargs:
@@ -165,12 +173,14 @@ class GridFrame(tkinter.LabelFrame):
     # tkinter grid geometry does not include hooks that can be adjusted in this
     # frame class to support the injection of default values. Hence, the
     # GridFrame needs to provide the method for widget placement.
-    def place(self,
-              widget: tkinter.Widget | GridFrame,
-              row: int,
-              column: int,
-              setting: GridSetting | None = None):
-        ''' Place Widgets/Frames into this Frame, using default settings
+    def place(
+        self,
+        widget: tkinter.Widget | GridFrame,
+        row: int,
+        column: int,
+        setting: GridSetting | None = None,
+    ):
+        '''Place Widgets/Frames into this Frame, using default settings
 
         You can always manually place via grid or use rowconfigure and
         columnconfigure to perform adjustments. See the class description for
@@ -184,29 +194,26 @@ class GridFrame(tkinter.LabelFrame):
             if isinstance(widget, GridFrame):
                 default_setting = default_setting._replace(
                     row_weight=widget.get_total_row_weight(),
-                    column_weight=widget.get_total_column_weight())
-        elif isinstance(
-                widget,
-                tuple(self.classes_horizontal_stretch_setting)):
+                    column_weight=widget.get_total_column_weight(),
+                )
+        elif isinstance(widget, tuple(self.classes_horizontal_stretch_setting)):
             default_setting = self.item_horizontal_stretch_setting
-        elif isinstance(
-                widget,
-                tuple(self.classes_full_stretch_setting)):
+        elif isinstance(widget, tuple(self.classes_full_stretch_setting)):
             default_setting = self.item_full_stretch_setting
-        elif isinstance(
-                widget,
-                tuple(self.classes_right_aligned_setting)):
+        elif isinstance(widget, tuple(self.classes_right_aligned_setting)):
             default_setting = self.item_right_aligned_setting
         else:
             default_setting = self.item_centered_setting
-        self.log.debug(
-            f'Placing frame {type(widget)} with setting: {default_setting}')
+        self.log.debug(f'Placing frame {type(widget)} with setting: {default_setting}')
         # TODO: this handling (overwriting) just to get the type warnings that
         # would pop up below right is not sppropriate.
-        widget.grid(row=row, column=column,
-                    sticky=setting.get('sticky', default_setting),
-                    padx=setting.get('padx', default_setting),
-                    pady=setting.get('pady', default_setting))
+        widget.grid(
+            row=row,
+            column=column,
+            sticky=setting.get('sticky', default_setting),
+            padx=setting.get('padx', default_setting),
+            pady=setting.get('pady', default_setting),
+        )
         # apply maximum row/column weights; ">="" is used to ensure the index
         # is written to the dict
         row_weight = setting.get('row_weight', default_setting)
@@ -218,7 +225,7 @@ class GridFrame(tkinter.LabelFrame):
         self._apply_weights()
 
     def _apply_weights(self):
-        ''' apply row/column weights
+        '''apply row/column weights
 
         If row_spread/column_spread is True, the rows/columns will get weight=1
         to ensure they are spreading.
@@ -239,27 +246,22 @@ class GridFrame(tkinter.LabelFrame):
             self.columnconfigure(column, weight=1 if spread else weight)
 
     def get_total_rows(self) -> int:
-        ''' Get total number of rows placed in this GridFrame '''
-        return max([
-            widget.grid_info()['row']
-            for widget in self.grid_slaves()])
+        '''Get total number of rows placed in this GridFrame'''
+        return max([widget.grid_info()['row'] for widget in self.grid_slaves()])
 
     def get_total_columns(self) -> int:
-        ''' Get total number of columns placed in this GridFrame '''
-        return max([
-            widget.grid_info()['column']
-            for widget in self.grid_slaves()])
+        '''Get total number of columns placed in this GridFrame'''
+        return max([widget.grid_info()['column'] for widget in self.grid_slaves()])
 
     def get_total_row_weight(self):
-        ''' Get sum of row weights currently configured '''
-        grid_rows = [
-            widget.grid_info()['row']
-            for widget in self.grid_slaves()]
+        '''Get sum of row weights currently configured'''
+        grid_rows = [widget.grid_info()['row'] for widget in self.grid_slaves()]
         if grid_rows:
             max_row_number = max(grid_rows)
             row_weights = [
                 self.rowconfigure(row).get('weight', 0)
-                for row in range(max_row_number+1)]
+                for row in range(max_row_number + 1)
+            ]
         else:
             # If a frame contains nothing, it's typically added to fill up
             # space inbetween content.
@@ -267,15 +269,14 @@ class GridFrame(tkinter.LabelFrame):
         return sum(row_weights)
 
     def get_total_column_weight(self):
-        ''' Get sum of column weights currently configured '''
-        grid_columns = [
-            widget.grid_info()['column']
-            for widget in self.grid_slaves()]
+        '''Get sum of column weights currently configured'''
+        grid_columns = [widget.grid_info()['column'] for widget in self.grid_slaves()]
         if grid_columns:
             max_column_number = max(grid_columns)
             column_weights = [
                 self.columnconfigure(row).get('weight', 0)
-                for row in range(max_column_number+1)]
+                for row in range(max_column_number + 1)
+            ]
         else:
             # If a frame contains nothing, it's typically added to fill up
             # space inbetween content.
@@ -284,18 +285,22 @@ class GridFrame(tkinter.LabelFrame):
 
 
 class ButtonFrame(GridFrame):
-    ''' GridFrame with configurable buttons
+    '''GridFrame with configurable buttons
 
     All buttons will generate an event <<name>> according to their button
     label.
     '''
+
     log = logging.getLogger(__name__ + '.ButtonFrame')
 
-    def __init__(self, parent: tkinter.BaseWidget | tkinter.Tk,
-                 buttons: Iterable[str],
-                 spread: bool = False,
-                 **kwargs):
-        ''' Frame with buttons left to right
+    def __init__(
+        self,
+        parent: tkinter.BaseWidget | tkinter.Tk,
+        buttons: Iterable[str],
+        spread: bool = False,
+        **kwargs,
+    ):
+        '''Frame with buttons left to right
 
         Arguments:
             parent -- any valid tkinter parent
@@ -313,9 +318,7 @@ class ButtonFrame(GridFrame):
         Provides Events:
             <<Button Name>> according to provided button names.
         '''
-        super().__init__(parent,
-                         row_spread=spread,
-                         **kwargs)
+        super().__init__(parent, row_spread=spread, **kwargs)
         self.last_event = None
 
         # add buttons:
@@ -327,8 +330,8 @@ class ButtonFrame(GridFrame):
                 this_widget = tkinter.Button(
                     self,
                     text=button,
-                    command=functools.partial(
-                        self.handle_button_press, button))
+                    command=functools.partial(self.handle_button_press, button),
+                )
                 # register in lookup dict
                 self._button_widgets[button] = this_widget
             else:
@@ -337,7 +340,7 @@ class ButtonFrame(GridFrame):
             button_number += 1
 
     def handle_button_press(self, button: str):
-        ''' Handle button press by releasing an event
+        '''Handle button press by releasing an event
 
         The event name just place << >> brackets around the button name. A
         button "smile" would generate <<smile>>.
@@ -361,6 +364,7 @@ class ButtonFrame(GridFrame):
             # If a widget type doesn't support state, ignore it silently
             self.log.debug('Could not set state for widget %s', widget)
 
+
 class _CommonWindow:
     '''Mixin providing common functions for Toplevel and Tk variants
 
@@ -368,6 +372,7 @@ class _CommonWindow:
      * placing the ONE frame
      * button handling (including keypress options)
     '''
+
     # window needs to be added separately since type
     # resolution for self does not work well - enabling type
     # hints during implementation and safer implementation was
@@ -377,12 +382,14 @@ class _CommonWindow:
     frame: None | GridFrame
     button_frame: ButtonFrame
 
-    def _init_common(self,
-                     title: str,
-                     buttons: Iterable[str],
-                     closing: str | list[str],
-                     key_enter_as_button: str):
-        ''' Common initialization
+    def _init_common(
+        self,
+        title: str,
+        buttons: Iterable[str],
+        closing: str | list[str],
+        key_enter_as_button: str,
+    ):
+        '''Common initialization
 
         To be called after __init__() of deriving class.
         '''
@@ -398,10 +405,9 @@ class _CommonWindow:
         # first row -- during init, we already set an empty GridFrame, ready to
         # be filled:
         self.frame = None
-        self.place_frame(frame=GridFrame(
-            parent=self.window,
-            row_spread=True,
-            column_spread=True))
+        self.place_frame(
+            frame=GridFrame(parent=self.window, row_spread=True, column_spread=True)
+        )
 
         # second row -- button frame (stretch only if frame does not stretch)
         self.button_frame = ButtonFrame(self.window, buttons=buttons, spread=True)
@@ -411,29 +417,34 @@ class _CommonWindow:
         if key_enter_as_button:
             self.bind(
                 '<Return>',
-                lambda event, b=key_enter_as_button:
-                    self.button_frame.handle_button_press(b))
+                lambda event, b=key_enter_as_button: (
+                    self.button_frame.handle_button_press(b)
+                ),
+            )
             self.bind(
                 '<KP_Enter>',
-                lambda event, b=key_enter_as_button:
-                    self.button_frame.handle_button_press(b))
+                lambda event, b=key_enter_as_button: (
+                    self.button_frame.handle_button_press(b)
+                ),
+            )
 
         # Buttons to close the window:
         for button in closing:
             self.button_frame.bind(
-                f'<<{button}>>',
-                lambda event: self.window.destroy(),
-                add=True)
+                f'<<{button}>>', lambda event: self.window.destroy(), add=True
+            )
 
         # Closing via window manager
         self.window.protocol(
             'WM_DELETE_WINDOW',
             lambda: self.button_frame.handle_button_press(
-            closing[0] if closing else 'WM_DELETE_WINDOW'))
+                closing[0] if closing else 'WM_DELETE_WINDOW'
+            ),
+        )
 
     @property
     def last_event(self) -> str | None:
-        ''' Obtain the last triggered event
+        '''Obtain the last triggered event
 
         Typically required to identify whether the window was cancelled (event
         <<Cancelled>>) or properly exited (event <<OK>>)
@@ -451,10 +462,12 @@ class _CommonWindow:
         self.window.rowconfigure(1, weight=(0 if frame_row_weight else 1))
 
     # any bind on this window shall be intended for the underlying button frame
-    def bind(self,
-             sequence: str | None = None,
-             func: Callable[[tkinter.Event], object] | None = None,
-             add: bool | None = None):
+    def bind(
+        self,
+        sequence: str | None = None,
+        func: Callable[[tkinter.Event], object] | None = None,
+        add: bool | None = None,
+    ):
         return self.button_frame.bind(sequence=sequence, func=func, add=add)
 
     def set_button_active(self, button: str, active: bool):
@@ -463,30 +476,46 @@ class _CommonWindow:
 
 class GridToplevel(tkinter.Toplevel, _CommonWindow):
     '''Toplevel holding one GridFrame and configurable buttons.'''
-    def __init__(self, parent: tkinter.BaseWidget,
-                 title: str,
-                 buttons: Iterable[str] = ('Cancel', 'OK'),
-                 closing: str | list[str] = 'Cancel',
-                 key_enter_as_button: str = '',
-                 **kwargs):
+
+    def __init__(
+        self,
+        parent: tkinter.BaseWidget,
+        title: str,
+        buttons: Iterable[str] = ('Cancel', 'OK'),
+        closing: str | list[str] = 'Cancel',
+        key_enter_as_button: str = '',
+        **kwargs,
+    ):
         super().__init__(parent, **kwargs)
         # TODO: better solution would be nice, but seems difficult:
         self.window = self
 
-        self._init_common(title=title, buttons=buttons,
-                          closing=closing, key_enter_as_button=key_enter_as_button)
+        self._init_common(
+            title=title,
+            buttons=buttons,
+            closing=closing,
+            key_enter_as_button=key_enter_as_button,
+        )
 
 
 class GridTk(tkinter.Tk, _CommonWindow):
     '''Root window variant of Toplevel to be used when no parent is given.'''
-    def __init__(self, title: str = '',
-                 buttons: Iterable[str] = ('Cancel', 'OK'),
-                 closing: str | list[str] = 'Cancel',
-                 key_enter_as_button: str = '',
-                 **kwargs):
+
+    def __init__(
+        self,
+        title: str = '',
+        buttons: Iterable[str] = ('Cancel', 'OK'),
+        closing: str | list[str] = 'Cancel',
+        key_enter_as_button: str = '',
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         # TODO: better solution would be nice, but seems difficult:
         self.window = self
         # apply the same common setup
-        self._init_common(title=title, buttons=buttons,
-                          closing=closing, key_enter_as_button=key_enter_as_button)
+        self._init_common(
+            title=title,
+            buttons=buttons,
+            closing=closing,
+            key_enter_as_button=key_enter_as_button,
+        )

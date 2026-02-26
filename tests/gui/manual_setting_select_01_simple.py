@@ -9,14 +9,17 @@ Resizing: should only affect the right entry part. Check resizing of the tooltip
 based on the "Long Single Line", the tooltip width shall be the width of the
 frame up to a certain maximum.
 '''
+
 from appxf_matema.case_runner import ManualCaseRunner
 from appxf.setting import Setting
 from appxf.gui import SettingSelectFrame
 
 # Scope: SettingSelect functionality by single SettingFrame
 
-setting = Setting.new('select::text',
-    select_map={'Long Broken Text': '''Lorem ipsum dolor sit amet,
+setting = Setting.new(
+    'select::text',
+    select_map={
+        'Long Broken Text': '''Lorem ipsum dolor sit amet,
 
 consetetur sadipscing elitr, sed diam nonumy eirmod tempor
 invidunt ut labore et dolore magna aliquyam erat, sed diam
@@ -67,11 +70,21 @@ amet, consetetur sadipscing elitr, At accusam aliquyam diam diam dolore dolores
 duo eirmod eos erat, et nonumy sed tempor et et invidunt justo labore Stet
 clita ea et gubergren, kasd magna no rebum. sanctus sea sed takimata ut vero
 voluptua.''',
-             'Long Single Line': 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.',
-             'Short': 'Short String',
-             }, name='Dropdown',
-    mutable_items=False, mutable_list=False)
+        'Long Single Line': (
+            'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam '
+            'nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam '
+            'erat, sed diam voluptua. At vero eos et accusam et justo duo '
+            'dolores et ea rebum. Stet clita kasd gubergren, no sea takimata '
+            'sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit '
+            'amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor '
+            'invidunt ut labore et dolore magna aliquyam erat, sed diam '
+            'voluptua.'
+        ),
+        'Short': 'Short String',
+    },
+    name='Dropdown',
+    mutable_items=False,
+    mutable_list=False,
+)
 
-ManualCaseRunner() .run(
-    SettingSelectFrame,
-    setting)
+ManualCaseRunner().run(SettingSelectFrame, setting)

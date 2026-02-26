@@ -1,6 +1,7 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' interface contract for stateful classes '''
+'''interface contract for stateful classes'''
+
 from __future__ import annotations
 
 from collections import OrderedDict
@@ -8,8 +9,8 @@ from copy import deepcopy
 from typing import TypeAlias, Union
 
 
-class Stateful():
-    ''' base for classes capable of providing and restoring their state
+class Stateful:
+    '''base for classes capable of providing and restoring their state
 
     This class is an interface contract which is utilized in implementations
     for Options and Storable/Storage with it's default implementation.
@@ -34,7 +35,7 @@ class Stateful():
     # They are used for the default implementaiton of get_state()/set_state().
 
     def get_state(self, **kwarg) -> object:
-        ''' get object state
+        '''get object state
 
         See _get_state_default() for the default implementation with narrowed
         types.
@@ -42,7 +43,7 @@ class Stateful():
         return self._get_state_default(**kwarg)
 
     def set_state(self, data: object, **kwarg):
-        ''' set object state
+        '''set object state
 
         See _set_state_default() for the default implementation with narrowed
         types.
@@ -66,13 +67,12 @@ class Stateful():
     #     StateType
     DefaultStateType: TypeAlias = Union[
         DefaultBaseType | None,
-        dict[DefaultBaseType,
-             Union[DefaultBaseType, 'DefaultStateType', None]],
+        dict[DefaultBaseType, Union[DefaultBaseType, 'DefaultStateType', None]],
         list[Union['DefaultStateType', None]],
         tuple[Union['DefaultStateType', None]],
         set[Union[DefaultBaseType, None]],  # set must be hashable
         dict[str, 'DefaultStateType'],  # explicit to resolve pylint issues
-        ]
+    ]
     # For testing, the type variables are be analyzed via get_origin() and
     # get_args() to ensure coverage for serializers.
 
@@ -82,38 +82,42 @@ class Stateful():
     # uses a simplified TypeAlias:
     StateTypeDefaultForTypeCheck: TypeAlias = Union[
         DefaultBaseType, list, tuple, set, dict
-        ]
+    ]
 
     # The error class will just be normal TypeError
     @classmethod
     def type_guard_default(cls, data: object) -> dict[str, DefaultStateType]:
-        ''' type guard for Stateful default implementation '''
+        '''type guard for Stateful default implementation'''
         if not isinstance(data, dict):
             raise TypeError(
                 f'APPXF Stateful default implentation of '
                 f'get_state()/set_state() uses a '
                 f'dict[str, StateType], you provided: '
-                f'{data.__class__.__name__}')
+                f'{data.__class__.__name__}'
+            )
         for key, value in data.items():
             if not isinstance(key, str):
                 raise TypeError(
                     f'APPXF Stateful default implentation of '
                     f'get_state()/set_state() uses a dict[str, StateType], '
                     f'you provided a key: {key} '
-                    f' of type {key.__class__.__name__}')
+                    f' of type {key.__class__.__name__}'
+                )
             if not isinstance(value, (Stateful.StateTypeDefaultForTypeCheck)):
                 raise TypeError(
                     f'APPXF Stateful default implentation of '
                     f'get_state()/set_state() uses a dict[str, StateType], '
                     f'you provided a value for key={key} of type '
-                    f'{value.__class__.__name__}')
+                    f'{value.__class__.__name__}'
+                )
         return data
 
-    def get_default_state_attributes(self,
-                                     attributes: list[str] | None = None,
-                                     attribute_mask: list[str] | None = None
-                                     ) -> list[str]:
-        ''' get states for get_state()/set_state()
+    def get_default_state_attributes(
+        self,
+        attributes: list[str] | None = None,
+        attribute_mask: list[str] | None = None,
+    ) -> list[str]:
+        '''get states for get_state()/set_state()
 
         This function is also used internally for _get_state_default() and
         _set_state_default(). It returns the list of attributes either based on
@@ -136,15 +140,19 @@ class Stateful():
         if attribute_mask is None:
             attribute_mask = self.attribute_mask
         # return attribute list
-        return [attr for attr in list(dict.fromkeys(out_attributes)) if
-                attr not in attribute_mask]
+        return [
+            attr
+            for attr in list(dict.fromkeys(out_attributes))
+            if attr not in attribute_mask
+        ]
         # compile state from attributes with error handling and return
 
-    def _get_state_default(self,
-                           attributes: list[str] | None = None,
-                           attribute_mask: list[str] | None = None
-                           ) -> OrderedDict[str, Stateful.DefaultStateType]:
-        ''' get object state - default implementation
+    def _get_state_default(
+        self,
+        attributes: list[str] | None = None,
+        attribute_mask: list[str] | None = None,
+    ) -> OrderedDict[str, Stateful.DefaultStateType]:
+        '''get object state - default implementation
 
         See _get_default_state_attributes() for the considered attributes. The
         values are obtained via getattr(). Note that the class must take care
@@ -154,23 +162,26 @@ class Stateful():
         settings.
         '''
         attributes = self.get_default_state_attributes(
-            attributes=attributes,
-            attribute_mask=attribute_mask)
+            attributes=attributes, attribute_mask=attribute_mask
+        )
         # compile state from attributes with error handling and return
         data = OrderedDict()
         for key in attributes:
             if not hasattr(self, key):
                 raise TypeError(
                     f'Class {self.__class__} does not have attribute '
-                    f'{key} for get_state()]')
+                    f'{key} for get_state()]'
+                )
             data[key] = deepcopy(getattr(self, key))
         return self.type_guard_default(data)
 
-    def _set_state_default(self,
-                           data: object,
-                           attributes: list[str] | None = None,
-                           attribute_mask: list[str] | None = None):
-        ''' set object state - default implementation
+    def _set_state_default(
+        self,
+        data: object,
+        attributes: list[str] | None = None,
+        attribute_mask: list[str] | None = None,
+    ):
+        '''set object state - default implementation
 
         See _get_default_state_attributes() for the considered attributes. The
         values are written via setattr(). Note that the class must take care of
@@ -181,7 +192,8 @@ class Stateful():
         '''
         data = Stateful.type_guard_default(deepcopy(data))
         attributes = self.get_default_state_attributes(
-            attributes=attributes, attribute_mask=attribute_mask)
+            attributes=attributes, attribute_mask=attribute_mask
+        )
         for attr in data:
             if attr not in attributes:
                 raise Warning(

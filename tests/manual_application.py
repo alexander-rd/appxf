@@ -4,12 +4,14 @@ import pytest
 import tkinter
 
 from tests._fixtures import fake_tkinter
+
 fake_tkinter.activate()
 
-from appxf.gui.application import AppxfApplication # noqa E402
+from appxf.gui.application import AppxfApplication  # noqa E402
 
 # TODO: This test case was rendered "manual" but the cases look like automated
 # ones. Cannot reconsider right now since it needs more effort.
+
 
 class DummyFrame(tkinter.Frame):
     def __init__(self, parent, argOne, argTwo, *args, **kwargs):
@@ -42,9 +44,16 @@ def test_show_frame_not_existing():
 def test_register_frame():
     af = AppxfApplication()
 
-    af.register_frame('dummy', DummyFrame,
-                      'one', 'two', 'three', 'four',
-                      hello='world', something='else')
+    af.register_frame(
+        'dummy',
+        DummyFrame,
+        'one',
+        'two',
+        'three',
+        'four',
+        hello='world',
+        something='else',
+    )
 
     # ensure constructed and check the dummy frame
     af.show_frame('dummy')

@@ -4,8 +4,12 @@ import os
 import pytest
 
 from appxf.storage import Storage, CompactSerializer
-from appxf.registry import Registry, AppxfRegistryError, \
-    AppxfRegistryUnknownUser, AppxfRegistryRoleError
+from appxf.registry import (
+    Registry,
+    AppxfRegistryError,
+    AppxfRegistryUnknownUser,
+    AppxfRegistryRoleError,
+)
 
 from tests._fixtures import appxf_objects
 import tests._fixtures.test_sandbox
@@ -16,9 +20,10 @@ import tests._fixtures.test_sandbox
 # TODO: test cases on size of registry with multiple users and roles (may be
 # part of application testing)
 
+
 @pytest.fixture
 def fresh_registry(request):
-    ''' Provide an uninitialized registry '''
+    '''Provide an uninitialized registry'''
     Storage.reset()
     # Usually, testing uses RAM objects (quicker)
     path = None
@@ -28,14 +33,17 @@ def fresh_registry(request):
     return appxf_objects.get_fresh_registry(
         path=path,
         security=appxf_objects.get_security_unlocked(path),
-        config=appxf_objects.get_dummy_config())
+        config=appxf_objects.get_dummy_config(),
+    )
+
 
 @pytest.fixture
 def admin_initialized_registry(fresh_registry):
-    ''' Provide an admin-initialized registry '''
+    '''Provide an admin-initialized registry'''
     reg: Registry = fresh_registry
     reg.initialize_as_admin()
     return reg
+
 
 @pytest.fixture
 def admin_user_initialized_registry_pair(request):
@@ -43,18 +51,18 @@ def admin_user_initialized_registry_pair(request):
     # Usually, testing uses RAM objects (quicker)
     path = None
     # For debugging, you may want to use real files:
-    path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(
-        request)
+    path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(request)
 
     Storage.switch_context('admin')
-    admin_path=os.path.join(path, 'admin')
+    admin_path = os.path.join(path, 'admin')
     admin_config = appxf_objects.get_dummy_user_config()
     admin_registry = appxf_objects.get_fresh_registry(
         path=admin_path,
         security=appxf_objects.get_security_unlocked(admin_path),
         config=admin_config,
         local_name='local_registry_admin',
-        remote_name='remote_registry')
+        remote_name='remote_registry',
+    )
     # Note: admin and user have their own config and security objects since
     # both are not file based.
     Storage.switch_context('user')
@@ -65,7 +73,8 @@ def admin_user_initialized_registry_pair(request):
         security=appxf_objects.get_security_unlocked(user_path),
         config=user_config,
         local_name='local_registry_user',
-        remote_name='remote_registry')
+        remote_name='remote_registry',
+    )
     Storage.switch_context('')
 
     # initialize admin:
@@ -79,7 +88,9 @@ def admin_user_initialized_registry_pair(request):
     request_bytes = user_registry.get_request_bytes()
     print(f'Size of user request: {len(request_bytes)}')
     request = admin_registry.get_request_data(request_bytes)
-    user_id = admin_registry.add_user_from_request(request=request, roles=['user', 'new'])
+    user_id = admin_registry.add_user_from_request(
+        request=request, roles=['user', 'new']
+    )
     response = admin_registry.get_response_bytes(user_id)
     print(f'Size of response: {len(response)}')
     user_registry.set_response_bytes(response)
@@ -89,6 +100,7 @@ def admin_user_initialized_registry_pair(request):
     # Testing used context swtiching, ensure proper state for anything after:
     Storage.switch_context('')
     Storage.reset()
+
 
 def test_init(fresh_registry):
     registry: Registry = fresh_registry
@@ -115,10 +127,11 @@ def test_admin_init(admin_initialized_registry):
     assert 'admin' in registry.get_roles(0)
     assert 'user' in registry.get_roles(0)
 
+
 def test_user_init(admin_user_initialized_registry_pair):
     admin_registry: Registry = admin_user_initialized_registry_pair[0]
     user_registry: Registry = admin_user_initialized_registry_pair[1]
-    #assert user_registry.is_initialized()
+    # assert user_registry.is_initialized()
 
     # verify user ID's
     assert admin_registry.user_id == 1
@@ -139,6 +152,7 @@ def test_user_init(admin_user_initialized_registry_pair):
     assert 'new' in user_registry.get_roles()
     assert len(user_registry.get_roles()) == 3
 
+
 def test_get_admin_keys(admin_initialized_registry):
     registry: Registry = admin_initialized_registry
     admin_val_key = registry._user_db.get_verification_key(1)
@@ -150,24 +164,32 @@ def test_get_admin_keys(admin_initialized_registry):
     key_data: list[tuple] = CompactSerializer.deserialize(key_data_bytes)
 
     assert len(key_data) == 1, 'There should only be one admin key pair'
-    assert len(key_data[0]) == 3, 'There should only be the USER ID, a validataion and an encryption key'
+    assert len(key_data[0]) == 3, (
+        'There should only be the USER ID, a validataion and an encryption key'
+    )
     assert key_data[0][0] == registry.user_id, 'First in tuple should be user ID'
     assert key_data[0][1] == admin_val_key, 'Second in tuple should be validataion key'
     assert key_data[0][2] == admin_enc_key, 'Third in tuple should be encryption key'
 
-    # also include the error message when using the set_admin_key_bytes on the admin instance.
+    # also include the error message when using the set_admin_key_bytes
+    # on the admin instance.
     with pytest.raises(AppxfRegistryError) as exc_info:
         registry.set_admin_key_bytes(key_data_bytes)
     assert 'Cannot set admin keys' in str(exc_info.value)
     assert 'initialized registry' in str(exc_info.value)
 
+
 def test_set_admin_keys(fresh_registry):
     registry: Registry = fresh_registry
     assert len(registry.get_users()) == 0
     # manually build admin key data just using the users public keys:
-    data = [(1,
-             registry._security.get_signing_public_key(),
-             registry._security.get_encryption_public_key())]
+    data = [
+        (
+            1,
+            registry._security.get_signing_public_key(),
+            registry._security.get_encryption_public_key(),
+        )
+    ]
     data_bytes = CompactSerializer.serialize(data)
 
     registry.set_admin_key_bytes(data_bytes)
@@ -175,6 +197,7 @@ def test_set_admin_keys(fresh_registry):
     assert registry.get_users(role='admin') == {data[0][0]}
     assert registry._user_db.get_verification_key(1) == data[0][1]
     assert registry._user_db.get_encryption_key(1) == data[0][2]
+
 
 def test_existing_user(admin_user_initialized_registry_pair):
     admin_registry: Registry = admin_user_initialized_registry_pair[0]
@@ -189,13 +212,13 @@ def test_existing_user(admin_user_initialized_registry_pair):
 
     request_bytes = user_registry.get_request_bytes()
     request = user_registry.get_request_data(request_bytes)
-    assert user_id == admin_registry.add_user_from_request(
-        request, 'user')
+    assert user_id == admin_registry.add_user_from_request(request, 'user')
 
     # check again the user DB at admin side on the changed roles
     user_roles = admin_registry.get_roles(user_id)
     assert 'user' in user_roles
     assert 1 == len(user_roles)
+
 
 def test_registy_inconsistent_user(admin_user_initialized_registry_pair):
     admin_registry: Registry = admin_user_initialized_registry_pair[0]
@@ -222,16 +245,12 @@ def test_verify_signature_membership_and_roles(admin_user_initialized_registry_p
     # admin signs data, registry should validate for admin user
     _, sig_admin = admin_registry.sign(data)
     assert admin_registry.verify_signature(
-        data=data,
-        signing_user=admin_registry.user_id,
-        signature=sig_admin
+        data=data, signing_user=admin_registry.user_id, signature=sig_admin
     )
 
     # unknown signing user should be rejected
     assert not admin_registry.verify_signature(
-        data=data,
-        signing_user=99999,
-        signature=sig_admin
+        data=data, signing_user=99999, signature=sig_admin
     )
 
     # user signs data but does not have admin role -> role check should fail
@@ -240,11 +259,11 @@ def test_verify_signature_membership_and_roles(admin_user_initialized_registry_p
         data=data,
         signing_user=user_registry.user_id,
         signature=sig_user,
-        roles=['admin']
+        roles=['admin'],
     )
 
-def test_manual_config_update(
-    admin_user_initialized_registry_pair, request):
+
+def test_manual_config_update(admin_user_initialized_registry_pair, request):
     admin_registry: Registry = admin_user_initialized_registry_pair[0]
     user_registry: Registry = admin_user_initialized_registry_pair[1]
 
@@ -262,11 +281,14 @@ def test_manual_config_update(
     new_user_registry = appxf_objects.get_fresh_registry(
         path=new_user_path,
         security=appxf_objects.get_security_unlocked(new_user_path),
-        config=appxf_objects.get_dummy_user_config())
+        config=appxf_objects.get_dummy_user_config(),
+    )
     appxf_objects.perform_registration(
         registry=new_user_registry,
         admin_registry=admin_registry,
-        storage_scope='new_user', admin_storage_scope='admin')
+        storage_scope='new_user',
+        admin_storage_scope='admin',
+    )
 
     # Adding sections for testing - all at admin side to transfer to user
     # before more testing
@@ -280,17 +302,17 @@ def test_manual_config_update(
 
     # Handling an empty update
     update_bytes = admin_registry.get_manual_config_update_bytes(
-        sections=[], include_user_db=False)
+        sections=[], include_user_db=False
+    )
     user_registry.set_manual_config_update_bytes(update_bytes)
-    assert admin_registry.get_users() == {1, 2 , 3}
+    assert admin_registry.get_users() == {1, 2, 3}
     assert user_registry.get_users() == {1, 2}
     assert 'USER' in user_registry._config.sections
     assert 'test_section' not in user_registry._config.sections
     assert 'fixed_section' not in user_registry._config.sections
 
     # Update sections and USER DB
-    update_bytes = admin_registry.get_manual_config_update_bytes(
-        sections=section_list)
+    update_bytes = admin_registry.get_manual_config_update_bytes(sections=section_list)
     user_registry.set_manual_config_update_bytes(update_bytes)
     assert user_registry.get_users() == {1, 2, 3}
     assert 'test_section' in user_registry._config.sections
@@ -300,8 +322,7 @@ def test_manual_config_update(
 
     # Change value
     admin_registry._config.section('test_section')['test'] = 'changed'
-    update_bytes = admin_registry.get_manual_config_update_bytes(
-        sections=section_list)
+    update_bytes = admin_registry.get_manual_config_update_bytes(sections=section_list)
     user_registry.set_manual_config_update_bytes(update_bytes)
     assert 'test_section' in user_registry._config.sections
     assert user_registry._config.section('test_section')['test'] == 'changed'
@@ -310,16 +331,14 @@ def test_manual_config_update(
 
     # Remove section
     admin_registry._config.remove_section('test_section')
-    update_bytes = admin_registry.get_manual_config_update_bytes(
-        sections=section_list)
+    update_bytes = admin_registry.get_manual_config_update_bytes(sections=section_list)
     user_registry.set_manual_config_update_bytes(update_bytes)
     assert 'test_section' not in user_registry._config.sections
     assert 'fixed_section' in user_registry._config.sections
     assert user_registry._config.section('fixed_section')['test'] == 'fixed'
 
-def test_manual_update_get_errors(
-        admin_user_initialized_registry_pair
-        ):
+
+def test_manual_update_get_errors(admin_user_initialized_registry_pair):
     user_registry: Registry = admin_user_initialized_registry_pair[1]
 
     # non-admin user should not be allowed to generate updates
@@ -327,8 +346,10 @@ def test_manual_update_get_errors(
         user_registry.get_manual_config_update_bytes()
     assert 'Only admin users' in str(exc_info.value)
 
+
 def test_manual_update_set_error_unknown_user(
-    admin_user_initialized_registry_pair, request):
+    admin_user_initialized_registry_pair, request
+):
     admin_registry: Registry = admin_user_initialized_registry_pair[0]
     user_registry: Registry = admin_user_initialized_registry_pair[1]
 
@@ -339,15 +360,19 @@ def test_manual_update_set_error_unknown_user(
     new_user_registry = appxf_objects.get_fresh_registry(
         path=new_user_path,
         security=appxf_objects.get_security_unlocked(new_user_path),
-        config=appxf_objects.get_dummy_user_config())
+        config=appxf_objects.get_dummy_user_config(),
+    )
     appxf_objects.perform_registration(
         registry=new_user_registry,
         admin_registry=admin_registry,
-        storage_scope='new_user', admin_storage_scope='admin',
-        roles=['user', 'admin'])
+        storage_scope='new_user',
+        admin_storage_scope='admin',
+        roles=['user', 'admin'],
+    )
 
     update_bytes = new_user_registry.get_manual_config_update_bytes(
-        sections=[], include_user_db=False)
+        sections=[], include_user_db=False
+    )
 
     # user does not know about new_user at all:
     with pytest.raises(AppxfRegistryUnknownUser) as exc_info:

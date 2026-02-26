@@ -1,17 +1,19 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Test sandbox path handling
+'''Test sandbox path handling
 
 The test sandbox is a directory where each test case can create a sanbox for
 files and folders needed during test case execution. This module provides
 corresponding variables and helpers.
 '''
-import pytest
+
+import inspect
 import os
 import shutil
-import toml
-import inspect
 from pathlib import Path
+
+import pytest
+import toml
 
 ### Reading configuration from pyproject.toml
 try:
@@ -20,9 +22,11 @@ try:
     project_version = toml_data['project']['version']
     # get sandbox root directory for testing:
     test_sandbox_root = toml_data['tool']['appxf']['test-sandbox-root']
-    print(f'Configuration from pyproject.toml:\n'
-      f'Testing sandbox root: {test_sandbox_root}\n'
-      f'Project version: {project_version}')
+    print(
+        f'Configuration from pyproject.toml:\n'
+        f'Testing sandbox root: {test_sandbox_root}\n'
+        f'Project version: {project_version}'
+    )
 except FileNotFoundError:
     print('Warning: no pyproject.toml was found.')
     project_version = ''
@@ -30,9 +34,9 @@ except FileNotFoundError:
 
 
 def init_test_sandbox_from_fixture(
-    request: pytest.FixtureRequest,
-    cleanup: bool = True) -> str:
-    ''' Create a sandbox from a pytest fixture (request) returning the
+    request: pytest.FixtureRequest, cleanup: bool = True
+) -> str:
+    '''Create a sandbox from a pytest fixture (request) returning the
     path as string
 
     attributes:
@@ -62,7 +66,10 @@ def init_test_sandbox_from_fixture(
     if test_cls:
         class_name = test_cls.__name__
 
-    return _init_test_sandbox(module_name, module_directory, test_name, class_name, cleanup)
+    return _init_test_sandbox(
+        module_name, module_directory, test_name, class_name, cleanup
+    )
+
 
 def init_test_sandbox_for_caller_module(cleanup: bool = True) -> str:
     '''Create a sandbox for the caller returning the path as string
@@ -75,7 +82,11 @@ def init_test_sandbox_for_caller_module(cleanup: bool = True) -> str:
     caller = inspect.stack()[1]
     caller_path = Path(caller.filename).resolve()
     caller_module = inspect.getmodule(caller.frame)
-    module_name = caller_module.__name__ if caller_module and caller_module.__name__ != '__main__' else ''
+    module_name = (
+        caller_module.__name__
+        if caller_module and caller_module.__name__ != '__main__'
+        else ''
+    )
     print(f'Create sandbox caller module [{module_name}] in path [{caller_path}]')
     # Fall back to a path-derived module name when no module is available.
     if not module_name:
@@ -91,25 +102,29 @@ def init_test_sandbox_for_caller_module(cleanup: bool = True) -> str:
         module_directory=module_directory,
         test_name=module_name,
         class_name='',
-        cleanup=cleanup)
+        cleanup=cleanup,
+    )
 
-def _init_test_sandbox(module_name: str,
-                       module_directory: str,
-                       test_name: str,
-                       class_name: str = '',
-                       cleanup: bool = True) -> str:
-    print(f'Sandboxing for module [{module_name}] in [{module_directory}] '
-          f'the test [{test_name}] '
-          f'{f"(class: {class_name})" if class_name else "(no class)"}'
-          f'{" with cleanup." if cleanup else "."}')
+
+def _init_test_sandbox(
+    module_name: str,
+    module_directory: str,
+    test_name: str,
+    class_name: str = '',
+    cleanup: bool = True,
+) -> str:
+    print(
+        f'Sandboxing for module [{module_name}] in [{module_directory}] '
+        f'the test [{test_name}] '
+        f'{f"(class: {class_name})" if class_name else "(no class)"}'
+        f'{" with cleanup." if cleanup else "."}'
+    )
     sandbox_root_parent = Path(test_sandbox_root).resolve().parent
     module_path = Path(module_directory).resolve()
     try:
         relative_module_path = module_path.relative_to(sandbox_root_parent).as_posix()
     except ValueError:
         relative_module_path = module_path.name
-    if relative_module_path in ['test', 'tests']:
-        relative_module_path = ''
 
     path = test_sandbox_root
     if relative_module_path:

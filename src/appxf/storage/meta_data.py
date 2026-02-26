@@ -1,20 +1,18 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' signature behavior for authenticity '''
+'''signature behavior for authenticity'''
 
 import uuid
 from datetime import datetime
 
 
-class MetaData():
-    ''' Hold storage meta data
+class MetaData:
+    '''Hold storage meta data
 
     Meta data is mainly required for synchonization algorithms.
     '''
 
-    def __init__(self,
-                 valid: bool = True,
-                 state: dict | None = None):
+    def __init__(self, valid: bool = True, state: dict | None = None):
         if state is not None:
             self.__dict__.update(state)
         else:

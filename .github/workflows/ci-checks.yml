@@ -26,8 +26,11 @@ jobs:
       - name: Install ruff
         run: pip install ruff
 
-      - name: Run ruff
+      - name: ruff check
         run: ruff check
+
+      - name: ruff check format
+        run: ruff format --check
 
   license-headers:
     name: verify license headers

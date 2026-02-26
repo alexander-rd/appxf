@@ -1,6 +1,6 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Providing a helper to maintain test case data '''
+'''Providing a helper to maintain test case data'''
 
 from collections import OrderedDict
 from pathlib import Path
@@ -10,27 +10,25 @@ from appxf.storage import JsonSerializer, LocalStorage
 
 
 class CaseEntry:
-    def __init__(self,
-                 path: str = '',
-                 file: str = '',
-                 **kwargs):
+    def __init__(self, path: str = '', file: str = '', **kwargs):
         super().__init__(**kwargs)
-        self.data = SettingDict(settings={
-            'state': SettingSelect(
-                base_setting=SettingString(),
-                value='new',
-                select_map={state: state for state in [
-                    'new', 'valid', 'invalid']},
-                # switch off all fancy stuff to disable exporting those details
-                # into storage:
-                mutable_list=False,
-                mutable_items=False,
-                custom_value=False
+        self.data = SettingDict(
+            settings={
+                'state': SettingSelect(
+                    base_setting=SettingString(),
+                    value='new',
+                    select_map={state: state for state in ['new', 'valid', 'invalid']},
+                    # switch off all fancy stuff to disable exporting those details
+                    # into storage:
+                    mutable_list=False,
+                    mutable_items=False,
+                    custom_value=False,
                 ),
-            })
+            }
+        )
 
 
-class CaseData():
+class CaseData:
     # Test cases shall be selected efficiently which is ideally supported by
     # the database storage. The following layers may exist:
     #  1) Test case library like, unit tests and feature tests in case of
@@ -46,20 +44,16 @@ class CaseData():
     # The database is fixed to use a local, JSON (human readable) storage
     # format.
 
-    def __init__(self,
-                 path: str = 'manual_tests',
-                 **kwargs):
+    def __init__(self, path: str = 'manual_tests', **kwargs):
         super().__init__(**kwargs)
         self.root_path = path
         self.storage_factory = LocalStorage.get_factory(
-            path=path,
-            serializer=JsonSerializer)
+            path=path, serializer=JsonSerializer
+        )
         # initialize data as SettingDict:
-        self.case_data = SettingDict(
-            storage=self.storage_factory('database'))
+        self.case_data = SettingDict(storage=self.storage_factory('database'))
         # all data fields have the same entries:
-        self.case_data.set_default_constructor_for_new_keys(
-            lambda: CaseEntry().data)
+        self.case_data.set_default_constructor_for_new_keys(lambda: CaseEntry().data)
         # all known cases will be loaded:
         export_options = SettingDict.ExportOptions()
         export_options.exception_on_missing_key = False
@@ -73,9 +67,7 @@ class CaseData():
         else:
             self.case_data.store()
 
-    def new(self,
-            path: str,
-            file: str):
+    def new(self, path: str, file: str):
         # add new test case file to database
         #
         # If the file was already present, it will remain untouched.
@@ -87,8 +79,7 @@ class CaseData():
             print(f'Added new to database: {full_path}')
             self.case_data[full_path] = CaseEntry(path, file).data
 
-    def remove(self,
-               case: str):
+    def remove(self, case: str):
         # remove existing test case file from database
         #
         # case ist the full path to the file
@@ -99,7 +90,7 @@ class CaseData():
             del self.case_data[full_path]
 
     def get_case_name(self, case) -> str:
-        return Path(case).stem[len('manual_'):]
+        return Path(case).stem[len('manual_') :]
 
     def get_case_path_string(self, case: str) -> str:
         return Path(case).parent.as_posix()

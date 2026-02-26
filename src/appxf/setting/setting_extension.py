@@ -1,6 +1,6 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Extending settings with additional behavior.
+'''Extending settings with additional behavior.
 
 Fancy and planned to be reworked!
 '''
@@ -19,18 +19,17 @@ from .setting import AppxfSettingError, Setting, _BaseTypeT
 _BaseSettingT = TypeVar('_BaseSettingT', bound=Setting)
 
 
-class SettingExtension(Generic[_BaseSettingT, _BaseTypeT],
-                       Setting[_BaseTypeT]):
-    ''' Class for extended setting behavior
+class SettingExtension(Generic[_BaseSettingT, _BaseTypeT], Setting[_BaseTypeT]):
+    '''Class for extended setting behavior
 
     Class behavior relies on a base_setting (maintained as an attribute).
     '''
+
     setting_extension = ''
 
-    def __init__(self,
-                 base_setting: _BaseSettingT,
-                 value: _BaseTypeT | None = None,
-                 **kwargs):
+    def __init__(
+        self, base_setting: _BaseSettingT, value: _BaseTypeT | None = None, **kwargs
+    ):
         # base_setting has to be available during __init__ of Setting
         # since it will validate the value which should rely on the
         # base_setting. ++ base_setting also has to be an instance:
@@ -43,7 +42,8 @@ class SettingExtension(Generic[_BaseSettingT, _BaseTypeT],
         if isinstance(base_setting, type):
             raise AppxfSettingError(
                 f'base_setting input must be a Setting instance, not '
-                f'just a type. You provided {base_setting}')
+                f'just a type. You provided {base_setting}'
+            )
         self.base_setting = base_setting
         super().__init__(value=value, **kwargs)
         # also apply initial value to the base_setting - this needs to be
@@ -56,12 +56,14 @@ class SettingExtension(Generic[_BaseSettingT, _BaseTypeT],
     # SettingExtensions will not rely on get_default().
     def get_default(self) -> _BaseTypeT:
         return self.base_setting.get_default()
+
     # To still provide an implementaiton of the classmethod, we provide a dummy
     # implementation (which violates the assumed types)
 
     @classmethod
     def get_default(cls) -> _BaseTypeT:  # noqa F811
         return None  # type: ignore
+
     # TODO: the above double definition of get_default() is not correct and one
     # of the main reasons why the SettingExtension concept must be reworked.
 

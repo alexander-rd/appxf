@@ -1,6 +1,6 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Provide public key encryption (to allow others access) '''
+'''Provide public key encryption (to allow others access)'''
 
 from __future__ import annotations
 
@@ -12,11 +12,9 @@ from ._registry_base import RegistryBase
 
 
 class PublicEncryption(Storable):
-    def __init__(self,
-                 storage: Storage,
-                 registry: RegistryBase,
-                 to_roles: str = 'user',
-                 **kwargs):
+    def __init__(
+        self, storage: Storage, registry: RegistryBase, to_roles: str = 'user', **kwargs
+    ):
         super().__init__(storage, **kwargs)
         self._registry = registry
         self._to_roles = to_roles
@@ -37,4 +35,3 @@ class PublicEncryption(Storable):
     def decrypt(self, data: bytes) -> bytes:
         self.load()
         return self._registry.hybrid_decrypt(data, self._key_blob_dict)
-

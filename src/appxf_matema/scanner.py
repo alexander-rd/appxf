@@ -10,10 +10,8 @@ from pathlib import Path
 from .case_data import CaseData
 
 
-class Scanner():
-    def __init__(self,
-                 case_data: CaseData,
-                 path: str | list[str] = './tests'):
+class Scanner:
+    def __init__(self, case_data: CaseData, path: str | list[str] = './tests'):
         if isinstance(path, str):
             path = [path]
         self.path = path

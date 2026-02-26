@@ -8,42 +8,51 @@ from .storage_to_bytes import CompactSerializer, Serializer, Storage, StorageToB
 
 
 class LocalStorage(StorageToBytes):
-    ''' Maintain files in a local path. '''
+    '''Maintain files in a local path.'''
 
-    def __init__(self,
-                 file: str,
-                 path: str,
-                 serializer: type[Serializer] = CompactSerializer,
-                 ):
+    def __init__(
+        self,
+        file: str,
+        path: str,
+        serializer: type[Serializer] = CompactSerializer,
+    ):
         # Ensure the path will exist
         if not os.path.exists(path):
             os.makedirs(path, exist_ok=True)
         # Important: super().__init__() already utilizes the specific
         # implementation. Attributes must be available.
-        super().__init__(name=file,
-                         location=path,
-                         serializer=serializer,
-                         )
+        super().__init__(
+            name=file,
+            location=path,
+            serializer=serializer,
+        )
         self._path = path
 
     @classmethod
-    def get(cls, file: str, path: str,
-            serializer: type[Serializer] = CompactSerializer,
-            ) -> Storage:
-        return super().get(name=file, location=path,
-                           storage_init_fun=lambda: LocalStorage(
-                               file=file, path=path,
-                               serializer=serializer))
+    def get(
+        cls,
+        file: str,
+        path: str,
+        serializer: type[Serializer] = CompactSerializer,
+    ) -> Storage:
+        return super().get(
+            name=file,
+            location=path,
+            storage_init_fun=lambda: LocalStorage(
+                file=file, path=path, serializer=serializer
+            ),
+        )
 
     @classmethod
-    def get_factory(cls, path: str,
-                    serializer: type[Serializer] = CompactSerializer
-                    ) -> Storage.Factory:
+    def get_factory(
+        cls, path: str, serializer: type[Serializer] = CompactSerializer
+    ) -> Storage.Factory:
         return super().get_factory(
             location=path,
             storage_get_fun=lambda name: LocalStorage.get(
-                file=name, path=path,
-                serializer=serializer))
+                file=name, path=path, serializer=serializer
+            ),
+        )
 
     def _get_file_path(self, create_dir: bool):
         if self._meta:

@@ -12,6 +12,7 @@ from tests._fixtures.app_harness import AppHarness
 # well. Otherwise, we will get a "fixture not found".
 scenarios('test_bdd_registry.feature')
 
+
 @fixture(autouse=True)
 def env(request):
     # cleanup
@@ -35,28 +36,40 @@ def provide_application(env, request, role, app_status):
     Storage.switch_context('')
     env['app_' + role] = app
 
+
 @given(parsers.parse('all applications are unlocked'))
 def unlock_all_applications(env):
     for key, item in env.items():
         if not key.startswith('app_'):
             continue
-        role = key[len('app_'):]
+        role = key[len('app_') :]
         print(f'Unlocking {role}')
         Storage.switch_context(role)
         app: AppHarness = item
         app.perform_login_unlock()
         Storage.switch_context('')
 
+
 def map_config_section_name(config_section: str) -> str:
-    ''' Map config_section as used in BDD test cases to names used in the application harness '''
+    '''Map config sections to application harness
+
+    Map config_section fields as used in BDD test cases to names used in the application
+    harness.
+    '''
     if config_section in ['registry shared']:
         config_section = 'REGISTRATION_SHARED'
     if config_section in ['shared']:
         config_section = 'SHARED'
     return config_section
-@given(parsers.parse('{role} is storing {config_data} in the {config_section} configuration'))
+
+
+@given(
+    parsers.parse(
+        '{role} is storing {config_data} in the {config_section} configuration'
+    )
+)
 def store_value_in_configuration(env, role, config_data, config_section):
-    ''' Check value of test configuration
+    '''Check value of test configuration
 
     Arguments:
     role -- determines the application harness to be used
@@ -79,9 +92,14 @@ def store_value_in_configuration(env, role, config_data, config_section):
     app.config.store()
     Storage.switch_context('')
 
-@then(parsers.parse('{role} has stored {config_data} in the {config_section} configuration'))
+
+@then(
+    parsers.parse(
+        '{role} has stored {config_data} in the {config_section} configuration'
+    )
+)
 def verify_stored_in_configuration(env, role, config_data, config_section):
-    ''' Check value of test configuration
+    '''Check value of test configuration
 
     Arguments:
     role -- determines the application harness to be used
@@ -100,10 +118,12 @@ def verify_stored_in_configuration(env, role, config_data, config_section):
     assert config_data == app.config.section(config_section)['test']
     Storage.switch_context('')
 
+
 @given(parsers.parse('{role} {config_section} configuration is empty'))
 def empty_value_in_configuration(env, role, config_section):
     env['app_' + role]
     verify_stored_in_configuration(env, role, '', config_section)
+
 
 @when(parsers.parse('{role_user} registers the application to {role_admin}'))
 def register_application(env, role_user, role_admin):

@@ -1,10 +1,11 @@
 # Copyright 2023-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' Aggregate single setting frames/windows into one interface
+'''Aggregate single setting frames/windows into one interface
 
 This module handles, in particular, SettingDict but aggregates all setting_*
 modules.
 '''
+
 import math
 import tkinter
 from typing import Any, Iterable, Mapping, TypeAlias
@@ -19,12 +20,11 @@ from .setting_base import SettingFrameBase
 # Should the labels be aligned or should the space rather be used for entries.
 # What's the default setting and how to adjust?
 
-SettingInput: TypeAlias = (Setting | SettingDict |
-                           dict[str, Any] | Iterable[Setting])
+SettingInput: TypeAlias = Setting | SettingDict | dict[str, Any] | Iterable[Setting]
 
 
 def input_type_to_setting_dict(setting: SettingInput) -> SettingDict:
-    ''' Convert allowed compound setting inputs to a SettingDict'''
+    '''Convert allowed compound setting inputs to a SettingDict'''
 
     if isinstance(setting, SettingDict):
         return setting
@@ -38,9 +38,11 @@ def input_type_to_setting_dict(setting: SettingInput) -> SettingDict:
         return SettingDict(settings=setting)  # type: ignore
     # iterables of settings are also handled like SettingDict
     if isinstance(setting, Iterable) and not isinstance(setting, Mapping):
-        return SettingDict(settings={
-            this_setting.options.name: this_setting for this_setting in setting
-            })
+        return SettingDict(
+            settings={
+                this_setting.options.name: this_setting for this_setting in setting
+            }
+        )
 
     if isinstance(setting, Setting):
         return SettingDict(settings={setting.options.name: setting})
@@ -55,13 +57,17 @@ class SettingDictSingleFrame(SettingFrameBase):
     using backup() on the properties before starting this frame and
     providing a cancel button that uses restore() on the config.
     '''
+
     supports = [SettingDict]
     log = logging.getLogger(__name__ + '.SettingDictSingleFrame')
 
-    def __init__(self, parent: tkinter.BaseWidget,
-                 setting: SettingInput,
-                 frame_label: bool = True,
-                 **kwargs):
+    def __init__(
+        self,
+        parent: tkinter.BaseWidget,
+        setting: SettingInput,
+        frame_label: bool = True,
+        **kwargs,
+    ):
 
         if frame_label and setting.options.name:
             super().__init__(parent, **kwargs, text=setting.options.name)
@@ -70,9 +76,11 @@ class SettingDictSingleFrame(SettingFrameBase):
         setting = input_type_to_setting_dict(setting)
 
         # strip properties from the dict that are not mutable:
-        self.setting_dict = {key: setting.get_setting(key)
-                             for key in setting.keys()
-                             if setting.get_setting(key).options.mutable}
+        self.setting_dict = {
+            key: setting.get_setting(key)
+            for key in setting.keys()
+            if setting.get_setting(key).options.mutable
+        }
         # TODO: the above should be applied according to visibility. Not
         # mutable should still be displayed but grayed out or not editable.
 
@@ -87,20 +95,17 @@ class SettingDictSingleFrame(SettingFrameBase):
         element_gui_options = {}
         self.frame_list: list[SettingFrameBase] = []
         for key, this_setting in self.setting_dict.items():
-            self._place_setting_frame(
-                this_setting,
-                element_gui_options.get(key, {}))
+            self._place_setting_frame(this_setting, element_gui_options.get(key, {}))
 
     def _place_setting_frame(self, setting: Setting, gui_options):
         if 'frame_type' in gui_options:
-            setting_frame = gui_options['frame_type'](
-                self, setting, gui_options)
+            setting_frame = gui_options['frame_type'](self, setting, gui_options)
         setting_frame = GridFrame.get_frame(self, setting, **gui_options)
         self.place(setting_frame, row=len(self.frame_list), column=0)
         # apply row weight from underlying frame:
         self.rowconfigure(
-            len(self.frame_list),
-            weight=setting_frame.get_total_row_weight())
+            len(self.frame_list), weight=setting_frame.get_total_row_weight()
+        )
 
         self.frame_list.append(setting_frame)
 
@@ -177,12 +182,15 @@ class SettingDictSingleFrame(SettingFrameBase):
 
 
 class SettingDictColumnFrame(SettingFrameBase):
-    def __init__(self, parent: tkinter.BaseWidget,
-                 setting: SettingInput,
-                 columns: int,
-                 appxf_options: dict | None = None,
-                 frame_label: bool = True,
-                 **kwargs):
+    def __init__(
+        self,
+        parent: tkinter.BaseWidget,
+        setting: SettingInput,
+        columns: int,
+        appxf_options: dict | None = None,
+        frame_label: bool = True,
+        **kwargs,
+    ):
         # kwargs is NOT passed down to THIS frame. It will be passed down to
         # the column frames. This is hopefully more likely what a user might
         # want.
@@ -195,16 +203,15 @@ class SettingDictColumnFrame(SettingFrameBase):
         key_list = list(setting.keys())
         direction = appxf_options.get('column_direction', 'down')
         if direction == 'down':
-            items_per_col = math.ceil(len(key_list)/columns)
-            key_to_sub_dict = [int(i/items_per_col)
-                               for i in range(len(key_list))]
+            items_per_col = math.ceil(len(key_list) / columns)
+            key_to_sub_dict = [int(i / items_per_col) for i in range(len(key_list))]
         elif direction == 'right':
-            key_to_sub_dict = [i % columns
-                               for i in range(len(key_list))]
+            key_to_sub_dict = [i % columns for i in range(len(key_list))]
         else:
             raise ValueError(
                 f'"column_direction" only supports "down" or '
-                f'"right", you provided "{direction}"')
+                f'"right", you provided "{direction}"'
+            )
 
         # fill property dictionaries
         prop_dict_list = [SettingDict() for i in range(columns)]
@@ -217,7 +224,8 @@ class SettingDictColumnFrame(SettingFrameBase):
         for prop_dict in prop_dict_list:
             self.columnconfigure(len(self.frame_list), weight=1)
             this_frame = SettingDictSingleFrame(
-                self, prop_dict, frame_label=False, **kwargs)
+                self, prop_dict, frame_label=False, **kwargs
+            )
             self.place(this_frame, row=0, column=len(self.frame_list))
             self.frame_list.append(this_frame)
             if this_frame.get_total_row_weight() > max_row_weight_over_columns:
@@ -244,22 +252,28 @@ class SettingDictColumnFrame(SettingFrameBase):
 
 
 class SettingDictWindow(GridToplevel):
-    ''' Display dialog for Settings or Setting dicts '''
+    '''Display dialog for Settings or Setting dicts'''
+
     log = logging.getLogger(__name__ + '.SettingDictWindow')
 
-    def __init__(self, parent,
-                 title: str,
-                 setting: Setting | SettingDict,
-                 appxf_options: dict | None = None,
-                 **kwargs):
+    def __init__(
+        self,
+        parent,
+        title: str,
+        setting: Setting | SettingDict,
+        appxf_options: dict | None = None,
+        **kwargs,
+    ):
         '''
         Create GUI window to edit a dictionary of properties.
         '''
-        super().__init__(parent,
-                         title=title,
-                         buttons=['Cancel', 'OK'],
-                         key_enter_as_button='OK',
-                         **kwargs)
+        super().__init__(
+            parent,
+            title=title,
+            buttons=['Cancel', 'OK'],
+            key_enter_as_button='OK',
+            **kwargs,
+        )
         if appxf_options is None:
             appxf_options = {}
         # Whole class operated on SettingDict and a single setting is just cast
@@ -268,11 +282,11 @@ class SettingDictWindow(GridToplevel):
         if isinstance(setting, SettingDict):
             self.property_dict = setting
         elif isinstance(setting, Setting):
-            self.property_dict = SettingDict(
-                settings={setting.options.name: setting})
+            self.property_dict = SettingDict(settings={setting.options.name: setting})
         else:
-            raise AppxfGuiError(f'Setting must be AppxfSetting or SettingDict '
-                                f'but is {type(setting)}')
+            raise AppxfGuiError(
+                f'Setting must be AppxfSetting or SettingDict but is {type(setting)}'
+            )
         # Ensure values are stored. If congiuration fails, values will be
         # reloaded.
         self.property_dict.store()
@@ -280,12 +294,21 @@ class SettingDictWindow(GridToplevel):
         columns = appxf_options.get('columns', 1)
         if columns <= 1:
             self.dict_frame = SettingDictSingleFrame(
-                self, self.property_dict,
-                frame_label=False, row_spread=True, **appxf_options)
+                self,
+                self.property_dict,
+                frame_label=False,
+                row_spread=True,
+                **appxf_options,
+            )
         else:
             self.dict_frame = SettingDictColumnFrame(
-                self, self.property_dict, columns, appxf_options,
-                frame_label=False, row_spread=True)
+                self,
+                self.property_dict,
+                columns,
+                appxf_options,
+                frame_label=False,
+                row_spread=True,
+            )
         self.place_frame(self.dict_frame)
         self.update()
         self.dict_frame.adjust_left_columnwidth()

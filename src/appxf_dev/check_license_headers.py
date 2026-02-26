@@ -15,16 +15,16 @@ COPYRIGHT_AUTHOR = 'the contributors of APPXF (github.com/alexander-nbg/appxf)'
 # License phrases are fixed strings and no alterations are expected. With
 # SPDX-License-Identifier, only a single line is expected.
 LICENSES = {
-    '.py':      'SPDX-License-Identifier: Apache-2.0',
-    '.po':      'SPDX-License-Identifier: Apache-2.0',
-    '.pot':     'SPDX-License-Identifier: Apache-2.0',
+    '.py': 'SPDX-License-Identifier: Apache-2.0',
+    '.po': 'SPDX-License-Identifier: Apache-2.0',
+    '.pot': 'SPDX-License-Identifier: Apache-2.0',
     '.feature': 'SPDX-License-Identifier: Apache-2.0',
-    '.toml':    'SPDX-License-Identifier: 0BSD',
-    '.sh':      'SPDX-License-Identifier: 0BSD',
-    '.yml':     'SPDX-License-Identifier: 0BSD',
-    '.yaml':    'SPDX-License-Identifier: 0BSD',
-    '.md':      'SPDX-License-Identifier: 0BSD',
-    '.puml':    'SPDX-License-Identifier: 0BSD',
+    '.toml': 'SPDX-License-Identifier: 0BSD',
+    '.sh': 'SPDX-License-Identifier: 0BSD',
+    '.yml': 'SPDX-License-Identifier: 0BSD',
+    '.yaml': 'SPDX-License-Identifier: 0BSD',
+    '.md': 'SPDX-License-Identifier: 0BSD',
+    '.puml': 'SPDX-License-Identifier: 0BSD',
 }
 
 EXCLUSION_FILE = 'LICENSE'
@@ -32,7 +32,7 @@ EXCLUSION_START_MARKER = 'FILES WITHOUT LICENSE TAGS'
 
 
 def get_git_repo_root() -> Path:
-    ''' Identify root path of the current git repository '''
+    '''Identify root path of the current git repository'''
 
     root_result = subprocess.run(
         ['git', 'rev-parse', '--show-toplevel'],
@@ -45,7 +45,7 @@ def get_git_repo_root() -> Path:
 
 
 def get_git_files() -> list[Path]:
-    ''' Get list of files maintained by git
+    '''Get list of files maintained by git
 
     The git repository is identified by the main caller's execution path.
     '''
@@ -61,13 +61,15 @@ def get_git_files() -> list[Path]:
         text=True,
     )
 
-    return [relative_file
-            for relative_file in files_result.stdout.split('\0')
-            if relative_file]
+    return [
+        relative_file
+        for relative_file in files_result.stdout.split('\0')
+        if relative_file
+    ]
 
 
 def get_exclusion_patterns() -> list[str]:
-    ''' Read exclusion patterns '''
+    '''Read exclusion patterns'''
     repo_root = get_git_repo_root()
     exclusion_file = repo_root / EXCLUSION_FILE
     found_marker = False
@@ -87,7 +89,7 @@ def get_exclusion_patterns() -> list[str]:
 
 
 def is_excluded_file(file: str, repo_root: Path, patterns: list[str]) -> bool:
-    ''' Check if file matches an exclusion pattern '''
+    '''Check if file matches an exclusion pattern'''
     for pattern in patterns:
         if fnmatch(file, pattern):
             return True
@@ -95,7 +97,7 @@ def is_excluded_file(file: str, repo_root: Path, patterns: list[str]) -> bool:
 
 
 def verify_file_header(file: Path) -> bool:
-    ''' Verify required information in file headers
+    '''Verify required information in file headers
 
     Expected are copyright and license information. Note some file types
     include this information on other places.
@@ -103,9 +105,16 @@ def verify_file_header(file: Path) -> bool:
     has_copyright = False
     has_license = False
 
-    if file.suffix in ['.py', '.pot', '.po',
-                       '.feature', '.toml', '.sh',
-                       '.yml', '.yaml']:
+    if file.suffix in [
+        '.py',
+        '.pot',
+        '.po',
+        '.feature',
+        '.toml',
+        '.sh',
+        '.yml',
+        '.yaml',
+    ]:
         # Expected are copyright lines followed by SPDX license identifyer
         # (Apache). There may be more copyright lines - only one must contain
         # the expected author/contributor text.
@@ -163,7 +172,7 @@ def verify_file_header(file: Path) -> bool:
 
 
 def verify_git_files() -> bool:
-    ''' Verify that all git files are .py files '''
+    '''Verify that all git files are .py files'''
     file_list = get_git_files()
     repo_root = get_git_repo_root()
     exclusion_patterns = get_exclusion_patterns()
@@ -184,10 +193,11 @@ def verify_git_files() -> bool:
             not_verified_files += 1
 
     if not_verified_files:
-        print(f'{not_verified_files} file(s) failed copyright/license '
-              f'verification.')
-        print('Please add corresonding information. If not applicable, add '
-              'files explicitly to the LICENSE text file.')
+        print(f'{not_verified_files} file(s) failed copyright/license verification.')
+        print(
+            'Please add corresonding information. If not applicable, add '
+            'files explicitly to the LICENSE text file.'
+        )
     else:
         print('Copyright/License information verified for all maintained files.')
     return not_verified_files == 0

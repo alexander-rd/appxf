@@ -1,6 +1,6 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-''' SettingSelect for altering existing content
+'''SettingSelect for altering existing content
 
 __Main Scope:__ Use case is "templating" where the SettingSelect comprises a
 fixed set of options which the user can alter.
@@ -26,26 +26,32 @@ from appxf_matema.case_runner import ManualCaseRunner
 from appxf.setting import Setting
 from appxf.gui import GridToplevel, SettingSelectDetailFrame
 
-setting = Setting.new('select::text',
-    select_map={'01 One': 'Template text 01 to be adapted.',
-                '02 Two': 'Template text 02 to be adapted.',
-                '42 Fourty Two': 'Template text 42 to be adapted.',
-                },
+setting = Setting.new(
+    'select::text',
+    select_map={
+        '01 One': 'Template text 01 to be adapted.',
+        '02 Two': 'Template text 02 to be adapted.',
+        '42 Fourty Two': 'Template text 42 to be adapted.',
+    },
     name='Templated String',
     base_setting_options={'display_height': 20, 'display_width': 60},
-    mutable_list = False,
-    mutable_items = True,
-    custom_value = True)
+    mutable_list=False,
+    mutable_items=True,
+    custom_value=True,
+)
+
 
 class WindowForTesting(GridToplevel):
     def __init__(self, parent: tkinter.BaseWidget):
-        super().__init__(parent=parent,
-                         title='Testing Templated Text via SettingSelect')
+        super().__init__(
+            parent=parent, title='Testing Templated Text via SettingSelect'
+        )
         self.bind('<<OK>>', lambda event: self._handle_ok())
         self.place_frame(SettingSelectDetailFrame(self, setting))
 
     def _handle_ok(self):
         print(f'Current Text:\n{setting.base_setting.value}')
+
 
 ManualCaseRunner().run(WindowForTesting)
 
