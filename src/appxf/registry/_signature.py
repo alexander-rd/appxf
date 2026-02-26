@@ -4,8 +4,8 @@
 
 from __future__ import annotations
 
-from appxf.storage import Storage, Storable
 from appxf.security import Security
+from appxf.storage import Storable, Storage
 
 
 class Signature(Storable):

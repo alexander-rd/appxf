@@ -3,8 +3,8 @@
 '''
 Provide GUI classes for APPXF Setting objects.
 '''
-from abc import ABC, abstractmethod
 import tkinter
+from abc import ABC, abstractmethod
 
 from appxf import logging
 from appxf.setting import Setting, SettingBool

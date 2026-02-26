@@ -7,14 +7,16 @@
 # there will be a command line integration, this would be one staying in APPXF
 # scope.
 
-from .common import GridFrame, ButtonFrame, GridToplevel, GridTk, AppxfGuiError
-
-from .setting_base import SettingFrameDefault
-from .setting_select import SettingSelectFrame, SettingSelectDetailFrame
-from .setting_dict import SettingDictColumnFrame, SettingDictSingleFrame, SettingDictWindow
-
 from .application import AppxfApplication
+from .common import AppxfGuiError, ButtonFrame, GridFrame, GridTk, GridToplevel
 from .config import ConfigMenu
 from .login import Login
-from .registration_user import RegistrationUser
 from .registration_admin import RegistrationAdmin
+from .registration_user import RegistrationUser
+from .setting_base import SettingFrameDefault
+from .setting_dict import (
+    SettingDictColumnFrame,
+    SettingDictSingleFrame,
+    SettingDictWindow,
+)
+from .setting_select import SettingSelectDetailFrame, SettingSelectFrame

@@ -10,12 +10,13 @@ the following support for usage in applications:
    passwords
 '''
 from __future__ import annotations
+
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
-from typing import Generic, TypeVar, Any
 from dataclasses import dataclass
+from typing import Any, Generic, TypeVar
 
-from appxf import Stateful, Options
+from appxf import Options, Stateful
 
 
 class AppxfSettingError(Exception):

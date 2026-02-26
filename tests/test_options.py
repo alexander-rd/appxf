@@ -52,7 +52,7 @@ def test_init_named_option_via_dict():
 def test_init_named_option_invalid_type():
     ''' Test initializazion via options=<invalid type> '''
     with pytest.raises(AttributeError) as exc:
-        options = DefaultTestOptions.new_from_kwarg({'options': 42})
+        DefaultTestOptions.new_from_kwarg({'options': 42})
     # General error statement with option name:
     assert 'Argument options must be ' in str(exc.value)
     assert 'DefaultTestOptions' in str(exc.value)
@@ -61,7 +61,7 @@ def test_init_named_option_invalid_type():
 def test_init_named_option_unknown_key():
     ''' Test initializazion via options={} with unknown key '''
     with pytest.raises(AttributeError) as exc:
-        options = DefaultTestOptions.new_from_kwarg(
+        DefaultTestOptions.new_from_kwarg(
             {'options': {'unknown': 42}})
     # General error statement with option name:
     assert 'Argument [unknown] is unknown' in str(exc.value)

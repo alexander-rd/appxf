@@ -1,8 +1,9 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-import pytest
 
-from tests._fixtures import application, appxf_objects
+# import pytest
+
+# from tests._fixtures import application, appxf_objects
 
 # TODO: CURRENT REFACTORING: move unlocked user/admin pair from registry test
 #       to appxf_objects to use in here.

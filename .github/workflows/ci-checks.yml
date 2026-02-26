@@ -13,6 +13,22 @@ on:
 # TODO: Flake 8 is not yet active.
 
 jobs:
+  ruff:
+    name: ruff lint
+    runs-on: ubuntu-slim
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Run ruff
+        run: ruff check
+
   license-headers:
     name: verify license headers
     runs-on: ubuntu-slim
@@ -25,7 +41,7 @@ jobs:
 
   test-linux:
     name: test linux
-    needs: license-headers
+    needs: [license-headers, ruff]
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -46,7 +62,7 @@ jobs:
 
   test-windows:
     name: test windows
-    needs: license-headers
+    needs: [license-headers, ruff]
     strategy:
       matrix:
         os: [windows-latest]

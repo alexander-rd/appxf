@@ -7,14 +7,14 @@
 
 # TODO: find a way to start/stop the testing window together with a debug
 # window to show states.
-import markdown
 import re
 import tkinter
-
 from dataclasses import dataclass
 from functools import cached_property
-from tkhtmlview import HTMLLabel
 from typing import Callable
+
+import markdown
+from tkhtmlview import HTMLLabel
 
 from appxf_matema.case_info import CaseInfo
 from appxf_matema.git_info import GitInfo

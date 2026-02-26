@@ -2,19 +2,18 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
-import inspect
 import json
 import subprocess
 import sys
 import tkinter
-
 from functools import cached_property
 
 from appxf import logging
-from appxf_matema.case_parser import CaseParser
 from appxf_matema.case_info import CaseInfo
-from appxf_matema.git_info import GitInfo
+from appxf_matema.case_parser import CaseParser
 from appxf_matema.case_runner_gui import CaseRunnerGui
+from appxf_matema.git_info import GitInfo
+
 
 class ManualCaseRunner:
     ''' Interface Wrapper for Test Cases

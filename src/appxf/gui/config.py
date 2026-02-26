@@ -5,15 +5,14 @@ Provide GUI classes for yagni_cft Config objects.
 '''
 
 import tkinter
-from appxf.logging import logging
 
 from appxf.config import Config
-from appxf.registry import Registry
-
 from appxf.gui import manual_config_update
-from appxf.gui.setting_dict import SettingDictWindow
 from appxf.gui.locale import _
 from appxf.gui.registration_admin import RegistrationAdmin
+from appxf.gui.setting_dict import SettingDictWindow
+from appxf.logging import logging
+from appxf.registry import Registry
 
 # TODO: better option on when to validate input:
 # https://www.plus2net.com/python/tkinter-validation.php

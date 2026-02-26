@@ -1,7 +1,8 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-from functools import cached_property
 import subprocess
+from functools import cached_property
+
 
 class GitInfo:
     def __init__(self):

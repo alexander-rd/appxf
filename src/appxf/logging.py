@@ -5,6 +5,7 @@ import os
 import sys
 import traceback
 import warnings
+
 from . import fileversions
 
 # Expected usage will likely not include appxf.logging and python builtin

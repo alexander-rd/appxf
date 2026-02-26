@@ -2,10 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 import datetime
 import re
-
 from functools import cached_property
 
 from appxf_matema.case_parser import CaseParser
+
 
 class CaseInfo:
     def __init__(

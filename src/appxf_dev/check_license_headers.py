@@ -1,8 +1,8 @@
 # Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-from pathlib import Path
-from fnmatch import fnmatch
 import subprocess
+from fnmatch import fnmatch
+from pathlib import Path
 
 # Expected copyright phrase has three parts:
 #  * "Copyright "
@@ -156,7 +156,8 @@ def verify_file_header(file: Path) -> bool:
         if not has_copyright:
             print('  Missing or invalid copyright')
         if not has_license:
-            print(f'  Missing SPDX license identifier: {LICENSES[file.suffix].split(": ")[1]}')
+            spdx_id = LICENSES[file.suffix].split(': ')[1]
+            print(f'  Missing SPDX license identifier: {spdx_id}')
         return False
     return True
 

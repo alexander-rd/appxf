@@ -3,7 +3,6 @@
 import base64
 import json
 import re
-
 from collections import OrderedDict
 
 from .serializer import Serializer

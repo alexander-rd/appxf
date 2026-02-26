@@ -8,12 +8,12 @@ module provides get_filename() to construct corresponging filenames, like:
 (without date information).
 '''
 
+import datetime
 import logging
 import os.path
 import re
-import datetime
-from babel.dates import format_date
 
+from babel.dates import format_date
 
 # Setup logging
 log = logging.getLogger(__name__)

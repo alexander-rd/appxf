@@ -2,5 +2,5 @@
 # SPDX-License-Identifier: Apache-2.0
 '''Facade for APPXF security module '''
 
-from .security import Security, AppxfSecurityException
 from .private_storage import SecurePrivateStorage
+from .security import AppxfSecurityException, Security

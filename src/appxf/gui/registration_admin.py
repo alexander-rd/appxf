@@ -11,9 +11,9 @@ import tkinter
 from tkinter import filedialog, messagebox
 
 from appxf import logging
+from appxf.gui.setting_dict import SettingDictColumnFrame, SettingDictSingleFrame
 from appxf.registry import Registry
 from appxf.setting import Setting, SettingDict
-from appxf.gui.setting_dict import SettingDictSingleFrame, SettingDictColumnFrame
 
 # TODO: This file is in DRAFT STATUS, mostly generated with GitHub copilot and
 # needs a detailed review. Currently, getting the GUI and behavior right is
@@ -182,11 +182,11 @@ class RegistrationAdmin:
                     parent=self._admin_window,
                 )
                 self._current_user_id = user_id
-            except (ValueError, KeyError) as e:
+            except (ValueError, KeyError):
                 self.log.exception('Failed to add user.')
                 messagebox.showerror(
                     'Error',
-                    f'Failed to add user (see log for details).',
+                    'Failed to add user (see log for details).',
                     parent=self._admin_window,
                 )
 
@@ -325,7 +325,6 @@ class RegistrationAdmin:
         Arguments:
             request_bytes -- Serialized registration request bytes
         '''
-        from appxf.registry._registration_request import RegistrationRequest
 
         try:
             request = self._registry.get_request_data(request_bytes)

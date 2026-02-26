@@ -3,9 +3,10 @@
 # Test directories need to be scanned for manual_*.py files to initialize the
 # test database. In case of renaming or removal, such test cases also must be
 # removed. This is done by the Scanner class.
-import os
 import fnmatch
+import os
 from pathlib import Path
+
 from .case_data import CaseData
 
 

@@ -7,7 +7,7 @@ import math
 
 from abc import ABC, abstractmethod
 
-from typing import get_origin, get_args, Union, ForwardRef
+from typing import get_origin, get_args, Union
 from types import UnionType
 
 from appxf import Stateful

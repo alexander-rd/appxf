@@ -3,15 +3,14 @@
 ''' Definition of basic types like int or str as settings
 '''
 from __future__ import annotations
-from typing import Type, Any
-from dataclasses import dataclass
-from email_validator import validate_email, EmailNotValidError
 
 import base64
 import binascii
-import re
 import configparser
+from dataclasses import dataclass
+from typing import Any, Type
 
+from email_validator import EmailNotValidError, validate_email
 
 from .setting import Setting, _BaseTypeT
 
@@ -140,11 +139,11 @@ def validated_conversion_configparser(
     config = configparser.ConfigParser()
     config.read_string(f'[DEFAULT]\ntest = {string}')
     try:
-        if res_type == bool:
+        if res_type is bool:
             value = config.getboolean('DEFAULT', 'test')
-        elif res_type == int:
+        elif res_type is int:
             value = config.getint('DEFAULT', 'test')
-        elif res_type == float:
+        elif res_type is float:
             value = config.getfloat('DEFAULT', 'test')
         else:
             return False, default

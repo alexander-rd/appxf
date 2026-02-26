@@ -3,11 +3,12 @@
 ''' Implementation of SettingSelect, selecting a value from a predefined list
 '''
 from __future__ import annotations
-from typing import Any
-from dataclasses import dataclass
-from copy import deepcopy
 
-from .setting import Setting, _BaseTypeT, AppxfSettingError
+from copy import deepcopy
+from dataclasses import dataclass
+from typing import Any
+
+from .setting import AppxfSettingError, Setting, _BaseTypeT
 from .setting_extension import SettingExtension, _BaseSettingT
 
 # Intent is to support data like long text templates by selecting and

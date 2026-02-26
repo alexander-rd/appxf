@@ -3,6 +3,7 @@
 
 import inspect
 
+
 class CaseParser:
     def __init__(self, stack_index: int = 0):
         # caller should not be aware of this __init__ adding a level of stack:

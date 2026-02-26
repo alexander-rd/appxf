@@ -2,7 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 '''Facade for APPXF registry module'''
 
-from .registry import Registry, \
-    AppxfRegistryError, AppxfRegistryUnknownUser, AppxfRegistryRoleError
+from .registry import (
+    AppxfRegistryError,
+    AppxfRegistryRoleError,
+    AppxfRegistryUnknownUser,
+    Registry,
+)
 from .shared_storage import SecureSharedStorage
 from .shared_sync import SharedSync

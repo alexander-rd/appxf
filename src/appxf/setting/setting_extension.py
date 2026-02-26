@@ -8,9 +8,10 @@ Fancy and planned to be reworked!
 # deriving from it.
 
 from __future__ import annotations
-from typing import Generic, Any, TypeVar
 
-from .setting import Setting, _BaseTypeT, AppxfSettingError
+from typing import Any, Generic, TypeVar
+
+from .setting import AppxfSettingError, Setting, _BaseTypeT
 
 # SettingExtension needs to remain generic with respect to the original base
 # type (like int or str) but also with respect to the specific Setting it

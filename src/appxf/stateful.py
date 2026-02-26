@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 ''' interface contract for stateful classes '''
 from __future__ import annotations
+
 from collections import OrderedDict
 from copy import deepcopy
 from typing import TypeAlias, Union

@@ -10,8 +10,8 @@ deserialize() via RestrictedUnpickler according to pickle documentation:
 https://docs.python.org/3/library/pickle.html#restricting-globals.
 '''
 
-import pickle
 import io
+import pickle
 from collections import OrderedDict
 
 from .serializer import Serializer

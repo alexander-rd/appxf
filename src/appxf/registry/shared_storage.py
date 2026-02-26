@@ -4,15 +4,19 @@
 # allow class name being used before being fully defined (like in same class):
 from __future__ import annotations
 
-from appxf.storage import (
-    StorageToBytes, Storage, AppxfStorageError,
-    Serializer, CompactSerializer, JsonSerializer,
-    )
 from appxf.security import Security
+from appxf.storage import (
+    AppxfStorageError,
+    CompactSerializer,
+    JsonSerializer,
+    Serializer,
+    Storage,
+    StorageToBytes,
+)
 
+from ._public_encryption import PublicEncryption
 from ._registry_base import RegistryBase
 from ._signature import Signature
-from ._public_encryption import PublicEncryption
 
 # SecureSharedStorage uses two meta files for which we define the serializers:
 StorageToBytes.set_meta_serializer('signature', JsonSerializer)

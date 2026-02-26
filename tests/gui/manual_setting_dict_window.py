@@ -9,7 +9,6 @@ from appxf_matema.case_runner import ManualCaseRunner
 from appxf.setting import SettingBool, SettingString, SettingEmail, SettingDict
 from appxf.setting import SettingBase64
 from appxf.gui.setting_dict import SettingDictWindow
-from appxf import logging
 
 #logging.activate_logging()
 #logging.console_handler.setFormatter(logging.file_formatter)

@@ -5,14 +5,14 @@
 This module handles, in particular, SettingDict but aggregates all setting_*
 modules.
 '''
-from typing import Any, Mapping, Iterable, TypeAlias
-import tkinter
 import math
+import tkinter
+from typing import Any, Iterable, Mapping, TypeAlias
 
 from appxf import logging
 from appxf.setting import Setting, SettingDict
 
-from .common import AppxfGuiError, GridToplevel, GridFrame
+from .common import AppxfGuiError, GridFrame, GridToplevel
 from .setting_base import SettingFrameBase
 
 # TODO: There is a matter of style open for displaying settings in a column.

@@ -3,7 +3,7 @@
 ''' Provide a GUI for the application harness '''
 import os
 from appxf.gui import AppxfApplication, ConfigMenu, Login
-from appxf.gui import RegistrationUser, RegistrationAdmin
+from appxf.gui import RegistrationUser
 from tests._fixtures.app_harness import AppHarness
 
 

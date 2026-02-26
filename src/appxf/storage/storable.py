@@ -3,6 +3,7 @@
 ''' Class definitions for storage handling. '''
 
 from appxf import Stateful
+
 from .ram import RamStorage
 from .storage import Storage
 

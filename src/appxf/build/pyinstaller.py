@@ -18,7 +18,6 @@ import time
 from pathlib import Path
 from typing import List, Optional
 
-
 # Build directory paths (module-level constants)
 BUILD_DIR = Path('./build')
 ENV_PATH = BUILD_DIR / '.env'
@@ -103,7 +102,11 @@ def get_activation_script() -> str:
         return f'source {ENV_PATH / "bin" / "activate"}'
 
 
-def run_in_venv(cmd: List[str], verbose: bool = False, **kwargs) -> subprocess.CompletedProcess:
+def run_in_venv(
+        cmd: List[str],
+        verbose: bool = False,
+        **kwargs
+    ) -> subprocess.CompletedProcess:
     '''Run a command within the virtual environment.'''
     # Use the full path to the venv executables (works on all platforms)
     if platform.system() == 'Windows':
@@ -253,7 +256,9 @@ Build outputs:
         type=Path,
         nargs='*',
         default=[],
-        help='Additional requirements files to install (default: requirements.txt, appxf/requirements.txt)'
+        help=(
+            'Additional requirements files to install '
+            '(default: requirements.txt, appxf/requirements.txt)')
     )
     parser.add_argument(
         '--editable-packages',
@@ -310,7 +315,7 @@ Build outputs:
     print(f'{"="*60}')
     print(f'Platform: {platform.system()}')
     print(f'Main file: {main_file}')
-    print(f'Build directory: ./build/')
+    print('Build directory: ./build/')
     print(f'Clean build: {args.clean}')
     print(f'Verbose: {args.verbose}')
     print(f'{"="*60}')
@@ -369,7 +374,9 @@ Build outputs:
             save_build_info(verbose=args.verbose)
 
         print(f'\n{"="*60}')
-        print(f'Build completed successfully! (Total time: {elapsed_time(start_total)})')
+        print(
+            f'Build completed successfully! (Total time: {elapsed_time(start_total)})'
+        )
         print(f'{"="*60}')
 
     except subprocess.CalledProcessError as e:

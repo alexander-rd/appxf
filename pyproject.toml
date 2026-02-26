@@ -1,16 +1,5 @@
 # Copyright 2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: 0BSD
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.hatch.build]
-exclude = [
-  "/.*",
-  "tests",
-  "requirements_test.txt"
-]
-
 [project]
 name = "appxf"
 version = "0.0.3a0"
@@ -26,6 +15,17 @@ classifiers = [
     "Programming Language :: Python :: 3"
 ]
 
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+exclude = [
+  "/.*",
+  "tests",
+  "requirements_test.txt"
+]
+
 [project.entry-points.pyinstaller40]
 hook-dirs = "appxf.pyinstaller:get_hook_dirs"
 
@@ -35,17 +35,41 @@ hook-dirs = "appxf.pyinstaller:get_hook_dirs"
 # subfolders.
 test-sandbox-root = "./.testing"
 
-# Note: flake8 does not support reading configuration from pyproject.toml. You
-# have to install pyproject-flake8 and run flake8p to have the following
-# conifugration effective.
-# See: https://pypi.org/project/Flake8-pyproject/
-[tool.flake8]
-filename = './src/**/*.py'
-per-file-ignores = [
-    # ignore "not used imports" in __init__ files:
-    '__init__.py:F401',
-]
-count = true
+[tool.ruff]
+# Note: Line length default is already 88. Minimum python version is taken from project
+# configuration.
+extend-exclude = ["tests", "tests_features"]
+# TODO: There is actually no reason to exclude tests from using good python code.
+# Except, right now, there is no time to fix those legacy flaws.
+
+[tool.ruff.lint]
+# Remarks:
+#  * E (pycodestyle errors; PEP8)
+#  * F (pyflakes; flake8 defaults)
+select = ["E", "F"]
+# TODO: Review and consider the following further checks:
+# "W"  - pycodestyle warnings (whitespace, blank lines)
+# "I"  - isort import ordering (ensures consistent import order)
+# "N"  - pep8 naming conventions (variable, function, class names)
+# "UP" - pyupgrade: enforce modern Python syntax (e.g. f-strings, type hints)
+# "B"  - flake8-bugbear: opinionated checks that catch common bugs
+# "C4" - flake8-comprehensions: unnecessary list/dict/set comprehensions
+# "SIM"- flake8-simplify: suggest simpler code constructs
+# "ANN"- flake8-annotations: enforce type annotations
+# "RUF"- ruff-specific rules (misc. best-practice checks)
+
+[tool.ruff.format]
+quote-style = "preserve"
+
+[tool.ruff.lint.per-file-ignores]
+# Unused imports in __init__.py are intentional re-exports.
+"__init__.py" = ["F401"]
+# TODO: This is a slight issue since in some occasions, it causes unwanted dependencies.
+# Example: when storage activated FTP again, any usage of storage would also import the
+# dependency to FTP. This is acceptable for now, but not on the long run. Despite the
+# other solutions (adding to __all__ and maxing the re-imports explicit with [import XY
+# as XY]), merging classes into appropriate longer module files would enable dropping
+# the module facade in __init__.py
 
 [tool.tox]
 legacy_tox_ini = """
