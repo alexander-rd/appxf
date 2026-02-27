@@ -1,9 +1,9 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Extending settings with additional behavior.
+"""Extending settings with additional behavior.
 
 Fancy and planned to be reworked!
-'''
+"""
 # TODO #17: refactoring according to ticket #17 - aggregate Setting instead of
 # deriving from it.
 
@@ -16,16 +16,16 @@ from .setting import AppxfSettingError, Setting, _BaseTypeT
 # SettingExtension needs to remain generic with respect to the original base
 # type (like int or str) but also with respect to the specific Setting it
 # extends. To remain a Setting, it also needs to derive from Setting.
-_BaseSettingT = TypeVar('_BaseSettingT', bound=Setting)
+_BaseSettingT = TypeVar("_BaseSettingT", bound=Setting)
 
 
 class SettingExtension(Generic[_BaseSettingT, _BaseTypeT], Setting[_BaseTypeT]):
-    '''Class for extended setting behavior
+    """Class for extended setting behavior
 
     Class behavior relies on a base_setting (maintained as an attribute).
-    '''
+    """
 
-    setting_extension = ''
+    setting_extension = ""
 
     def __init__(
         self, base_setting: _BaseSettingT, value: _BaseTypeT | None = None, **kwargs
@@ -41,8 +41,8 @@ class SettingExtension(Generic[_BaseSettingT, _BaseTypeT], Setting[_BaseTypeT]):
         #   * to allow extensions of extensions (no use case, yet)
         if isinstance(base_setting, type):
             raise AppxfSettingError(
-                f'base_setting input must be a Setting instance, not '
-                f'just a type. You provided {base_setting}'
+                f"base_setting input must be a Setting instance, not "
+                f"just a type. You provided {base_setting}"
             )
         self.base_setting = base_setting
         super().__init__(value=value, **kwargs)
@@ -73,7 +73,7 @@ class SettingExtension(Generic[_BaseSettingT, _BaseTypeT], Setting[_BaseTypeT]):
         return []
 
     def get_type(self) -> str:
-        return f'{self.setting_extension}::{self.base_setting.get_type()}'
+        return f"{self.setting_extension}::{self.base_setting.get_type()}"
 
     # TODO: the below should become obsolete, setting_select already overwrites
     # it again since updating the getter removes the setter anyways. This may

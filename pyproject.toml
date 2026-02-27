@@ -41,12 +41,13 @@ test-sandbox-root = "./.testing"
 
 [tool.ruff.lint]
 # Remarks:
-#  * E (pycodestyle errors; PEP8)
-#  * F (pyflakes; flake8 defaults)
+#  E -- pycodestyle errors; PEP8
+#  F -- pyflakes; flake8 defaults
+#  I -- isort import ordering
 select = ["E", "F", "I"]
 # TODO: Review and consider the following further checks:
 # "W"  - pycodestyle warnings (whitespace, blank lines)
-# "I"  - isort import ordering (ensures consistent import order)
+
 # "N"  - pep8 naming conventions (variable, function, class names)
 # "UP" - pyupgrade: enforce modern Python syntax (e.g. f-strings, type hints)
 # "B"  - flake8-bugbear: opinionated checks that catch common bugs
@@ -56,7 +57,7 @@ select = ["E", "F", "I"]
 # "RUF"- ruff-specific rules (misc. best-practice checks)
 
 [tool.ruff.format]
-quote-style = "preserve"
+# no specific settings, here
 
 [tool.ruff.lint.per-file-ignores]
 # Unused imports in __init__.py are intentional re-exports.

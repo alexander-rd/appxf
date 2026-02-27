@@ -1,6 +1,6 @@
 # Copyright 2023-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Secure Storage for private (non-shared) usage'''
+"""Secure Storage for private (non-shared) usage"""
 
 from appxf.storage import Storage, StorageToBytes
 
@@ -8,13 +8,13 @@ from .security import Security
 
 
 class SecurePrivateStorage(StorageToBytes):
-    '''Add private key encryption to any bytes based storage
+    """Add private key encryption to any bytes based storage
 
     This storage adds encrption/decryption to the provided byte based storage
     (typically files). The encryption is based on a symmetric key, generated at
     user initialization time according to the security module. The user unlocks
     this key with his password.
-    '''
+    """
 
     def __init__(
         self,
@@ -37,7 +37,7 @@ class SecurePrivateStorage(StorageToBytes):
         base_storage: StorageToBytes,
         security: Security,
     ) -> Storage:
-        '''Get a known storage object or create one.'''
+        """Get a known storage object or create one."""
         # The below is a sample implementation:
         return super().get(
             name=base_storage.name,
@@ -64,8 +64,8 @@ class SecurePrivateStorage(StorageToBytes):
 
     def load_raw(self) -> bytes:
         byte_data: bytes = self._base_storage.load_raw()
-        if byte_data == b'':
-            return b''
+        if byte_data == b"":
+            return b""
         byte_data = self._security.decrypt_from_bytes(byte_data)
         return byte_data
         # Storage implementation of load() uses deserialization

@@ -7,7 +7,7 @@ from appxf.storage import Storable, Storage
 
 
 class AppxfUserDatabaseException(Exception):
-    '''Error in User Database handling'''
+    """Error in User Database handling"""
 
 
 class UserEntry(TypedDict):
@@ -21,7 +21,7 @@ class UserEntry(TypedDict):
 
 
 class UserDatabase(Storable):
-    log = logging.getLogger(__name__ + '.UserDatabase')
+    log = logging.getLogger(__name__ + ".UserDatabase")
 
     def __init__(self, storage_method: Storage, **kwargs):
         super().__init__(storage_method, **kwargs)
@@ -38,18 +38,18 @@ class UserDatabase(Storable):
         self._user_db: dict[int, UserEntry] = {}
         # The role_map maps roles to lists of ID's to quickly collect lists of
         # keys.
-        self._role_map: dict[str, Set] = {'admin': set(), 'user': set()}
+        self._role_map: dict[str, Set] = {"admin": set(), "user": set()}
         # The validation_key_map maps validation keys to user IDs for efficient
         # lookup.
         self._validation_key_map: dict[bytes, int] = {}
 
     attributes = [
-        '_version',
-        '_next_id',
-        '_unused_id_list',
-        '_user_db',
-        '_role_map',
-        '_validation_key_map',
+        "_version",
+        "_next_id",
+        "_unused_id_list",
+        "_user_db",
+        "_role_map",
+        "_validation_key_map",
     ]
     # TODO: should apply custom get_state to apply version check
 
@@ -61,16 +61,16 @@ class UserDatabase(Storable):
         user_id = self.add_new(
             validation_key=validation_key,
             encryption_key=encryption_key,
-            roles=['user', 'admin'],
+            roles=["user", "admin"],
         )
         return user_id
 
-    def get_users(self, role: str = '') -> set[int]:
-        '''get users IDs as set
+    def get_users(self, role: str = "") -> set[int]:
+        """get users IDs as set
 
         Keyword Arguments:
             role {str} -- only users having role, '' ignores (default: '')
-        '''
+        """
         if role:
             role = role.lower()
             if role not in self._role_map:
@@ -82,25 +82,25 @@ class UserDatabase(Storable):
         return set(self._user_db.keys())
 
     def get_user_by_validation_key(self, key: bytes) -> int | None:
-        '''get user ID from validation key
+        """get user ID from validation key
 
-        Returns None if no user is found'''
+        Returns None if no user is found"""
         return self._validation_key_map.get(key)
 
     def add_new(
         self,
         validation_key: bytes,
         encryption_key: bytes,
-        roles: list[str] | str = 'user',
+        roles: list[str] | str = "user",
     ) -> int:
-        '''add user with UNKNOWN user Id, returning new user ID
+        """add user with UNKNOWN user Id, returning new user ID
 
         Negative user IDs are invalid: Existing keys are checked. If the keys
         already exist and are consistent, the existing user ID is returned and
         no new user ID will be added. If one of the keys already exists but the
         entry is inconsistent, a NEGATIVE user ID is returned. This implies
         that duplicate keys are not possible.
-        '''
+        """
         if isinstance(roles, str):
             roles = [roles.lower()]
         else:
@@ -109,14 +109,14 @@ class UserDatabase(Storable):
         # check for existing keys (users)
         for user_id, user_entry in self._user_db.items():
             match_found = 0
-            if user_entry['validation_key'] == validation_key:
+            if user_entry["validation_key"] == validation_key:
                 match_found += 1
-            if user_entry['encryption_key'] == encryption_key:
+            if user_entry["encryption_key"] == encryption_key:
                 match_found += 1
             # if keys exist with consistent IDs, update roles and conclude
             if match_found == 2:
                 self.log.info(
-                    'New user already existing with ID %i. Updating roles to %s',
+                    "New user already existing with ID %i. Updating roles to %s",
                     user_id,
                     str(roles),
                 )
@@ -126,14 +126,14 @@ class UserDatabase(Storable):
             if match_found == 1:
                 # return the negative user ID (we ensured that user IDs start
                 # with 1, not with 0)
-                self.log.info(f'new user keys already exist for user ID {user_id}')
+                self.log.info(f"new user keys already exist for user ID {user_id}")
                 return -user_id
 
         # TODO: get determine new ID (implementation might already consider
         # sys.maxsize)
         user_id = self._next_id
         self._next_id += 1
-        self.log.info(f'adding new user with {user_id}, next: {self._next_id}')
+        self.log.info(f"adding new user with {user_id}, next: {self._next_id}")
 
         # forward to reuse function with init_user_db()
         self.add(
@@ -172,15 +172,15 @@ class UserDatabase(Storable):
             self._role_map[role].add(user_id)
 
     def remove_user(self, user_id: int):
-        '''Remove user by deleting all role assignments
+        """Remove user by deleting all role assignments
 
         The user's public keys remain existent in case there is still shared
         data from this user that might need signature validation.
-        '''
+        """
         for role in self._role_map:
             if user_id in self._role_map[role]:
                 self._role_map[role].remove(user_id)
-            if not self._role_map[role] and not role == 'user' and not role == 'admin':
+            if not self._role_map[role] and not role == "user" and not role == "admin":
                 del self._role_map[role]
 
     # TODO: When USER DB starts maintaining user information (USER CONFIG),
@@ -192,19 +192,19 @@ class UserDatabase(Storable):
     # anymore.
 
     def purge_user(self, user_id: int):
-        '''Like remove_user but also deleting the public keys
+        """Like remove_user but also deleting the public keys
 
         Using this should ensure that there is no data present anymore that
         needs to be authenticated against this user's signing key.
-        '''
+        """
 
         if user_id not in self._user_db:
-            self.log.warning('Trying to purge USER ID %i which does not exist', user_id)
+            self.log.warning("Trying to purge USER ID %i which does not exist", user_id)
             return
         # ensure steps from remove() - role_map being cleared
         self.remove_user(user_id)
         # remove from validation key map
-        validation_key = self._user_db[user_id]['validation_key']
+        validation_key = self._user_db[user_id]["validation_key"]
         if validation_key in self._validation_key_map:
             del self._validation_key_map[validation_key]
         # remove from user map and remember USER ID to be re-used:
@@ -216,7 +216,7 @@ class UserDatabase(Storable):
 
     def _get_user_entry(self, user_id) -> UserEntry:
         if not self.is_registered(user_id):
-            raise AppxfUserDatabaseException(f'{user_id} is not registered.')
+            raise AppxfUserDatabaseException(f"{user_id} is not registered.")
         return self._user_db[user_id]
 
     def has_role(self, user_id: int, role: str):
@@ -226,10 +226,10 @@ class UserDatabase(Storable):
         return user_id in self._role_map[role]
 
     def get_verification_key(self, user_id: int) -> bytes:
-        return self._get_user_entry(user_id)['validation_key']
+        return self._get_user_entry(user_id)["validation_key"]
 
     def get_encryption_key(self, user_id: int) -> bytes:
-        return self._get_user_entry(user_id)['encryption_key']
+        return self._get_user_entry(user_id)["encryption_key"]
 
     def get_encryption_key_dict(self, roles: list[str] | str) -> dict[int, bytes]:
         # resolve input ambiguity:
@@ -240,26 +240,26 @@ class UserDatabase(Storable):
         for this_role in roles:
             role_users.update(self.get_users(this_role))
         # return encryption keys for role users:
-        return {user: self._user_db[user]['encryption_key'] for user in role_users}
+        return {user: self._user_db[user]["encryption_key"] for user in role_users}
 
     def get_roles(self, user_id: int | None = None) -> list[str]:
-        '''Get list of roles
+        """Get list of roles
 
         Keyword Arguments:
         user_id -- Return roles for this user ID or, if None, return all roles
-        '''
+        """
         if user_id is None:
             # admin and user will always be present given that _role_map is
             # intialized with those two roles and those two roles are never
             # removed.
             return list(self._role_map.keys())
         entry = self._get_user_entry(user_id)
-        return entry['roles']
+        return entry["roles"]
 
     def set_roles(self, user_id: int, roles: list[str] | str):
-        '''set roles for user ID'''
+        """set roles for user ID"""
         if user_id not in self._user_db:
-            raise ValueError(f'User ID {user_id} is not registered.')
+            raise ValueError(f"User ID {user_id} is not registered.")
 
         if isinstance(roles, str):
             roles = [roles]
@@ -273,15 +273,15 @@ class UserDatabase(Storable):
                 if role not in self._role_map.keys():
                     self._role_map[role] = set()
                 self._role_map[role].add(user_id)
-        self._user_db[user_id]['roles'] = roles
+        self._user_db[user_id]["roles"] = roles
 
     # Adding logging to store/load
     def store(self, **kwargs):
-        self.log.debug('Storing USER DB')
+        self.log.debug("Storing USER DB")
         return super().store(**kwargs)
 
     def load(self, **kwargs):
-        self.log.debug('Loading USER DB')
+        self.log.debug("Loading USER DB")
         return super().load(**kwargs)
 
 

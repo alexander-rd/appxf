@@ -1,10 +1,10 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Provide Base Class for Storage Testing
+"""Provide Base Class for Storage Testing
 
 See specific test files for storage object related tests and implementation
 specific tests. Like in storage module: RamStorage or LocalStorage.
-'''
+"""
 
 from abc import ABC, abstractmethod
 from datetime import datetime
@@ -30,7 +30,7 @@ from appxf.storage import MetaData, Storage
 class BaseStorageTest(ABC):
     @abstractmethod
     def _get_storage(self) -> Storage:
-        '''provide a storage'''
+        """provide a storage"""
 
     # TODO: alter this interface to provide the kwarg arguments instead. This
     # enables testing with constructor, get() or factory().
@@ -48,14 +48,14 @@ class BaseStorageTest(ABC):
         pass
 
     def test_basic_store_load(self):
-        '''Check 2 store/load cycles'''
-        self.storage.store('init')
-        assert 'init' == self.storage.load()
+        """Check 2 store/load cycles"""
+        self.storage.store("init")
+        assert "init" == self.storage.load()
         # second read must work also:
-        assert 'init' == self.storage.load()
+        assert "init" == self.storage.load()
 
-        self.storage.store('new')
-        assert 'new' == self.storage.load()
+        self.storage.store("new")
+        assert "new" == self.storage.load()
 
     def test_item_meta_data(self):
         # Nothing there means nothing stored
@@ -65,7 +65,7 @@ class BaseStorageTest(ABC):
         assert self.storage.get_meta_data() is None
 
         # stored should have a uuid and a close-enough timestamp
-        self.storage.store('data')
+        self.storage.store("data")
         meta: MetaData = self.storage.get_meta_data()
         assert isinstance(meta, MetaData)
         timestamp = meta.timestamp
@@ -74,26 +74,26 @@ class BaseStorageTest(ABC):
         assert time_diff.total_seconds() < 1
 
         # second store must have differt uuid
-        self.storage.store('new data')
+        self.storage.store("new data")
         meta = self.storage.get_meta_data()
         uuid_two = meta.uuid
         assert uuid_one != uuid_two
 
     def test_other_meta_data(self):
-        assert self.storage.get_meta('other').load() is None
+        assert self.storage.get_meta("other").load() is None
 
         # store only meta data - while storing meta without actual object may
         # not be reasonable, there is no reason to block this
-        other_one = {'test', 42}
-        self.storage.get_meta('other').store(other_one)
-        other_one_reload = self.storage.get_meta('other').load()
+        other_one = {"test", 42}
+        self.storage.get_meta("other").store(other_one)
+        other_one_reload = self.storage.get_meta("other").load()
         assert other_one == other_one_reload
         # the returned object cannot and should not be the same:
         assert other_one is not other_one_reload
 
         # write another value and test again
-        other_two = ['other', 42]
-        self.storage.get_meta('other').store(other_two)
-        other_two_reload = self.storage.get_meta('other').load()
+        other_two = ["other", 42]
+        self.storage.get_meta("other").store(other_two)
+        other_two_reload = self.storage.get_meta("other").load()
         assert other_two == other_two_reload
         assert other_two is not other_two_reload

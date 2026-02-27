@@ -1,6 +1,6 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Provide a serialization
+"""Provide a serialization
 
 This is a small wrapper around pickle to ensure "safe" unpacking the bytes from
 the file.
@@ -8,7 +8,7 @@ the file.
 "safe": Unpickling poses a risk of code injection. This is avoided in
 deserialize() via RestrictedUnpickler according to pickle documentation:
 https://docs.python.org/3/library/pickle.html#restricting-globals.
-'''
+"""
 
 import io
 import pickle
@@ -33,16 +33,16 @@ supported_types = {
 
 
 class _RestrictedUnpickler(pickle.Unpickler):
-    '''Class to disable unwanted symbols.'''
+    """Class to disable unwanted symbols."""
 
     def find_class(self, module, name):
         # Only allow safe classes from builtins.
-        if module == 'collections' and name == 'OrderedDict':
+        if module == "collections" and name == "OrderedDict":
             return OrderedDict
         # Forbid everything else.
         raise TypeError(
             f'Cannot deserialize "{module}.{name}". To protect from code '
-            f'injection, serialization/deserialization was limited in APPXF'
+            f"injection, serialization/deserialization was limited in APPXF"
         )
 
 
@@ -50,13 +50,13 @@ class _RestrictedPickler(pickle.Pickler):
     def persistent_id(self, obj):
         # Catch types that are not supported
         if type(obj) not in supported_types:
-            raise TypeError(f'Cannot serialize {obj} of type {type(obj)}')
+            raise TypeError(f"Cannot serialize {obj} of type {type(obj)}")
         # Just return none since nothing special is required
         return None
 
 
 class CompactSerializer(Serializer):
-    '''Use a raw byte based storage'''
+    """Use a raw byte based storage"""
 
     # In case this class is adapted, consider the following design goals that
     # were not evaluated in detail when selecting pickle:

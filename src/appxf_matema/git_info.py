@@ -16,7 +16,7 @@ class GitInfo:
                 ["git", "config", "user.name"], text=True
             ).strip()
         except subprocess.CalledProcessError:
-            name = 'Unknown GIT User'
+            name = "Unknown GIT User"
         return name
 
     @cached_property
@@ -26,5 +26,5 @@ class GitInfo:
                 ["git", "config", "user.email"], text=True
             ).strip()
         except subprocess.CalledProcessError:
-            email = 'Unknown GIT Email'
+            email = "Unknown GIT Email"
         return email

@@ -1,10 +1,10 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Test Storage Base Class
+"""Test Storage Base Class
 
 See specific test files for storage OBJECT related tests and implementation
 specific tests.
-'''
+"""
 
 # TODO: there should be a test case that tries to get/get_factory/construct a
 # SecurePrivate storage after it was already created. Suspicion is that a
@@ -46,7 +46,7 @@ def test_storage_simple_derivative():
             name: str,
             location: str,
             storage_init_fun: Callable[..., Storage],
-            user: str = '',
+            user: str = "",
         ) -> Storage:
             return super().get(
                 name=name,
@@ -57,20 +57,20 @@ def test_storage_simple_derivative():
         def exists(self) -> bool:
             return False
 
-        def store_raw(self, data: object, meta: str = ''):
+        def store_raw(self, data: object, meta: str = ""):
             pass
 
-        def load_raw(self, meta: str = '') -> object:
+        def load_raw(self, meta: str = "") -> object:
             return None
 
     # this checks for behavior on root storage and preset keys
     assert not DerivateOne.__abstractmethods__
 
-    storage = DerivateOne('test')
+    storage = DerivateOne("test")
     # no user and no location was defined:
-    assert storage.user == ''
-    assert storage.location == ''
-    assert storage.id() == 'DerivateOne(): test'
+    assert storage.user == ""
+    assert storage.location == ""
+    assert storage.id() == "DerivateOne(): test"
 
 
 def test_storage_copmlex_derivative():
@@ -88,7 +88,7 @@ def test_storage_copmlex_derivative():
             name: str,
             location: str,
             storage_init_fun: Callable[..., Storage],
-            user: str = '',
+            user: str = "",
         ) -> Storage:
             return super().get(
                 name=name,
@@ -99,10 +99,10 @@ def test_storage_copmlex_derivative():
         def exists(self) -> bool:
             return False
 
-        def store_raw(self, data: object, meta: str = ''):
+        def store_raw(self, data: object, meta: str = ""):
             pass
 
-        def load_raw(self, meta: str = '') -> object:
+        def load_raw(self, meta: str = "") -> object:
             return None
 
     class DerivativeThree(DerivativeTwoRoot):

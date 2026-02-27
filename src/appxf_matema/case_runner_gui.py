@@ -21,10 +21,10 @@ from appxf_matema.git_info import GitInfo
 
 
 class CaseRunnerGui:
-    '''GUI container for manual test case runner.
+    """GUI container for manual test case runner.
 
     Encapsulates the tkinter window and related UI components.
-    '''
+    """
 
     def __init__(
         self,
@@ -35,7 +35,7 @@ class CaseRunnerGui:
         self._case_info = case_info
         self._git_info = git_info
         self._parent = parent
-        self._result = 'aborted'
+        self._result = "aborted"
 
     @dataclass(eq=False, order=False, frozen=True)
     class GuiStructure:
@@ -55,28 +55,28 @@ class CaseRunnerGui:
     # ## GUI related properties
     @cached_property
     def tk(self) -> tkinter.Tk:
-        '''Obtain the main Tk instance
+        """Obtain the main Tk instance
 
         In case CaseRunner was called with a parent, this may differ.
-        '''
+        """
         if isinstance(self.wm, tkinter.Tk):
             return self.wm
         if not isinstance(self._parent, tkinter.Tk):
             raise ValueError(
-                f'CaseRunner and CaseRunnerGui '
-                f'must be called with tkinter.Tk as parent but parent '
-                f'hat type {type(self._parent)}.'
+                f"CaseRunner and CaseRunnerGui "
+                f"must be called with tkinter.Tk as parent but parent "
+                f"hat type {type(self._parent)}."
             )
         return self._parent
 
     @cached_property
     def wm(self):
-        '''Return the window manager of the CaseRunnerGui
+        """Return the window manager of the CaseRunnerGui
 
         This is either a tkinter Tk or Toplevel instance. Toplevel is used if
         the test case already creates a Tk and passes it as parent to the
         CaseRunner.
-        '''
+        """
         return self.gui_structure.wm
 
     @cached_property
@@ -84,57 +84,57 @@ class CaseRunnerGui:
         return self._get_main_window()
 
     def get_observations_text(self) -> str:
-        '''Get observations from manual test execution as string'''
-        return self.gui_structure.observations_text.get('1.0', tkinter.END)
+        """Get observations from manual test execution as string"""
+        return self.gui_structure.observations_text.get("1.0", tkinter.END)
 
     def _get_main_window(self) -> GuiStructure:
-        '''Build and return the main control window GUI
+        """Build and return the main control window GUI
         without calling mainloop.
-        '''
+        """
         root = tkinter.Tk()
-        root.title('APPXF Manual Test Case Runner')
+        root.title("APPXF Manual Test Case Runner")
 
         # Test case explanations:
         instruction_label = tkinter.Label(
-            root, text='Test Instructions:', padx=0, pady=0
+            root, text="Test Instructions:", padx=0, pady=0
         )
-        instruction_label.pack(anchor='w', padx=5, pady=0)
-        instruction_frame = tkinter.Frame(root, bd=1, relief='sunken')
-        instruction_frame.pack(fill='x', padx=5, pady=0)
+        instruction_label.pack(anchor="w", padx=5, pady=0)
+        instruction_frame = tkinter.Frame(root, bd=1, relief="sunken")
+        instruction_frame.pack(fill="x", padx=5, pady=0)
         instruction_widget = self._get_markdown_label(
             parent=instruction_frame,
             markdown_text=self._case_info.explanation,
             width=80,
         )
-        instruction_widget.pack(fill='x')
+        instruction_widget.pack(fill="x")
 
         # Identification label:
-        observations_label = tkinter.Label(root, text='Obervations:', padx=0, pady=0)
-        observations_label.pack(anchor='w', padx=5, pady=0)
+        observations_label = tkinter.Label(root, text="Obervations:", padx=0, pady=0)
+        observations_label.pack(anchor="w", padx=5, pady=0)
 
-        observations_info_frame = tkinter.Frame(root, bd=1, relief='sunken')
-        observations_info_frame.pack(fill='x', padx=5, pady=0)
+        observations_info_frame = tkinter.Frame(root, bd=1, relief="sunken")
+        observations_info_frame.pack(fill="x", padx=5, pady=0)
         observations_info_timestamp_label = tkinter.Label(
             observations_info_frame,
-            text=(f'UTC Timestamp: {self._case_info.timestamp}',),
+            text=(f"UTC Timestamp: {self._case_info.timestamp}",),
             justify=tkinter.LEFT,
         )
-        observations_info_timestamp_label.pack(anchor='w', padx=0, pady=0)
+        observations_info_timestamp_label.pack(anchor="w", padx=0, pady=0)
         observations_info_author_label = tkinter.Label(
             observations_info_frame,
             text=(
-                'Author (GIT name <email>): '
-                f'{self._git_info.user_name} '
-                f'<{self._git_info.user_email}>'
+                "Author (GIT name <email>): "
+                f"{self._git_info.user_name} "
+                f"<{self._git_info.user_email}>"
             ),
             justify=tkinter.LEFT,
         )
-        observations_info_author_label.pack(anchor='w', padx=0, pady=0)
+        observations_info_author_label.pack(anchor="w", padx=0, pady=0)
 
         # Test results:
         observations_text = tkinter.Text(root, width=80, height=15)
-        observations_text.insert('1.0', 'Enter observations...')
-        observations_text.pack(anchor='w', fill='x', padx=5, pady=0)
+        observations_text.insert("1.0", "Enter observations...")
+        observations_text.pack(anchor="w", fill="x", padx=5, pady=0)
 
         # an empty button frame between observations nad fail/OK buttons.
         extra_button_frame = tkinter.Frame(root)
@@ -179,11 +179,11 @@ class CaseRunnerGui:
     def _get_markdown_label(
         self, parent, markdown_text: str, width: int = 400
     ) -> tkinter.Widget:
-        '''Get label displaying markdown formatted text'''
+        """Get label displaying markdown formatted text"""
         # Convert markdown to HTML
         html = markdown.markdown(markdown_text)
         # adjust font sizes via adding code to paragraphs:
-        html = re.sub('<p>', '<p style="font-size: 11px;">', html)
+        html = re.sub("<p>", '<p style="font-size: 11px;">', html)
 
         # Create HTMLLabel with fixed width
         widget = HTMLLabel(parent, html=html, width=width)
@@ -195,11 +195,11 @@ class CaseRunnerGui:
         return widget
 
     def button_ok(self):
-        self._result = 'ok'
+        self._result = "ok"
         self.wm.destroy()
 
     def button_failed(self):
-        self._result = 'failed'
+        self._result = "failed"
         self.wm.destroy()
 
     def add_process_button(
@@ -207,8 +207,8 @@ class CaseRunnerGui:
         command: Callable,
         label: str,
     ):
-        '''Add a button that spawns a subprocess to execute a
-        process function.'''
+        """Add a button that spawns a subprocess to execute a
+        process function."""
         button = tkinter.Button(
             self.gui_structure.process_button_frame,
             text=label,
@@ -217,10 +217,10 @@ class CaseRunnerGui:
         button.pack(side=tkinter.LEFT)
 
     def place_toplevel(self, top_level: tkinter.Toplevel):
-        '''Place a toplevel to the right of CaseRunnerGui control window'''
+        """Place a toplevel to the right of CaseRunnerGui control window"""
         self.tk.update()
         top_level.update()
-        geom = '%dx%d+%d+%d' % (
+        geom = "%dx%d+%d+%d" % (
             top_level.winfo_width(),
             top_level.winfo_height(),
             self.tk.winfo_x() + self.tk.winfo_width() + 10,

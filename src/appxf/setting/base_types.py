@@ -1,6 +1,6 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Definition of basic types like int or str as settings'''
+"""Definition of basic types like int or str as settings"""
 
 from __future__ import annotations
 
@@ -16,45 +16,45 @@ from .setting import Setting, _BaseTypeT
 
 
 class SettingString(Setting[str]):
-    '''Setting for basic strings
+    """Setting for basic strings
 
     No newline characters supported. The GUI elements would not support a multi
     line entry field. If required, use 'text' instead.
-    '''
+    """
 
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
-        return ['string', str, 'str']
+        return ["string", str, "str"]
 
     @classmethod
     def get_default(cls):
-        return ''
+        return ""
 
     def _validated_conversion(self, value: Any) -> tuple[bool, str]:
         if not issubclass(type(value), str):
             return False, self.get_default()
-        if '\r' in value or '\n' in value:
+        if "\r" in value or "\n" in value:
             return False, self.get_default()
         return True, value
 
 
 class SettingText(SettingString):
-    '''Setting for long texts
+    """Setting for long texts
 
     Just a string that has a display_height option and allows newline
     characters.
-    '''
+    """
 
     @dataclass
     class Options(Setting.Options):
-        '''Options for SettingText'''
+        """Options for SettingText"""
 
         display_height: int = 5
-        display_options = Setting.Options.display_options + ['display_height']
+        display_options = Setting.Options.display_options + ["display_height"]
 
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
-        return ['text']
+        return ["text"]
 
     # get_default() from string remains
 
@@ -65,13 +65,13 @@ class SettingText(SettingString):
 
 
 class SettingEmail(SettingString):
-    '''Setting for Emails'''
+    """Setting for Emails"""
 
     # get_default() and to_string() are derived from SettingString
 
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
-        return ['email', 'Email']
+        return ["email", "Email"]
 
     def _validated_conversion(self, value: Any) -> tuple[bool, str]:
         if not super()._validated_conversion(value)[0]:
@@ -85,26 +85,26 @@ class SettingEmail(SettingString):
 
 
 class SettingPassword(SettingString):
-    '''Setting for passwords
+    """Setting for passwords
 
     Default minimum password length is 6.
-    '''
+    """
 
     @dataclass
     class Options(Setting.Options):
-        '''Options for SettingText'''
+        """Options for SettingText"""
 
         min_length: int = 6
-        value_options = Setting.Options.value_options + ['min_length']
+        value_options = Setting.Options.value_options + ["min_length"]
 
         display_masked: bool = True
-        display_options = Setting.Options.display_options + ['display_masked']
+        display_options = Setting.Options.display_options + ["display_masked"]
 
     options: Options
 
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
-        return ['password', 'pass']
+        return ["password", "pass"]
 
     def _validated_conversion(self, value: Any) -> tuple[bool, str]:
         if not super()._validated_conversion(value)[0]:
@@ -120,7 +120,7 @@ class SettingPassword(SettingString):
 def validated_conversion_configparser(
     string: str, res_type: Type[_BaseTypeT], default: _BaseTypeT
 ) -> tuple[bool, _BaseTypeT]:
-    '''Helper for common conversion by configparser
+    """Helper for common conversion by configparser
 
     It takes a string (no type checks included) and uses the configparser
     implementations getboolean(), getint() or getfloat() dependent on requested
@@ -135,19 +135,19 @@ def validated_conversion_configparser(
         tuple of (1) a boolean that is True when the conversion was successful
         with (2) the conversion result. If the conversion failed, (1) False
         will be returned and the provided default value.
-    '''
+    """
     # avoid problems when string contains newlines:
-    if '\n' in string:
+    if "\n" in string:
         return False, default
     config = configparser.ConfigParser()
-    config.read_string(f'[DEFAULT]\ntest = {string}')
+    config.read_string(f"[DEFAULT]\ntest = {string}")
     try:
         if res_type is bool:
-            value = config.getboolean('DEFAULT', 'test')
+            value = config.getboolean("DEFAULT", "test")
         elif res_type is int:
-            value = config.getint('DEFAULT', 'test')
+            value = config.getint("DEFAULT", "test")
         elif res_type is float:
-            value = config.getfloat('DEFAULT', 'test')
+            value = config.getfloat("DEFAULT", "test")
         else:
             return False, default
     except ValueError:
@@ -156,11 +156,11 @@ def validated_conversion_configparser(
 
 
 class SettingBool(Setting[bool]):
-    '''Setting for booleans'''
+    """Setting for booleans"""
 
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
-        return ['boolean', bool, 'bool']
+        return ["boolean", bool, "bool"]
 
     @classmethod
     def get_default(cls) -> bool:
@@ -178,15 +178,15 @@ class SettingBool(Setting[bool]):
         return False, self.get_default()
 
     def to_string(self) -> str:
-        return '1' if self._value else '0'
+        return "1" if self._value else "0"
 
 
 class SettingInt(Setting[int]):
-    '''Setting for Integers'''
+    """Setting for Integers"""
 
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
-        return ['integer', int, 'int']
+        return ["integer", int, "int"]
 
     @classmethod
     def get_default(cls) -> int:
@@ -201,11 +201,11 @@ class SettingInt(Setting[int]):
 
 
 class SettingFloat(Setting[float]):
-    '''Setting for Float'''
+    """Setting for Float"""
 
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
-        return ['float', float]
+        return ["float", float]
 
     @classmethod
     def get_default(cls) -> float:
@@ -228,30 +228,30 @@ class SettingFloat(Setting[float]):
 
 
 class SettingBase64(Setting[bytes]):
-    '''Setting for bytes encoded as base64 strings
+    """Setting for bytes encoded as base64 strings
 
     Accepts raw bytes/bytearray values or base64-encoded strings.
     Options:
       - size: int (value option) -- if >0 the resulting bytes must match this
         length. Default is 0 which disables size checking.
-    '''
+    """
 
     @dataclass
     class Options(Setting.Options):
-        '''Options for SettingBase64'''
+        """Options for SettingBase64"""
 
         size: int = 0
-        value_options = Setting.Options.value_options + ['size']
+        value_options = Setting.Options.value_options + ["size"]
 
     options: Options
 
     @classmethod
     def get_supported_types(cls) -> list[type | str]:
-        return ['base64', 'Base64']
+        return ["base64", "Base64"]
 
     @classmethod
     def get_default(cls) -> bytes:
-        return b''
+        return b""
 
     def _validated_conversion(self, value: Any) -> tuple[bool, bytes]:
         # Accept raw bytes/bytearray directly
@@ -264,7 +264,7 @@ class SettingBase64(Setting[bytes]):
         # Accept strings that are base64 encoded
         if isinstance(value, str):
             # Strip whitespace/newlines which are valid in some base64 forms
-            cleaned = ''.join(value.split())
+            cleaned = "".join(value.split())
             try:
                 decoded = base64.b64decode(cleaned, validate=True)
             except (binascii.Error, ValueError):
@@ -278,4 +278,4 @@ class SettingBase64(Setting[bytes]):
 
     def to_string(self) -> str:
         # Return base64 representation of stored bytes
-        return base64.b64encode(self._value).decode('ascii')
+        return base64.b64encode(self._value).decode("ascii")

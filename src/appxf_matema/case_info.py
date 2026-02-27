@@ -17,19 +17,19 @@ class CaseInfo:
 
     @cached_property
     def explanation(self):
-        '''test case description'''
+        """test case description"""
         self._ensure_parsed()
 
         if self._case_parser:
             explanation = self._case_parser.caller_module_docstring
         else:
-            explanation = 'Test case parsing was disabled.'
+            explanation = "Test case parsing was disabled."
 
-        explanation = explanation.strip() if explanation else ''
+        explanation = explanation.strip() if explanation else ""
         # remove single newlines (either a full paragraph \n\n or no paragraph
         # at all). The regexp is for \n neither preceeded (?<!\n) nor followed
         # (?!\n) by a newline:
-        explanation = re.sub(r'(?<!\n)\n(?!\n)', '', explanation)
+        explanation = re.sub(r"(?<!\n)\n(?!\n)", "", explanation)
         return explanation
 
     @cached_property
@@ -41,17 +41,17 @@ class CaseInfo:
             self._case_parser.parse()
 
     def get_symbol_from_case_module(self, function_name: str):
-        '''get symbol by name from test case module
+        """get symbol by name from test case module
 
         Initial use case was getting hook functions like: process_*() or
         setup() from the function model.
-        '''
+        """
         self._ensure_parsed()
         # Execute the requested function with setup/teardown
         if not self._case_parser:
-            raise ValueError('Parsing was disabled')
+            raise ValueError("Parsing was disabled")
         if not hasattr(self._case_parser.module, function_name):
             raise ValueError(
-                f'Function {function_name} does not exist in {self._case_parser.module}'
+                f"Function {function_name} does not exist in {self._case_parser.module}"
             )
         return getattr(self._case_parser.module, function_name)

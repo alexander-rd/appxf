@@ -1,10 +1,10 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''provide fixtures with test application
+"""provide fixtures with test application
 
 Using some of the fixtures includes coverage of considerable functionality
 which is required to reach initialized applications.
-'''
+"""
 
 import os
 import shutil
@@ -23,7 +23,7 @@ from tests._fixtures.test_sandbox import project_version
 # most complex cases (like: registeres user with set up remote files).
 
 
-def get_fresh_application(request, user: str = 'user') -> AppHarness:
+def get_fresh_application(request, user: str = "user") -> AppHarness:
     # ensure initialized test directory:
     test_root_path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(
         request, cleanup=False
@@ -32,7 +32,7 @@ def get_fresh_application(request, user: str = 'user') -> AppHarness:
     return AppHarness(test_root_path, user, registry_enabled=True)
 
 
-def get_application_login_initialized(request, user: str = 'user') -> AppHarness:
+def get_application_login_initialized(request, user: str = "user") -> AppHarness:
     # initialize test directory:
     test_root_path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(
         request, cleanup=False
@@ -47,7 +47,7 @@ def get_application_login_initialized(request, user: str = 'user') -> AppHarness
 
 
 def get_application_registration_admin_initialized(
-    request, user: str = 'user'
+    request, user: str = "user"
 ) -> AppHarness:
     # initialize test directory:
     test_root_path = tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(
@@ -62,7 +62,7 @@ def get_application_registration_admin_initialized(
     return app
 
 
-def get_unlocked_application(request, user: str = 'user') -> AppHarness:
+def get_unlocked_application(request, user: str = "user") -> AppHarness:
     app = get_application_login_initialized(request, user=user)
     app.perform_login_unlock()
     return app
@@ -81,10 +81,10 @@ def get_unlocked_application(request, user: str = 'user') -> AppHarness:
 # ApplicationMock objects are not forwarded
 
 
-def _init_app_context_login_initialized(user: str = 'user'):
+def _init_app_context_login_initialized(user: str = "user"):
     path = os.path.join(
         tests._fixtures.test_sandbox.test_sandbox_root,
-        f'app_login_initialized_{user}_{project_version}',
+        f"app_login_initialized_{user}_{project_version}",
     )
     # do not repeat if already present:
     if os.path.exists(path):
@@ -96,13 +96,13 @@ def _init_app_context_login_initialized(user: str = 'user'):
     return path
 
 
-def _init_app_context_registration_admin_initialized(user: str = 'user'):
+def _init_app_context_registration_admin_initialized(user: str = "user"):
     path = os.path.join(
         tests._fixtures.test_sandbox.test_sandbox_root,
-        f'app_registration_initialized_{user}_{project_version}',
+        f"app_registration_initialized_{user}_{project_version}",
     )
-    if user != 'admin':
-        raise ValueError('Only admin user can be initialized as registration admin')
+    if user != "admin":
+        raise ValueError("Only admin user can be initialized as registration admin")
     # do not repeat if already present:
     if os.path.exists(path):
         return path
@@ -114,8 +114,8 @@ def _init_app_context_registration_admin_initialized(user: str = 'user'):
     return path
 
 
-def _init_path_from_origin(target_path, origin_path: str = ''):
-    '''Copy a context to a new test environment
+def _init_path_from_origin(target_path, origin_path: str = ""):
+    """Copy a context to a new test environment
 
     Arguments:
         target_path -- new path to created
@@ -124,40 +124,40 @@ def _init_path_from_origin(target_path, origin_path: str = ''):
                        is empty)
         keep -- set to true if target_path shall be retained if already existing
     Return: nothing
-    '''
+    """
     # target path will not be cleaned up. Each test case shall cleanup its
     # directory on its own.
     if origin_path:
         # copy from origin
         shutil.copytree(origin_path, target_path, dirs_exist_ok=True)
-        print(f'Initialized {target_path} from {origin_path}')
+        print(f"Initialized {target_path} from {origin_path}")
     else:
         # ensure path existing
         os.makedirs(target_path, exist_ok=True)
-        print(f'Created path {target_path}')
+        print(f"Created path {target_path}")
 
 
 ### Cleanup support
 def test_cleanup(request):
-    '''cleanup current APPXF directories
+    """cleanup current APPXF directories
 
     Function is expected to be executed before any test case. Modelled as test
     case to re-use fixtures.
-    '''
+    """
     base_dir = tests._fixtures.test_sandbox.test_sandbox_root
     if not os.path.isdir(base_dir):
-        print(f'No cleanup required, base dir missing: {base_dir}')
+        print(f"No cleanup required, base dir missing: {base_dir}")
         return
 
     for entry in os.listdir(base_dir):
-        if not entry.startswith('app_'):
+        if not entry.startswith("app_"):
             continue
         path = os.path.join(base_dir, entry)
         if os.path.isdir(path):
             shutil.rmtree(path)
-            print(f'Removed {path}')
+            print(f"Removed {path}")
         else:
-            print(f'Skipped non-directory {path}')
+            print(f"Skipped non-directory {path}")
 
 
 # TODO: I think the cleanup above does not work as intenden. (1) The context

@@ -1,11 +1,11 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Tests for class Security in security module
+"""Tests for class Security in security module
 
 Rely on Security helpers from tests._fixtures.appxf_objects to avoid spinning
 up the full application harness. Paths are isolated per test via the sandbox
 fixture.
-'''
+"""
 
 import os
 
@@ -15,7 +15,7 @@ from appxf.security import SecurePrivateStorage, Security
 from appxf.storage import LocalStorage, Storage
 from tests._fixtures import appxf_objects, test_sandbox
 
-TEST_PASSWORD = 'test-registry-password'
+TEST_PASSWORD = "test-registry-password"
 
 # TODO UPGRADE: store bytecode for version 1 files and add test cases that
 # those files can still be loaded. Well, consider not adding garbage into
@@ -38,7 +38,7 @@ def sandbox_path(request):
 
 
 def get_data_storage_factory(root_path, sec: Security):
-    data_path = os.path.join(root_path, 'data')
+    data_path = os.path.join(root_path, "data")
     return SecurePrivateStorage.get_factory(
         base_storage_factory=LocalStorage.get_factory(path=data_path), security=sec
     )
@@ -57,7 +57,7 @@ def test_security_init(sandbox_path):
     sec = appxf_objects.get_security(sandbox_path)
     sec.init_user(TEST_PASSWORD)
     # file should now be present:
-    assert os.path.exists(os.path.join(sandbox_path, 'keys'))
+    assert os.path.exists(os.path.join(sandbox_path, "keys"))
     # and user should be initialized:
     assert sec.is_user_initialized()
     # user is unlocked after initialization
@@ -81,8 +81,8 @@ def test_security_unlock(sandbox_path):
 # Store and load
 def test_security_store_load(sandbox_path):
     sec = appxf_objects.get_security_unlocked(sandbox_path, TEST_PASSWORD)
-    data = b'123456ABC!'
-    storage = get_data_storage_factory(sandbox_path, sec)('some_file')
+    data = b"123456ABC!"
+    storage = get_data_storage_factory(sandbox_path, sec)("some_file")
     # store
     storage.store(data)
     # load
@@ -95,7 +95,7 @@ def test_security_store_load(sandbox_path):
     # Note: need to delete prior storage object. Storage locations do not allow
     # two methods covering the same file.
     del storage
-    storage = get_data_storage_factory(sandbox_path, sec)('some_file')
+    storage = get_data_storage_factory(sandbox_path, sec)("some_file")
     data_loaded = storage.load()
     assert data == data_loaded
 
@@ -130,9 +130,9 @@ def test_security_store_assymetric_keys(sandbox_path):
 def test_security_sign_verify(sandbox_path):
     sec = appxf_objects.get_security_unlocked(sandbox_path, TEST_PASSWORD)
 
-    data = b'To Be Signed'
+    data = b"To Be Signed"
     signature = sec.sign(data)
-    signatureFalse = sec.sign(data + b'x')
+    signatureFalse = sec.sign(data + b"x")
 
     assert sec.verify_signature(data, signature, sec.get_signing_public_key())
     # verificytion on false signature
@@ -145,7 +145,7 @@ def test_security_sign_verify(sandbox_path):
 def test_security_hybrid_encrypt_decrypt(sandbox_path):
     sec = appxf_objects.get_security_unlocked(sandbox_path, TEST_PASSWORD)
 
-    data = b'To be encrypted'
+    data = b"To be encrypted"
     data_encrpted, key_blob_map = sec.hybrid_encrypt(
         data, {1: sec.get_encryption_public_key()}
     )
@@ -160,7 +160,7 @@ def test_security_hybrid_encrypt_decrypt(sandbox_path):
 def test_security_hybrid_signed_encrypt_decrypt(sandbox_path):
     sec = appxf_objects.get_security_unlocked(sandbox_path, TEST_PASSWORD)
 
-    data = b'To be encrypted'
+    data = b"To be encrypted"
     data_encrypted_bytes = sec.hybrid_signed_encrypt(
         data, {1: sec.get_encryption_public_key()}
     )

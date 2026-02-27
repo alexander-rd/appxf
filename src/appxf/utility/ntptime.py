@@ -16,7 +16,7 @@ from appxf import logging
 
 
 class NtpTime:  # pragma: no cover
-    '''Provide offset between system time and NTP time servers.
+    """Provide offset between system time and NTP time servers.
 
     For timestamp based data synchronization, we do not rely on correctness of
     the system time even though modern operating systems should be properly
@@ -25,12 +25,12 @@ class NtpTime:  # pragma: no cover
     The class is maintaining the time offset, not each object individually.
 
     This class can also be used to determine active network connection.
-    '''
+    """
 
-    log = logging.getLogger(__name__ + '.NtpTime')
+    log = logging.getLogger(__name__ + ".NtpTime")
 
     # default base server is europe
-    base_server = 'europe.pool.ntp.org'
+    base_server = "europe.pool.ntp.org"
     # default list of server prefixes
     server_prefix_list = [0, 1, 2]
     # ensure we a last sync timestamp
@@ -58,7 +58,7 @@ class NtpTime:  # pragma: no cover
     async def _request_servers_and_update(cls, loop):
         timestamp_one = datetime.utcnow()
         servers = [
-            str(prefix) + '.' + cls.base_server for prefix in cls.server_prefix_list
+            str(prefix) + "." + cls.base_server for prefix in cls.server_prefix_list
         ]
         tasks = [asyncio.Task(cls._request_server(server)) for server in servers]
         done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
@@ -67,7 +67,7 @@ class NtpTime:  # pragma: no cover
         elapsed_time = timestamp_two - timestamp_one
         if elapsed_time > timedelta(seconds=1):
             cls.log.warning(
-                f'Requesting servers took {elapsed_time.total_seconds()} seconds.'
+                f"Requesting servers took {elapsed_time.total_seconds()} seconds."
             )
 
         for task in done:
@@ -77,12 +77,12 @@ class NtpTime:  # pragma: no cover
                 cls.last_sync_as_ntp_recv = datetime.utcfromtimestamp(result.recv_time)
                 cls.offset = result.offset
                 cls.log.info(
-                    f'Sync system time [{cls.last_sync_as_datetime}], '
-                    f'NTP time [{cls.last_sync_as_ntp_recv}] '
-                    f'resulted in offset of {cls.offset} seconds.'
+                    f"Sync system time [{cls.last_sync_as_datetime}], "
+                    f"NTP time [{cls.last_sync_as_ntp_recv}] "
+                    f"resulted in offset of {cls.offset} seconds."
                 )
                 return True
-        message = f'None of the server requests succeeded: {servers}'
+        message = f"None of the server requests succeeded: {servers}"
         cls.log.error(message, exc_info=True)
         raise Exception(message)
 
@@ -94,7 +94,7 @@ class NtpTime:  # pragma: no cover
             return response
         except ntplib.NTPException as e:
             cls.log.warning(
-                f'Error in retrieving NTP time from [{server}]. '
-                f'It likely timed out. Error: {e}'
+                f"Error in retrieving NTP time from [{server}]. "
+                f"It likely timed out. Error: {e}"
             )
             return None

@@ -1,6 +1,6 @@
 # Copyright 2023-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Basic Storage Behavior'''
+"""Basic Storage Behavior"""
 
 from __future__ import annotations
 
@@ -28,23 +28,23 @@ from .meta_data import MetaData
 
 
 class AppxfStorageError(Exception):
-    '''Error in storage handling'''
+    """Error in storage handling"""
 
 
 class AppxfStorageDerivationRawBaseError(AppxfStorageError):
-    '''Error during derivation from this class'''
+    """Error during derivation from this class"""
 
     def __init__(
         self,
         message: str = (
-            'You have to provide all raw handling functions (exists, '
-            '_load, _store) or none. '
-            'Rationale: Storage can otherwisde not safely identify '
-            'the base storage in a derivation hierachy. '
-            'The base storage class gets the final storage instance '
-            'registered also such that syncing between two base '
-            'storages (1) covers all generated storages with (2) the '
-            'correct storage method.'
+            "You have to provide all raw handling functions (exists, "
+            "_load, _store) or none. "
+            "Rationale: Storage can otherwisde not safely identify "
+            "the base storage in a derivation hierachy. "
+            "The base storage class gets the final storage instance "
+            "registered also such that syncing between two base "
+            "storages (1) covers all generated storages with (2) the "
+            "correct storage method."
         ),
         **kwargs,
     ):
@@ -52,11 +52,11 @@ class AppxfStorageDerivationRawBaseError(AppxfStorageError):
 
 
 class AppxfStorageWarning(Warning):
-    '''Warning on storage handling'''
+    """Warning on storage handling"""
 
 
 class Storage(ABC):
-    '''Providing storage behavior
+    """Providing storage behavior
 
     Main purpose of this class is store() and load() as an abstraction to
     store/load python objects. Any class dependent on Storage can then be used
@@ -101,7 +101,7 @@ class Storage(ABC):
            the abstract Storable realizes a store(), load() and exist() based
            on the corresponding Storage methods to combine the "what to store"
            with the "how to store".
-    '''
+    """
 
     # ##################
     # CLASS ATTRIBUTES
@@ -129,7 +129,7 @@ class Storage(ABC):
     #     access the same base storage: which SharedStorage would be linked?
     # The problem is resolved by applying a context to all storages via this
     # variable:
-    _context: str = ''
+    _context: str = ""
     # Whenever the application instances are accessed, in particular during
     # construction, the context will be set via switch_context(). Storage
     # objects will know their context such that context switching would not be
@@ -153,15 +153,15 @@ class Storage(ABC):
     _meta_data_enabled = False
     # Logger for this class (deriving class is overwritten in
     # __init_subclass__:
-    log = logging.getLogger(f'{__name__}.Storage')
+    log = logging.getLogger(f"{__name__}.Storage")
 
     # ####################
     # FACTORY BEHAVIOR
     # /
     def __init_subclass__(cls):
-        '''Deriving class providing additional class information'''
+        """Deriving class providing additional class information"""
         cls.log = logging.getLogger(
-            f'{cls.__class__.__module__}.{cls.__class__.__name__}'
+            f"{cls.__class__.__module__}.{cls.__class__.__name__}"
         )
 
         # register the class
@@ -189,7 +189,7 @@ class Storage(ABC):
     # base_storage input. Otherwise, error throwing comes too late.
     @runtime_checkable
     class Factory(Protocol):
-        '''TypeDef for factory function to construct Storage objects'''
+        """TypeDef for factory function to construct Storage objects"""
 
         @overload
         def __call__(self, name: str) -> Storage: ...
@@ -201,7 +201,7 @@ class Storage(ABC):
         def __call__(
             self, name: str | Storage.FactoryBehavior
         ) -> Storage | list[Storage]:
-            '''Factory to construct Storage objects'''
+            """Factory to construct Storage objects"""
 
     # TODO: the interface is not very awesome. (1) The storage_get_fun would be
     # better to get removed. There is just a problem with getting the right
@@ -214,23 +214,23 @@ class Storage(ABC):
         location: str | None = None,
         base_storage: Storage.Factory | None = None,
     ) -> Storage.Factory:
-        '''Return a factory for Storage objects
+        """Return a factory for Storage objects
 
         The factory is a simplified constructor, returning a Storage object.
         You have to define any setting for your Storage, except name and meta.
-        '''
+        """
         # throw an error if base_storage is proviced but is not a factory in
         # this context.
         if (location is None and base_storage is None) or (
             location is not None and base_storage is not None
         ):
             raise AppxfStorageError(
-                'Storage.get_factory() needs either base_storage or '
-                'location being defined.'
+                "Storage.get_factory() needs either base_storage or "
+                "location being defined."
             )
         if base_storage is not None and not isinstance(base_storage, Storage.Factory):
             raise AppxfStorageError(
-                'base_storage must be a storage factory in context of get_factory()'
+                "base_storage must be a storage factory in context of get_factory()"
             )
         if base_storage is None:
 
@@ -267,11 +267,11 @@ class Storage(ABC):
         return factory
 
     def get_meta(self, meta: str) -> Storage:
-        '''Obtain meta storage from existing storage object
+        """Obtain meta storage from existing storage object
 
         If this is a storage derived from a base storage, the returned storage
         for meta files is of the base storage type.
-        '''
+        """
         if self.base_storage is None:
             meta_storage = deepcopy(self)
         else:
@@ -318,12 +318,12 @@ class Storage(ABC):
         name: str,
         location: str,
         storage_init_fun: Callable[..., Storage],
-        user: str = '',
+        user: str = "",
     ) -> Storage:
-        '''Get a known storage object or create one.
+        """Get a known storage object or create one.
 
         Use get_meta() to obetain meta data storable from an existing storage.
-        '''
+        """
         # try using existing storage
         storage = cls.get_existing_storage(name=name, location=location)
         if storage is not None:
@@ -342,9 +342,9 @@ class Storage(ABC):
         if Storage._context_locked:
             raise AppxfStorageError(
                 'You locked object creation by switch_context("") '
-                'after starting using the context feature. '
-                'Either keep a valid context, or reconsider the usage of '
-                'switch_context()'
+                "after starting using the context feature. "
+                "Either keep a valid context, or reconsider the usage of "
+                "switch_context()"
             )
 
         if cls.is_registered(name, location=location):
@@ -353,21 +353,21 @@ class Storage(ABC):
 
     @classmethod
     def switch_context(cls, context: str):
-        '''Switch context for storage registry
+        """Switch context for storage registry
 
         Do not use in applications, unless you are certain on the impact.
         Context is a feature added mainly for TESTING use cases involving
         multiple aplication instances.
-        '''
+        """
         # block context switching if current context is not set and there is
         # stuff in the registry:
         if not Storage._context:
             for this_cls in Storage._storage_class_registry:
                 if this_cls._storage_registry:
                     raise AppxfStorageError(
-                        f'Context switch not allowed if storage was already '
-                        f'created without context. '
-                        f'Storages registered for: {this_cls.__name__}'
+                        f"Context switch not allowed if storage was already "
+                        f"created without context. "
+                        f"Storages registered for: {this_cls.__name__}"
                     )
         # handle context change in all storage classes
         for this_cls in Storage._storage_class_registry:
@@ -391,19 +391,19 @@ class Storage(ABC):
 
     @classmethod
     def _register_storage(cls, name: str, location: str, instance: Storage):
-        '''Register a storage to the class register
+        """Register a storage to the class register
 
         You should not need to use this function when deriving storages since
         Storage.__init__() already ensures registration. This also includes the
         registration to the base class if necessary.
-        '''
+        """
         if location not in cls._storage_registry:
             cls._storage_registry[location] = {}
         cls._storage_registry[location][name] = instance
 
     @classmethod
     def _unregister_storage(cls, location: str, name: str):
-        '''Deregister current storage'''
+        """Deregister current storage"""
         if location not in cls._storage_registry:
             return
         if name not in cls._storage_registry[location]:
@@ -414,19 +414,19 @@ class Storage(ABC):
             del cls._storage_registry[location]
 
     def register(self, override: Storage | None = None):
-        '''Register this instance to this classes registry
+        """Register this instance to this classes registry
 
         This function should remain unused. It is already registered upon
         construction and unregsitering it, targeting a later re-register may
         cause further problems. Function was added for consistency.
-        '''
+        """
         if (
             override is not None
             and self.is_registered(self._name, location=self._location)
             and not override
         ):
             raise AppxfStorageError(
-                f'{self.id()} is already registered in {self.__class__.__name__}'
+                f"{self.id()} is already registered in {self.__class__.__name__}"
             )
         if override is None:
             self._register_storage(
@@ -438,12 +438,12 @@ class Storage(ABC):
             )
 
     def unregister(self):
-        '''Unregister this instance
+        """Unregister this instance
 
         Usage is not recommended. This function is used in context of reset()
         which should only be required in context of unit testing to purge the
         class variables.
-        '''
+        """
         self._unregister_storage(name=self._name, location=self._location)
         if self._base_storage is not None:
             # While calling the same function, this get's executed in the
@@ -453,11 +453,11 @@ class Storage(ABC):
 
     @classmethod
     def reset(cls):
-        '''Reset registered storages
+        """Reset registered storages
 
         Should not be required in an applications but may be required during
         testing.
-        '''
+        """
         # reset() on Storage will reset all known Storage classes:
         if cls == Storage:
             for this_cls in cls._storage_class_registry:
@@ -479,8 +479,8 @@ class Storage(ABC):
             # down into the base storages accordingly.
 
     @classmethod
-    def is_registered(cls, name: str, location: str = '') -> bool:
-        '''Check if name in group is registered to storage class'''
+    def is_registered(cls, name: str, location: str = "") -> bool:
+        """Check if name in group is registered to storage class"""
         if location in cls._storage_registry:
             if name in cls._storage_registry[location]:
                 return True
@@ -493,11 +493,11 @@ class Storage(ABC):
     def __init__(
         self,
         name: str,
-        location: str = '',
-        user: str = '',
+        location: str = "",
+        user: str = "",
         base_storage: Storage | None = None,
     ):
-        '''Constructor for Storage objects
+        """Constructor for Storage objects
 
         Arguments:
             name -- name of the storage item
@@ -521,14 +521,14 @@ class Storage(ABC):
                 existing storage. This Storage class already handles
                 initialization and registration with this base storage for
                 derived classes.
-        '''
+        """
         # Cannot construct if locked by context:
         if Storage._context_locked:
             raise AppxfStorageError(
                 'You locked object creation by switch_context("") '
-                'after starting using the context feature. '
-                'Either keep a valid context, or reconsider the usage of '
-                'switch_context()'
+                "after starting using the context feature. "
+                "Either keep a valid context, or reconsider the usage of "
+                "switch_context()"
             )
         # Cannot construct an already registered object:
         if (
@@ -536,13 +536,13 @@ class Storage(ABC):
             and name in self._storage_registry[location]
         ):
             raise AppxfStorageError(
-                f'{self.__class__.__name__} already knows a storage {location}::{name}'
+                f"{self.__class__.__name__} already knows a storage {location}::{name}"
             )
 
         # construction
         super().__init__()
         self._name = name
-        self._meta = ''
+        self._meta = ""
         self._location = location
         self._user = user
         self._base_storage = base_storage
@@ -556,49 +556,49 @@ class Storage(ABC):
 
     @property
     def name(self):
-        '''Name of the storage item.
+        """Name of the storage item.
 
         Within a storage class, group and name uniquely identify a storage
         item.
-        '''
+        """
         return self._name
 
     @property
     def meta(self):
-        '''Identify storage as meta data'''
+        """Identify storage as meta data"""
         return self._meta
 
     @property
     def location(self):
-        '''Physical location of the storage item
+        """Physical location of the storage item
 
         Storage item and location uniquely identify the storage.
-        '''
+        """
         return self._location
 
     @property
     def user(self):
-        '''User who is accessing the storage
+        """User who is accessing the storage
 
         In case a storage location can be accessed by multiple application
         instances, the instance would typically identify itself by the logged
         in user.
-        '''
+        """
         return self._user
 
     @property
     def base_storage(self) -> Storage | None:
-        '''Access base storage'''
+        """Access base storage"""
         return self._base_storage
 
     def id(self) -> str:
-        '''ID for the storage object.
+        """ID for the storage object.
 
         Identify the storage object by class, location and name. In case of
         derived storage classes, the identity of the base storage is included.
         Same applies to storages that consider a current user accessing the
         data.
-        '''
+        """
         # Examples:
         # LocalStorage(./path/to/file): file
         # SecurePrivate() on LocalStorage(./path/to/file): file
@@ -613,34 +613,34 @@ class Storage(ABC):
         #     FancyRawWithUser(user, URL/path/to/file): file
         #
         # Conclusion: derived storages can rely on the id() of the root storage
-        base_storage_str = ''
+        base_storage_str = ""
         if self._base_storage is not None:
             base_storage_str = self._base_storage.id()
 
-        context_str = f' (Context: {self._context})' if self._context else ''
+        context_str = f" (Context: {self._context})" if self._context else ""
 
         if self._user and base_storage_str:
             return (
-                f'{self.__class__.__name__}'
-                f'({self._user}) on {base_storage_str}{context_str}'
+                f"{self.__class__.__name__}"
+                f"({self._user}) on {base_storage_str}{context_str}"
             )
         if base_storage_str:
-            return f'{self.__class__.__name__} on {base_storage_str}{context_str}'
+            return f"{self.__class__.__name__} on {base_storage_str}{context_str}"
         if self._user:
             return (
-                f'{self.__class__.__name__}'
-                f'({self._user}, {self._location}): '
-                f'{self._name}{context_str}'
+                f"{self.__class__.__name__}"
+                f"({self._user}, {self._location}): "
+                f"{self._name}{context_str}"
             )
         # no user, no base storage
-        return f'{self.__class__.__name__}({self._location}): {self._name}{context_str}'
+        return f"{self.__class__.__name__}({self._location}): {self._name}{context_str}"
 
     # #########################################################################
     # CORE STORAGE
     # /
 
     def load(self) -> object:
-        '''Load data
+        """Load data
 
         To decide what goes where, consider the following intended usage:
          1) store()/load() are the user interface. They take/provide original
@@ -654,11 +654,11 @@ class Storage(ABC):
             default implementation applies no transformations.
          3) _store()/_load() cover the interface to the actual storage. There
             is no default implementation.
-        '''
+        """
         return self.convert_from_raw(self.load_raw())
 
     def store(self, data: object):
-        '''Store data
+        """Store data
 
         To decide what goes where, consider the following intended usage:
          1) store()/load() are the user interface. They take/provide original
@@ -672,7 +672,7 @@ class Storage(ABC):
             default implementation applies no transformations.
          3) _store()/_load() cover the interface to the actual storage. There
             is no default implementation.
-        '''
+        """
         # TODO: the hash or file content should be analyzed before generating a
         # new UUID - this may make this detail to a function that should be
         # executed on raw data?
@@ -681,7 +681,7 @@ class Storage(ABC):
         self.store_raw(self.convert_to_raw(data=data))
 
     def convert_to_raw(self, data: object) -> object:
-        '''Converting object to raw storage data type
+        """Converting object to raw storage data type
 
         To decide what goes where, consider the following intended usage:
          1) store()/load() are the user interface. They take/provide original
@@ -695,11 +695,11 @@ class Storage(ABC):
             default implementation applies no transformations.
          3) _store()/_load() cover the interface to the actual storage. There
             is no default implementation.
-        '''
+        """
         return data
 
     def convert_from_raw(self, data: object) -> object:
-        '''Converting object to raw storage data type
+        """Converting object to raw storage data type
 
         To decide what goes where, consider the following intended usage:
          1) store()/load() are the user interface. They take/provide original
@@ -713,16 +713,16 @@ class Storage(ABC):
             default implementation applies no transformations.
          3) _store()/_load() cover the interface to the actual storage. There
             is no default implementation.
-        '''
+        """
         return data
 
     @abstractmethod
     def exists(self) -> bool:
-        '''Check existance in storage before loading'''
+        """Check existance in storage before loading"""
 
     @abstractmethod
     def store_raw(self, data: object):
-        '''Store interface to the actual storage
+        """Store interface to the actual storage
 
         To decide what goes where, consider the following intended usage:
          1) store()/load() are the user interface. They take/provide original
@@ -736,11 +736,11 @@ class Storage(ABC):
             default implementation applies no transformations.
          3) _store()/_load() cover the interface to the actual storage. There
             is no default implementation.
-        '''
+        """
 
     @abstractmethod
     def load_raw(self) -> object:
-        '''Load interface to the actual storage
+        """Load interface to the actual storage
 
         To decide what goes where, consider the following intended usage:
          1) store()/load() are the user interface. They take/provide original
@@ -754,7 +754,7 @@ class Storage(ABC):
             default implementation applies no transformations.
          3) _store()/_load() cover the interface to the actual storage. There
             is no default implementation.
-        '''
+        """
 
     # METADATA behavior
     #
@@ -788,22 +788,22 @@ class Storage(ABC):
     # The above is perfectly reasonable!
 
     def get_meta_data(self) -> MetaData | None:
-        '''Get meta data of stored data.
+        """Get meta data of stored data.
 
         Contains UUID and/or timestamp used for synchronization.
-        '''
-        meta_storage = self.get_meta('meta')
+        """
+        meta_storage = self.get_meta("meta")
         if not meta_storage.exists():
             return None
-        meta_state = self.get_meta('meta').load()
+        meta_state = self.get_meta("meta").load()
         return MetaData(state=meta_state)
 
     def set_meta_data(self, meta: MetaData):
-        '''Set updated meta data
+        """Set updated meta data
 
         Contains UUID and/or timestamp used for synchronization.
-        '''
-        meta_storage = self.get_meta('meta')
+        """
+        meta_storage = self.get_meta("meta")
         meta_storage.store(meta.get_state())
 
     # TODO: this set/get _meta_data is a name clash to the "meta" arguments to

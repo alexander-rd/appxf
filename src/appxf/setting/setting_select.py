@@ -1,6 +1,6 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Implementation of SettingSelect, selecting a value from a predefined list'''
+"""Implementation of SettingSelect, selecting a value from a predefined list"""
 
 from __future__ import annotations
 
@@ -51,22 +51,22 @@ from .setting_extension import SettingExtension, _BaseSettingT
 
 
 class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
-    '''Setting restricted to a named, predefined set
+    """Setting restricted to a named, predefined set
 
     You typically provide the available options during construction, like:
     [sel = AppxfSetting.new('int', options={'one': 1, 'two': 2})].
-    '''
+    """
 
     # This AppxfSetting class is an extention on an existing AppxfSetting type
     # which is marked by this class attribute:
-    setting_extension = 'select'
+    setting_extension = "select"
     # The class can be instantiated either by AppxfSetting.new('int_select')
     # for string based type selection or via AppxfSetting[AppxfInt]() for
     # direct type based initialization.
 
     @dataclass(eq=False, order=False)
     class Options(Setting.Options):
-        '''options for setting select'''
+        """options for setting select"""
 
         # update value options - None
         #
@@ -93,9 +93,9 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
         # what is possible. Once they see behavior they don't want, they should
         # be able to find the option to disable.
         control_options = Setting.Options.control_options + [
-            'mutable_items',
-            'mutable_list',
-            'custom_value',
+            "mutable_items",
+            "mutable_list",
+            "custom_value",
         ]
 
     def __init__(
@@ -160,19 +160,19 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
         # user controlled values.
         if self.options.mutable_list or self.options.mutable_items:
             if isinstance(out, dict):
-                out['select_map'] = deepcopy(self.select_map)
+                out["select_map"] = deepcopy(self.select_map)
             else:
-                out = {'value': out, 'select_map': deepcopy(self.select_map)}
+                out = {"value": out, "select_map": deepcopy(self.select_map)}
         # Like above, if custom_value is true, this base setting must be stored
         # as well. Currently, we store it with the same ExportOptions as the
         # SettingSelect, allowing no more fine grained control.
         if self.options.custom_value:
             if isinstance(out, dict):
-                out['base_setting'] = self.base_setting.get_state(**kwarg)
+                out["base_setting"] = self.base_setting.get_state(**kwarg)
             else:
                 out = {
-                    'value': out,
-                    'base_setting': self.base_setting.get_state(**kwarg),
+                    "value": out,
+                    "base_setting": self.base_setting.get_state(**kwarg),
                 }
         return out
 
@@ -180,8 +180,8 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
         # extract setting_select specific data before forwarding to setting.
         # Note that option handling would throw warnings on unknown keys such
         # that keys from data must be removed:
-        select_map = data.pop('select_map', None)
-        base_setting = data.pop('base_setting', None)
+        select_map = data.pop("select_map", None)
+        base_setting = data.pop("base_setting", None)
 
         # select_map must be restored before loading the other values since
         # setting the value will perform a validation against the select_map:
@@ -199,28 +199,28 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
     # Option Handling
     # /
     def get_select_keys(self) -> list[str]:
-        '''Get list of selectable options
+        """Get list of selectable options
 
         The list is sorted alphabetically.
-        '''
+        """
         return sorted(list(self.select_map.keys()))
 
     def get_select_value(self, option: str) -> Any:
-        '''Get the value for a selectable item'''
+        """Get the value for a selectable item"""
         return self.select_map.get(option, self.base_setting.get_default())
 
     def delete_select_key(self, option: str):
-        '''Delete a selectable item by its key name'''
+        """Delete a selectable item by its key name"""
         if option not in self.select_map:
             raise AppxfSettingError(
                 f'Cannot delete item "{option}" '
-                f'since it does not exist for '
+                f"since it does not exist for "
                 f'"{self.options.name}".'
             )
         if not self.options.mutable_list:
             raise AppxfSettingError(
                 f'Cannot delete item "{option}" '
-                f'since mutable_list is False for '
+                f"since mutable_list is False for "
                 f'"{self.options.name}".'
             )
         original_options = self.get_select_keys()
@@ -230,7 +230,7 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
             index = original_options.index(option)
             new_list = self.get_select_keys()
             if not new_list:
-                self.value = ''
+                self.value = ""
             elif index < len(new_list):
                 self.value = new_list[index]
             else:
@@ -239,12 +239,12 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
     def add_select_item(
         self, option: str, value: Any, ignore_mutable_options: bool = False
     ):
-        '''Add a new item to the select list by key and value'''
+        """Add a new item to the select list by key and value"""
         if option not in self.select_map:
             if not self.options.mutable_list and not ignore_mutable_options:
                 raise AppxfSettingError(
                     f'Cannot add the new item "{option}" '
-                    f'since mutable_list is False for '
+                    f"since mutable_list is False for "
                     f'"{self.options.name}".'
                 )
             # no check for mutable_item since a complete new one is added
@@ -253,14 +253,14 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
             if not self.options.mutable_items and not ignore_mutable_options:
                 raise AppxfSettingError(
                     f'Cannot change item "{option}" since '
-                    f'mutable_items is False for '
+                    f"mutable_items is False for "
                     f'"{self.options.name}".'
                 )
         # We try to set the value and take error message from there:
         if not self.base_setting.validate(value):
             raise AppxfSettingError(
-                f'Cannot add option [{option}] with value {value} of type '
-                f'{value.__class__.__name__} because the value is not valid.'
+                f"Cannot add option [{option}] with value {value} of type "
+                f"{value.__class__.__name__} because the value is not valid."
             )
         # We also take the readily transformed value, not just the input
         self.select_map[option] = value
