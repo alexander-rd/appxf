@@ -7,9 +7,9 @@ specific tests. Like in storage module: RamStorage or LocalStorage.
 '''
 
 from abc import ABC, abstractmethod
-
-from appxf.storage import Storage, MetaData
 from datetime import datetime
+
+from appxf.storage import MetaData, Storage
 
 # TODO: test cases need to be added to cover general derivation behavior when
 # it comes to object creation and registry. In particular: ensure that

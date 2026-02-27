@@ -21,9 +21,9 @@ __Invalid__: Try to set an invalid value (letters for int) and use OK as well
 as Cancel.
 '''
 
-from appxf_matema.case_runner import ManualCaseRunner
 from appxf.gui.setting_select import SettingSelectFrame
 from appxf.setting import Setting, SettingSelect
+from appxf_matema.case_runner import ManualCaseRunner
 
 # Scope: SettingSelect edit options functionality
 base_setting = Setting.new('dict', {'string': (str, 'base setting'), 'int': (int, 42)})

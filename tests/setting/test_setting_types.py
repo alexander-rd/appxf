@@ -12,18 +12,25 @@ whole test database for subclasses of BaseSettingTest.
 
 import inspect
 import sys
-import pytest
-
 from collections.abc import MutableMapping
 from typing import Any, Callable
 
-from appxf.setting import Setting
-from appxf.setting import AppxfSettingError, AppxfSettingConversionError
-from appxf.setting import SettingString, SettingText, SettingEmail, SettingPassword
-from appxf.setting import SettingBool, SettingInt, SettingFloat
-from appxf.setting import SettingBase64
-from appxf.setting import SettingDict
+import pytest
 
+from appxf.setting import (
+    AppxfSettingConversionError,
+    AppxfSettingError,
+    Setting,
+    SettingBase64,
+    SettingBool,
+    SettingDict,
+    SettingEmail,
+    SettingFloat,
+    SettingInt,
+    SettingPassword,
+    SettingString,
+    SettingText,
+)
 from appxf.setting import setting as setting_module
 
 

@@ -15,9 +15,9 @@ from __future__ import annotations
 
 import os
 
-from appxf.security import Security, SecurePrivateStorage
-from appxf.registry import Registry, SharedSync, SecureSharedStorage
 from appxf.config import Config
+from appxf.registry import Registry, SecureSharedStorage, SharedSync
+from appxf.security import SecurePrivateStorage, Security
 from appxf.storage import LocalStorage, Storage
 
 from .restricted_location import CredentialLocationMock

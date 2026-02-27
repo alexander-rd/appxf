@@ -8,11 +8,12 @@ fixture.
 '''
 
 import os
+
 import pytest
+
 from appxf.security import SecurePrivateStorage, Security
 from appxf.storage import LocalStorage, Storage
-
-from tests._fixtures import test_sandbox, appxf_objects
+from tests._fixtures import appxf_objects, test_sandbox
 
 TEST_PASSWORD = 'test-registry-password'
 

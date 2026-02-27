@@ -43,7 +43,7 @@ test-sandbox-root = "./.testing"
 # Remarks:
 #  * E (pycodestyle errors; PEP8)
 #  * F (pyflakes; flake8 defaults)
-select = ["E", "F"]
+select = ["E", "F", "I"]
 # TODO: Review and consider the following further checks:
 # "W"  - pycodestyle warnings (whitespace, blank lines)
 # "I"  - isort import ordering (ensures consistent import order)

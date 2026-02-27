@@ -10,9 +10,9 @@ after the label.
 '''
 #! TODO: update testing text
 
-from appxf_matema.case_runner import ManualCaseRunner
-from appxf.setting import SettingBool, SettingString, SettingEmail
 from appxf.gui import setting_dict
+from appxf.setting import SettingBool, SettingEmail, SettingString
+from appxf_matema.case_runner import ManualCaseRunner
 
 #  - Label length: the dict uses very short and very long names on purpose:
 prop_dict = {

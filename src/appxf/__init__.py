@@ -6,5 +6,5 @@
 # using APPXF shall not enforce loading of unnecessary dependencies which are
 # typically present in sub-modules.
 
-from .stateful import Stateful
 from .options import Options
+from .stateful import Stateful

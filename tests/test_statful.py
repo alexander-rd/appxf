@@ -2,10 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 '''options module with Options object'''
 
-from appxf import Stateful
 from dataclasses import dataclass, field
 
 import pytest
+
+from appxf import Stateful
 
 
 ###########################################

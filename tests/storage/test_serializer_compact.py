@@ -2,11 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 '''Test all serializer classes'''
 
-import pytest
 import pickle
 
-from appxf.storage import Serializer, CompactSerializer
+import pytest
 
+from appxf.storage import CompactSerializer, Serializer
 from tests.storage.test_serializer_base import (
     BaseSerializerTest,
     DummyClassNotSerializable,

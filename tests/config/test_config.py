@@ -2,9 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import pytest
-from appxf.storage import AppxfStorableError, RamStorage, Storage
+
+from appxf.config import AppxfConfigError, Config
 from appxf.setting import SettingDict
-from appxf.config import Config, AppxfConfigError
+from appxf.storage import AppxfStorableError, RamStorage, Storage
 
 
 @pytest.fixture(autouse=True)

@@ -7,9 +7,9 @@ Test case is less about ... TBD
 import tkinter
 
 from appxf import logging
-from appxf_matema.case_runner import ManualCaseRunner
-from appxf.setting import Setting
 from appxf.gui import GridToplevel, SettingDictColumnFrame
+from appxf.setting import Setting
+from appxf_matema.case_runner import ManualCaseRunner
 
 # Use Case: Create a bunch of settings let the user edit and handle results
 # upon button press.

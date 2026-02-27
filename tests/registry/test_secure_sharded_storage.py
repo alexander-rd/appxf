@@ -6,12 +6,12 @@ Utilizing BaseStorageTest for test cases. See test_storage_base.py
 '''
 
 import pytest
-from appxf.storage import Storage, LocalStorage
-from appxf.registry import SecureSharedStorage
 
 import tests._fixtures.test_sandbox
-from tests.storage.test_storage_base import BaseStorageTest
+from appxf.registry import SecureSharedStorage
+from appxf.storage import LocalStorage, Storage
 from tests._fixtures import appxf_objects
+from tests.storage.test_storage_base import BaseStorageTest
 
 # TODO: test signature and decryption manually to ensure formats and proper
 # encryption. This will be a lot of duplicate code but the only way to test

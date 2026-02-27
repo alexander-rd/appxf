@@ -1,14 +1,21 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
 
-import pytest
 from collections import OrderedDict
 from copy import deepcopy
 
-from appxf.setting import SettingDict, Setting
-from appxf.setting import AppxfSettingError, AppxfSettingWarning
-from appxf.setting import SettingString, SettingInt, SettingFloat, SettingBool
+import pytest
 
+from appxf.setting import (
+    AppxfSettingError,
+    AppxfSettingWarning,
+    Setting,
+    SettingBool,
+    SettingDict,
+    SettingFloat,
+    SettingInt,
+    SettingString,
+)
 from appxf.storage import RamStorage
 
 # REQ: SettingDict shall be able to be filled with settings by:

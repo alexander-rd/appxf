@@ -13,10 +13,12 @@ Tests to ensure that the implementation adheres to the following concept goals:
     * setting type to be able to restore settings for an empty SettingDict
 '''
 
-import pytest
 from collections import OrderedDict
+
+import pytest
+
 from appxf.setting import Setting, SettingDict, SettingEmail, SettingSelect
-from appxf.storage import RamStorage, JsonSerializer, Storage
+from appxf.storage import JsonSerializer, RamStorage, Storage
 
 
 # Feature testing must apply context to storage:

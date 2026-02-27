@@ -1,17 +1,19 @@
 # Copyright 2023-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-from pytest_bdd import scenarios, given, when, then, parsers
-from pytest import fixture
-from appxf.storage import Storage, LocalStorage, sync, StorageToBytes
-from appxf.security import SecurePrivateStorage
-from appxf.registry import SecureSharedStorage, Registry
-from appxf.config import Config
 import os.path
+
+from pytest import fixture
+from pytest_bdd import given, parsers, scenarios, then, when
+
+import tests._fixtures.test_sandbox
+from appxf.config import Config
+from appxf.registry import Registry, SecureSharedStorage
+from appxf.security import SecurePrivateStorage
+from appxf.storage import LocalStorage, Storage, StorageToBytes, sync
 
 # Fixtures upon which the ones we require are depenent on must be included as
 # well. Otherwise, we will get a "fixture not found".
 from tests._fixtures import appxf_objects
-import tests._fixtures.test_sandbox
 
 scenarios('test_bdd_sync.feature')
 

@@ -4,10 +4,10 @@
 
 import os
 
-from appxf.storage import LocalStorage, RamStorage, Storage
-from appxf.security import Security
-from appxf.registry import Registry
 from appxf.config import Config
+from appxf.registry import Registry
+from appxf.security import Security
+from appxf.storage import LocalStorage, RamStorage, Storage
 
 
 ### Config Objects

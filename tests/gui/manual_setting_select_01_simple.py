@@ -10,9 +10,9 @@ based on the "Long Single Line", the tooltip width shall be the width of the
 frame up to a certain maximum.
 '''
 
-from appxf_matema.case_runner import ManualCaseRunner
-from appxf.setting import Setting
 from appxf.gui import SettingSelectFrame
+from appxf.setting import Setting
+from appxf_matema.case_runner import ManualCaseRunner
 
 # Scope: SettingSelect functionality by single SettingFrame
 

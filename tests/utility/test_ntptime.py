@@ -1,9 +1,11 @@
 # Copyright 2023-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-import pytest
 from datetime import datetime, timedelta
-from appxf.utility.ntptime import NtpTime
+
 import ntplib
+import pytest
+
+from appxf.utility.ntptime import NtpTime
 
 
 def ntplib_request_failing(server):

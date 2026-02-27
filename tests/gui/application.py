@@ -7,8 +7,9 @@ Switching must NOT resize the window.
 '''
 
 import tkinter
-from appxf_matema.case_runner import ManualCaseRunner
+
 from appxf.gui.application import AppxfApplication
+from appxf_matema.case_runner import ManualCaseRunner
 
 app = AppxfApplication()
 app.title('AppxfApplication Dummy')

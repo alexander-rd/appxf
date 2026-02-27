@@ -1,7 +1,6 @@
 # Copyright 2023-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-from appxf.storage import Buffer, buffered
-from appxf.storage import Storage
+from appxf.storage import Buffer, Storage, buffered
 
 
 def assert_buffer_contains(buffer: Buffer, what: str, inputlist: list, exact=True):

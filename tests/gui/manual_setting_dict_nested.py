@@ -9,8 +9,8 @@ a nested Deict C. All Dicts have a string and an integer.
 __Resizing:__ should only affect the right entry part.
 '''
 
-from appxf.setting import Setting
 from appxf.gui import SettingDictSingleFrame
+from appxf.setting import Setting
 from appxf_matema.case_runner import ManualCaseRunner
 
 inner_A = Setting.new('dict', {'string A': ('str', 'test A'), 'int A': ('int', 1)})

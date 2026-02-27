@@ -22,9 +22,9 @@ save button on top, not a delete button.
 
 import tkinter
 
-from appxf_matema.case_runner import ManualCaseRunner
-from appxf.setting import Setting
 from appxf.gui import GridToplevel, SettingSelectDetailFrame
+from appxf.setting import Setting
+from appxf_matema.case_runner import ManualCaseRunner
 
 setting = Setting.new(
     'select::text',

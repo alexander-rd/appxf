@@ -9,10 +9,15 @@ fields. Here, all properties are independent and entr fields start directly
 after the label.
 '''
 
-from appxf_matema.case_runner import ManualCaseRunner
-from appxf.setting import SettingBool, SettingString, SettingEmail, SettingDict
-from appxf.setting import SettingBase64
 from appxf.gui.setting_dict import SettingDictWindow
+from appxf.setting import (
+    SettingBase64,
+    SettingBool,
+    SettingDict,
+    SettingEmail,
+    SettingString,
+)
+from appxf_matema.case_runner import ManualCaseRunner
 
 # logging.activate_logging()
 # logging.console_handler.setFormatter(logging.file_formatter)

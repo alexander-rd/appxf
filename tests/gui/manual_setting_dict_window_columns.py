@@ -9,9 +9,9 @@ fields. Here, all properties are independent and entry fields start directly
 after the label.
 '''
 
-from appxf_matema.case_runner import ManualCaseRunner
-from appxf.setting import SettingBool, SettingDict
 from appxf.gui import setting_dict
+from appxf.setting import SettingBool, SettingDict
+from appxf_matema.case_runner import ManualCaseRunner
 
 prop_dict = SettingDict(
     {

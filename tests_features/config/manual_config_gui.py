@@ -2,8 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 '''Manual testing the configuration GUI.'''
 
-from appxf.config import Config
 from appxf.application_gui.config_gui import EditConfigWindow
+
+from appxf.config import Config
 from appxf.gui import AppxfOption
 
 config = Config()

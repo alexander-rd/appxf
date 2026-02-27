@@ -6,12 +6,12 @@ Utilizing BaseStorageTest for test cases. See storage/test_storage_base.py
 '''
 
 import pytest
-from appxf.storage import Storage, LocalStorage
-from appxf.security import SecurePrivateStorage
 
 import tests._fixtures.test_sandbox
-from tests.storage.test_storage_base import BaseStorageTest
+from appxf.security import SecurePrivateStorage
+from appxf.storage import LocalStorage, Storage
 from tests._fixtures import appxf_objects
+from tests.storage.test_storage_base import BaseStorageTest
 
 # Test manual decryption to ensure that details are stored with encryption.
 # Manual decryption should define the algorithms that were used as a regression

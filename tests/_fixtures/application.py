@@ -8,9 +8,10 @@ which is required to reach initialized applications.
 
 import os
 import shutil
+
+import tests._fixtures.test_sandbox
 from appxf.storage import Storage
 from tests._fixtures.app_harness import AppHarness
-import tests._fixtures.test_sandbox
 from tests._fixtures.test_sandbox import project_version
 
 # TODO: Verify if the complexity in this file is actually required.

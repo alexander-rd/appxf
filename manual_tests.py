@@ -7,7 +7,7 @@ Call via:  ./.venv/bin/python manual_tests.py
 Virtual environment (venv) is required since, without, appxf would be unknown.
 '''
 
-from appxf_matema import Scanner, CmdHelper, CaseData
+from appxf_matema import CaseData, CmdHelper, Scanner
 
 case_data = CaseData()
 

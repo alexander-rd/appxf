@@ -1,12 +1,11 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-from pytest_bdd import scenarios, given, when, then, parsers
 from pytest import fixture
-from appxf.storage import Storage
+from pytest_bdd import given, parsers, scenarios, then, when
 
+from appxf.storage import Storage
 from tests._fixtures import application, test_sandbox
 from tests._fixtures.app_harness import AppHarness
-
 
 # Fixtures upon which the ones we require are depenent on must be included as
 # well. Otherwise, we will get a "fixture not found".

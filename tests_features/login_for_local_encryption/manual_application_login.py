@@ -1,9 +1,9 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-from appxf.gui import AppxfApplication, Login
-from appxf.security import Security, SecurePrivateStorage
-from appxf.storage import LocalStorage
 from appxf.config import Config
+from appxf.gui import AppxfApplication, Login
+from appxf.security import SecurePrivateStorage, Security
+from appxf.storage import LocalStorage
 
 # Initialize security for user password and credentials handling
 security = Security(salt='APPXF Template', file='./security')

@@ -1,18 +1,18 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
 import os
+
 import pytest
 
-from appxf.storage import Storage, CompactSerializer
-from appxf.registry import (
-    Registry,
-    AppxfRegistryError,
-    AppxfRegistryUnknownUser,
-    AppxfRegistryRoleError,
-)
-
-from tests._fixtures import appxf_objects
 import tests._fixtures.test_sandbox
+from appxf.registry import (
+    AppxfRegistryError,
+    AppxfRegistryRoleError,
+    AppxfRegistryUnknownUser,
+    Registry,
+)
+from appxf.storage import CompactSerializer, Storage
+from tests._fixtures import appxf_objects
 
 #! TODO: those getters should be moved into appxf_objects as functions and not
 #  as fixtures

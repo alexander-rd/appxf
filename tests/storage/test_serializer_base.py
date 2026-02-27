@@ -2,17 +2,16 @@
 # SPDX-License-Identifier: Apache-2.0
 '''Test all serializer classes'''
 
-import pytest
 import math
-
 from abc import ABC, abstractmethod
-
-from typing import get_origin, get_args, Union
+from collections import OrderedDict
 from types import UnionType
+from typing import Union, get_args, get_origin
+
+import pytest
 
 from appxf import Stateful
-from appxf.storage import Serializer, JsonSerializer
-from collections import OrderedDict
+from appxf.storage import JsonSerializer, Serializer
 
 
 class DummyClassNotSerializable:

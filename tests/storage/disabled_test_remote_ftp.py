@@ -1,9 +1,11 @@
 # Copyright 2023-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-import pytest
 import datetime
-from dotenv import load_dotenv
 import os
+
+import pytest
+from dotenv import load_dotenv
+
 from appxf.storage.ftp import FtpLocation
 
 # TODO: Test was disables upon transition to public repository. FTP was
