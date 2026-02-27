@@ -30,7 +30,7 @@ base_setting = Setting.new("dict", {"string": (str, "base setting"), "int": (int
 # Default export options are already such that new or missing keys would cause
 # an exception.
 
-settingOne = SettingSelect(
+setting = SettingSelect(
     base_setting=base_setting,
     select_map={
         "Dictionary A": {"string": "A", "int": 1},
@@ -39,4 +39,4 @@ settingOne = SettingSelect(
     name="SelectDict",
 )
 
-ManualCaseRunner().run(SettingSelectFrame, settingOne)
+ManualCaseRunner().run(SettingSelectFrame, setting)

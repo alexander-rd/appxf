@@ -32,14 +32,14 @@ class AppHarnessGui:
         # within the menus.
 
         # --- Config Menu --- #
-        configMenu = ConfigMenu(
+        config_menu = ConfigMenu(
             parent=app,
             config=self.harness.config,
             registry=self.harness.registry,
             root_path=self.harness.root_path,
         )
         # gui_root.frame_menu.add_separator()
-        app.frame_menu.add_cascade(label="Config", menu=configMenu)
+        app.frame_menu.add_cascade(label="Config", menu=config_menu)
 
         app.mainloop()
 

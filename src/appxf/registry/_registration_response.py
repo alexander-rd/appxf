@@ -16,7 +16,7 @@ from appxf.storage import CompactSerializer
 # TODO: apply DictStorable here but keep the get_bytes interface.
 
 
-class AppxfExceptionRegistrationResponse(Exception):
+class AppxfRegistrationResponseError(Exception):
     """Error with handling a registration response"""
 
 

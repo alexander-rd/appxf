@@ -15,10 +15,10 @@ from appxf.gui.application import AppxfApplication  # noqa E402
 
 
 class DummyFrame(tkinter.Frame):
-    def __init__(self, parent, argOne, argTwo, *args, **kwargs):
+    def __init__(self, parent, arg_a, arg_b, *args, **kwargs):
         super().__init__(parent)
-        self.argOne = argOne
-        self.argTwo = argTwo
+        self.arg_a = arg_a
+        self.arg_b = arg_b
         self.args = list()
         self.kwargs = dict()
         for arg in enumerate(args):
@@ -58,8 +58,8 @@ def test_register_frame():
 
     # ensure constructed and check the dummy frame
     af.show_frame("dummy")
-    assert af._main_frame.argOne == "one"
-    assert af._main_frame.argTwo == "two"
+    assert af._main_frame.arg_a == "one"
+    assert af._main_frame.arg_b == "two"
     assert af._main_frame.args[0][1] == "three"
     assert af._main_frame.args[1][1] == "four"
     assert af._main_frame.kwargs["hello"] == "world"

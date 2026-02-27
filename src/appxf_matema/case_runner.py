@@ -26,7 +26,7 @@ class ManualCaseRunner:
         * includes logging and coverage activation
     """
 
-    log = logging.getLogger(__name__ + ".ManualCaseRunner")
+    log = logging.get_logger(__name__ + ".ManualCaseRunner")
 
     def __init__(
         self,

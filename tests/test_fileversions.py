@@ -9,30 +9,21 @@ import tests._fixtures.test_sandbox
 from appxf import fileversions, logging
 
 
-def test_fileversions_format_yyyyMMdd():
+@pytest.mark.parametrize(
+    ("template", "day", "expected"),
+    [
+        ("(yyyyMMdd)_(00)_file.txt", date(2023, 4, 1), "20230401_00_file.txt"),
+        ("(yyyy)_CW(ww)_(000)_file.txt", date(2023, 1, 21), "2023_CW04_000_file.txt"),
+        ("file_(0000).txt", None, "file_0000.txt"),
+        ("(yyyyMMdd)_file.txt", date(2023, 4, 1), "20230401_file.txt"),
+    ],
+)
+def test_fileversions_format(template, day, expected):
     logging.logging.debug("hello")
-    day = date(2023, 4, 1)
-    assert (
-        fileversions.get_filename("(yyyyMMdd)_(00)_file.txt", day)
-        == "20230401_00_file.txt"
-    )
-
-
-def test_fileversions_format_yyyy_cw():
-    day = date(2023, 1, 21)
-    assert (
-        fileversions.get_filename("(yyyy)_CW(ww)_(000)_file.txt", day)
-        == "2023_CW04_000_file.txt"
-    )
-
-
-def test_fileversions_format_nodate():
-    assert fileversions.get_filename("file_(0000).txt") == "file_0000.txt"
-
-
-def test_fileversions_format_onlydate():
-    day = date(2023, 4, 1)
-    assert fileversions.get_filename("(yyyyMMdd)_file.txt", day) == "20230401_file.txt"
+    if day is None:
+        assert fileversions.get_filename(template) == expected
+    else:
+        assert fileversions.get_filename(template, day) == expected
 
 
 def test_fileversions_locale():

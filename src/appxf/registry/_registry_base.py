@@ -19,7 +19,7 @@ class RegistryBase(ABC):
     def user_id(self) -> int:
         """Get user ID
 
-        Method will raise AppxfExceptionUserId if registry is not completed.
+        Method will raise AppxfUserIdError if registry is not completed.
         See: is_initialized().
         """
 

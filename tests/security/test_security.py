@@ -132,11 +132,11 @@ def test_security_sign_verify(sandbox_path):
 
     data = b"To Be Signed"
     signature = sec.sign(data)
-    signatureFalse = sec.sign(data + b"x")
+    signature_false = sec.sign(data + b"x")
 
     assert sec.verify_signature(data, signature, sec.get_signing_public_key())
     # verificytion on false signature
-    assert not sec.verify_signature(data, signatureFalse, sec.get_signing_public_key())
+    assert not sec.verify_signature(data, signature_false, sec.get_signing_public_key())
     # verification on false public key (using encryption public key)
     assert not sec.verify_signature(data, signature, sec.get_encryption_public_key())
 

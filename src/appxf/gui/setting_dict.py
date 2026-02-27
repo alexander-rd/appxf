@@ -59,7 +59,7 @@ class SettingDictSingleFrame(SettingFrameBase):
     """
 
     supports = [SettingDict]
-    log = logging.getLogger(__name__ + ".SettingDictSingleFrame")
+    log = logging.get_logger(__name__ + ".SettingDictSingleFrame")
 
     def __init__(
         self,
@@ -144,8 +144,8 @@ class SettingDictSingleFrame(SettingFrameBase):
 
     def set_left_column_min_width(self, width: int):
         n_rows = self.grid_size()[1]
-        for iRow in range(n_rows):
-            widgets = self.grid_slaves(row=iRow, column=0)
+        for i_row in range(n_rows):
+            widgets = self.grid_slaves(row=i_row, column=0)
             for widget in widgets:
                 widget.columnconfigure(0, minsize=width)
 
@@ -254,7 +254,7 @@ class SettingDictColumnFrame(SettingFrameBase):
 class SettingDictWindow(GridToplevel):
     """Display dialog for Settings or Setting dicts"""
 
-    log = logging.getLogger(__name__ + ".SettingDictWindow")
+    log = logging.get_logger(__name__ + ".SettingDictWindow")
 
     def __init__(
         self,

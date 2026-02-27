@@ -190,7 +190,7 @@ class SecureSharedStorage(StorageToBytes):
         self._signature.load()
         if not self._signature.verify(data_bytes):
             # TODO: test case for failing signature
-            # TODO: AppxfException
+            # TODO: AppxfError
             # TODO: extend error message with infos like file
             raise Exception("Verification signature failed")
         # decryption

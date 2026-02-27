@@ -22,18 +22,19 @@ class AppxfRegistryError(Exception):
     """General registry error"""
 
 
-class AppxfRegistryUnknownUser(Exception):
+class AppxfRegistryUnknownUserError(Exception):
     """Unknown user"""
 
 
-class AppxfRegistryUnitialized(Exception):
+class AppxfRegistryUnitializedError(Exception):
     """Trying to use an uninitialized registry"""
 
 
-# TODO: manual config update would add such a missing section as "to be
-# removed". Maybe the registration step should behave likewise and this
-# exception is obsolete.
-class AppxfRegistryUnknownConfigSection(Exception):
+# TODO: manual config update would add such a missing section as "to be removed". Maybe
+# the registration step should behave likewise and this exception is obsolete. - It also
+# grew exceedingly long after needing to add "Error" to satisfy N818 (PEP8 naming
+# convention)
+class AppxfRegistryUnknownConfigSectionError(Exception):
     """A referenced config section does not exist"""
 
 
@@ -83,7 +84,7 @@ class Registry(RegistryBase):
     user_db, user_id are stored in ./data/security.
     """
 
-    log = logging.getLogger(__name__ + ".Registry")
+    log = logging.get_logger(__name__ + ".Registry")
 
     def __init__(
         self,
@@ -183,7 +184,7 @@ class Registry(RegistryBase):
         if self._loaded:
             return None
         if not self.try_load():
-            AppxfRegistryUnitialized("Registry is not initialized.")
+            AppxfRegistryUnitializedError("Registry is not initialized.")
 
     def try_load(self) -> bool:
         """Load USER ID and/or USER DB
@@ -443,7 +444,7 @@ class Registry(RegistryBase):
         admin uses get_response_bytes() to send data back to user.
         """
         if not self._loaded:
-            raise AppxfRegistryUnitialized(
+            raise AppxfRegistryUnitializedError(
                 "registry is not yet loaded, cannot add user"
             )
         # ensure synced state before update - exception being that the admin is
@@ -479,7 +480,7 @@ class Registry(RegistryBase):
         # check sections existing before applying
         for section in self._response_config_sections:
             if section not in self._config.sections:
-                raise AppxfRegistryUnknownConfigSection(
+                raise AppxfRegistryUnknownConfigSectionError(
                     f"Section {section} does not exist."
                 )
         response = RegistrationResponse.new(
@@ -665,7 +666,7 @@ class Registry(RegistryBase):
         # TODO: check if author_key is KNOWN and an ADMIN
         author_id = self._user_db.get_user_by_validation_key(author_key)
         if author_id is None:
-            raise AppxfRegistryUnknownUser(
+            raise AppxfRegistryUnknownUserError(
                 "Author of manual configuration update is unknown."
             )
         if not self._user_db.has_role(author_id, "admin"):

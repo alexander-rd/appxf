@@ -67,7 +67,7 @@ class GridFrame(tkinter.LabelFrame):
     of frames in one column.
     """
 
-    log = logging.getLogger(f"{__name__}.GridFrame")
+    log = logging.get_logger(f"{__name__}.GridFrame")
 
     # Registry mapping APPXF object types to GridFrame subclasses
     _registry: dict[type, type["GridFrame"]] = {}
@@ -291,7 +291,7 @@ class ButtonFrame(GridFrame):
     label.
     """
 
-    log = logging.getLogger(__name__ + ".ButtonFrame")
+    log = logging.get_logger(__name__ + ".ButtonFrame")
 
     def __init__(
         self,

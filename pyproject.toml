@@ -44,11 +44,11 @@ test-sandbox-root = "./.testing"
 #  E -- pycodestyle errors; PEP8
 #  F -- pyflakes; flake8 defaults
 #  I -- isort import ordering
-select = ["E", "F", "I"]
+#  N -- pep8 naming conventions (variables, functions, class names)
+#  W -- pycodestyle (whitespace, blank lines)
+select = ["E", "F", "I", "N", "W"]
 # TODO: Review and consider the following further checks:
-# "W"  - pycodestyle warnings (whitespace, blank lines)
 
-# "N"  - pep8 naming conventions (variable, function, class names)
 # "UP" - pyupgrade: enforce modern Python syntax (e.g. f-strings, type hints)
 # "B"  - flake8-bugbear: opinionated checks that catch common bugs
 # "C4" - flake8-comprehensions: unnecessary list/dict/set comprehensions

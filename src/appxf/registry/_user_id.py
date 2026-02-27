@@ -5,7 +5,7 @@
 from appxf.storage import Storable, Storage
 
 
-class AppxfExceptionUserId(Exception):
+class AppxfUserIdError(Exception):
     """Load/Store error for user ID"""
 
 
@@ -21,11 +21,11 @@ class UserId(Storable):
         """The USER ID
 
         Will be loaded from file if not yet done. Throws error
-        AppxfExceptionUserId if file does not exist.
+        AppxfErrorUserId if file does not exist.
         """
         # error if still unloaded
         if self._id < 0 and not self._storage.exists():
-            raise AppxfExceptionUserId("Cannot access USER ID: not yet written")
+            raise AppxfUserIdError("Cannot access USER ID: not yet written")
         # ensure loaded
         if self._id < 0:
             self.load()

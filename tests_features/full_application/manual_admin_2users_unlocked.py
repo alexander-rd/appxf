@@ -21,13 +21,13 @@ def setup_once():
     app_admin.perform_login_init()
     app_admin.perform_registration_admin_init()
 
-    app_userA = AppHarness(sandbox_path, "userA", registry_enabled=True)
-    app_userA.perform_login_init()
-    app_userA.perform_registration(app_admin)
+    app_user_a = AppHarness(sandbox_path, "userA", registry_enabled=True)
+    app_user_a.perform_login_init()
+    app_user_a.perform_registration(app_admin)
 
-    app_userB = AppHarness(sandbox_path, "userB", registry_enabled=True)
-    app_userB.perform_login_init()
-    app_userB.perform_registration(app_admin)
+    app_user_b = AppHarness(sandbox_path, "userB", registry_enabled=True)
+    app_user_b.perform_login_init()
+    app_user_b.perform_registration(app_admin)
 
 
 def launch_app(user: str):
@@ -42,12 +42,12 @@ def process_app_admin():
     launch_app("admin")
 
 
-def process_app_userA():
+def process_app_user_a():
     """Launch User A"""
     launch_app("userA")
 
 
-def process_app_userB():
+def process_app_user_b():
     """Launch User B"""
     launch_app("userB")
 

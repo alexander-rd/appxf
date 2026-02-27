@@ -32,7 +32,7 @@ class SettingFrameDefault(SettingFrameBase):
     """Frame holding a single property."""
 
     supports = [Setting]
-    log = logging.getLogger(__name__ + ".PropertyWidget")
+    log = logging.get_logger(__name__ + ".PropertyWidget")
 
     def __init__(self, parent, setting: Setting, **kwargs):
         super().__init__(parent, **kwargs)
@@ -144,7 +144,7 @@ class SettingFrameBool(SettingFrameBase):
     """CheckBox frame for a single boolean."""
 
     supports = [SettingBool]
-    log = logging.getLogger(__name__ + ".BoolCheckBoxWidget")
+    log = logging.get_logger(__name__ + ".BoolCheckBoxWidget")
 
     def __init__(self, parent, setting: Setting, **kwargs):
         super().__init__(parent, **kwargs)

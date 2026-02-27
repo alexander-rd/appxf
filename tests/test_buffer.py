@@ -34,8 +34,8 @@ def test_buffered_args():
     buffer = Buffer()
 
     @buffered(buffer)
-    def test_func(argOne, argTwo):
-        return argOne + argTwo
+    def test_func(arg_a, arg_b):
+        return arg_a + arg_b
 
     assert test_func(1, 20) == 21
     assert buffer.isbuffered("test_func", "1,20")

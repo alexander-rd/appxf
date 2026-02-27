@@ -766,10 +766,10 @@ def test_setting_dict_set_state_default_missing_key_exception():
     setting_dict["testA"] = "changedA"
     setting_dict["testB"] = "changedB"
 
-    dataA = deepcopy(data)
-    del dataA["A"]
-    with pytest.raises(AppxfSettingError) as excA_info:
-        setting_dict.set_state(dataA)
+    data_a = deepcopy(data)
+    del data_a["A"]
+    with pytest.raises(AppxfSettingError) as exc_a_info:
+        setting_dict.set_state(data_a)
 
     # Note: there is NO requirement that the SettingDict state remains the same
     # in case of failures. While this is done for .value setting where validity
@@ -778,12 +778,12 @@ def test_setting_dict_set_state_default_missing_key_exception():
     # behavior is omitted.
 
     # We repeat the same for B.
-    dataB = deepcopy(data)
-    del dataB["B"]
-    with pytest.raises(AppxfSettingError) as excB_info:
-        setting_dict.set_state(dataB)
+    data_b = deepcopy(data)
+    del data_b["B"]
+    with pytest.raises(AppxfSettingError) as exc_b_info:
+        setting_dict.set_state(data_b)
 
-    for exc in [("A", str(excA_info.value)), ("B", str(excB_info.value))]:
+    for exc in [("A", str(exc_a_info.value)), ("B", str(exc_b_info.value))]:
         # sample: Key A is maintained by SettingDict() but not included in
         # data. Data for set_state() only included the keys:
         # odict_keys(['_version', 'B']).

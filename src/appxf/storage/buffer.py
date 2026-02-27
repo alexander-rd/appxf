@@ -8,7 +8,7 @@ from copy import deepcopy
 from appxf import logging
 from appxf.storage import RamStorage, Storable, Storage
 
-log = logging.getLogger(__name__)
+log = logging.get_logger(__name__)
 
 
 # TODO #6: This buffer is an undocumented feature. It was added for a private
@@ -31,7 +31,7 @@ class Buffer(Storable):
     buffered data.
     """
 
-    log = logging.getLogger(f"{__name__}.Buffer")
+    log = logging.get_logger(f"{__name__}.Buffer")
 
     def __init__(self, storage_handler: Storage = RamStorage(), **kwargs):
 

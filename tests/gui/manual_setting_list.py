@@ -45,7 +45,7 @@ class FrameForTesting(GridToplevel):
 # TODO: This does not yet work, frame is ineffective and changed values do not
 # apply to OK button readout. Also the entries are not marked red, yet.
 
-gui_logger = logging.getLogger("appxf.gui")
+gui_logger = logging.get_logger("appxf.gui")
 gui_logger.setLevel(logging.logging.WARNING)
 
 ManualCaseRunner().run(FrameForTesting, setting_dict)

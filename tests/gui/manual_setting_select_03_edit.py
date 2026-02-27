@@ -10,7 +10,7 @@ from appxf_matema.case_runner import ManualCaseRunner
 
 # Scope: SettingSelect edit options functionality
 
-settingOne = Setting.new(
+setting_a = Setting.new(
     "select::text",
     select_map={
         "Long Broken Text": """Lorem ipsum dolor sit amet,
@@ -50,13 +50,13 @@ magna aliquam erat volutpat.""",
     },
     name="SelectString",
 )
-settingOne.base_setting.options.diplay_height = 20
-settingOne.base_setting.options.display_width = 60
+setting_a.base_setting.options.diplay_height = 20
+setting_a.base_setting.options.display_width = 60
 
-settingTwo = Setting.new(
+setting_b = Setting.new(
     "select::int", select_map={"1 Eins": 1, "2 Zwei": 2, "3 Drei": 3}, name="Integers"
 )
 
-setting = SettingDict(settings={"SelectString": settingOne, "Integer": settingTwo})
+setting = SettingDict(settings={"SelectString": setting_a, "Integer": setting_b})
 
 ManualCaseRunner().run(SettingDictSingleFrame, setting)

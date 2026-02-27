@@ -25,7 +25,7 @@ def ntplib_request_ok(server):
 
 
 @pytest.fixture(autouse=True)
-def fresh_NtpTime():
+def fresh_ntp_time():
     # copied initialization
     NtpTime.last_sync_as_datetime = None
     NtpTime.base_server = "europe.pool.ntp.org"
@@ -34,7 +34,7 @@ def fresh_NtpTime():
 
 
 @pytest.mark.skip(reason="NTP server is currently not used and occasionally fails")
-def test_functional(fresh_NtpTime):
+def test_functional(fresh_ntp_time):
     # fresh_NtpTime.base_server = 'pool.ntp.org'
     # fresh_NtpTime.server_prefix_list = ['0']
     offset = NtpTime.get_offset_from_utc_now()
@@ -43,15 +43,15 @@ def test_functional(fresh_NtpTime):
 
 
 @pytest.mark.skip(reason="NTP server is currently not used and occasionally fails")
-def test_server_all_fail(mocker, fresh_NtpTime):
+def test_server_all_fail(mocker, fresh_ntp_time):
     mocker.patch("ntplib.NTPClient.request", side_effect=ntplib_request_failing)
     with pytest.raises(Exception) as excinfo:
-        fresh_NtpTime.get_offset_from_utc_now()
+        fresh_ntp_time.get_offset_from_utc_now()
     assert "None of the server requests succeeded" in str(excinfo.value)
 
 
 @pytest.mark.skip(reason="NTP server is currently not used and occasionally fails")
-def test_no_second_call(mocker, fresh_NtpTime):
+def test_no_second_call(mocker, fresh_ntp_time):
     m = mocker.patch("ntplib.NTPClient.request", side_effect=ntplib_request_ok)
     NtpStatStub.offset = 0
     NtpStatStub.recv_time = datetime.utcnow().timestamp()

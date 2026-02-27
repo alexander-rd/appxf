@@ -13,24 +13,24 @@ from appxf.gui import SettingDictSingleFrame
 from appxf.setting import Setting
 from appxf_matema.case_runner import ManualCaseRunner
 
-inner_A = Setting.new("dict", {"string A": ("str", "test A"), "int A": ("int", 1)})
-inner_B_C = Setting.new(
+inner_a = Setting.new("dict", {"string A": ("str", "test A"), "int A": ("int", 1)})
+inner_b_c = Setting.new(
     "dict",
     {
         "string C": ("str", "test C"),
         "int C": ("int", 2),
     },
 )
-inner_B = Setting.new(
+inner_b = Setting.new(
     "dict",
     {
         "string B": ("str", "test B"),
         "int B": ("int", 2),
-        "dict C:": inner_B_C,
+        "dict C:": inner_b_c,
         "bool B": ("bool", True),
     },
 )
-outer = Setting.new("dict", {"dict A": inner_A, "dict B": inner_B})
+outer = Setting.new("dict", {"dict A": inner_a, "dict B": inner_b})
 
 
 ManualCaseRunner().run(SettingDictSingleFrame, outer)

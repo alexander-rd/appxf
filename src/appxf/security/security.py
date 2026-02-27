@@ -23,7 +23,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from appxf.storage import CompactSerializer, LocalStorage, Storage
 
 
-class AppxfSecurityException(Exception):
+class AppxfSecurityError(Exception):
     """General security related errors."""
 
 
@@ -91,11 +91,11 @@ class Security:
         This code might catch later version adaptions.
         """
         if "version" not in self._key_dict.keys():
-            raise AppxfSecurityException(
+            raise AppxfSecurityError(
                 "Not an APPXF security file: no version information"
             )
         if self._key_dict["version"] != 1:
-            raise AppxfSecurityException(
+            raise AppxfSecurityError(
                 f"Keys stored in version {self._key_dict['version']}, "
                 f"expected is version 1"
             )
@@ -140,7 +140,7 @@ class Security:
         """
         # Do not overwrite existing keys:
         if self.is_user_initialized():
-            raise AppxfSecurityException("Keys are already initialized.")
+            raise AppxfSecurityError("Keys are already initialized.")
         self._derived_key = self._derive_key(password)
         self._key_dict["symmetric_key"] = self._generate_key()
         self._write_keys()
@@ -153,13 +153,13 @@ class Security:
         which should be cought to handle wrong passwords.
         """
         if not self.is_user_initialized():
-            raise AppxfSecurityException("User is not initialized. Run init_user().")
+            raise AppxfSecurityError("User is not initialized. Run init_user().")
         self._derived_key = self._derive_key(password)
         self._load_keys()
 
     def _get_symmetric_key(self):
         if not self.is_user_unlocked():
-            raise AppxfSecurityException(
+            raise AppxfSecurityError(
                 "Trying to access symmetric keys before succeeding with unlock_user()"
             )
         return self._key_dict["symmetric_key"]
@@ -199,7 +199,7 @@ class Security:
         module and only sign() is exposed.
         """
         if not self.is_user_unlocked():
-            raise AppxfSecurityException(
+            raise AppxfSecurityError(
                 "Trying to access public key before succeeding with unlock_user()"
             )
         self._ensure_signing_keys_exist()
@@ -212,7 +212,7 @@ class Security:
         security module and only hybrid_decrypt() is exposed.
         """
         if not self.is_user_unlocked():
-            raise AppxfSecurityException(
+            raise AppxfSecurityError(
                 "Trying to access public key before succeeding with unlock_user()"
             )
         self._ensure_encryption_keys_exist()
@@ -230,7 +230,7 @@ class Security:
             not self._key_dict["signing_pub_key"]
             or not self._key_dict["signing_priv_key"]
         ):
-            raise AppxfSecurityException(
+            raise AppxfSecurityError(
                 "Only public or private validation key are set. This should not happen."
             )
 
@@ -246,7 +246,7 @@ class Security:
             not self._key_dict["encryption_pub_key"]
             or not self._key_dict["encryption_priv_key"]
         ):
-            raise AppxfSecurityException(
+            raise AppxfSecurityError(
                 "Only public or private encryption key are set. This should not happen."
             )
 
@@ -283,7 +283,7 @@ class Security:
         # key = serialization.load_pem_public_key(key_bytes)
         key = serialization.load_der_public_key(key_bytes)
         if not isinstance(key, rsa.RSAPublicKey):
-            raise AppxfSecurityException(
+            raise AppxfSecurityError(
                 f"Unexpected key class {key.__class__.__name__}. "
                 f"Expected RSAPrivateKey."
             )
@@ -301,7 +301,7 @@ class Security:
     def _deserialize_private_key(cls, key_bytes: bytes) -> rsa.RSAPrivateKey:
         key = serialization.load_pem_private_key(key_bytes, password=None)
         if not isinstance(key, rsa.RSAPrivateKey):
-            raise AppxfSecurityException(
+            raise AppxfSecurityError(
                 f"Unexpected key class {key.__class__.__name__}. "
                 f"Expected RSAPrivateKey."
             )
@@ -444,7 +444,7 @@ class Security:
         if blob_identifier is None:
             blob_identifier = self.get_encryption_public_key()
         if blob_identifier not in key_blob_dict:
-            raise AppxfSecurityException(
+            raise AppxfSecurityError(
                 f"Key blobs do not include one for identity: {blob_identifier}. "
                 f"Available are: {list(key_blob_dict.keys())}"
             )

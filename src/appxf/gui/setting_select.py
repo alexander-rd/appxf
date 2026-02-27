@@ -19,7 +19,7 @@ class _DropdownOnly(SettingFrameBase):
       <<ValueUpdated>> on any valid value update.
     """
 
-    log = logging.getLogger(__name__ + ".SettingSelectDropdown")
+    log = logging.get_logger(__name__ + ".SettingSelectDropdown")
 
     def __init__(self, parent, setting: SettingSelect, tooltip: bool = True, **kwargs):
         """Frame holding a single property."""
@@ -183,7 +183,7 @@ class SettingSelectDetailFrame(SettingFrameBase):
     setting.
     """
 
-    log = logging.getLogger(__name__ + ".SettingSelectEdit")
+    log = logging.get_logger(__name__ + ".SettingSelectEdit")
 
     def __init__(self, parent, setting: SettingSelect, **kwargs):
         super().__init__(parent, **kwargs)
@@ -278,7 +278,7 @@ class SettingSelectDetailFrame(SettingFrameBase):
 
 
 class SettingSelectWindow(GridToplevel):
-    log = logging.getLogger(__name__ + ".SettingSelectEditWindow")
+    log = logging.get_logger(__name__ + ".SettingSelectEditWindow")
 
     def __init__(self, parent, setting: SettingSelect, **kwargs):
         super().__init__(
@@ -310,7 +310,7 @@ class SettingSelectWindow(GridToplevel):
 
 class SettingSelectFrame(_DropdownOnly):
     supports = [SettingSelect]
-    log = logging.getLogger(__name__ + ".SettingSelectFrame")
+    log = logging.get_logger(__name__ + ".SettingSelectFrame")
 
     def __init__(self, parent, setting: SettingSelect, **kwargs):
         """Frame holding a single property."""

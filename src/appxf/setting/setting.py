@@ -9,6 +9,9 @@ the following support for usage in applications:
  - maintaining GUI related options like default visibility or masking for
    passwords
 """
+# Disabling rule N804 mandating cls for class methods since this file includes a meta
+# class.
+# ruff: noqa: N804
 
 from __future__ import annotations
 

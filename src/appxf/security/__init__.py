@@ -3,4 +3,4 @@
 """Facade for APPXF security module"""
 
 from .private_storage import SecurePrivateStorage
-from .security import AppxfSecurityException, Security
+from .security import AppxfSecurityError, Security

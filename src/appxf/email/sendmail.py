@@ -9,7 +9,7 @@ from email.mime.text import MIMEText
 from appxf import logging
 from appxf.setting import SettingDict
 
-log = logging.getLogger(__name__)
+log = logging.get_logger(__name__)
 
 config_property_template = SettingDict(
     {"server": (str,), "port": (str,), "user": (str,), "password": ("password",)}

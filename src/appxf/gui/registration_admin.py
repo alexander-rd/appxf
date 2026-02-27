@@ -31,7 +31,7 @@ class RegistrationAdmin:
     initialized and current user to be admin.
     """
 
-    log = logging.getLogger(__name__ + ".RegistrationAdmin")
+    log = logging.get_logger(__name__ + ".RegistrationAdmin")
 
     def __init__(
         self,

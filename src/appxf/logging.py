@@ -11,7 +11,7 @@ from . import fileversions
 # Expected usage will likely not include appxf.logging and python builtin
 # logging such that the following should be OK:
 logging = builtin_logging
-getLogger = builtin_logging.getLogger
+get_logger = builtin_logging.getLogger
 
 file_formatter = logging.Formatter(
     "%(asctime)s.%(msecs)03d "

@@ -6,7 +6,7 @@ from appxf import logging
 from appxf.storage import Storable, Storage
 
 
-class AppxfUserDatabaseException(Exception):
+class AppxfUserDatabaseError(Exception):
     """Error in User Database handling"""
 
 
@@ -21,7 +21,7 @@ class UserEntry(TypedDict):
 
 
 class UserDatabase(Storable):
-    log = logging.getLogger(__name__ + ".UserDatabase")
+    log = logging.get_logger(__name__ + ".UserDatabase")
 
     def __init__(self, storage_method: Storage, **kwargs):
         super().__init__(storage_method, **kwargs)
@@ -216,7 +216,7 @@ class UserDatabase(Storable):
 
     def _get_user_entry(self, user_id) -> UserEntry:
         if not self.is_registered(user_id):
-            raise AppxfUserDatabaseException(f"{user_id} is not registered.")
+            raise AppxfUserDatabaseError(f"{user_id} is not registered.")
         return self._user_db[user_id]
 
     def has_role(self, user_id: int, role: str):

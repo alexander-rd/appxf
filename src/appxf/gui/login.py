@@ -44,7 +44,7 @@ class Login:
      * key: a secred key that is used to encrypt locally stored data
     """
 
-    log = logging.getLogger(__name__ + ".Login")
+    log = logging.get_logger(__name__ + ".Login")
 
     def __init__(
         self,
@@ -79,120 +79,120 @@ class Login:
         derived from it. Only this derived key is returned. The password itself
         is not stored.
         """
-        guiRoot = tkinter.Tk()
-        guiRoot.title(_("window", "Login - Initialize"))
-        guiRoot.rowconfigure(0, weight=1)
-        guiRoot.columnconfigure(1, weight=1)
+        gui_root = tkinter.Tk()
+        gui_root.title(_("window", "Login - Initialize"))
+        gui_root.rowconfigure(0, weight=1)
+        gui_root.columnconfigure(1, weight=1)
 
-        userConfig = SettingDictSingleFrame(
-            guiRoot, setting=self._user_config, frame_label=False
+        user_config = SettingDictSingleFrame(
+            gui_root, setting=self._user_config, frame_label=False
         )
-        userConfig.grid(row=0, column=0, sticky="NSWE", columnspan=2)
-        left_min_size_config = userConfig.get_left_col_min_width()
+        user_config.grid(row=0, column=0, sticky="NSWE", columnspan=2)
+        left_min_size_config = user_config.get_left_col_min_width()
 
-        sep = tkinter.ttk.Separator(guiRoot, orient="horizontal")
+        sep = tkinter.ttk.Separator(gui_root, orient="horizontal")
         sep.grid(row=1, column=0, columnspan=2, sticky="WE")
 
-        pwdLabel = tkinter.Label(guiRoot, justify="right")
-        pwdLabel.config(text=_("label", "Password:"))
-        pwdLabel.grid(row=2, column=0, padx=5, pady=5, sticky="E")
+        pwd_label = tkinter.Label(gui_root, justify="right")
+        pwd_label.config(text=_("label", "Password:"))
+        pwd_label.grid(row=2, column=0, padx=5, pady=5, sticky="E")
 
-        pwdRepLabel = tkinter.Label(guiRoot, justify="right")
-        pwdRepLabel.config(text=_("label", "Repeat Password:"))
-        pwdRepLabel.grid(row=3, column=0, padx=5, pady=5, sticky="E")
+        pwd_rep_label = tkinter.Label(gui_root, justify="right")
+        pwd_rep_label.config(text=_("label", "Repeat Password:"))
+        pwd_rep_label.grid(row=3, column=0, padx=5, pady=5, sticky="E")
 
-        pwdEntry = tkinter.Entry(guiRoot, show="*", width=20)
-        pwdEntry.grid(row=2, column=1, padx=5, pady=5, sticky="W")
+        pwd_entry = tkinter.Entry(gui_root, show="*", width=20)
+        pwd_entry.grid(row=2, column=1, padx=5, pady=5, sticky="W")
 
-        pwdRepEntry = tkinter.Entry(guiRoot, show="*", width=20)
-        pwdRepEntry.grid(row=3, column=1, padx=5, pady=5, sticky="W")
+        pwd_rep_entry = tkinter.Entry(gui_root, show="*", width=20)
+        pwd_rep_entry.grid(row=3, column=1, padx=5, pady=5, sticky="W")
 
         # get password left column min width
-        guiRoot.update()
+        gui_root.update()
         left_min_size_login = (
-            max([pwdLabel.winfo_width(), pwdRepLabel.winfo_width()]) + 10
+            max([pwd_label.winfo_width(), pwd_rep_label.winfo_width()]) + 10
         )
         left_min_size = max([left_min_size_config, left_min_size_login])
         # adjust column here and in config
-        userConfig.set_left_column_min_width(left_min_size)
-        guiRoot.columnconfigure(0, minsize=left_min_size)
+        user_config.set_left_column_min_width(left_min_size)
+        gui_root.columnconfigure(0, minsize=left_min_size)
 
         # TODO: when leaving one pwd entry and both do not match, color the
         # repetition red
 
-        def okButtonFunction(event=None):
+        def ok_button_function(event=None):
             valid = True
-            pwdEntry.config(foreground="black")
-            pwdRepEntry.config(foreground="black")
+            pwd_entry.config(foreground="black")
+            pwd_rep_entry.config(foreground="black")
 
-            if len(pwdEntry.get()) < self._pwd_min_length:
+            if len(pwd_entry.get()) < self._pwd_min_length:
                 self.log.debug(
                     "NOK, Passwort muss mindestens "
                     f"{self._pwd_min_length} Zeichen haben"
                 )
-                pwdEntry.config(foreground="red")
+                pwd_entry.config(foreground="red")
                 valid = False
-            if pwdEntry.get() != pwdRepEntry.get():
+            if pwd_entry.get() != pwd_rep_entry.get():
                 self.log.debug("NOK, Passwords do not match")
-                pwdRepEntry.config(foreground="red")
+                pwd_rep_entry.config(foreground="red")
                 valid = False
-            if not userConfig.is_valid():
+            if not user_config.is_valid():
                 self.log.debug("config not valid")
                 valid = False
             if valid:
                 # unlock user
-                self._security.init_user(pwdEntry.get())
+                self._security.init_user(pwd_entry.get())
                 # store USER configuration
                 self._user_config.store()
                 self.log.debug("OK, quit")
-                guiRoot.destroy()
+                gui_root.destroy()
 
-        okButton = tkinter.Button(
-            guiRoot, text=_("button", "OK"), command=okButtonFunction
+        ok_button = tkinter.Button(
+            gui_root, text=_("button", "OK"), command=ok_button_function
         )
-        okButton.grid(row=4, column=1, padx=5, pady=5, sticky="E")
+        ok_button.grid(row=4, column=1, padx=5, pady=5, sticky="E")
 
-        guiRoot.bind("<Return>", okButtonFunction)
-        guiRoot.bind("<KP_Enter>", okButtonFunction)
-        userConfig.focus_curser_on_first_entry()
-        guiRoot.mainloop()
+        gui_root.bind("<Return>", ok_button_function)
+        gui_root.bind("<KP_Enter>", ok_button_function)
+        user_config.focus_curser_on_first_entry()
+        gui_root.mainloop()
 
         if not self._security.is_user_initialized():
             raise UserAbortError
 
     def __run_login_gui(self):
-        guiRoot = tkinter.Tk()
-        guiRoot.title(_("window", "Login"))
-        guiRoot.rowconfigure(1, weight=1)
-        guiRoot.columnconfigure(1, weight=1)
-        guiRoot.columnconfigure(2, weight=1)
+        gui_root = tkinter.Tk()
+        gui_root.title(_("window", "Login"))
+        gui_root.rowconfigure(1, weight=1)
+        gui_root.columnconfigure(1, weight=1)
+        gui_root.columnconfigure(2, weight=1)
 
-        pwdLabel = tkinter.Label(guiRoot, justify="right")
-        pwdLabel.config(text=_("label", "Password:"))
-        pwdLabel.grid(row=2, column=1, padx=5, pady=5, sticky="E")
+        pwd_label = tkinter.Label(gui_root, justify="right")
+        pwd_label.config(text=_("label", "Password:"))
+        pwd_label.grid(row=2, column=1, padx=5, pady=5, sticky="E")
 
-        pwdEntry = tkinter.Entry(guiRoot, show="*", width=20)
-        pwdEntry.grid(row=2, column=2, padx=5, pady=5, sticky="W")
+        pwd_entry = tkinter.Entry(gui_root, show="*", width=20)
+        pwd_entry.grid(row=2, column=2, padx=5, pady=5, sticky="W")
 
-        def okButtonFunction(event=None):
+        def ok_button_function(event=None):
             try:
-                self._security.unlock_user(pwdEntry.get())
-                guiRoot.destroy()
+                self._security.unlock_user(pwd_entry.get())
+                gui_root.destroy()
             except Exception:
                 self.log.debug(
                     "Password verification failed because of:", exc_info=True
                 )
                 self.log.warning("Password wrong, but we continue.")
 
-        okButton = tkinter.Button(
-            guiRoot, text=_("button", "OK"), command=okButtonFunction
+        ok_button = tkinter.Button(
+            gui_root, text=_("button", "OK"), command=ok_button_function
         )
-        okButton.grid(row=3, column=2, padx=5, pady=5, sticky="E")
+        ok_button.grid(row=3, column=2, padx=5, pady=5, sticky="E")
 
-        guiRoot.bind("<Return>", okButtonFunction)
-        guiRoot.bind("<KP_Enter>", okButtonFunction)
-        pwdEntry.focus_set()
-        guiRoot.mainloop()
+        gui_root.bind("<Return>", ok_button_function)
+        gui_root.bind("<KP_Enter>", ok_button_function)
+        pwd_entry.focus_set()
+        gui_root.mainloop()
 
         # TODO: check missing for loaded configuration
         # config.is_section_loaded()
