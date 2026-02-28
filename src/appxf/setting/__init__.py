@@ -1,6 +1,6 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Facade for APPXF setting module
+"""Facade for APPXF setting module
 
 Typical use cases for application configuration settings are:
   * user settings like their email
@@ -23,7 +23,7 @@ the following classes are the entry points:
       modelled behind.
   Config -- It collects several SettingDict objects as sections with some
       additional conveniance.
-'''
+"""
 
 # TODO: transfer this description into the documentation. I cannot see how this
 # description is valuable during development of applications.

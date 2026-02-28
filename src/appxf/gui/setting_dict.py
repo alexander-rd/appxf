@@ -1,14 +1,15 @@
 # Copyright 2023-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Aggregate single setting frames/windows into one interface
+"""Aggregate single setting frames/windows into one interface
 
 This module handles, in particular, SettingDict but aggregates all setting_*
 modules.
-'''
+"""
 
 import math
 import tkinter
-from typing import Any, Iterable, Mapping, TypeAlias
+from collections.abc import Iterable, Mapping
+from typing import Any, TypeAlias
 
 from appxf import logging
 from appxf.setting import Setting, SettingDict
@@ -24,7 +25,7 @@ SettingInput: TypeAlias = Setting | SettingDict | dict[str, Any] | Iterable[Sett
 
 
 def input_type_to_setting_dict(setting: SettingInput) -> SettingDict:
-    '''Convert allowed compound setting inputs to a SettingDict'''
+    """Convert allowed compound setting inputs to a SettingDict"""
 
     if isinstance(setting, SettingDict):
         return setting
@@ -47,19 +48,19 @@ def input_type_to_setting_dict(setting: SettingInput) -> SettingDict:
     if isinstance(setting, Setting):
         return SettingDict(settings={setting.options.name: setting})
 
-    raise AppxfGuiError(f'Input type unknown: {setting.__class__.__name__}')
+    raise AppxfGuiError(f"Input type unknown: {setting.__class__.__name__}")
 
 
 class SettingDictSingleFrame(SettingFrameBase):
-    '''Frame holding SettingWidgets for an APPXF SettingDict.
+    """Frame holding SettingWidgets for an APPXF SettingDict.
 
     Changes are directly applied to the properties if they are valid. Consider
     using backup() on the properties before starting this frame and
     providing a cancel button that uses restore() on the config.
-    '''
+    """
 
     supports = [SettingDict]
-    log = logging.getLogger(__name__ + '.SettingDictSingleFrame')
+    log = logging.get_logger(__name__ + ".SettingDictSingleFrame")
 
     def __init__(
         self,
@@ -78,7 +79,7 @@ class SettingDictSingleFrame(SettingFrameBase):
         # strip properties from the dict that are not mutable:
         self.setting_dict = {
             key: setting.get_setting(key)
-            for key in setting.keys()
+            for key in setting
             if setting.get_setting(key).options.mutable
         }
         # TODO: the above should be applied according to visibility. Not
@@ -98,8 +99,8 @@ class SettingDictSingleFrame(SettingFrameBase):
             self._place_setting_frame(this_setting, element_gui_options.get(key, {}))
 
     def _place_setting_frame(self, setting: Setting, gui_options):
-        if 'frame_type' in gui_options:
-            setting_frame = gui_options['frame_type'](self, setting, gui_options)
+        if "frame_type" in gui_options:
+            setting_frame = gui_options["frame_type"](self, setting, gui_options)
         setting_frame = GridFrame.get_frame(self, setting, **gui_options)
         self.place(setting_frame, row=len(self.frame_list), column=0)
         # apply row weight from underlying frame:
@@ -110,7 +111,7 @@ class SettingDictSingleFrame(SettingFrameBase):
         self.frame_list.append(setting_frame)
 
     def get_left_col_min_width(self) -> int:
-        '''Get minimum width of left column.
+        """Get minimum width of left column.
 
         Can only be called after placing the widget (e.g. using grid()).
         Example:
@@ -119,7 +120,7 @@ class SettingDictSingleFrame(SettingFrameBase):
             w.grid(row=0, column=0)
             min_width = w.get_left_col_min_width()
         ```
-        '''
+        """
         # TODO: docstring above is not correct anymore after grid() is
         # substituted by place(). When touching this, I may reconsider
         # overwriting grid() (and pack() and the other placing mechanisms).
@@ -144,13 +145,13 @@ class SettingDictSingleFrame(SettingFrameBase):
 
     def set_left_column_min_width(self, width: int):
         n_rows = self.grid_size()[1]
-        for iRow in range(n_rows):
-            widgets = self.grid_slaves(row=iRow, column=0)
+        for i_row in range(n_rows):
+            widgets = self.grid_slaves(row=i_row, column=0)
             for widget in widgets:
                 widget.columnconfigure(0, minsize=width)
 
     def adjust_left_columnwidth(self):
-        '''Get left labels aligned.
+        """Get left labels aligned.
 
         Can only be called after placing the widget (e.g. using grid()). You
         also need to update the root before doing so. Example:
@@ -160,7 +161,7 @@ class SettingDictSingleFrame(SettingFrameBase):
             w.winfo_toplevel().update()
             w.adjust_left_columnwidth()
         ```
-        '''
+        """
         min_size = self.get_left_col_min_width()
         self.set_left_column_min_width(min_size)
 
@@ -201,11 +202,11 @@ class SettingDictColumnFrame(SettingFrameBase):
             appxf_options = {}
 
         key_list = list(setting.keys())
-        direction = appxf_options.get('column_direction', 'down')
-        if direction == 'down':
+        direction = appxf_options.get("column_direction", "down")
+        if direction == "down":
             items_per_col = math.ceil(len(key_list) / columns)
             key_to_sub_dict = [int(i / items_per_col) for i in range(len(key_list))]
-        elif direction == 'right':
+        elif direction == "right":
             key_to_sub_dict = [i % columns for i in range(len(key_list))]
         else:
             raise ValueError(
@@ -252,9 +253,9 @@ class SettingDictColumnFrame(SettingFrameBase):
 
 
 class SettingDictWindow(GridToplevel):
-    '''Display dialog for Settings or Setting dicts'''
+    """Display dialog for Settings or Setting dicts"""
 
-    log = logging.getLogger(__name__ + '.SettingDictWindow')
+    log = logging.get_logger(__name__ + ".SettingDictWindow")
 
     def __init__(
         self,
@@ -264,14 +265,14 @@ class SettingDictWindow(GridToplevel):
         appxf_options: dict | None = None,
         **kwargs,
     ):
-        '''
+        """
         Create GUI window to edit a dictionary of properties.
-        '''
+        """
         super().__init__(
             parent,
             title=title,
-            buttons=['Cancel', 'OK'],
-            key_enter_as_button='OK',
+            buttons=["Cancel", "OK"],
+            key_enter_as_button="OK",
             **kwargs,
         )
         if appxf_options is None:
@@ -285,13 +286,13 @@ class SettingDictWindow(GridToplevel):
             self.property_dict = SettingDict(settings={setting.options.name: setting})
         else:
             raise AppxfGuiError(
-                f'Setting must be AppxfSetting or SettingDict but is {type(setting)}'
+                f"Setting must be AppxfSetting or SettingDict but is {type(setting)}"
             )
         # Ensure values are stored. If congiuration fails, values will be
         # reloaded.
         self.property_dict.store()
 
-        columns = appxf_options.get('columns', 1)
+        columns = appxf_options.get("columns", 1)
         if columns <= 1:
             self.dict_frame = SettingDictSingleFrame(
                 self,
@@ -313,11 +314,11 @@ class SettingDictWindow(GridToplevel):
         self.update()
         self.dict_frame.adjust_left_columnwidth()
 
-        self.bind('<<Cancel>>', lambda event: self._handle_cancel_button())
-        self.bind('<<OK>>', lambda event: self._handle_ok_button())
+        self.bind("<<Cancel>>", lambda event: self._handle_cancel_button())
+        self.bind("<<OK>>", lambda event: self._handle_ok_button())
 
     def _handle_ok_button(self):
-        self.log.debug('OK')
+        self.log.debug("OK")
         if self.dict_frame.is_valid():
             self.property_dict.store()
             self.destroy()
@@ -325,6 +326,6 @@ class SettingDictWindow(GridToplevel):
             self.log.debug('Cannot "OK", config not valid')
 
     def _handle_cancel_button(self):
-        self.log.debug('Cancel')
+        self.log.debug("Cancel")
         self.property_dict.load()
         self.destroy()

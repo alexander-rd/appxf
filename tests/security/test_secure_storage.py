@@ -1,17 +1,17 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Testing SecurePrivateStorage
+"""Testing SecurePrivateStorage
 
 Utilizing BaseStorageTest for test cases. See storage/test_storage_base.py
-'''
+"""
 
 import pytest
-from appxf.storage import Storage, LocalStorage
-from appxf.security import SecurePrivateStorage
 
 import tests._fixtures.test_sandbox
-from tests.storage.test_storage_base import BaseStorageTest
+from appxf.security import SecurePrivateStorage
+from appxf.storage import LocalStorage, Storage
 from tests._fixtures import appxf_objects
+from tests.storage.test_storage_base import BaseStorageTest
 
 # Test manual decryption to ensure that details are stored with encryption.
 # Manual decryption should define the algorithms that were used as a regression
@@ -23,8 +23,8 @@ from tests._fixtures import appxf_objects
 @pytest.fixture(autouse=True)
 def setup_local(request):
     Storage.reset()
-    env = {'dir': tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(request)}
-    env['security'] = appxf_objects.get_security_unlocked(env['dir'])
+    env = {"dir": tests._fixtures.test_sandbox.init_test_sandbox_from_fixture(request)}
+    env["security"] = appxf_objects.get_security_unlocked(env["dir"])
     request.instance.env = env
 
 
@@ -32,12 +32,12 @@ def setup_local(request):
 
 
 class TestSecureStorage(BaseStorageTest):
-    '''run basic Storage tests for RamStorage'''
+    """run basic Storage tests for RamStorage"""
 
     def _get_storage(self) -> Storage:
         return SecurePrivateStorage(
-            base_storage=LocalStorage(file='test', path=self.env['dir']),
-            security=self.env['security'],
+            base_storage=LocalStorage(file="test", path=self.env["dir"]),
+            security=self.env["security"],
         )
 
 

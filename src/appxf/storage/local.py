@@ -8,7 +8,7 @@ from .storage_to_bytes import CompactSerializer, Serializer, Storage, StorageToB
 
 
 class LocalStorage(StorageToBytes):
-    '''Maintain files in a local path.'''
+    """Maintain files in a local path."""
 
     def __init__(
         self,
@@ -56,24 +56,24 @@ class LocalStorage(StorageToBytes):
 
     def _get_file_path(self, create_dir: bool):
         if self._meta:
-            path = os.path.join(self._path, '.meta')
+            path = os.path.join(self._path, ".meta")
             if create_dir and not os.path.exists(path):
                 os.makedirs(path)
-            return os.path.join(path, self._name + '.' + self._meta)
+            return os.path.join(path, self._name + "." + self._meta)
         return os.path.join(self._path, self._name)
 
     def exists(self) -> bool:
         return os.path.exists(self._get_file_path(create_dir=False))
 
     def store_raw(self, data: bytes):
-        with open(self._get_file_path(create_dir=True), 'wb') as f:
+        with open(self._get_file_path(create_dir=True), "wb") as f:
             f.write(data)
 
     def load_raw(self) -> bytes:
         path = self._get_file_path(create_dir=False)
         if not os.path.exists(path):
-            return b''
-        with open(path, 'rb') as f:
+            return b""
+        with open(path, "rb") as f:
             return f.read()
 
     def _remove(self, file: str):

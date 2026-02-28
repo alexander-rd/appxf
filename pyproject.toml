@@ -40,23 +40,34 @@ test-sandbox-root = "./.testing"
 # configuration.
 
 [tool.ruff.lint]
-# Remarks:
-#  * E (pycodestyle errors; PEP8)
-#  * F (pyflakes; flake8 defaults)
-select = ["E", "F"]
+# Remark: The selected rules are not ciceled in stone. Start discussing, if there are
+# good reasons to change.
+select = ["B", "C4", "E", "F", "I", "N", "SIM", "UP", "W"]
+#  B -- flake8-bugbear (checks catching common bugs)
+#  C4 -- flake8-comprehensions ( unnecessary list/dict/set comprehensions)
+#  E -- pycodestyle errors; PEP8
+#  F -- pyflakes; flake8 defaults
+#  I -- isort import ordering
+#  N -- pep8 naming conventions (variables, functions, class names)
+#  SIM -- flake8-simplify (suggest simpler code constructs)
+#  UP -- pyupgrade: enforce modern Python syntax
+#  W -- pycodestyle (whitespace, blank lines)
+
+# TODO: ANN -- type annotations should be mandatory for all public functions. Further
+# configuration like ignoring for tests and the section
+# [tool.ruff.lint.flake8-annotations] already added but rule is not enabled due to too
+# many open issues.
+
 # TODO: Review and consider the following further checks:
-# "W"  - pycodestyle warnings (whitespace, blank lines)
-# "I"  - isort import ordering (ensures consistent import order)
-# "N"  - pep8 naming conventions (variable, function, class names)
-# "UP" - pyupgrade: enforce modern Python syntax (e.g. f-strings, type hints)
-# "B"  - flake8-bugbear: opinionated checks that catch common bugs
-# "C4" - flake8-comprehensions: unnecessary list/dict/set comprehensions
-# "SIM"- flake8-simplify: suggest simpler code constructs
-# "ANN"- flake8-annotations: enforce type annotations
 # "RUF"- ruff-specific rules (misc. best-practice checks)
 
 [tool.ruff.format]
-quote-style = "preserve"
+# no specific settings here, yet
+
+[tool.ruff.lint.flake8-annotations]
+allow-star-arg-any = true
+mypy-init-return = true
+suppress-none-returning = true
 
 [tool.ruff.lint.per-file-ignores]
 # Unused imports in __init__.py are intentional re-exports.
@@ -67,6 +78,7 @@ quote-style = "preserve"
 # other solutions (adding to __all__ and maxing the re-imports explicit with [import XY
 # as XY]), merging classes into appropriate longer module files would enable dropping
 # the module facade in __init__.py
+"tests*/**/*.py" = ["ANN"]
 
 [tool.tox]
 legacy_tox_ini = """

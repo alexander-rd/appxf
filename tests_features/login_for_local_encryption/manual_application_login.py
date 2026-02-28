@@ -1,29 +1,29 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-from appxf.gui import AppxfApplication, Login
-from appxf.security import Security, SecurePrivateStorage
-from appxf.storage import LocalStorage
 from appxf.config import Config
+from appxf.gui import AppxfApplication, Login
+from appxf.security import SecurePrivateStorage, Security
+from appxf.storage import LocalStorage
 
 # Initialize security for user password and credentials handling
-security = Security(salt='APPXF Template', file='./security')
+security = Security(salt="APPXF Template", file="./security")
 
 # Configuration setup using secured storage
 config_storage_factory = SecurePrivateStorage.get_factory(
-    base_storage_factory=LocalStorage.get_factory(path='./config'), security=security
+    base_storage_factory=LocalStorage.get_factory(path="./config"), security=security
 )
 config = Config(default_storage_factory=config_storage_factory)
 config.add_section(
-    'USER',
+    "USER",
     settings={
-        'Email': 'Email',
+        "Email": "Email",
     },
 )
 config.add_section(
-    'BACKEND',
+    "BACKEND",
     settings={
-        'URL': 'String',
-        'Password': 'Password',
+        "URL": "String",
+        "Password": "Password",
     },
 )
 
@@ -31,8 +31,8 @@ config.add_section(
 # configuration data.
 login = Login(
     security=security,
-    user_config=config.section('USER'),
-    app_name='APPXF Login Template',
+    user_config=config.section("USER"),
+    app_name="APPXF Login Template",
 )
 login.check()
 config.load()

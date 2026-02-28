@@ -1,6 +1,9 @@
 # Copyright 2023-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Facade for APPXF storage module'''
+"""Facade for APPXF storage module"""
+# TODO: See also the TODO remark in pyproject.toml on unused imports.
+
+# isort: skip_file
 
 # Abstract/General Classes
 from .serializer import Serializer

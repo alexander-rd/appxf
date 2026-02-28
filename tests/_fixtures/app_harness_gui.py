@@ -1,10 +1,10 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Provide a GUI for the application harness'''
+"""Provide a GUI for the application harness"""
 
 import os
-from appxf.gui import AppxfApplication, ConfigMenu, Login
-from appxf.gui import RegistrationUser
+
+from appxf.gui import AppxfApplication, ConfigMenu, Login, RegistrationUser
 from tests._fixtures.app_harness import AppHarness
 
 
@@ -14,12 +14,12 @@ class AppHarnessGui:
         super().__init__(*args, **kwargs)
 
         self.harness = harness
-        self.app_name = f'AppHarnessGui for {harness.user}'
+        self.app_name = f"AppHarnessGui for {harness.user}"
 
     def _run_application(self):
         app = AppxfApplication()
         # === Main Window === #
-        app.geometry('600x200')
+        app.geometry("600x200")
         app.title(self.app_name)
 
         # --- Frames --- #
@@ -32,14 +32,14 @@ class AppHarnessGui:
         # within the menus.
 
         # --- Config Menu --- #
-        configMenu = ConfigMenu(
+        config_menu = ConfigMenu(
             parent=app,
             config=self.harness.config,
             registry=self.harness.registry,
             root_path=self.harness.root_path,
         )
         # gui_root.frame_menu.add_separator()
-        app.frame_menu.add_cascade(label='Config', menu=configMenu)
+        app.frame_menu.add_cascade(label="Config", menu=config_menu)
 
         app.mainloop()
 
@@ -48,8 +48,8 @@ class AppHarnessGui:
         if self.harness.login_enabled and not self.harness.security.is_user_unlocked():
             login = Login(
                 security=self.harness.security,
-                user_config=self.harness.config.section('USER'),
-                app_name='Login: ' + self.app_name,
+                user_config=self.harness.config.section("USER"),
+                app_name="Login: " + self.app_name,
             )
             login.check()
 
@@ -60,11 +60,11 @@ class AppHarnessGui:
         # ensure registry being initialized while including a hidden feature:
         # not showing admin keys section if admin keys are available:
         if self.harness.registry_enabled and not self.harness.registry.is_initialized():
-            admin_keys_path = os.path.join(self.harness.app_path, 'admin.keys')
+            admin_keys_path = os.path.join(self.harness.app_path, "admin.keys")
             hide_admin_keys = False
             if os.path.exists(admin_keys_path):
                 if not self.harness.registry.has_admin_keys():
-                    with open(admin_keys_path, 'rb') as f:
+                    with open(admin_keys_path, "rb") as f:
                         admin_keys_data = f.read()
                         self.harness.registry.set_admin_key_bytes(admin_keys_data)
                 hide_admin_keys = True

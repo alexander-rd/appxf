@@ -1,6 +1,6 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Command line helper to inspect and run cases'''
+"""Command line helper to inspect and run cases"""
 
 import os
 import subprocess
@@ -18,25 +18,25 @@ class CmdHelper:
         self.database = database
 
     def print_case_summary(self):
-        print('Summary on test cases in database: ')
+        print("Summary on test cases in database: ")
         map = self.database.get_path_to_case_map()
         for path, cases in map.items():
-            print(f'  {path}:')
+            print(f"  {path}:")
             for case in cases:
-                print(f'    {case}')
+                print(f"    {case}")
 
-    def select_case(self, text: str = 'Test Case: ') -> str:
+    def select_case(self, text: str = "Test Case: ") -> str:
         self.print_case_summary()
         case_completer = WordCompleter(list(self.database.case_data.keys()))
         return prompt(text, completer=case_completer)
 
     def run(self):
         while True:
-            case = self.select_case('Which case to run?: ')
+            case = self.select_case("Which case to run?: ")
             if case not in self.database.case_data:
-                print('Exiting since case does not exist.')
+                print("Exiting since case does not exist.")
                 break
-            print(f'Running {case}')
+            print(f"Running {case}")
             self.run_case(case)
 
     def run_case(self, case_name: str):
@@ -45,28 +45,28 @@ class CmdHelper:
             self.database.get_case_path_string(case_name),
         )
         coverage_file = out_path / (
-            self.database.get_case_name(case_name) + '.coverage'
+            self.database.get_case_name(case_name) + ".coverage"
         )
         result_file = out_path / (
-            self.database.get_case_name(case_name) + '.result.json'
+            self.database.get_case_name(case_name) + ".result.json"
         )
         # Extend python ENV to local path from where THIS is called. If not,
         # python assumes the path of the called subprocess and imports may not
         # work as expected.
         env = os.environ.copy()
-        existing = env.get('PYTHONPATH', '')
-        env['PYTHONPATH'] = os.pathsep.join([existing, '.']).strip(os.pathsep)
+        existing = env.get("PYTHONPATH", "")
+        env["PYTHONPATH"] = os.pathsep.join([existing, "."]).strip(os.pathsep)
         subprocess.run(
             [
                 sys.executable,
-                '-m',
-                'coverage',
-                'run',
-                '--source=appxf',
-                '--branch',
-                f'--data-file={coverage_file}',
+                "-m",
+                "coverage",
+                "run",
+                "--source=appxf",
+                "--branch",
+                f"--data-file={coverage_file}",
                 case_name,
-                f'--result-file={result_file}',
+                f"--result-file={result_file}",
             ],
             check=True,
             env=env,

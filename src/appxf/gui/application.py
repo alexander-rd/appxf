@@ -43,7 +43,7 @@ class FrameInfo(RecordClass):
 
 
 class AppxfApplication(tkinter.Tk):
-    '''Main Application Window
+    """Main Application Window
 
     This Application Window includes:
       * a top level menu bar [.menu] with
@@ -66,27 +66,27 @@ class AppxfApplication(tkinter.Tk):
     # if required, af.main_frame could be manipulated
     af.mainloop()
     ```
-    '''
+    """
 
     def __init__(self, *args, **kwargs):
-        '''Create APPXF Application Window
+        """Create APPXF Application Window
 
         Arguments: just forwarding args/kwargs to tkinter.Tk
-        '''
+        """
         super().__init__(*args, **kwargs)
-        self._frames: dict[str, FrameInfo] = dict()
+        self._frames: dict[str, FrameInfo] = {}
         self._dummy_frame = FrameInfo(tkinter.Frame, (), {}, None)
 
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
 
         # ensure the dummy frame is existent
-        self.show_frame('')
+        self.show_frame("")
 
         # bring menu to life:
         self.menu = tkinter.Menu(self)
         self.frame_menu = tkinter.Menu(self.menu, tearoff=0)
-        self.menu.add_cascade(label='View', menu=self.frame_menu)
+        self.menu.add_cascade(label="View", menu=self.frame_menu)
         # TODO: We can have (1) no menu at all, (2) a cascaded menu which needs
         # a name for the cascade or (3) the frame names directly within the top
         # bar.
@@ -100,7 +100,7 @@ class AppxfApplication(tkinter.Tk):
         self.config(menu=self.frame_menu)
 
     def register_frame(self, name: str, cls: type, *args, **kwargs):
-        '''Register content frame.
+        """Register content frame.
 
         The frame is only constructed when needed. For that reason, you provide
         the class and initialization arguments.
@@ -108,15 +108,15 @@ class AppxfApplication(tkinter.Tk):
         Arguments:
             name -- Name to be used in content selection menu
             cls -- Frame class to be displayed
-        '''
+        """
         if not issubclass(cls, (tkinter.Frame, tkinter.LabelFrame)):
             raise TypeError(
-                f'Provided class [cls] must be a subclass of '
-                f'tkinter\'s Frame but is: {cls}'
+                f"Provided class [cls] must be a subclass of "
+                f"tkinter's Frame but is: {cls}"
             )
-        if name in self._frames.keys():
+        if name in self._frames:
             raise ValueError(
-                f'A frame for {name} was already registered: {self._frames[name].cls}'
+                f"A frame for {name} was already registered: {self._frames[name].cls}"
             )
 
         self._frames[name] = FrameInfo(cls, args, kwargs, None)
@@ -124,14 +124,14 @@ class AppxfApplication(tkinter.Tk):
         self.frame_menu.add_command(label=name, command=lambda: self.show_frame(name))
 
     def show_frame(self, name):
-        '''Show registered frame by name
+        """Show registered frame by name
 
         After using register_frame(name, ...), this function will create the
         Frame, if required, and updates the view to show it.
 
         Arguments:
             name -- name of the frame as per register_frame
-        '''
+        """
         frame_info = self._get_frame_info(name)
         if frame_info.frame is None:
             frame = self._create_frame(name)
@@ -148,11 +148,11 @@ class AppxfApplication(tkinter.Tk):
         )
 
     def _create_frame(self, name):
-        '''Create frame from stored class'''
+        """Create frame from stored class"""
         frame_info = self._get_frame_info(name)
         # construct:
         frame = frame_info.cls(self, *(frame_info.args), **(frame_info.kwargs))
-        frame.grid(row=0, column=0, sticky='NSWE')
+        frame.grid(row=0, column=0, sticky="NSWE")
         # store:
         frame_info.frame = frame
         return frame
@@ -162,6 +162,6 @@ class AppxfApplication(tkinter.Tk):
             return self._dummy_frame
         if name not in self._frames:
             raise KeyError(
-                f'{name} was not registered as frame. I know of: {self._frames.keys()}'
+                f"{name} was not registered as frame. I know of: {self._frames.keys()}"
             )
         return self._frames[name]

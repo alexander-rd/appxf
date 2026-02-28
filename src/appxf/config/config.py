@@ -1,10 +1,10 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Provide Configuration Handling
+"""Provide Configuration Handling
 
 The configuration concept is accumulating APPXF SettingDict objects as
 sections.
-'''
+"""
 
 from collections.abc import Mapping
 from typing import Any
@@ -50,11 +50,11 @@ from appxf.storage import RamStorage, Storage
 
 
 class AppxfConfigError(Exception):
-    '''General config error'''
+    """General config error"""
 
 
 class Config:
-    '''Organize configuration settings.
+    """Organize configuration settings.
 
     Configuration typically splits into several sets of properties for USER or
     tool access related options. A Config object collects those configuration
@@ -67,9 +67,9 @@ class Config:
     In an application, it is recommended to initialize the the aplication parts
     with the APPXF SettingDict's. They are shared by value and can be loaded
     after initialization.
-    '''
+    """
 
-    log = logging.getLogger(__name__ + '.Config')
+    log = logging.get_logger(__name__ + ".Config")
 
     def __init__(
         self, default_storage_factory: Storage.Factory | None = None, **kwargs
@@ -80,15 +80,15 @@ class Config:
 
     @property
     def sections(self) -> list[str]:
-        '''Return list of sections.'''
+        """Return list of sections."""
         return list(self._sections.keys())
 
     def section(self, section: str) -> SettingDict:
-        '''Access a section'''
+        """Access a section"""
         if section not in self._sections:
             raise AppxfConfigError(
-                f'Cannot access section {section}, it does not exist. '
-                f'Existing are: {self.sections}.'
+                f"Cannot access section {section}, it does not exist. "
+                f"Existing are: {self.sections}."
             )
         return self._sections[section]
 
@@ -98,11 +98,11 @@ class Config:
         storage_factory: Storage.Factory | None = None,
         settings: Mapping[str, Any] = None,
     ) -> SettingDict:
-        '''Add section if not yet existing.'''
+        """Add section if not yet existing."""
         # ensure section does not yet exist:
         if section in self._sections:
             raise AppxfConfigError(
-                f'Cannot add section {section}, it does already exist.'
+                f"Cannot add section {section}, it does already exist."
             )
         # define storage
         if storage_factory is not None:
@@ -121,29 +121,29 @@ class Config:
         export_options = SettingDict.ExportOptions(
             exception_on_new_key=False, exception_on_missing_key=False
         ).get_state()
-        self._sections[section].get_state_kwargs = {'options': export_options}
-        self._sections[section].set_state_kwargs = {'options': export_options}
+        self._sections[section].get_state_kwargs = {"options": export_options}
+        self._sections[section].set_state_kwargs = {"options": export_options}
 
-        self.log.info(f'added section: {section}')
+        self.log.info(f"added section: {section}")
         return self._sections[section]
 
     def remove_section(self, section: str):
-        '''Remove section'''
+        """Remove section"""
         if section in self._sections:
             del self._sections[section]
-            self.log.info('removed section: %s', section)
+            self.log.info("removed section: %s", section)
         else:
             raise AppxfConfigError(
-                f'Cannot remove section, it does not exist: {section}'
+                f"Cannot remove section, it does not exist: {section}"
             )
 
     def store(self):
-        '''Store all sections'''
+        """Store all sections"""
         for section in self._sections.values():
             section.store()
 
     def load(self):
-        '''Load all sections'''
+        """Load all sections"""
         for section in self._sections.values():
             if section.exists():
                 section.load()

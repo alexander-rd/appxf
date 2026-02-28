@@ -1,6 +1,6 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Security layer for files shared between users'''
+"""Security layer for files shared between users"""
 
 # allow class name being used before being fully defined (like in same class):
 from __future__ import annotations
@@ -20,19 +20,19 @@ from ._registry_base import RegistryBase
 from ._signature import Signature
 
 # SecureSharedStorage uses two meta files for which we define the serializers:
-StorageToBytes.set_meta_serializer('signature', JsonSerializer)
-StorageToBytes.set_meta_serializer('keys', CompactSerializer)
+StorageToBytes.set_meta_serializer("signature", JsonSerializer)
+StorageToBytes.set_meta_serializer("keys", CompactSerializer)
 
 
 class SecureSharedStorage(StorageToBytes):
-    '''Typical setup for shared storage
+    """Typical setup for shared storage
 
     The typical setup consists of the layers:
       1) Public key encryption (to allow others access)
       2) Envelope to control writing permissions and
          provide information for manual inspection
       3) Signature for authenticity
-    '''
+    """
 
     def __init__(
         self,
@@ -64,10 +64,10 @@ class SecureSharedStorage(StorageToBytes):
         # knows _user and may already act accordingly.
 
         self._signature = Signature(
-            storage=base_storage.get_meta('signature'), security=security
+            storage=base_storage.get_meta("signature"), security=security
         )
         self._public_encryption = PublicEncryption(
-            storage=base_storage.get_meta('keys'), registry=registry
+            storage=base_storage.get_meta("keys"), registry=registry
         )
 
     # TODO: update documentation below. Put elsewhere??
@@ -98,7 +98,7 @@ class SecureSharedStorage(StorageToBytes):
         registry: RegistryBase,
         serializer: type[Serializer] = CompactSerializer,
     ) -> Storage:
-        '''Get a known storage object or create one.'''
+        """Get a known storage object or create one."""
         return super().get(
             name=base_storage.name,
             location=base_storage.location,
@@ -129,11 +129,11 @@ class SecureSharedStorage(StorageToBytes):
         )
 
     def ensure_usable(self):
-        '''Check security and registry objects
+        """Check security and registry objects
 
         No storage operation is possible if security is not unlocked and
         registry is not initialized with user id.
-        '''
+        """
         if not self._security.is_user_unlocked():
             return False
         if not self._registry.is_initialized():
@@ -145,7 +145,7 @@ class SecureSharedStorage(StorageToBytes):
     def exists(self) -> bool:
         if self.base_storage is None:
             raise AppxfStorageError(
-                f'{self.__class__.__name__} required a base storage but you used None.'
+                f"{self.__class__.__name__} required a base storage but you used None."
             )
         # security and registry must have appropriate states
         if not self.ensure_usable():
@@ -158,16 +158,14 @@ class SecureSharedStorage(StorageToBytes):
         # storage.
         if not self._signature.exists():
             return False
-        if not self._public_encryption.exists():
-            return False
-        return True
+        return self._public_encryption.exists()
 
     def store_raw(self, data: bytes):
         # registry and security must be initialized:
         if not self.ensure_usable():
             raise AppxfStorageError(
-                'Store on SecureSharedStorage is only possible with '
-                'unlocked security and initialized registry.'
+                "Store on SecureSharedStorage is only possible with "
+                "unlocked security and initialized registry."
             )
         # encryption
         data_bytes = self._public_encryption.encrypt(data)
@@ -180,19 +178,19 @@ class SecureSharedStorage(StorageToBytes):
     def load_raw(self) -> bytes:
         if not self.ensure_usable():
             raise AppxfStorageError(
-                'Load on SecureSharedStorage is only possible with '
-                'unlocked security and initialized registry.'
+                "Load on SecureSharedStorage is only possible with "
+                "unlocked security and initialized registry."
             )
         # load raw
         data_bytes: bytes = self.base_storage.load_raw()
-        if data_bytes == b'':
-            return b''
+        if data_bytes == b"":
+            return b""
         self._signature.load()
         if not self._signature.verify(data_bytes):
             # TODO: test case for failing signature
-            # TODO: AppxfException
+            # TODO: AppxfError
             # TODO: extend error message with infos like file
-            raise Exception('Verification signature failed')
+            raise Exception("Verification signature failed")
         # decryption
         self._public_encryption.load()
         data_bytes = self._public_encryption.decrypt(data_bytes)

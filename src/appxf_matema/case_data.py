@@ -1,6 +1,6 @@
 # Copyright 2025-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Providing a helper to maintain test case data'''
+"""Providing a helper to maintain test case data"""
 
 from collections import OrderedDict
 from pathlib import Path
@@ -10,14 +10,14 @@ from appxf.storage import JsonSerializer, LocalStorage
 
 
 class CaseEntry:
-    def __init__(self, path: str = '', file: str = '', **kwargs):
+    def __init__(self, path: str = "", file: str = "", **kwargs):
         super().__init__(**kwargs)
         self.data = SettingDict(
             settings={
-                'state': SettingSelect(
+                "state": SettingSelect(
                     base_setting=SettingString(),
-                    value='new',
-                    select_map={state: state for state in ['new', 'valid', 'invalid']},
+                    value="new",
+                    select_map={state: state for state in ["new", "valid", "invalid"]},
                     # switch off all fancy stuff to disable exporting those details
                     # into storage:
                     mutable_list=False,
@@ -44,14 +44,14 @@ class CaseData:
     # The database is fixed to use a local, JSON (human readable) storage
     # format.
 
-    def __init__(self, path: str = 'manual_tests', **kwargs):
+    def __init__(self, path: str = "manual_tests", **kwargs):
         super().__init__(**kwargs)
         self.root_path = path
         self.storage_factory = LocalStorage.get_factory(
             path=path, serializer=JsonSerializer
         )
         # initialize data as SettingDict:
-        self.case_data = SettingDict(storage=self.storage_factory('database'))
+        self.case_data = SettingDict(storage=self.storage_factory("database"))
         # all data fields have the same entries:
         self.case_data.set_default_constructor_for_new_keys(lambda: CaseEntry().data)
         # all known cases will be loaded:
@@ -59,7 +59,7 @@ class CaseData:
         export_options.exception_on_missing_key = False
         export_options.exception_on_new_key = False
         export_options.add_new_keys = True
-        self.case_data.set_state_kwargs = {'options': export_options}
+        self.case_data.set_state_kwargs = {"options": export_options}
 
         # ensure loaded data and initialized database file
         if self.case_data.exists():
@@ -74,9 +74,9 @@ class CaseData:
         full_path = Path(path) / file
         full_path = full_path.as_posix()
         if full_path in self.case_data:
-            print(f'Already existing: {full_path}')
+            print(f"Already existing: {full_path}")
         else:
-            print(f'Added new to database: {full_path}')
+            print(f"Added new to database: {full_path}")
             self.case_data[full_path] = CaseEntry(path, file).data
 
     def remove(self, case: str):
@@ -86,17 +86,17 @@ class CaseData:
         full_path = Path(case)
         full_path = full_path.as_posix()
         if full_path in self.case_data:
-            print(f'Removed from database: {full_path}')
+            print(f"Removed from database: {full_path}")
             del self.case_data[full_path]
 
     def get_case_name(self, case) -> str:
-        return Path(case).stem[len('manual_') :]
+        return Path(case).stem[len("manual_") :]
 
     def get_case_path_string(self, case: str) -> str:
         return Path(case).parent.as_posix()
 
     def get_case_string(self, case: str) -> str:
-        return f'{self.get_case_path_string(case)}::{self.get_case_name(case)}'
+        return f"{self.get_case_path_string(case)}::{self.get_case_name(case)}"
 
     def get_path_to_case_map(self) -> dict[str, str]:
         self.ensure_sorted()

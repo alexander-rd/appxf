@@ -1,13 +1,13 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Helper functions to generate dummy APPXF objects for testing'''
+"""Helper functions to generate dummy APPXF objects for testing"""
 
 import os
 
-from appxf.storage import LocalStorage, RamStorage, Storage
-from appxf.security import Security
-from appxf.registry import Registry
 from appxf.config import Config
+from appxf.registry import Registry
+from appxf.security import Security
+from appxf.storage import LocalStorage, RamStorage, Storage
 
 
 ### Config Objects
@@ -19,7 +19,7 @@ def get_dummy_config() -> Config:
 
 def get_dummy_user_config() -> Config:
     config = get_dummy_config()
-    config.add_section(section='USER')
+    config.add_section(section="USER")
     return config
 
 
@@ -31,12 +31,12 @@ def get_security(path: str | bytes | None = None) -> Security:
         storage = RamStorage(ram_area=str(path))
     else:
         storage = path
-    sec = Security(salt='test', storage=storage)
+    sec = Security(salt="test", storage=storage)
     return sec
 
 
 def get_security_initialized(
-    path: str | None = None, password: str = 'password'
+    path: str | None = None, password: str = "password"
 ) -> Security:
     sec = get_security(path)
     if not sec.is_user_initialized():
@@ -48,7 +48,7 @@ def get_security_initialized(
 
 
 def get_security_unlocked(
-    path: str | None = None, password: str = 'password'
+    path: str | None = None, password: str = "password"
 ) -> Security:
     sec = get_security_initialized(path, password)
     sec.unlock_user(password)
@@ -59,8 +59,8 @@ def get_fresh_registry(
     security: Security,
     config: Config,
     path: str | None = None,
-    local_name: str = 'local_registry',
-    remote_name: str = 'remote_registry',
+    local_name: str = "local_registry",
+    remote_name: str = "remote_registry",
 ) -> Registry:
     if path is None:
         local_storage_factory = RamStorage.get_factory(ram_area=local_name)
@@ -85,8 +85,8 @@ def get_registry_admin_initialized(
     path: str,
     security: Security,
     config: Config,
-    local_name: str = 'local_registry',
-    remote_name: str = 'remote_registry',
+    local_name: str = "local_registry",
+    remote_name: str = "remote_registry",
 ) -> Registry:
     reg = get_fresh_registry(
         path=path,
@@ -102,12 +102,12 @@ def get_registry_admin_initialized(
 def perform_registration(
     registry: Registry,
     admin_registry: Registry,
-    storage_scope: str = 'user',
-    admin_storage_scope: str = 'admin',
+    storage_scope: str = "user",
+    admin_storage_scope: str = "admin",
     roles: list[str] | None = None,
 ):
     if roles is None:
-        roles = ['user']
+        roles = ["user"]
 
     # Ensure admin keys are available:
     Storage.switch_context(admin_storage_scope)
@@ -120,11 +120,11 @@ def perform_registration(
     request = admin_registry.get_request_data(request_bytes)
     new_user_id = admin_registry.add_user_from_request(request=request, roles=roles)
     print(
-        f'{admin_storage_scope} (user ID {admin_registry.user_id}) registered '
-        f'{storage_scope} with USER ID {new_user_id} and roles {roles}'
+        f"{admin_storage_scope} (user ID {admin_registry.user_id}) registered "
+        f"{storage_scope} with USER ID {new_user_id} and roles {roles}"
     )
     response_bytes = admin_registry.get_response_bytes(new_user_id)
     # Apply response to fresh registry
     Storage.switch_context(storage_scope)
     registry.set_response_bytes(response_bytes)
-    Storage.switch_context('')
+    Storage.switch_context("")

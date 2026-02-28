@@ -9,7 +9,7 @@ from .shared_storage import SecureSharedStorage
 
 
 class AppxfSharedSyncError(Exception):
-    '''General Error in Shared Sync'''
+    """General Error in Shared Sync"""
 
 
 class SyncPair(NamedTuple):
@@ -20,7 +20,7 @@ class SyncPair(NamedTuple):
 
 
 class SharedSync:
-    '''Collect synchronization pairs.
+    """Collect synchronization pairs.
 
     Synchornization pairs define writing and reading roles that impact allowed
     sync directions. The provided Registry provides the user's role
@@ -28,7 +28,7 @@ class SharedSync:
 
     Common usage would be based on Secured storage from the security module and
     SecureShared storage from the registry module.
-    '''
+    """
 
     def __init__(self, registry: Registry, **kwargs):
         super().__init__(**kwargs)
@@ -42,7 +42,7 @@ class SharedSync:
         writing_roles: list[str] | None = None,
         additional_readers: list[str] | None = None,
     ):
-        '''Register two storages for synchronization'''
+        """Register two storages for synchronization"""
         # adapt None input:
         if writing_roles is None:
             writing_roles = []
@@ -52,7 +52,7 @@ class SharedSync:
         self._sync_pairs.append(SyncPair(local, remote, writing_roles, readers))
 
     def sync(self):
-        '''Synchronize all registered pairs'''
+        """Synchronize all registered pairs"""
         user_roles_set = set(self._registry.get_roles())
         for sync_pair in self._sync_pairs:
             writing = False
@@ -69,8 +69,8 @@ class SharedSync:
             # TODO: add and allow directional sync. For now, not supported:
             if not writing:
                 raise AppxfSharedSyncError(
-                    f'Uni-directional sync is not supported, use has roles '
-                    f'{user_roles_set} but would need one of '
-                    f'{sync_pair.writing}'
+                    f"Uni-directional sync is not supported, use has roles "
+                    f"{user_roles_set} but would need one of "
+                    f"{sync_pair.writing}"
                 )
             sync(sync_pair.local, sync_pair.remote)

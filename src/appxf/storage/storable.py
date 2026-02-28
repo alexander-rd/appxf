@@ -1,6 +1,6 @@
 # Copyright 2023-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Class definitions for storage handling.'''
+"""Class definitions for storage handling."""
 
 from appxf import Stateful
 
@@ -9,11 +9,11 @@ from .storage import Storage
 
 
 class AppxfStorableError(Exception):
-    '''General storable exception'''
+    """General storable exception"""
 
 
 class Storable(Stateful):
-    '''Abstract storable class
+    """Abstract storable class
 
     A class with storable behavior defines _what_ is stored on store() via
     get_state() and provides set_state() to restore it's state upon load(). The
@@ -31,7 +31,7 @@ class Storable(Stateful):
     get_state() and evaluate the version within set_state() to address
     compatibility issues when the implementation changes on later application
     version.
-    '''
+    """
 
     def __init__(self, storage: Storage | None = None, **kwargs):
         if storage is None:
@@ -43,19 +43,19 @@ class Storable(Stateful):
 
     # taking over get_state()/set_state() from Stateful but updating the
     # attribute_mask:
-    attribute_mask = ['_storage']
+    attribute_mask = ["_storage"]
 
     def exists(self):
-        '''Storage file exists (call before load())'''
+        """Storage file exists (call before load())"""
         return self._storage.exists()
 
     def load(self, **kwargs):
-        '''Load from provided Storage'''
+        """Load from provided Storage"""
         if not self._storage.exists():
             # Protect deriving classes treating empty data like b''.
-            raise AppxfStorableError('Storage does not exist.')
+            raise AppxfStorableError("Storage does not exist.")
         self.set_state(self._storage.load(), **self.set_state_kwargs)  # type: ignore  # see store()
 
     def store(self, **kwargs):
-        '''Store to provided Storage'''
+        """Store to provided Storage"""
         self._storage.store(self.get_state(**self.get_state_kwargs))

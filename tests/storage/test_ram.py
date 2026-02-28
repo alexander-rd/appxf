@@ -1,13 +1,13 @@
 # Copyright 2024-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-'''Testing RamStorage
+"""Testing RamStorage
 
 Utilizing BaseStorageTest for test cases. See test_storage_base.py
-'''
+"""
 
 import pytest
-from appxf.storage import RamStorage, Storage
 
+from appxf.storage import RamStorage, Storage
 from tests.storage.test_storage_base import BaseStorageTest
 
 
@@ -23,7 +23,7 @@ def setup_local():
 
 
 class TestRamStorage(BaseStorageTest):
-    '''run basic Storage tests for RamStorage'''
+    """run basic Storage tests for RamStorage"""
 
     def _get_storage(self) -> Storage:
-        return RamStorage('test')
+        return RamStorage("test")

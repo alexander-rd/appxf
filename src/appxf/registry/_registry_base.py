@@ -4,12 +4,12 @@ from abc import ABC, abstractmethod
 
 
 class RegistryBase(ABC):
-    '''Abstracted Registry Interface for Shared Storage
+    """Abstracted Registry Interface for Shared Storage
 
     The abstraction is required since SecureSharedStorage depends on the
     registry method while the registry depends on SecureSharedStorage to sync
     the USER_DB.
-    '''
+    """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -17,19 +17,19 @@ class RegistryBase(ABC):
     @property
     @abstractmethod
     def user_id(self) -> int:
-        '''Get user ID
+        """Get user ID
 
-        Method will raise AppxfExceptionUserId if registry is not completed.
+        Method will raise AppxfUserIdError if registry is not completed.
         See: is_initialized().
-        '''
+        """
 
     @abstractmethod
     def is_initialized(self) -> bool:
-        '''User is initialized with a user id'''
+        """User is initialized with a user id"""
 
     @abstractmethod
     def get_roles(self, user_id: int | None = None) -> list[str]:
-        '''Get roles for a USER ID as a list of strings
+        """Get roles for a USER ID as a list of strings
 
         If no user ID is provided, all existing roles are returned. Note that
         roles are case insensitive and 'USER' as well as 'ADMIN' being default
@@ -38,13 +38,13 @@ class RegistryBase(ABC):
         Keyword arguments:
         user_id -- a valid positive user ID -OR- 0 for the roles of current
             user -OR- '' or None for all known roles
-        '''
+        """
 
     @abstractmethod
     def hybrid_encrypt(
         self, data: bytes, roles: str | list[str]
     ) -> tuple[bytes, dict[int, bytes]]:
-        '''Hybrid encryption returning encrypted data and key blob dict
+        """Hybrid encryption returning encrypted data and key blob dict
 
         The data will be encrypted with a generated symmetric key. This
         password will be encrypted, resulting in one key blob for every member
@@ -59,11 +59,11 @@ class RegistryBase(ABC):
 
         Returns: a tuple of the encrypted bytes and a dictionary mapping the
             USER IDs to the key blobs.
-        '''
+        """
 
     @abstractmethod
     def hybrid_decrypt(self, data: bytes, key_blob_dict: dict[int, bytes]) -> bytes:
-        '''Hybrid decryption returning decrypted data
+        """Hybrid decryption returning decrypted data
 
         Your USER ID must be included in the key blob dict. Your private
         assymetric encyption key will then be used to decrypt the symmetric key
@@ -73,4 +73,4 @@ class RegistryBase(ABC):
         Keyword arguments:
         data -- the data to be decrypted
         key_blob_dict -- a dictionary of key blobs, indexed by USER ID
-        '''
+        """

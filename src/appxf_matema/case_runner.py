@@ -16,7 +16,7 @@ from appxf_matema.git_info import GitInfo
 
 
 class ManualCaseRunner:
-    '''Interface Wrapper for Test Cases
+    """Interface Wrapper for Test Cases
 
     The interfaces include:
      * MaTeMa input arguments and output result writing (via TBD CaseInfo)
@@ -24,13 +24,13 @@ class ManualCaseRunner:
      * spawning the GUI
      * handling test case execution: setup(), teardown(), test()
         * includes logging and coverage activation
-    '''
+    """
 
-    log = logging.getLogger(__name__ + '.ManualCaseRunner')
+    log = logging.get_logger(__name__ + ".ManualCaseRunner")
 
     def __init__(
         self,
-        logging_context: str = '',
+        logging_context: str = "",
         disable_parsing: bool = False,
         parent: tkinter.Tk | None = None,
     ):
@@ -76,17 +76,17 @@ class ManualCaseRunner:
     @cached_property
     def argparse_result(self):
         parser = argparse.ArgumentParser(
-            prog=f'{sys.argv[0]}',
+            prog=f"{sys.argv[0]}",
             description=(
-                'This CaseRunner from APPXF MaTeMa '
-                'was called via above mentioned python script.'
+                "This CaseRunner from APPXF MaTeMa "
+                "was called via above mentioned python script."
             ),
         )
         parser.add_argument(
-            '--result-file',
+            "--result-file",
             required=False,
-            default='',
-            help='File to store test results in JSON format.',
+            default="",
+            help="File to store test results in JSON format.",
         )
         return parser.parse_args()
 
@@ -94,10 +94,10 @@ class ManualCaseRunner:
     def case_parser(self):
         if not self._case_parser:
             raise RuntimeError(
-                'You have to call ensure_case_parser() before using '
-                'anything dependentet on the case_parser (like case_info).'
-                'Rationale: you have to provide the required stack index'
-                'to identify the right test case module.'
+                "You have to call ensure_case_parser() before using "
+                "anything dependentet on the case_parser (like case_info)."
+                "Rationale: you have to provide the required stack index"
+                "to identify the right test case module."
             )
         # TODO: theoretically, I can traverse the whole stack until I find the
         # first module named "manual_*" but this would make the naming
@@ -124,10 +124,10 @@ class ManualCaseRunner:
         pass
 
     def _handle_process_calls(self) -> bool:
-        '''execute process call and return true if existent'''
+        """execute process call and return true if existent"""
         process_arg = None
         for arg in sys.argv:
-            if arg.startswith('--process_'):
+            if arg.startswith("--process_"):
                 process_arg = arg
                 break
         if process_arg:
@@ -140,25 +140,25 @@ class ManualCaseRunner:
     def ensure_logging(self):
         if self._logging_activated:
             return
-        logging.activate_logging(self._logging_context, directory='.testing/log')
-        self.log.debug(f'Enabled logging via {__class__.__name__}')
+        logging.activate_logging(self._logging_context, directory=".testing/log")
+        self.log.debug(f"Enabled logging via {__class__.__name__}")
         self._logging_activated = True
 
     def _write_result_file(self, result: str, gui: CaseRunnerGui = None):
         if self.argparse_result.result_file:
-            comment = ''
+            comment = ""
             if gui:
                 comment = self.gui.get_observations_text()
-            with open(self.argparse_result.result_file, 'w', encoding='utf-8') as file:
+            with open(self.argparse_result.result_file, "w", encoding="utf-8") as file:
                 json.dump(
                     {
-                        'timestamp': f'{self.case_info.timestamp}',
-                        'author': (
-                            f'{self.git_info.user_name} <{self.git_info.user_email}>'
+                        "timestamp": f"{self.case_info.timestamp}",
+                        "author": (
+                            f"{self.git_info.user_name} <{self.git_info.user_email}>"
                         ),
-                        'description': self.case_info.explanation,
-                        'comment': comment,
-                        'result': result,
+                        "description": self.case_info.explanation,
+                        "comment": comment,
+                        "result": result,
                     },
                     file,
                     indent=2,
@@ -187,47 +187,47 @@ class ManualCaseRunner:
             self._run_frame(item, *args, **kwargs)
         else:
             raise TypeError(
-                f'Provided item class {item.__class__} '
-                'is not supported. Supported are: TopLevel, Frame.'
+                f"Provided item class {item.__class__} "
+                "is not supported. Supported are: TopLevel, Frame."
             )
 
         self._parse_process_hooks()
         self._start_case_runner()
 
     def _start_case_runner(self, *args, **kwargs):
-        '''Handle startup and teardown for case runner execution.
+        """Handle startup and teardown for case runner execution.
 
         Calls setup() function from the tested module if it exists, executes
         the main function with GUI, then calls teardown() if it exists.
-        '''
-        if hasattr(self.case_parser.module, 'setup_once'):
-            setup_func = getattr(self.case_parser.module, 'setup_once')
+        """
+        if hasattr(self.case_parser.module, "setup_once"):
+            setup_func = self.case_parser.module.setup_once
             setup_func()
         # Call setup() if it exists in the tested module
-        if hasattr(self.case_parser.module, 'setup'):
-            setup_func = getattr(self.case_parser.module, 'setup')
+        if hasattr(self.case_parser.module, "setup"):
+            setup_func = self.case_parser.module.setup
             setup_func()
         try:
             # Execute the main case runner function
             self.gui.tk.mainloop()
         finally:
             # Call teardown() if it exists in the tested module
-            if hasattr(self.case_parser.module, 'teardown'):
-                teardown_func = getattr(self.case_parser.module, 'teardown')
+            if hasattr(self.case_parser.module, "teardown"):
+                teardown_func = self.case_parser.module.teardown
                 teardown_func()
 
     def _parse_process_hooks(self):
-        '''Parse module for process hooks and add to test case GUI
+        """Parse module for process hooks and add to test case GUI
 
         Creates buttons for each process_* function. CaseRunner will spawn a
         new python process, executing this function whenever the button is
         pressed.
-        '''
+        """
         for (
             function_name,
             summary,
         ) in self.case_parser.caller_module_function_map.items():
-            if function_name.startswith('process_'):
+            if function_name.startswith("process_"):
                 self.gui.add_process_button(
                     command=self._get_process_hook(function_name, summary),
                     label=summary if summary else function_name,
@@ -242,7 +242,7 @@ class ManualCaseRunner:
                 [
                     sys.executable,
                     self.case_parser.caller_module_path,
-                    f'--{function_name}',
+                    f"--{function_name}",
                 ],
                 check=False,
             )
@@ -259,10 +259,10 @@ class ManualCaseRunner:
 
         test_window.rowconfigure(0, weight=1)
         test_window.columnconfigure(0, weight=1)
-        test_window.title('Frame under Test')
+        test_window.title("Frame under Test")
 
         test_frame = frame_type(test_window, *args, **kwargs)
-        test_frame.grid(row=0, column=0, sticky='NSWE')
+        test_frame.grid(row=0, column=0, sticky="NSWE")
 
         # place test frame right to control window
         self.gui.place_toplevel(test_window)

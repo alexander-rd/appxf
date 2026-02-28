@@ -8,7 +8,7 @@ from copy import deepcopy
 from appxf import logging
 from appxf.storage import RamStorage, Storable, Storage
 
-log = logging.getLogger(__name__)
+log = logging.get_logger(__name__)
 
 
 # TODO #6: This buffer is an undocumented feature. It was added for a private
@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 
 
 class Buffer(Storable):
-    '''Helper to organize data buffering.
+    """Helper to organize data buffering.
 
     What plus input: When you store or retrieve data, you pass "what (type of)
     data" and the corresponding input (as string). Splitting the "what" is done
@@ -29,14 +29,15 @@ class Buffer(Storable):
     Implementation ensures that the data passed into and retrieved from the
     buffer is independent. Changes you do in the code does not affect the
     buffered data.
-    '''
+    """
 
-    log = logging.getLogger(f'{__name__}.Buffer')
+    log = logging.get_logger(f"{__name__}.Buffer")
 
-    def __init__(self, storage_handler: Storage = RamStorage(), **kwargs):
-
+    def __init__(self, storage_handler: Storage | None = None, **kwargs):
+        if storage_handler is None:
+            storage_handler = RamStorage()
         super().__init__(storage_handler, **kwargs)
-        self.buffer = dict()
+        self.buffer = {}
         self.initially_loaded = False
 
     def ensure_loaded(self):
@@ -45,39 +46,36 @@ class Buffer(Storable):
             self.initially_loaded = True
 
     def isbuffered(self, what: str, input: str):
-        '''Check if what/input is buffered'''
+        """Check if what/input is buffered"""
         self.ensure_loaded()
-        if what in self.buffer.keys():
-            if input in self.buffer[what].keys():
-                return True
-        return False
+        return bool(what in self.buffer and input in self.buffer[what])
 
-    def get(self, what, input=''):
-        '''Get data from buffer for what(input).'''
+    def get(self, what, input=""):
+        """Get data from buffer for what(input)."""
         self.ensure_loaded()
         if not self.isbuffered(what, input):
             return None
-        self.log.debug(f'Retrieved buffer {what}({input})')
+        self.log.debug(f"Retrieved buffer {what}({input})")
         return deepcopy(self.buffer[what][input])
 
-    def set(self, data, what, input=''):
-        '''Set data to buffer for what(input).
+    def set(self, data, what, input=""):
+        """Set data to buffer for what(input).
 
         This will overwrite existing data.
-        '''
+        """
         self.ensure_loaded()
-        if what not in self.buffer.keys():
-            self.buffer[what] = dict()
+        if what not in self.buffer:
+            self.buffer[what] = {}
         self.buffer[what][input] = deepcopy(data)
         self.store()
-        self.log.info(f'Buffered {what}({input})')
+        self.log.info(f"Buffered {what}({input})")
 
-    def clear(self, what=''):
+    def clear(self, what=""):
         self.ensure_loaded()
         if what and what in self.buffer:
-            self.buffer[what] = dict()
+            self.buffer[what] = {}
         elif not what:
-            self.buffer = dict()
+            self.buffer = {}
         self.store()
 
     def _get_bytestream(self) -> bytes:
@@ -89,15 +87,15 @@ class Buffer(Storable):
 
 
 def get_positional_arguments(func, *args, **kwargs):
-    '''Resolve kwargs for default values.
+    """Resolve kwargs for default values.
 
     Note generic args or kwargs not being supported.
-    '''
+    """
     argumentlist = func.__code__.co_varnames[0 : (func.__code__.co_argcount)]
     default_value_list = func.__defaults__
 
     def getvalue(iarg, argname):
-        '''Get value for single argument.'''
+        """Get value for single argument."""
         # First, take the positional arguments by order:
         if iarg < len(args):
             return args[iarg]
@@ -110,9 +108,9 @@ def get_positional_arguments(func, *args, **kwargs):
             # it is possible that the default value does not exist
             if iarg < nodefault_count:
                 raise Exception(
-                    f'Function {func.__qualname__} must use '
-                    f'{nodefault_count} parameters, '
-                    f' only {len(args)} provided.'
+                    f"Function {func.__qualname__} must use "
+                    f"{nodefault_count} parameters, "
+                    f" only {len(args)} provided."
                 )
             else:
                 return default_value_list[iarg - nodefault_count]
@@ -121,24 +119,24 @@ def get_positional_arguments(func, *args, **kwargs):
 
 
 def buffered(buffer: Buffer | typing.Callable[..., Buffer]):
-    '''Get decorator for buffering into user defined buffer.
+    """Get decorator for buffering into user defined buffer.
 
     This function, taking the buffer as variable, returns the decorator.
-    '''
+    """
 
     def _buffered(func):
-        '''The decorator which will use buffer to wrap the function.'''
+        """The decorator which will use buffer to wrap the function."""
         if func.__kwdefaults__:
             raise Exception(
-                'appxf cannot deal with default arguments for '
-                'kwargs. Check if you can use Buffer class '
-                'directly'
+                "appxf cannot deal with default arguments for "
+                "kwargs. Check if you can use Buffer class "
+                "directly"
             )
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             arglist = get_positional_arguments(func, *args, **kwargs)
-            argstring = ','.join([str(arg) for arg in arglist])
+            argstring = ",".join([str(arg) for arg in arglist])
 
             try:
                 if isinstance(buffer, Buffer):
@@ -147,10 +145,10 @@ def buffered(buffer: Buffer | typing.Callable[..., Buffer]):
                     this_buffer = buffer(*args, **kwargs)
             except Exception as e:
                 log.exception(
-                    'Buffer decorator must have either a buffer or a '
-                    'function as input. The function must have the '
-                    'same parameters like the decorated function and '
-                    'it must return a buffer'
+                    "Buffer decorator must have either a buffer or a "
+                    "function as input. The function must have the "
+                    "same parameters like the decorated function and "
+                    "it must return a buffer"
                 )
                 raise e
 

@@ -11,16 +11,16 @@ from . import fileversions
 # Expected usage will likely not include appxf.logging and python builtin
 # logging such that the following should be OK:
 logging = builtin_logging
-getLogger = builtin_logging.getLogger
+get_logger = builtin_logging.getLogger
 
 file_formatter = logging.Formatter(
-    '%(asctime)s.%(msecs)03d '
-    '%(levelname)s %(name)s.%(funcName)s(%(lineno)s): '
-    '%(message)s',
-    '%H:%M:%S',
+    "%(asctime)s.%(msecs)03d "
+    "%(levelname)s %(name)s.%(funcName)s(%(lineno)s): "
+    "%(message)s",
+    "%H:%M:%S",
 )
 console_formatter = logging.Formatter(
-    '%(asctime)s.%(msecs)03d %(levelname)7s: %(message)s', '%H:%M:%S'
+    "%(asctime)s.%(msecs)03d %(levelname)7s: %(message)s", "%H:%M:%S"
 )
 
 console_handler = logging.StreamHandler(stream=sys.stdout)
@@ -30,10 +30,10 @@ console_handler.setFormatter(console_formatter)
 
 def activate_logging(
     app_scope: list[str] | str | None = None,
-    directory: str = './data',
+    directory: str = "./data",
     n_files: int = 5,
 ):
-    '''Activate logging for application
+    """Activate logging for application
 
     It sets up logging to console and file logging (default: into
     ./data/log_yyyyMMdd_00.log). For appxf and the scope of your application
@@ -58,7 +58,7 @@ def activate_logging(
         app_scope -- your application package (default: {None})
         directory -- directory to store the log files (default: {'./data'})
         n_files -- number of log files to retain (default: {5})
-    '''
+    """
     # Ensure we also capture messages from warnings module:
     _couple_to_warnings()
 
@@ -66,24 +66,24 @@ def activate_logging(
         os.mkdir(directory)
     cleanup(directory, n_files)
     filename = fileversions.get_filename(
-        'logging_(yyyyMMdd)_(00).log', directory=directory
+        "logging_(yyyyMMdd)_(00).log", directory=directory
     )
     filename = os.path.join(directory, filename)
 
-    file_handler = logging.FileHandler(filename=filename, mode='a')
+    file_handler = logging.FileHandler(filename=filename, mode="a")
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(file_formatter)
 
     logging.basicConfig(handlers=[console_handler], level=logging.WARN)
     # ensure file_handler is added to root even if logging is already set up:
-    logging.getLogger('root').addHandler(file_handler)
+    logging.getLogger("root").addHandler(file_handler)
 
-    appxf_logger = logging.getLogger('appxf')
+    appxf_logger = logging.getLogger("appxf")
     appxf_logger.addHandler(console_handler)
     appxf_logger.addHandler(file_handler)
     appxf_logger.setLevel(logging.DEBUG)
     appxf_logger.propagate = False
-    appxf_logger.debug('start logging (appxf)')
+    appxf_logger.debug("start logging (appxf)")
 
     if app_scope is not None:
         if isinstance(app_scope, str):
@@ -94,11 +94,11 @@ def activate_logging(
             app_logger.addHandler(file_handler)
             app_logger.setLevel(logging.DEBUG)
             app_logger.propagate = False
-            app_logger.debug(f'start logging ({this_scope})')
+            app_logger.debug(f"start logging ({this_scope})")
 
 
 def cleanup(directory: str, n_files: int = 5):
-    '''Cleanup log files
+    """Cleanup log files
 
     This function is executed everytime you run activate_logging(). You should
     not need to call it yourself.
@@ -108,10 +108,10 @@ def cleanup(directory: str, n_files: int = 5):
 
     Keyword Arguments:
         n_files -- _description_ (default: {5})
-    '''
+    """
 
     def is_relevant(file: str):
-        return file.startswith('logging_') and file.endswith('.log')
+        return file.startswith("logging_") and file.endswith(".log")
 
     files = filter(is_relevant, os.listdir(directory))
     files = [os.path.join(directory, f) for f in files]
@@ -121,17 +121,17 @@ def cleanup(directory: str, n_files: int = 5):
 
 
 def _couple_to_warnings():
-    '''Couple logging to warnings
+    """Couple logging to warnings
 
     Thanks for:
     https://stackoverflow.com/questions/28208949/log-stack-trace-for-python-warning
-    '''
+    """
     _formatwarning = warnings.formatwarning
 
     def formatwarning_tb(*args, **kwargs):
         s = _formatwarning(*args, **kwargs)
         tb = traceback.format_stack()
-        s += ''.join(tb[:-1])
+        s += "".join(tb[:-1])
         return s
 
     warnings.formatwarning = formatwarning_tb

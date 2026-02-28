@@ -1,9 +1,11 @@
 # Copyright 2023-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-import pytest
 import datetime
-from dotenv import load_dotenv
 import os
+
+import pytest
+from dotenv import load_dotenv
+
 from appxf.storage.ftp import FtpLocation
 
 # TODO: Test was disables upon transition to public repository. FTP was
@@ -14,30 +16,30 @@ from appxf.storage.ftp import FtpLocation
 # their own FTP credentials here to be able to execute the test.
 
 load_dotenv()
-host = os.environ.get('APPXF_FTP_HOST')
-user = os.environ.get('APPXF_FTP_USER')
-passwd = os.environ.get('APPXF_FTP_PASSWORD')
+host = os.environ.get("APPXF_FTP_HOST")
+user = os.environ.get("APPXF_FTP_USER")
+passwd = os.environ.get("APPXF_FTP_PASSWORD")
 
 
 @pytest.fixture
 def remote_connection():
-    print(f'[{host}] with [{user}] and [{passwd}]')
+    print(f"[{host}] with [{user}] and [{passwd}]")
     location = FtpLocation(host=host, user=user, password=passwd)
     return location
 
 
 # TODO UPGRADE: activate testing again (github fails)
-@pytest.mark.skip(reason='FTP connection not yet used. Will be fixed in short time.')
+@pytest.mark.skip(reason="FTP connection not yet used. Will be fixed in short time.")
 def test_write_read(remote_connection):
     # data and file
-    data = datetime.datetime.now().strftime('%H %M %S')
-    file = 'test.txt'
+    data = datetime.datetime.now().strftime("%H %M %S")
+    file = "test.txt"
     # writing data
-    print(f'Writing time: {data}')
-    remote_connection.store(file, data.encode('utf-8'))
+    print(f"Writing time: {data}")
+    remote_connection.store(file, data.encode("utf-8"))
     # Read the file
-    read_data = remote_connection.load(file).decode('utf-8')
-    print(f'Loaded data: {read_data}')
+    read_data = remote_connection.load(file).decode("utf-8")
+    print(f"Loaded data: {read_data}")
     assert read_data == data
 
 

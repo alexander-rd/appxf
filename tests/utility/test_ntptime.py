@@ -1,13 +1,15 @@
 # Copyright 2023-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-import pytest
 from datetime import datetime, timedelta
-from appxf.utility.ntptime import NtpTime
+
 import ntplib
+import pytest
+
+from appxf.utility.ntptime import NtpTime
 
 
 def ntplib_request_failing(server):
-    raise ntplib.NTPException('dummy')
+    raise ntplib.NTPException("dummy")
 
 
 class NtpStatStub:
@@ -23,16 +25,16 @@ def ntplib_request_ok(server):
 
 
 @pytest.fixture(autouse=True)
-def fresh_NtpTime():
+def fresh_ntp_time():
     # copied initialization
     NtpTime.last_sync_as_datetime = None
-    NtpTime.base_server = 'europe.pool.ntp.org'
+    NtpTime.base_server = "europe.pool.ntp.org"
     NtpTime.server_prefix_list = [0, 1, 2]
     return NtpTime
 
 
-@pytest.mark.skip(reason='NTP server is currently not used and occasionally fails')
-def test_functional(fresh_NtpTime):
+@pytest.mark.skip(reason="NTP server is currently not used and occasionally fails")
+def test_functional(fresh_ntp_time):
     # fresh_NtpTime.base_server = 'pool.ntp.org'
     # fresh_NtpTime.server_prefix_list = ['0']
     offset = NtpTime.get_offset_from_utc_now()
@@ -40,17 +42,17 @@ def test_functional(fresh_NtpTime):
     assert abs((corrected_time - NtpTime.last_sync_as_ntp_recv).total_seconds()) < 1
 
 
-@pytest.mark.skip(reason='NTP server is currently not used and occasionally fails')
-def test_server_all_fail(mocker, fresh_NtpTime):
-    mocker.patch('ntplib.NTPClient.request', side_effect=ntplib_request_failing)
+@pytest.mark.skip(reason="NTP server is currently not used and occasionally fails")
+def test_server_all_fail(mocker, fresh_ntp_time):
+    mocker.patch("ntplib.NTPClient.request", side_effect=ntplib_request_failing)
     with pytest.raises(Exception) as excinfo:
-        fresh_NtpTime.get_offset_from_utc_now()
-    assert 'None of the server requests succeeded' in str(excinfo.value)
+        fresh_ntp_time.get_offset_from_utc_now()
+    assert "None of the server requests succeeded" in str(excinfo.value)
 
 
-@pytest.mark.skip(reason='NTP server is currently not used and occasionally fails')
-def test_no_second_call(mocker, fresh_NtpTime):
-    m = mocker.patch('ntplib.NTPClient.request', side_effect=ntplib_request_ok)
+@pytest.mark.skip(reason="NTP server is currently not used and occasionally fails")
+def test_no_second_call(mocker, fresh_ntp_time):
+    m = mocker.patch("ntplib.NTPClient.request", side_effect=ntplib_request_ok)
     NtpStatStub.offset = 0
     NtpStatStub.recv_time = datetime.utcnow().timestamp()
     offset = NtpTime.get_offset_from_utc_now()
