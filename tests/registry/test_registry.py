@@ -8,7 +8,7 @@ import tests._fixtures.test_sandbox
 from appxf.registry import (
     AppxfRegistryError,
     AppxfRegistryRoleError,
-    AppxfRegistryUnknownUser,
+    AppxfRegistryUnknownUserError,
     Registry,
 )
 from appxf.storage import CompactSerializer, Storage
@@ -375,7 +375,7 @@ def test_manual_update_set_error_unknown_user(
     )
 
     # user does not know about new_user at all:
-    with pytest.raises(AppxfRegistryUnknownUser) as exc_info:
+    with pytest.raises(AppxfRegistryUnknownUserError) as exc_info:
         user_registry.set_manual_config_update_bytes(update_bytes)
     assert "is unknown" in str(exc_info.value)
 

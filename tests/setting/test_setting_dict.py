@@ -117,7 +117,7 @@ failure_cases = [
         [f"42 of type {int}", "Only string keys are supported"],
     ),
     ("invalid value", {"test": ("email", "fail")}, []),
-    ("empty tuple", {"test": tuple()}, ["()"]),
+    ("empty tuple", {"test": ()}, ["()"]),
     ("long tuple", {"test": (1, 2, 3)}, ["(1, 2, 3)"]),
 ]
 

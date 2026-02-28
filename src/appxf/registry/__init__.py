@@ -5,7 +5,7 @@
 from .registry import (
     AppxfRegistryError,
     AppxfRegistryRoleError,
-    AppxfRegistryUnknownUser,
+    AppxfRegistryUnknownUserError,
     Registry,
 )
 from .shared_storage import SecureSharedStorage

@@ -203,7 +203,7 @@ class SettingSelect(SettingExtension[_BaseSettingT, _BaseTypeT]):
 
         The list is sorted alphabetically.
         """
-        return sorted(list(self.select_map.keys()))
+        return sorted(self.select_map.keys())
 
     def get_select_value(self, option: str) -> Any:
         """Get the value for a selectable item"""

@@ -13,7 +13,7 @@ from appxf import Options
 class DefaultTestOptions(Options):
     test_int: int = 0
     test_string: str = ""
-    test_list: list[str] = field(default_factory=lambda: list(["test"]))
+    test_list: list[str] = field(default_factory=lambda: ["test"])
 
 
 def test_init_default():

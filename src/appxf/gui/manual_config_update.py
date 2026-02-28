@@ -4,7 +4,11 @@ from tkinter import filedialog, messagebox
 
 from appxf.gui.locale import _
 from appxf.gui.registration_user import log
-from appxf.registry import AppxfRegistryRoleError, AppxfRegistryUnknownUser, Registry
+from appxf.registry import (
+    AppxfRegistryRoleError,
+    AppxfRegistryUnknownUserError,
+    Registry,
+)
 
 
 def handle_manual_config_update_load(
@@ -42,7 +46,7 @@ def handle_manual_config_update_load(
             _("error", "Failed to read file: {}").format(e),
             parent=parent,
         )
-    except (AppxfRegistryUnknownUser, AppxfRegistryRoleError) as e:
+    except (AppxfRegistryUnknownUserError, AppxfRegistryRoleError) as e:
         log.error("Failed to update: %s", e)
         messagebox.showerror(
             "Error",

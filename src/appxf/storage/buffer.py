@@ -36,7 +36,7 @@ class Buffer(Storable):
     def __init__(self, storage_handler: Storage = RamStorage(), **kwargs):
 
         super().__init__(storage_handler, **kwargs)
-        self.buffer = dict()
+        self.buffer = {}
         self.initially_loaded = False
 
     def ensure_loaded(self):
@@ -67,7 +67,7 @@ class Buffer(Storable):
         """
         self.ensure_loaded()
         if what not in self.buffer.keys():
-            self.buffer[what] = dict()
+            self.buffer[what] = {}
         self.buffer[what][input] = deepcopy(data)
         self.store()
         self.log.info(f"Buffered {what}({input})")
@@ -75,9 +75,9 @@ class Buffer(Storable):
     def clear(self, what=""):
         self.ensure_loaded()
         if what and what in self.buffer:
-            self.buffer[what] = dict()
+            self.buffer[what] = {}
         elif not what:
-            self.buffer = dict()
+            self.buffer = {}
         self.store()
 
     def _get_bytestream(self) -> bytes:

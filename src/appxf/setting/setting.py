@@ -142,10 +142,7 @@ class _SettingMeta(type):
         mcs.implementations.append(cls_register)
         # add setting types
         mcs.type_map.update(
-            {
-                setting_type: cls_register
-                for setting_type in cls_register.get_supported_types()
-            }
+            dict.fromkeys(cls_register.get_supported_types(), cls_register)
         )
 
     @classmethod

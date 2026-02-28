@@ -19,8 +19,8 @@ class DummyFrame(tkinter.Frame):
         super().__init__(parent)
         self.arg_a = arg_a
         self.arg_b = arg_b
-        self.args = list()
-        self.kwargs = dict()
+        self.args = []
+        self.kwargs = {}
         for arg in enumerate(args):
             self.args.append(arg)
         for key, value in kwargs.items():

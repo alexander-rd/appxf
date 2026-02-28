@@ -74,7 +74,7 @@ class AppxfApplication(tkinter.Tk):
         Arguments: just forwarding args/kwargs to tkinter.Tk
         """
         super().__init__(*args, **kwargs)
-        self._frames: dict[str, FrameInfo] = dict()
+        self._frames: dict[str, FrameInfo] = {}
         self._dummy_frame = FrameInfo(tkinter.Frame, (), {}, None)
 
         self.rowconfigure(0, weight=1)
