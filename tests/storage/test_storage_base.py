@@ -41,9 +41,11 @@ class BaseStorageTest(ABC):
         assert self.storage.exists() is False
         assert self.storage.load() is None
 
+    @abstractmethod
     def teardown_method(self):
         pass
 
+    @abstractmethod
     def test_setup_only_state(self):
         pass
 

@@ -256,7 +256,7 @@ def test_stateful_interface_contract():
                 )
             return
 
-        assert False, (
+        raise AssertionError(
             f"Failing: {this_type} as origin {type_origin} with arguments {type_args}"
         )
 

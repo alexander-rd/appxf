@@ -143,8 +143,9 @@ def _fill_date_pattern(format: str, date: datetime.date):
         # avoid freezing programs due to programming errors
         cycle_count -= 1
         if cycle_count <= 0:
-            assert cycle_count > 0, (
-                f'Implementation error: format string "{format}" lead to infinite loop.'
+            raise RuntimeError(
+                "Implementation error: format string "
+                f'"{format}" led to an infinite loop.'
             )
     # revert indexing brakets
     if opening_index >= 0:

@@ -404,7 +404,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                 pass
             elif export_options.remove_missing_keys:
                 # warning message, only:
-                warnings.warn(AppxfSettingWarning(message))
+                warnings.warn(AppxfSettingWarning(message), stacklevel=2)
             else:
                 # exception expected:
                 raise AppxfSettingError(message)
@@ -433,7 +433,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                 pass
             elif export_options.add_new_keys:
                 # warning message, only:
-                warnings.warn(AppxfSettingWarning(message))
+                warnings.warn(AppxfSettingWarning(message), stacklevel=2)
             else:
                 # exception expected:
                 raise AppxfSettingError(message)

@@ -102,7 +102,7 @@ class FtpLocation(StorageToBytes):
         except Exception as e:
             raise Exception(
                 f"Not able to initialize FTP object for [{self.host}]: {e}."
-            )
+            ) from e
 
         # TODO LATER: ensure login to FTP server is possible and things are
         # operational. An initial stat of the location could be of interes.

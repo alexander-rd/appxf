@@ -201,11 +201,11 @@ class ManualCaseRunner:
         the main function with GUI, then calls teardown() if it exists.
         """
         if hasattr(self.case_parser.module, "setup_once"):
-            setup_func = getattr(self.case_parser.module, "setup_once")
+            setup_func = self.case_parser.module.setup_once
             setup_func()
         # Call setup() if it exists in the tested module
         if hasattr(self.case_parser.module, "setup"):
-            setup_func = getattr(self.case_parser.module, "setup")
+            setup_func = self.case_parser.module.setup
             setup_func()
         try:
             # Execute the main case runner function
@@ -213,7 +213,7 @@ class ManualCaseRunner:
         finally:
             # Call teardown() if it exists in the tested module
             if hasattr(self.case_parser.module, "teardown"):
-                teardown_func = getattr(self.case_parser.module, "teardown")
+                teardown_func = self.case_parser.module.teardown
                 teardown_func()
 
     def _parse_process_hooks(self):

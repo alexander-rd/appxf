@@ -439,7 +439,7 @@ def test_setting_completeness():
     current_module = sys.modules[__name__]
     tested_classes = set()
     tested_types = set()
-    for name, obj in inspect.getmembers(current_module):
+    for _name, obj in inspect.getmembers(current_module):
         if (
             inspect.isclass(obj)
             and issubclass(obj, BaseSettingTest)

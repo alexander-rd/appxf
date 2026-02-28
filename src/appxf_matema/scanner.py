@@ -31,7 +31,7 @@ class Scanner:
 
         # find new files:
         for path in self.path:
-            for dirpath, dirnames, filenames in os.walk(path):
+            for dirpath, _dirnames, filenames in os.walk(path):
                 for filename in fnmatch.filter(filenames, "manual_*.py"):
                     # Strip first level of path (./tests/) since this should
                     # not be relevant in database:

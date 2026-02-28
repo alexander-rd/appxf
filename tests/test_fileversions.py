@@ -65,7 +65,7 @@ def test_fileversions_format_errors():
     with pytest.raises(AttributeError):
         fileversions.get_filename("(KW)")
     # Infinite loop prevention:
-    with pytest.raises(Exception):
+    with pytest.raises(RuntimeError):
         fileversions.get_filename("(yyyy)" * 101)
 
     assert fileversions.get_filename("file_(00).txt", existing=True) is None

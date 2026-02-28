@@ -26,7 +26,7 @@ class Email(MIMEMultipart):
     once.
     """
 
-    def __init__(self, message="", file_list=[], **kwargs):
+    def __init__(self, message="", file_list: list | None = None, **kwargs):
         """Email Object
 
         This class is wrapping MIMEMultipart while you can construct it
@@ -34,6 +34,8 @@ class Email(MIMEMultipart):
         To='to-email@address.org')`
         """
         # input handling
+        if file_list is None:
+            file_list = []
         super().__init__()
         # TODO: the above is not correct, it should pass **kwargs in case of
         # multiple inheritance. But sendmail has no test coverage and risk of

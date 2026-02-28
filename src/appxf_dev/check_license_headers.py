@@ -132,7 +132,7 @@ def verify_file_header(file: Path) -> bool:
                 # resolve comment line:
                 if not line.startswith("<!--"):
                     break
-                line = line.lstrip("<!--").rstrip("-->").strip()
+                line = line.removeprefix("<!--").removesuffix("-->").strip()
                 if line.lower().startswith("copyright") and COPYRIGHT_AUTHOR in line:
                     has_copyright = True
                 if line.startswith(LICENSES[file.suffix]):
@@ -144,7 +144,7 @@ def verify_file_header(file: Path) -> bool:
                 # resolve comment line:
                 if not line.startswith("'"):
                     break
-                line = line.lstrip("'").strip()
+                line = line.removeprefix("'").strip()
                 if line.lower().startswith("copyright") and COPYRIGHT_AUTHOR in line:
                     has_copyright = True
                 if line.startswith(LICENSES[file.suffix]):

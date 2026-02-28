@@ -33,8 +33,9 @@ class Buffer(Storable):
 
     log = logging.get_logger(f"{__name__}.Buffer")
 
-    def __init__(self, storage_handler: Storage = RamStorage(), **kwargs):
-
+    def __init__(self, storage_handler: Storage | None = None, **kwargs):
+        if storage_handler is None:
+            storage_handler = RamStorage()
         super().__init__(storage_handler, **kwargs)
         self.buffer = {}
         self.initially_loaded = False
