@@ -79,10 +79,7 @@ class GridFrame(tkinter.LabelFrame):
         supports = getattr(cls, "supports", None)
         if supports:
             # allow single type or iterable
-            if isinstance(supports, type):
-                types = (supports,)
-            else:
-                types = tuple(supports)
+            types = (supports,) if isinstance(supports, type) else tuple(supports)
             for t in types:
                 if not isinstance(t, type):
                     raise TypeError("GridFrame.supports must contain types")
@@ -190,7 +187,7 @@ class GridFrame(tkinter.LabelFrame):
         if setting is None:
             setting = GridSetting()
 
-        if isinstance(widget, tkinter.Frame) or isinstance(widget, tkinter.LabelFrame):
+        if isinstance(widget, (tkinter.Frame, tkinter.LabelFrame)):
             default_setting = self.frame_setting
             if isinstance(widget, GridFrame):
                 default_setting = default_setting._replace(
@@ -325,8 +322,7 @@ class ButtonFrame(GridFrame):
         # add buttons:
         self._button_widgets: dict[str, tkinter.Widget] = {}
 
-        button_number = 0
-        for button in buttons:
+        for button_number, button in enumerate(buttons):
             if button:
                 this_widget = tkinter.Button(
                     self,
@@ -338,7 +334,6 @@ class ButtonFrame(GridFrame):
             else:
                 this_widget = GridFrame(self)
             self.place(widget=this_widget, row=0, column=button_number)
-            button_number += 1
 
     def handle_button_press(self, button: str):
         """Handle button press by releasing an event

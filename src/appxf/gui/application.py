@@ -114,7 +114,7 @@ class AppxfApplication(tkinter.Tk):
                 f"Provided class [cls] must be a subclass of "
                 f"tkinter's Frame but is: {cls}"
             )
-        if name in self._frames.keys():
+        if name in self._frames:
             raise ValueError(
                 f"A frame for {name} was already registered: {self._frames[name].cls}"
             )

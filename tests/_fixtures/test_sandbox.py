@@ -17,7 +17,8 @@ import toml
 
 ### Reading configuration from pyproject.toml
 try:
-    toml_data = toml.load(open("pyproject.toml"))
+    with open("pyproject.toml") as pyproject_file:
+        toml_data = toml.load(pyproject_file)
     # get current project version:
     project_version = toml_data["project"]["version"]
     # get sandbox root directory for testing:

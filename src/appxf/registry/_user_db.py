@@ -167,7 +167,7 @@ class UserDatabase(Storable):
 
         for role in roles:
             # ensure role is present
-            if role not in self._role_map.keys():
+            if role not in self._role_map:
                 self._role_map[role] = set()
             self._role_map[role].add(user_id)
 
@@ -180,7 +180,7 @@ class UserDatabase(Storable):
         for role in self._role_map:
             if user_id in self._role_map[role]:
                 self._role_map[role].remove(user_id)
-            if not self._role_map[role] and not role == "user" and not role == "admin":
+            if not self._role_map[role] and role != "user" and role != "admin":
                 del self._role_map[role]
 
     # TODO: When USER DB starts maintaining user information (USER CONFIG),
@@ -221,7 +221,7 @@ class UserDatabase(Storable):
 
     def has_role(self, user_id: int, role: str):
         role = role.lower()
-        if role not in self._role_map.keys():
+        if role not in self._role_map:
             return False
         return user_id in self._role_map[role]
 
@@ -270,7 +270,7 @@ class UserDatabase(Storable):
                 self._role_map[role].remove(user_id)
         for role in roles:
             if role not in current_roles:
-                if role not in self._role_map.keys():
+                if role not in self._role_map:
                     self._role_map[role] = set()
                 self._role_map[role].add(user_id)
         self._user_db[user_id]["roles"] = roles

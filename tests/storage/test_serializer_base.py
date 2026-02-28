@@ -240,7 +240,7 @@ def test_stateful_interface_contract():
             for that_type in type_list:
                 verify_type_tested(
                     that_type,
-                    [sample for some_dict in included for sample in some_dict.keys()],
+                    [sample for some_dict in included for sample in some_dict],
                     tree + [type_origin, f"Key({that_type})"],
                 )
             # and into the arguments:

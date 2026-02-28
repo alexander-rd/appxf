@@ -158,9 +158,7 @@ class SecureSharedStorage(StorageToBytes):
         # storage.
         if not self._signature.exists():
             return False
-        if not self._public_encryption.exists():
-            return False
-        return True
+        return self._public_encryption.exists()
 
     def store_raw(self, data: bytes):
         # registry and security must be initialized:

@@ -236,25 +236,29 @@ class Storage(ABC):
         if base_storage is None:
 
             def factory(name: str | Storage.FactoryBehavior) -> Storage | list[Storage]:
-                if isinstance(name, Storage.FactoryBehavior):
-                    if name is Storage.AllRegistered:
-                        if location not in cls._storage_registry:
-                            return []
-                        return list(cls._storage_registry[location].values())
+                if (
+                    isinstance(name, Storage.FactoryBehavior)
+                    and name is Storage.AllRegistered
+                ):
+                    if location not in cls._storage_registry:
+                        return []
+                    return list(cls._storage_registry[location].values())
                 return storage_get_fun(name)
         else:
 
             def factory(name: str | Storage.FactoryBehavior) -> Storage | list[Storage]:
-                if isinstance(name, Storage.FactoryBehavior):
-                    if name is Storage.AllRegistered:
-                        # without a base_storage object, we cannot know the
-                        # location. But we can access the factory of the base
-                        # storage with the same argument:
-                        return [
-                            storage
-                            for storage in base_storage(Storage.AllRegistered)
-                            if isinstance(storage, cls)
-                        ]
+                if (
+                    isinstance(name, Storage.FactoryBehavior)
+                    and name is Storage.AllRegistered
+                ):
+                    # without a base_storage object, we cannot know the
+                    # location. But we can access the factory of the base
+                    # storage with the same argument:
+                    return [
+                        storage
+                        for storage in base_storage(Storage.AllRegistered)
+                        if isinstance(storage, cls)
+                    ]
                 # derived storage must use base_storage but this is already
                 # constructed as part of the calling get_storage_factory.
                 return storage_get_fun(name)
@@ -482,10 +486,10 @@ class Storage(ABC):
     @classmethod
     def is_registered(cls, name: str, location: str = "") -> bool:
         """Check if name in group is registered to storage class"""
-        if location in cls._storage_registry:
-            if name in cls._storage_registry[location]:
-                return True
-        return False
+        return (
+            location in cls._storage_registry
+            and name in cls._storage_registry[location]
+        )
 
     # #########################################################################
     # CORE OBJECT

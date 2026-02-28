@@ -79,7 +79,7 @@ class SettingDictSingleFrame(SettingFrameBase):
         # strip properties from the dict that are not mutable:
         self.setting_dict = {
             key: setting.get_setting(key)
-            for key in setting.keys()
+            for key in setting
             if setting.get_setting(key).options.mutable
         }
         # TODO: the above should be applied according to visibility. Not

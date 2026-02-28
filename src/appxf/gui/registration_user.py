@@ -8,6 +8,7 @@
   roles, and generating responses.
 """
 
+import contextlib
 import tkinter
 from tkinter import filedialog, messagebox
 
@@ -293,13 +294,11 @@ class RegistrationUser:
             self._check_init_status()
         except Exception as e:
             self.log.error("Failed to load admin keys: %s", e)
-            try:
+            with contextlib.suppress(Exception):
                 messagebox.showerror(
                     "Error",
                     _("error", "Failed to load admin keys: {}").format(e),
                     parent=self._gui_root,
                 )
-            except Exception:
-                pass
             return
         self.log.info("Admin keys loaded from %s", file_path)

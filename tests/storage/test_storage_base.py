@@ -50,12 +50,12 @@ class BaseStorageTest(ABC):
     def test_basic_store_load(self):
         """Check 2 store/load cycles"""
         self.storage.store("init")
-        assert "init" == self.storage.load()
+        assert self.storage.load() == "init"
         # second read must work also:
-        assert "init" == self.storage.load()
+        assert self.storage.load() == "init"
 
         self.storage.store("new")
-        assert "new" == self.storage.load()
+        assert self.storage.load() == "new"
 
     def test_item_meta_data(self):
         # Nothing there means nothing stored

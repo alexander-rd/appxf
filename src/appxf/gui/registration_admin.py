@@ -120,7 +120,7 @@ class RegistrationAdmin:
         self._user_data_dict = SettingDict(
             {
                 key: Setting.new(self._user_config.get_setting(key).get_type())
-                for key in self._user_config.keys()
+                for key in self._user_config
             }
         )
 
@@ -350,7 +350,7 @@ class RegistrationAdmin:
         # Populate user_data_dict with data from request.user_data
         if self._user_data_dict and self._user_data_frame:
             # Write values directly to the SettingDict
-            for key in self._user_data_dict.keys():
+            for key in self._user_data_dict:
                 if key in request.user_data:
                     try:
                         self._user_data_dict[key] = request.user_data[key]

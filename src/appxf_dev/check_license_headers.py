@@ -76,10 +76,9 @@ def get_exclusion_patterns() -> list[str]:
     pattern_list = []
     with exclusion_file.open(encoding="utf-8") as fh:
         for line in fh:
-            if not found_marker:
-                if EXCLUSION_START_MARKER in line:
-                    found_marker = True
-                    continue
+            if not found_marker and EXCLUSION_START_MARKER in line:
+                found_marker = True
+                continue
 
             line = line.strip()
             if line.startswith("* "):
@@ -90,10 +89,7 @@ def get_exclusion_patterns() -> list[str]:
 
 def is_excluded_file(file: str, repo_root: Path, patterns: list[str]) -> bool:
     """Check if file matches an exclusion pattern"""
-    for pattern in patterns:
-        if fnmatch(file, pattern):
-            return True
-    return False
+    return any(fnmatch(file, pattern) for pattern in patterns)
 
 
 def verify_file_header(file: Path) -> bool:
@@ -125,9 +121,8 @@ def verify_file_header(file: Path) -> bool:
                 if not line.startswith("#"):
                     break
                 line = line.lstrip("#").strip()
-                if line.lower().startswith("copyright"):
-                    if COPYRIGHT_AUTHOR in line:
-                        has_copyright = True
+                if line.lower().startswith("copyright") and COPYRIGHT_AUTHOR in line:
+                    has_copyright = True
                 if line.startswith(LICENSES[file.suffix]):
                     has_license = True
     elif file.suffix in [".md"]:
@@ -138,9 +133,8 @@ def verify_file_header(file: Path) -> bool:
                 if not line.startswith("<!--"):
                     break
                 line = line.lstrip("<!--").rstrip("-->").strip()
-                if line.lower().startswith("copyright"):
-                    if COPYRIGHT_AUTHOR in line:
-                        has_copyright = True
+                if line.lower().startswith("copyright") and COPYRIGHT_AUTHOR in line:
+                    has_copyright = True
                 if line.startswith(LICENSES[file.suffix]):
                     has_license = True
     elif file.suffix in [".puml"]:
@@ -151,9 +145,8 @@ def verify_file_header(file: Path) -> bool:
                 if not line.startswith("'"):
                     break
                 line = line.lstrip("'").strip()
-                if line.lower().startswith("copyright"):
-                    if COPYRIGHT_AUTHOR in line:
-                        has_copyright = True
+                if line.lower().startswith("copyright") and COPYRIGHT_AUTHOR in line:
+                    has_copyright = True
                 if line.startswith(LICENSES[file.suffix]):
                     has_license = True
     else:

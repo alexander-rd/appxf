@@ -224,5 +224,5 @@ class CaseRunnerGui:
         height = top_level.winfo_height()
         x = self.tk.winfo_x() + self.tk.winfo_width() + 10
         y = self.tk.winfo_y()
-        geom = f'{width}x{height}+{x}+{y}'
+        geom = f"{width}x{height}+{x}+{y}"
         top_level.geometry(geom)

@@ -67,9 +67,7 @@ class RamStorage(Storage):
         if not self._meta:
             if self._location not in self._data:
                 return False
-            if self._name not in self._data[self._location]:
-                return False
-            return True
+            return self._name in self._data[self._location]
         # in case of meta:
         if self._location not in self._meta_data:
             return False

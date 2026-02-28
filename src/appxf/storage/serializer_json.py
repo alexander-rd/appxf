@@ -68,7 +68,7 @@ class JsonSerializer(Serializer):
             log_tree = ["root"]
 
         if isinstance(obj, dict):
-            if all(isinstance(key, cls.SimpleTypes) for key in obj.keys()):
+            if all(isinstance(key, cls.SimpleTypes) for key in obj):
                 return {
                     key: cls.encode_transform(value, log_tree + [key])
                     for key, value in obj.items()

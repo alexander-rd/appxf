@@ -29,7 +29,7 @@ def setup_storage_context():
 
 def overwrite_with_defaults(setting_dict: SettingDict):
     """Fill values with default values"""
-    for key in setting_dict.keys():
+    for key in setting_dict:
         this_setting = setting_dict.get_setting(key)
         if isinstance(this_setting, SettingDict):
             overwrite_with_defaults(this_setting)
@@ -60,10 +60,7 @@ def verify_json(
     original_values = setting_dict.value
     overwrite_with_defaults(setting_dict)
     recovered_raw_data = JsonSerializer.deserialize(serialized_data)
-    if full_recovery:
-        recovered_dict = SettingDict()
-    else:
-        recovered_dict = setting_dict
+    recovered_dict = SettingDict() if full_recovery else setting_dict
     recovered_dict.set_state(recovered_raw_data, options=export_options)
     assert recovered_dict.input == original_inputs
     assert recovered_dict.value == original_values

@@ -208,7 +208,7 @@ def test_existing_user(admin_user_initialized_registry_pair):
     user_roles = admin_registry.get_roles(user_id)
     assert "user" in user_roles
     assert "new" in user_roles
-    assert 2 == len(user_roles)
+    assert len(user_roles) == 2
 
     request_bytes = user_registry.get_request_bytes()
     request = user_registry.get_request_data(request_bytes)
@@ -217,7 +217,7 @@ def test_existing_user(admin_user_initialized_registry_pair):
     # check again the user DB at admin side on the changed roles
     user_roles = admin_registry.get_roles(user_id)
     assert "user" in user_roles
-    assert 1 == len(user_roles)
+    assert len(user_roles) == 1
 
 
 def test_registy_inconsistent_user(admin_user_initialized_registry_pair):

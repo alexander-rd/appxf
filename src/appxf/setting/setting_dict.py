@@ -166,10 +166,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                 f"a value as the second type. You provided {t}."
             )
         tmp_type = t[0]
-        if len(t) > 1:
-            tmp_value = t[1]
-        else:
-            tmp_value = None
+        tmp_value = t[1] if len(t) > 1 else None
 
         if tmp_value is None:
             return Setting.new(tmp_type)
@@ -230,7 +227,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
         # What is left is not a tuple (type, value) nor a Setting class/object.
         # The key must exist and the value is applied to the existing Setting's
         # value:
-        if key in self._value.keys():
+        if key in self._value:
             self._value[key].value = value
         # Or, the new Setting object is created:
         else:
@@ -385,7 +382,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
             self.options.update_from_kwarg(data)
         else:
             settings = data
-            setting_keys = [key for key in data.keys() if key not in ["_version"]]
+            setting_keys = [key for key in data if key not in ["_version"]]
 
         # check mismatch of keys:
         current_keys = set(self._value.keys())
@@ -447,7 +444,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
                     # default type must be set.
                     if (
                         not isinstance(settings[key], dict)
-                        or "type" not in settings[key].keys()
+                        or "type" not in settings[key]
                     ):
                         if self.default_constructor is None:
                             raise AppxfSettingError(
@@ -536,7 +533,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
 
     @property
     def value(self) -> dict[str, Any]:
-        return {key: self._value[key].value for key in self._value.keys()}
+        return {key: self._value[key].value for key in self._value}
 
     # The setter needs to be overwritten since the mutable option has a more
     # refined meaning within SettingDict. We can still change the values of
@@ -571,7 +568,7 @@ class SettingDict(Setting[dict], Storable, MutableMapping[str, Setting]):
     # property which remains unused with this implementation.
     @Setting.input.getter
     def input(self) -> dict[str, Any]:
-        return {key: self._value[key].input for key in self._value.keys()}
+        return {key: self._value[key].input for key in self._value}
 
     def _validated_conversion(self, value: Any) -> tuple[bool, Any]:
         # This function will only validate. In contrast to normal settings, the

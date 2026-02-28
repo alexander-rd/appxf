@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Enable to test for key indexable (object[]) behavior:
 import os.path
+from contextlib import suppress
 
 from ftputil import FTPHost
 
@@ -93,11 +94,8 @@ class FtpLocation(StorageToBytes):
 
     def _connect(self):
         # ensure any old connection is closed
-        try:
+        with suppress(Exception):
             self.connection.close()
-        except Exception:
-            # nothing to do if above fails
-            pass
         # try connecting
         try:
             self.connection = FTPHost(self.host, self.user, self.password)

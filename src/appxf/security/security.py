@@ -91,7 +91,7 @@ class Security:
 
         This code might catch later version adaptions.
         """
-        if "version" not in self._key_dict.keys():
+        if "version" not in self._key_dict:
             raise AppxfSecurityError(
                 "Not an APPXF security file: no version information"
             )

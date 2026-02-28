@@ -47,5 +47,5 @@ ManualCaseRunner().run(
     setting_dict.SettingDictWindow, "Edit Window Title", prop_dict, gui_property
 )
 
-for key in prop_dict.keys():
+for key in prop_dict:
     print(f"{key}: {prop_dict[key]}")

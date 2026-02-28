@@ -249,11 +249,7 @@ class _SettingMeta(type):
             extension_options = {
                 key: val for key, val in kwargs.items() if key != "base_setting_options"
             }
-            base_options = (
-                kwargs["base_setting_options"]
-                if "base_setting_options" in kwargs
-                else {}
-            )
+            base_options = kwargs.get("base_setting_options", {})
             base_setting = base_setting_type(**base_options)
             if value is None:
                 value = base_setting.get_default()

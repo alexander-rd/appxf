@@ -172,7 +172,7 @@ def test_setting_dict_invalid_setitem(name, settings, error_parts):
 
 def test_setting_dict_value_as_string():
     setting_dict = SettingDict({"test": "some"})
-    assert "{'test': 'some'}" == setting_dict.to_string()
+    assert setting_dict.to_string() == "{'test': 'some'}"
     # Note that to_string() is a mandatory interface for Setting behavior.
     # There is no reason, yet to support __str__().
 
@@ -513,8 +513,8 @@ def _verify_get_state_keys(
 
     actual_top_level_keys = list(data.keys())
     for key in expected_top_level_keys:
-        assert key in data.keys(), f'Expected key "{key}" not in get_state() result.'
-    for key in data.keys():
+        assert key in data, f'Expected key "{key}" not in get_state() result.'
+    for key in data:
         assert key in expected_top_level_keys, f"get_state() has unexpected key {key}"
     # check correct order:
     for key in expected_top_level_keys:
@@ -549,7 +549,7 @@ def _verify_get_state_keys(
                 f'did not include key "{key}" in get_state().'
                 f"Complete setting: {setting}"
             )
-        for key in setting.keys():
+        for key in setting:
             assert key in setting_keys, (
                 f'Setting "{setting_key}" '
                 f'had unexpected key "{key}" from get_state(). '

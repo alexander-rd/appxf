@@ -50,7 +50,7 @@ class Email(MIMEMultipart):
                 continue
             log.warning(f'Parameter "{key}" is not supported (value: {value})')
         for key in ["To", "CC", "BCC", "Subject", "From"]:
-            if key not in kwargs.keys():
+            if key not in kwargs:
                 self[key] = ""
 
         self.attach(MIMEText(message))

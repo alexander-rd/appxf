@@ -47,10 +47,7 @@ class Buffer(Storable):
     def isbuffered(self, what: str, input: str):
         """Check if what/input is buffered"""
         self.ensure_loaded()
-        if what in self.buffer.keys():
-            if input in self.buffer[what].keys():
-                return True
-        return False
+        return bool(what in self.buffer and input in self.buffer[what])
 
     def get(self, what, input=""):
         """Get data from buffer for what(input)."""
@@ -66,7 +63,7 @@ class Buffer(Storable):
         This will overwrite existing data.
         """
         self.ensure_loaded()
-        if what not in self.buffer.keys():
+        if what not in self.buffer:
             self.buffer[what] = {}
         self.buffer[what][input] = deepcopy(data)
         self.store()

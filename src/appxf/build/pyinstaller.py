@@ -333,10 +333,9 @@ Build outputs:
 
     try:
         # Clean build directory if requested
-        if args.clean:
-            if BUILD_DIR.exists():
-                print(f"\nCleaning build directory: {BUILD_DIR}")
-                shutil.rmtree(BUILD_DIR)
+        if args.clean and BUILD_DIR.exists():
+            print(f"\nCleaning build directory: {BUILD_DIR}")
+            shutil.rmtree(BUILD_DIR)
 
         # Create virtual environment
         with _StepLogger("Creating virtual environment"):

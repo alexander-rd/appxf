@@ -42,18 +42,18 @@ test-sandbox-root = "./.testing"
 [tool.ruff.lint]
 # Remark: The selected rules are not ciceled in stone. Start discussing, if there are
 # good reasons to change.
-select = ["C4", "E", "F", "I", "N", "UP", "W"]
+select = ["C4", "E", "F", "I", "N", "SIM", "UP", "W"]
 #  C4 -- flake8-comprehensions ( unnecessary list/dict/set comprehensions)
 #  E -- pycodestyle errors; PEP8
 #  F -- pyflakes; flake8 defaults
 #  I -- isort import ordering
 #  N -- pep8 naming conventions (variables, functions, class names)
+#  SIM -- flake8-simplify (suggest simpler code constructs)
 #  UP -- pyupgrade: enforce modern Python syntax
 #  W -- pycodestyle (whitespace, blank lines)
 
 # TODO: Review and consider the following further checks:
 # "B"  - flake8-bugbear: opinionated checks that catch common bugs
-# "SIM"- flake8-simplify: suggest simpler code constructs
 # "ANN"- flake8-annotations: enforce type annotations
 # "RUF"- ruff-specific rules (misc. best-practice checks)
 
