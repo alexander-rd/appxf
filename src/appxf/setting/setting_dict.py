@@ -10,9 +10,9 @@ from __future__ import annotations
 
 import warnings
 from collections import OrderedDict
-from collections.abc import Mapping, MutableMapping
+from collections.abc import Callable, Mapping, MutableMapping
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any
 
 from appxf.storage import RamStorage, Storable, Storage
 

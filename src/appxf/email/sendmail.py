@@ -60,7 +60,7 @@ class Email(MIMEMultipart):
                 part = MIMEApplication(file.read(), Name=os.path.basename(f))
             # After the file is closed
             part["Content-Disposition"] = (
-                'attachment; filename="%s"' % os.path.basename(f)
+                f'attachment; filename="{os.path.basename(f)}"'
             )
             self.attach(part)
 

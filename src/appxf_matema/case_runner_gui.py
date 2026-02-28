@@ -9,9 +9,9 @@
 # window to show states.
 import re
 import tkinter
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Callable
 
 import markdown
 from tkhtmlview import HTMLLabel
@@ -220,10 +220,9 @@ class CaseRunnerGui:
         """Place a toplevel to the right of CaseRunnerGui control window"""
         self.tk.update()
         top_level.update()
-        geom = "%dx%d+%d+%d" % (
-            top_level.winfo_width(),
-            top_level.winfo_height(),
-            self.tk.winfo_x() + self.tk.winfo_width() + 10,
-            self.tk.winfo_y(),
-        )
+        width = top_level.winfo_width()
+        height = top_level.winfo_height()
+        x = self.tk.winfo_x() + self.tk.winfo_width() + 10
+        y = self.tk.winfo_y()
+        geom = f'{width}x{height}+{x}+{y}'
         top_level.geometry(geom)

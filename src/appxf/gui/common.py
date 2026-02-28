@@ -11,8 +11,9 @@ from __future__ import annotations
 
 import functools
 import tkinter
+from collections.abc import Callable, Iterable
 from tkinter import ttk
-from typing import Callable, Iterable, NamedTuple
+from typing import NamedTuple
 
 from appxf import logging
 
@@ -70,7 +71,7 @@ class GridFrame(tkinter.LabelFrame):
     log = logging.get_logger(f"{__name__}.GridFrame")
 
     # Registry mapping APPXF object types to GridFrame subclasses
-    _registry: dict[type, type["GridFrame"]] = {}
+    _registry: dict[type, type[GridFrame]] = {}
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)

@@ -39,7 +39,7 @@ def handle_manual_config_update_load(
         with open(file_path, "rb") as fh:
             update_bytes = fh.read()
         registry.set_manual_config_update_bytes(update_bytes)
-    except (OSError, IOError) as e:
+    except OSError as e:
         log.error("Failed to read response file: %s", e)
         messagebox.showerror(
             "Error",
@@ -97,7 +97,7 @@ def handle_manual_config_update_write(
         with open(file_path, "wb") as fh:
             fh.write(update_bytes)
 
-    except (OSError, IOError) as e:
+    except OSError as e:
         log.error("Failed to write config update file: %s", e)
         messagebox.showerror(
             "Error",

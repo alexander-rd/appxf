@@ -215,7 +215,7 @@ class RegistrationUser:
         try:
             with open(file_path, "wb") as fh:
                 fh.write(request_bytes)
-        except (OSError, IOError) as e:
+        except OSError as e:
             self.log.error(
                 "Failed to write registration request to %s: %s",
                 file_path,
@@ -254,7 +254,7 @@ class RegistrationUser:
             # Close GUI if registration completed
             self._check_init_status()
 
-        except (OSError, IOError) as e:
+        except OSError as e:
             self.log.error("Failed to read response file: %s", e)
             messagebox.showerror(
                 "Error",

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from collections import OrderedDict
 from dataclasses import MISSING, Field, dataclass, fields
-from typing import Any, Type, TypeVar
+from typing import Any, TypeVar
 
 from .stateful import Stateful
 
@@ -37,7 +37,7 @@ class Options(Stateful):
 
     @classmethod
     def new_from_kwarg(
-        cls: Type[_OptionTypeT], kwarg_dict: dict[str, Any]
+        cls: type[_OptionTypeT], kwarg_dict: dict[str, Any]
     ) -> _OptionTypeT:
         """consume any valid argument from kwargs and return options instance
 
@@ -58,7 +58,7 @@ class Options(Stateful):
         return options
 
     @classmethod
-    def new(cls: Type[_OptionTypeT], **kwarg) -> _OptionTypeT:
+    def new(cls: type[_OptionTypeT], **kwarg) -> _OptionTypeT:
         """new options from kwarg
 
         Calls new_from_kwarg() followed by raise_error_on_non_empty_kwarg().

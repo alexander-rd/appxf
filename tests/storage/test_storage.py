@@ -19,7 +19,7 @@ specific tests.
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 
 def test_storage_simple_abstract_derivative():

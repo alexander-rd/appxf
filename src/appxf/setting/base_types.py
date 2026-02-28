@@ -8,7 +8,7 @@ import base64
 import binascii
 import configparser
 from dataclasses import dataclass
-from typing import Any, Type
+from typing import Any
 
 from email_validator import EmailNotValidError, validate_email
 
@@ -118,7 +118,7 @@ class SettingPassword(SettingString):
 
 
 def validated_conversion_configparser(
-    string: str, res_type: Type[_BaseTypeT], default: _BaseTypeT
+    string: str, res_type: type[_BaseTypeT], default: _BaseTypeT
 ) -> tuple[bool, _BaseTypeT]:
     """Helper for common conversion by configparser
 

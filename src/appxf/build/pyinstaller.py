@@ -16,7 +16,6 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import List, Optional
 
 # Build directory paths (module-level constants)
 BUILD_DIR = Path("./build")
@@ -52,7 +51,7 @@ class _StepLogger:
 
 
 def run_command(
-    cmd: List[str],
+    cmd: list[str],
     shell: bool = False,
     check: bool = True,
     verbose: bool = False,
@@ -68,8 +67,7 @@ def run_command(
             cmd,
             shell=shell,
             check=check,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             text=True,
             **kwargs,
         )
@@ -111,7 +109,7 @@ def get_activation_script() -> str:
 
 
 def run_in_venv(
-    cmd: List[str], verbose: bool = False, **kwargs
+    cmd: list[str], verbose: bool = False, **kwargs
 ) -> subprocess.CompletedProcess:
     """Run a command within the virtual environment."""
     # Use the full path to the venv executables (works on all platforms)
@@ -130,7 +128,7 @@ def run_in_venv(
 
 
 def install_requirements(
-    requirements_files: List[Path], editable_packages: List[Path], verbose: bool = False
+    requirements_files: list[Path], editable_packages: list[Path], verbose: bool = False
 ) -> None:
     """Install requirements in the virtual environment."""
     # Install requirements files
@@ -157,7 +155,7 @@ def install_requirements(
 def build(
     main_file: Path,
     debug_build: bool = False,
-    hidden_imports: Optional[List[str]] = None,
+    hidden_imports: list[str] | None = None,
     strip: bool = True,
     verbose: bool = False,
 ) -> None:
@@ -192,7 +190,7 @@ def build(
     run_in_venv(cmd, verbose=verbose)
 
 
-def copy_additional_files(files: List[Path]) -> None:
+def copy_additional_files(files: list[Path]) -> None:
     """Copy additional files to the dist directory."""
     DIST_PATH.mkdir(parents=True, exist_ok=True)
 

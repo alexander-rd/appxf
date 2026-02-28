@@ -296,7 +296,7 @@ class RegistrationAdmin:
         try:
             with open(file_path, "wb") as fh:
                 fh.write(key_bytes)
-        except (OSError, IOError) as e:
+        except OSError as e:
             self.log.error("Failed to write admin keys to %s: %s", file_path, e)
             messagebox.showerror(
                 "Error", f"Failed to write file: {e}", parent=self._admin_window
@@ -322,7 +322,7 @@ class RegistrationAdmin:
             # Parse and populate UI
             self._load_request_ui(request_bytes)
             self.log.info("Request loaded from %s", file_path)
-        except (OSError, IOError) as e:
+        except OSError as e:
             self.log.error("Failed to read request file: %s", e)
             messagebox.showerror(
                 "Error", f"Failed to read file: {e}", parent=self._admin_window

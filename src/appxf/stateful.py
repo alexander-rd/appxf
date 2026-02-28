@@ -65,14 +65,15 @@ class Stateful:
     # The type that is supported for get_state()/set_state():
     #   * Dictionaries may contain BaseType as keys and recursively any
     #     StateType
-    DefaultStateType: TypeAlias = Union[
-        DefaultBaseType | None,
-        dict[DefaultBaseType, Union[DefaultBaseType, "DefaultStateType", None]],
-        list[Union["DefaultStateType", None]],
-        tuple[Union["DefaultStateType", None]],
-        set[Union[DefaultBaseType, None]],  # set must be hashable
-        dict[str, "DefaultStateType"],  # explicit to resolve pylint issues
-    ]
+    DefaultStateType: TypeAlias = (
+        DefaultBaseType
+        | None
+        | dict[DefaultBaseType, Union[DefaultBaseType, "DefaultStateType", None]]
+        | list[Union["DefaultStateType", None]]
+        | tuple[Union["DefaultStateType", None]]
+        | set[DefaultBaseType | None]  # set must be hashable
+        | dict[str, "DefaultStateType"]  # explicit to resolve pylint issues
+    )
     # For testing, the type variables are be analyzed via get_origin() and
     # get_args() to ensure coverage for serializers.
 
@@ -80,9 +81,9 @@ class Stateful:
     # __dict__ of a class and applies a type guard for error handling. This
     # type guard does not verify the types within the container classes and
     # uses a simplified TypeAlias:
-    StateTypeDefaultForTypeCheck: TypeAlias = Union[
-        DefaultBaseType, list, tuple, set, dict
-    ]
+    StateTypeDefaultForTypeCheck: TypeAlias = (
+        DefaultBaseType | list | tuple | set | dict
+    )
 
     # The error class will just be normal TypeError
     @classmethod

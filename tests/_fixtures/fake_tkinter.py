@@ -24,7 +24,7 @@ def dummy_function(*args, **kwargs):
 
 
 # Monkey-Patching Tk(). We need this to run those automated tests in tox:
-class FakeTk(object):
+class FakeTk:
     def __init__(self):
         print("Tk() init called")
 
@@ -38,7 +38,7 @@ class FakeTk(object):
 
 # When other functions access other base classes, those also need to get
 # monkey-patched since they would call back to parents.
-class FakeFrame(object):
+class FakeFrame:
     def __init__(self, *args, **kwargs):
         print("Frame() init called")
 
@@ -46,7 +46,7 @@ class FakeFrame(object):
     tkraise = dummy_function
 
 
-class FakeMenu(object):
+class FakeMenu:
     def __init__(self, *args, **kwargs):
         print("Menu() init called")
 

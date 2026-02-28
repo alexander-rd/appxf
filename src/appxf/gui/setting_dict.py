@@ -8,7 +8,8 @@ modules.
 
 import math
 import tkinter
-from typing import Any, Iterable, Mapping, TypeAlias
+from collections.abc import Iterable, Mapping
+from typing import Any, TypeAlias
 
 from appxf import logging
 from appxf.setting import Setting, SettingDict

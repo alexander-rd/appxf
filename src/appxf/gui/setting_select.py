@@ -79,7 +79,7 @@ class _DropdownOnly(SettingFrameBase):
         y = self.entry.winfo_rooty() + self.entry.winfo_height()
         self.tipwindow = tkinter.Toplevel(self.entry)
         self.tipwindow.wm_overrideredirect(True)
-        self.tipwindow.wm_geometry("+%d+%d" % (x, y))
+        self.tipwindow.wm_geometry(f"+{x}+{y}")
         # self.tipwindow.maxsize(int(1/3*self.winfo_screenwidth()),
         #                        int(1/2*self.winfo_screenheight()))
         label = tkinter.Label(

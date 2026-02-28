@@ -1,6 +1,6 @@
 # Copyright 2023-2026 the contributors of APPXF (github.com/alexander-nbg/appxf)
 # SPDX-License-Identifier: Apache-2.0
-from typing import Set, TypedDict
+from typing import TypedDict
 
 from appxf import logging
 from appxf.storage import Storable, Storage
@@ -38,7 +38,7 @@ class UserDatabase(Storable):
         self._user_db: dict[int, UserEntry] = {}
         # The role_map maps roles to lists of ID's to quickly collect lists of
         # keys.
-        self._role_map: dict[str, Set] = {"admin": set(), "user": set()}
+        self._role_map: dict[str, set] = {"admin": set(), "user": set()}
         # The validation_key_map maps validation keys to user IDs for efficient
         # lookup.
         self._validation_key_map: dict[bytes, int] = {}

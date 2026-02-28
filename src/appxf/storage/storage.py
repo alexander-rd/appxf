@@ -5,9 +5,10 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from copy import deepcopy
 from inspect import isabstract
-from typing import Callable, Protocol, overload, runtime_checkable
+from typing import Protocol, overload, runtime_checkable
 
 from appxf.logging import logging
 

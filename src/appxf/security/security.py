@@ -6,7 +6,8 @@
 # generate crypt key from password
 import base64
 import pickle
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 # ## Cryptography related imports
 # cryptography error handling

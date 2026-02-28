@@ -16,7 +16,7 @@ def read_context_from_pot(pot_file):
     """
     contexts = set()
 
-    with open(pot_file, "r", encoding="utf-8") as f:
+    with open(pot_file, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if line.startswith("msgctxt "):
@@ -43,7 +43,7 @@ def analyze_po_file(po_file):
     in_msgstr = False
     msgstr_content = ""
 
-    with open(po_file, "r", encoding="utf-8") as f:
+    with open(po_file, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
 
