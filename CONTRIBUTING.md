@@ -1,7 +1,5 @@
 <!--Copyright 2026 the contributors of APPXC (github.com/alexander-nbg/appxc)-->
 <!--SPDX-License-Identifier: 0BSD-->
-***Yes, please.***
+See the note on maintenance capacity in the [README](README.md).
 
-Just get in touch by commenting a ticket, opening a new one or dropping an Email (see my profile). Currently, I prefer some chat and discussion before reviewing a pull request. There are also no guidelines prepared, yet.
-
-As soon as there is any interest, I will prioritize supporting the supporters.. ..just let me know.
+A ticket can be opened for a concrete end use case, or simply because the idea appeals to you - it may get read and, depending on available time, considered.

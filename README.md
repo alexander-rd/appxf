@@ -12,17 +12,15 @@ used in an application for a small association. While there are several usable
 components, the *interfaces are unstable* and there is *no consistent
 documentation*.
 
-## It may become
-APPXC may help close a gap when writing applications for
-small associations or non-profits. Development will continue with the clear
-understanding that one person’s free time cannot accomplish everything.
+APPXC may help close a gap when writing applications for small associations or
+non-profits. Development continues mainly through the private projects it is
+used in. As a private, spare-time project, no support, maintenance, or
+response time can be guaranteed.
 
 ## Appreciation is Welcome
 If you find any part of this library useful, the currently best motivation and
-acknowledgement would be shareíng your story and project as a [discussion
+acknowledgement would be sharing your story and project as a [discussion
 topic](https://github.com/alexander-nbg/appxc/discussions/new?category=show-and-tell)
 (example: [the app which initialized
-APPXC](https://github.com/alexander-nbg/appxc/discussions/10)). Additionally,
-while APPXC will not suddenly clean up all open topics or guarantee interface
-stability for features which are relevant to you, efforts are continuously
-prioritized based on the information available.
+APPXC](https://github.com/alexander-nbg/appxc/discussions/10)) - it helps put
+outside use cases on the radar.

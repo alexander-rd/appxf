@@ -4,8 +4,8 @@
 
 ## Supported Versions
 
-As of now (February 2026), no security support can be provided.
+See the note on maintenance capacity in the [README](README.md).
 
 ## Reporting a Vulnerability
 
-Please contact alexander-nbg via Email (see profile information). However, you may as well rate your finding befitting for a public issue ***given the current state of APPXC***.
+Please open a public issue describing the finding — given the current state of APPXC, that is the most effective way to get it addressed.
